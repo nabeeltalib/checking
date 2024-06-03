@@ -1,5 +1,6 @@
-import { GridListList, Loader } from "@/components/shared";
+import { Loader } from "@/components/shared";
 import { useGetCurrentUser } from "@/lib/react-query/queries";
+import GridListList from "@/components/shared/GridListList";
 
 const LikedLists = () => {
   const { data: currentUser } = useGetCurrentUser();

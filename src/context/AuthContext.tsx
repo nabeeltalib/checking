@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { createContext, useContext, useEffect, useState } from "react";
 
 import { IUser, IListItem } from "@/types";
-import { getCurrentUser, getCuratedList } from "@/lib/appwrite/api";
+import { getCurrentUser, getUserLists } from "@/lib/appwrite/api";
 
 export const INITIAL_USER = {
   id: "",
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const currentAccount = await getCurrentUser();
       if (currentAccount) {
-        const curatedList = await getCuratedList(currentAccount.$id);
+        const curatedList = await getUserLists(currentAccount.$id);
         setUser({
           id: currentAccount.$id,
           name: currentAccount.name,

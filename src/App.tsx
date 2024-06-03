@@ -10,7 +10,7 @@ import {
   EditList,
   ListDetails,
   UpdateProfile,
-  AllUsers,
+  AllLists,
 } from "@/_root/pages";
 import AuthLayout from "./_auth/AuthLayout";
 import RootLayout from "./_root/RootLayout";
@@ -36,7 +36,7 @@ const App = () => {
             <Route index element={<Home />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/saved" element={<Saved />} />
-            <Route path="/all-users" element={<AllUsers />} />
+            <Route path="/all-users" element={<AllLists />} />
             <Route path="/create-list" element={<CreateList />} />
             <Route path="/update-list/:id" element={<EditList />} />
             <Route path="/lists/:id" element={<ListDetails />} />
