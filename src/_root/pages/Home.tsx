@@ -6,6 +6,9 @@ type ListCardProps = {
 };
 
 const ListCard = ({ list }: ListCardProps) => {
+  if (!list) {
+    return null;
+  }
   return (
     <div className="list-card">
       <Link to={`/lists/${list.$id}`}>

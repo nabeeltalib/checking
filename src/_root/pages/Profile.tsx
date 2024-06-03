@@ -11,7 +11,8 @@ import { Button } from "@/components/ui";
 import { LikedLists } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById } from "@/lib/react-query/queries";
-import { GridListList, Loader } from "@/components/shared";
+import { Loader } from "@/components/shared"
+import GridListList from "@/components/shared/GridListList";
 
 // ... (rest of the code remains the same)
 

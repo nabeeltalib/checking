@@ -1,6 +1,7 @@
 import { useToast } from "@/components/ui/use-toast";
-import { Loader, ListCard } from "@/components/shared";
+import { Loader } from "@/components/shared";
 import { useGetLists } from "@/lib/react-query/queries";
+import ListCard from "@/components/shared/ListCard";
 
 const AllLists = () => {
   const { toast } = useToast();
