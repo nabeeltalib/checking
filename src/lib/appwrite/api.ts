@@ -1,6 +1,6 @@
 import { ID, Query } from "appwrite";
 import { appwriteConfig, account, databases, storage, avatars } from "./config";
-import { IUpdateList, INewList, INewUser, IUpdateUser } from "@/types";
+import { IUpdateList, INewList, INewUser, IUpdateUser, IListItem } from "@/types";
 
 // ============================================================
 // AUTH
@@ -115,7 +115,54 @@ export async function signOutAccount() {
     return null;
   }
 }
+// ============================== UPLOAD FILE
+export async function uploadFile(file: File) {
+  try {
+    const uploadedFile = await storage.createFile(
+      appwriteConfig.storageId,
+      ID.unique(),
+      file
+    );
 
+    return uploadedFile;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
+
+// ============================== GET FILE URL
+export function getFilePreview(fileId: string) {
+  try {
+    const fileUrl = storage.getFilePreview(
+      appwriteConfig.storageId,
+      fileId,
+      2000,
+      2000,
+      "top",
+      100
+    );
+
+    if (!fileUrl) throw new Error("Failed to get file preview");
+
+    return fileUrl;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
+
+// ============================== DELETE FILE
+export async function deleteFile(fileId: string) {
+  try {
+    await storage.deleteFile(appwriteConfig.storageId, fileId);
+
+    return { status: "ok" };
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
 // ============================================================
 // LISTS
 // ============================================================
@@ -361,6 +408,32 @@ export async function getRecentLists() {
     return null;
   }
 }
+// ============================== GET CURATED LIST
+export async function getCuratedList(userId: string): Promise<IListItem[]> {
+  try {
+    const lists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!lists) throw new Error("No curated list found for user");
+
+    // Extract the list items from the fetched lists
+    const curatedList = lists.documents.map((list) => ({
+      id: list.$id,
+      title: list.title,
+      description: list.description,
+      // Add other properties specific to list items
+    }));
+
+    return curatedList;
+  } catch (error) {
+    console.error("Error fetching curated list:", error);
+    return [];
+  }
+}
+
 // ============================================================
 // USER
 // ============================================================

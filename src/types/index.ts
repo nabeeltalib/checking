@@ -63,6 +63,13 @@ export type INewUser = {
   password: string;
 };
 
+export type IListItem = {
+  id: string;
+  title: string;
+  description: string;
+  // Add other properties specific to list items
+};
+
 export type IContextType = {
   user: IUser;
   isLoading: boolean;

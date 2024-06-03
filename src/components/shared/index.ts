@@ -1,10 +1,10 @@
 export { default as Bottombar } from "./Bottombar";
+export { default as FileUploader } from "./FileUploader";
+export { default as GridListList } from "./GridListList";
 export { default as LeftSidebar } from "./LeftSidebar";
+export { default as ListCard } from "./ListCard";
+export { default as ListStats } from "./ListStats";
 export { default as Loader } from "./Loader";
-export { default as PostCard } from "./ListCard";
-export { default as GridPostList } from "./GridListList";
+export { default as ProfileUploader } from "./ProfileUploader";
 export { default as Topbar } from "./Topbar";
 export { default as UserCard } from "./UserCard";
-export { default as FileUploader } from "./FileUploader";
-export { default as ProfileUploader } from "./ProfileUploader";
-export { default as PostStats } from "./ListStats";

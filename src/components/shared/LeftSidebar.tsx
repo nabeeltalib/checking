@@ -24,9 +24,7 @@ const LeftSidebar = () => {
     navigate("/sign-in");
   };
 
-  return (
-    {/* ... */}
-  );
+  return <div></div>
 };
 
 export default LeftSidebar;
