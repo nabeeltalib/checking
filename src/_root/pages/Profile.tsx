@@ -1,26 +1,37 @@
 import {
-  Route,
-  Routes,
   Link,
   Outlet,
   useParams,
   useLocation,
 } from "react-router-dom";
 
-import { Button } from "@/components/ui";
+
 import { LikedLists } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared"
 import GridListList from "@/components/shared/GridListList";
 
+
 // ... (rest of the code remains the same)
 
 const Profile = () => {
   // ... (rest of the code remains the same)
+  const {user , isLoading} = useUserContext();
+  const { id } = useParams();
+  const { pathname } = useLocation();
+  if(!id) return null;
+  const { data: currentUser } = useGetUserById(id);
 
+  if(isLoading) {
+    return <Loader />
+  }
+  
+  if (!currentUser) {
+    return <div>User not found</div>;
+  }
   return (
-    <div className="profile-container">
+    <div className="flex flex-col gap-6 w-full p-6 mx-auto ">
       {/* ... (rest of the JSX remains the same) */}
 
       {currentUser.$id === user.id && (
@@ -31,7 +42,7 @@ const Profile = () => {
               pathname === `/profile/${id}` && "!bg-dark-3"
             }`}>
             <img
-              src={"/assets/icons/lists.svg"}
+              src={"/assets/icons/home.svg"}
               alt="lists"
               width={20}
               height={20}
@@ -53,17 +64,16 @@ const Profile = () => {
           </Link>
         </div>
       )}
-
-      <Routes>
-        <Route
-          index
-          element={<GridListList lists={currentUser.lists} showUser={false} />}
-        />
-        {currentUser.$id === user.id && (
-          <Route path="/liked-lists" element={<LikedLists />} />
-        )}
-      </Routes>
       <Outlet />
+
+      {pathname === `/profile/${id}/liked-lists` ? (
+        <LikedLists />
+      ) : (
+        <GridListList lists={currentUser.lists} showUser={false} />
+      )}
+
+  
+
     </div>
   );
 };

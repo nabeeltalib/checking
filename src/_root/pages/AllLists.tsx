@@ -6,12 +6,10 @@ import ListCard from "@/components/shared/ListCard";
 const AllLists = () => {
   const { toast } = useToast();
   const { data: lists, isLoading, isError: isErrorLists } = useGetLists();
-
   if (isErrorLists) {
     toast({ title: "Something went wrong." });
     return null;
   }
-
   return (
     <div className="common-container">
       <div className="list-container">
@@ -20,7 +18,7 @@ const AllLists = () => {
           <Loader />
         ) : (
           <ul className="list-grid">
-            {lists?.documents.map((list) => (
+            {lists?.pages[0].documents.map((list:any) => (
               <li key={list.$id} className="flex-1 min-w-[200px] w-full">
                 <ListCard list={list} />
               </li>

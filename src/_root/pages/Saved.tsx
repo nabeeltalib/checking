@@ -7,7 +7,7 @@ import GridListList from "@/components/shared/GridListList";
 const Saved = () => {
   const { data: currentUser } = useGetCurrentUser();
 
-  const savedLists = currentUser?.savedLists
+  const savedLists = currentUser?.save
     .map((savedList: Models.Document) => ({
       ...savedList.list,
       creator: {
