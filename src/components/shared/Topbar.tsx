@@ -15,7 +15,7 @@ const Topbar = () => {
   }, [isSuccess]);
 
   return (
-    <section className="topbar">
+    <section className="fixed top-0 left-0 right-0 z-50 mb-4 bg-black">
       <div className="flex-between py-4 px-5">
         <Link to="/" className="flex gap-3 items-center">
           <img

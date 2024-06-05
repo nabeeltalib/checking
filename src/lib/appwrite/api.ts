@@ -61,7 +61,11 @@ export async function saveUserToDB(user: {
 // ============================== SIGN IN
 export async function signInAccount(user: { email: string; password: string }) {
   try {
-    const session = await account.createSession(user.email, user.password);
+    const session = await account.createEmailPasswordSession(
+      user.email, 
+      user.password 
+    );
+    console.log('session', session);
 
     return session;
   } catch (error) {
@@ -94,7 +98,7 @@ export async function getCurrentUser() {
       appwriteConfig.userCollectionId,
       [Query.equal("accountId", currentAccount.$id)]
     );
-
+    console.log('currentUser', currentUser);
     if (!currentUser || currentUser.total === 0) throw new Error("User not found");
 
     return currentUser.documents[0];
@@ -173,7 +177,9 @@ export async function createList(list: INewList) {
   try {
     // Convert tags into array
     const tags = list.tags?.replace(/ /g, "").split(",") || [];
-
+    //convert list items from string to array
+    const items = list.items?.replace(/ /g, "").split(",") || [];
+    console.log('list response', list);
     // Create list
     const newList = await databases.createDocument(
       appwriteConfig.databaseId,
@@ -183,8 +189,10 @@ export async function createList(list: INewList) {
         creator: list.userId,
         title: list.title,
         description: list.description,
-        items: list.items,
+        items: items,
         tags: tags,
+        bookmark_count: 0,
+        shares_count: 0,
       }
     );
 
@@ -293,7 +301,6 @@ export async function updateList(list: IUpdateList) {
 // ============================== DELETE LIST
 export async function deleteList(listId?: string) {
   if (!listId) return;
-
   try {
     const statusCode = await databases.deleteDocument(
       appwriteConfig.databaseId,

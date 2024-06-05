@@ -1,7 +1,11 @@
 // ... (import statements)
-
+import { useGetRecentLists } from "@/lib/react-query/queries";
+import { Loader } from "@/components/shared";
+import ListCard from "@/components/shared/ListCard";
 const Explore = () => {
   // ... (search functionality)
+  const { data, isLoading } = useGetRecentLists();
+  
 
   return (
     <div className="explore-container">
@@ -23,6 +27,13 @@ const Explore = () => {
 
       <div className="flex flex-wrap gap-9 w-full max-w-5xl">
         {/* ... (search results or list of popular lists) */}
+        {isLoading ? (
+          <Loader />
+        ) : (
+          data?.documents.map((list: any) => (
+            <ListCard key={list.$id} list={list} />
+          ))
+        )}
       </div>
 
       {/* ... (infinite scroll loader) */}

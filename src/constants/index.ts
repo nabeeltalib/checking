@@ -3,26 +3,31 @@ export const sidebarLinks = [
     imgURL: "/assets/icons/home.svg",
     route: "/",
     label: "Home",
+    icon:"/assets/icons/home.svg"
   },
   {
     imgURL: "/assets/icons/wallpaper.svg",
     route: "/explore",
     label: "Explore",
+    icon:"/assets/icons/wallpaper.svg"
   },
   {
     imgURL: "/assets/icons/people.svg",
     route: "/all-users",
     label: "People",
+    icon:"/assets/icons/people.svg"
   },
   {
     imgURL: "/assets/icons/bookmark.svg",
     route: "/saved",
     label: "Saved",
+    icon:"/assets/icons/bookmark.svg"
   },
   {
     imgURL: "/assets/icons/gallery-add.svg",
-    route: "/create-post",
+    route: "/create-list",
     label: "Create Post",
+    icon:"/assets/icons/gallery-add.svg"
   },
 ];
 
@@ -44,7 +49,30 @@ export const bottombarLinks = [
   },
   {
     imgURL: "/assets/icons/gallery-add.svg",
-    route: "/create-post",
+    route: "/create-list",
     label: "Create",
+  },
+];
+
+export const rightSidebarLinks = [
+  {
+    imgURL: "/assets/icons/trending.svg",
+    route: "#",
+    label: "Trending",
+  },
+  {
+    imgURL: "/assets/icons/recommended.svg",
+    route: "#",
+    label: "Recommended",
+  },
+  {
+    imgURL: "/assets/icons/people.svg",
+    route: "#",
+    label: "User Activity",
+  },
+  {
+    imgURL: "/assets/icons/user-profile.svg",
+    route: "#",
+    label: "User Profile",
   },
 ];

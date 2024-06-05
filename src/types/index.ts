@@ -2,6 +2,7 @@ export type INavLink = {
   imgURL: string;
   route: string;
   label: string;
+  icon?: string;
 };
 
 export type IUpdateUser = {
@@ -35,7 +36,7 @@ export type INewList = {
   userId: string;
   title: string;
   description: string;
-  items: string[];
+  items: string;
   tags?: string;
 };
 
@@ -43,7 +44,7 @@ export type IUpdateList = {
   listId: string;
   title: string;
   description: string;
-  items: string[];
+  items: string;
   tags?: string;
 };
 
@@ -54,6 +55,7 @@ export type IUser = {
   email: string;
   imageUrl: string;
   bio: string;
+  curatedList: string[];
 };
 
 export type INewUser = {

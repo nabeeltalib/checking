@@ -11,14 +11,13 @@ const LikedLists = () => {
         <Loader />
       </div>
     );
-
   return (
     <>
-      {currentUser.likedLists.length === 0 && (
+      {currentUser.liked.length === 0 && (
         <p className="text-light-4">No liked lists</p>
       )}
 
-      <GridListList lists={currentUser.likedLists} showStats={false} />
+      <GridListList lists={currentUser.liked} showStats={false} />
     </>
   );
 };

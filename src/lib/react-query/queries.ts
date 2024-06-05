@@ -23,6 +23,7 @@ import {
   searchLists,
   saveList,
   deleteSavedList,
+  getUserById,
 } from "@/lib/appwrite/api";
 import { INewList, INewUser, IUpdateList, IUpdateUser } from "@/types";
 
