@@ -32,6 +32,7 @@ import { useCreateList, useUpdateList } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
 import axios from 'axios';
 import { useState, useEffect } from 'react';
+import { fetchAISuggestions, fetchCategories } from '@/lib/appwrite/aiService';
 
 type ListFormProps = {
   list?: Models.Document;
@@ -49,13 +50,13 @@ const ListForm = ({ list, action }: ListFormProps) => {
 
   useEffect(() => {
     // Fetch AI-powered suggestions for list items
-    axios.get('/api/lists/suggestions').then(response => {
-      setAiSuggestions(response.data);
+    fetchAISuggestions().then(suggestions => {
+      setAiSuggestions(suggestions);
     });
 
     // Fetch categories
-    axios.get('/api/categories').then(response => {
-      setCategories(response.data);
+    fetchCategories().then(categories => {
+      setCategories(categories);
     });
   }, []);
 
@@ -105,21 +106,30 @@ const ListForm = ({ list, action }: ListFormProps) => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Post Title</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Enter a title"
-                  {...field}
-                  className="w-full bg-dark-3 text-light-1 border-none"
-                />
-              </FormControl>
-              <FormDescription>Enter a title for your list</FormDescription>
-              <FormMessage />
-            </FormItem>
+        control={form.control}
+        name="items"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Items</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Enter items"
+                {...field}
+                className="w-full bg-dark-3 text-light-1 border-none"
+              />
+            </FormControl>
+            <FormDescription>
+              Enter items for your list. You can also select from AI-powered suggestions:
+              <ul className="list-disc pl-5 mt-2">
+                {aiSuggestions.map((suggestion, index) => (
+                  <li key={index} className="cursor-pointer" onClick={() => form.setValue('items', suggestion)}>
+                    {suggestion}
+                  </li>
+                ))}
+              </ul>
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
           )}
         />
 

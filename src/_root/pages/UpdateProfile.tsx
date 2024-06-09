@@ -114,7 +114,8 @@ const UpdateProfile = () => {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleUpdate)}
-            className="flex flex-col gap-7 w-full mt-4 max-w-5xl">
+            className="flex flex-col gap-7 w-full mt-4 max-w-5xl"
+          >
             <FormField
               control={form.control}
               name="file"
@@ -213,14 +214,16 @@ const UpdateProfile = () => {
                 type="button"
                 className="shad-button_dark_4"
                 onClick={() => navigate(-1)}
-                aria-label="Cancel">
+                aria-label="Cancel"
+              >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 className="shad-button_primary whitespace-nowrap"
                 disabled={isLoadingUpdate}
-                aria-label="Update Profile">
+                aria-label="Update Profile"
+              >
                 {isLoadingUpdate && <Loader />}
                 Update Profile
               </Button>

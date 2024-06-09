@@ -22,13 +22,13 @@ const LikedLists = () => {
   }
 
   return (
-    <>
+    <div className="common-container">
       {currentUser.liked.length === 0 ? (
         <p className="text-light-4">No liked lists</p>
       ) : (
         <GridListList lists={currentUser.liked} showStats={false} />
       )}
-    </>
+    </div>
   );
 };
 

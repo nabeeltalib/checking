@@ -144,3 +144,13 @@ export type ICollaboration = {
   userId: string;
   status: string;
 };
+
+export interface AICategory {
+  id: string;
+  name: string;
+};
+
+export interface AISuggestion {
+  id: string;
+  suggestion: string;
+};

@@ -95,11 +95,15 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
         </p>
       </Button>
       <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
-        <img src="/assets/icons/share.svg" alt="share" width={20} height={20} />
-        <p className="small-medium lg:base-medium">Share</p>
+        <img src="/assets/icons/chat.svg" alt="comment" width={20} height={20} />
+        <p className="small-medium lg:base-medium">Comment</p>
       </Button>
       <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
-        <img src="/assets/icons/chat.svg" alt="collaborate" width={20} height={20} />
+        <img src="/assets/icons/lightbulb.svg" alt="suggest" width={20} height={20} />
+        <p className="small-medium lg:base-medium">Suggest</p>
+      </Button>
+      <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+        <img src="/assets/icons/people.svg" alt="collaborate" width={20} height={20} />
         <p className="small-medium lg:base-medium">Collaborate</p>
       </Button>
     </div>

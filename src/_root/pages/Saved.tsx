@@ -20,7 +20,7 @@ const Saved = () => {
   }
 
   return (
-    <div className="saved-container">
+    <div className="saved-container common-container">
       <div className="flex gap-2 w-full max-w-5xl">
         <img
           src="/assets/icons/save.svg"
@@ -34,7 +34,7 @@ const Saved = () => {
 
       <div className="w-full flex justify-center max-w-5xl gap-9">
         {savedLists?.length === 0 ? (
-          <p className="text-light-4">No available lists</p>
+          <p className="text-light-4">No saved lists</p>
         ) : (
           <GridListList lists={savedLists} showStats={false} />
         )}

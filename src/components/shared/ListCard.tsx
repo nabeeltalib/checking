@@ -53,22 +53,29 @@ const ListCard = ({ list }: ListCardProps) => {
 
       <Link to={`/lists/${list.$id}`} className="block mt-4">
         <div className="small-medium lg:base-medium py-2">
-          <h3 className="font-bold text-light-1">{list.title}</h3>
-          <p className="text-light-3 mt-1">{list.description}</p>
+          <h3 className="font-bold text-light-1 line-clamp-2">{list.title}</h3>
+          <p className="text-light-3 mt-1 line-clamp-3">{list.description}</p>
           <ul className="list-disc list-inside mt-2 text-light-1">
-            {list.items.map((item, index) => (
-              <li key={index}>
+            {list.items.slice(0, 5).map((item, index) => (
+              <li key={index} className="line-clamp-1">
                 {item}
               </li>
             ))}
+            {list.items.length > 5 && (
+              <li>
+                and {list.items.length - 5} more...
+              </li>
+            )}
           </ul>
           <div className="flex flex-wrap gap-2 mt-2">
             {list.tags.map((tag, index) => (
-              <span
+              <Link
                 key={index}
-                className="bg-dark-4 text-light-3 rounded-full px-2 py-1 text-xs">
+                to={`/tags/${tag}`}
+                className="bg-dark-4 text-light-3 rounded-full px-2 py-1 text-xs"
+              >
                 #{tag}
-              </span>
+              </Link>
             ))}
           </div>
         </div>

@@ -29,7 +29,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full p-6 mx-auto ">
+    <div className="flex flex-col gap-6 w-full p-6 mx-auto common-container">
       {currentUser.$id === user.id && (
         <div className="flex max-w-5xl w-full">
           <Link

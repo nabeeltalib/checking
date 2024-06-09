@@ -32,7 +32,7 @@ const ListDetails = () => {
   };
 
   return (
-    <div className="flex flex-col gap-6 w-full p-6">
+    <div className="flex flex-col gap-6 w-full p-6 common-container">
       <button onClick={() => navigate(-1)} className="text-primary-500 mb-4">
         &larr; Back
       </button>
@@ -97,7 +97,7 @@ const ListDetails = () => {
         </div>
       )}
 
-      <div className="w-full">
+<div className="w-full">
         <hr className="border w-full border-dark-4/80" />
         <h3 className="body-bold md:h3-bold w-full my-10">More Related Lists</h3>
         {isUserListsLoading || !relatedLists ? (
@@ -105,6 +105,24 @@ const ListDetails = () => {
         ) : (
           <GridListList lists={relatedLists} />
         )}
+      </div>
+
+      <div className="w-full">
+        <hr className="border w-full border-dark-4/80" />
+        <h3 className="body-bold md:h3-bold w-full my-10">Comments</h3>
+        {/* Add comments component */}
+      </div>
+
+      <div className="w-full">
+        <hr className="border w-full border-dark-4/80" />
+        <h3 className="body-bold md:h3-bold w-full my-10">Suggestions</h3>
+        {/* Add suggestions component */}
+      </div>
+
+      <div className="w-full">
+        <hr className="border w-full border-dark-4/80" />
+        <h3 className="body-bold md:h3-bold w-full my-10">Collaborations</h3>
+        {/* Add collaborations component */}
       </div>
     </div>
   );

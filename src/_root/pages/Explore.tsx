@@ -18,19 +18,19 @@ const Explore = () => {
   useEffect(() => {
     // Fetch trending tags
     axios.get('/api/tags/trending').then(response => {
-      setTrendingTags(response.data);
+      setTrendingTags(response.data.tags);
       setIsTagsLoading(false);
     });
 
     // Fetch popular categories
     axios.get('/api/categories/popular').then(response => {
-      setPopularCategories(response.data);
+      setPopularCategories(response.data.categories);
       setIsCategoriesLoading(false);
     });
 
     // Fetch AI-powered recommendations
     axios.get('/api/lists/recommendations').then(response => {
-      setAiRecommendations(response.data);
+      setAiRecommendations(response.data.lists);
     });
   }, []);
 
@@ -44,7 +44,7 @@ const Explore = () => {
   };
 
   return (
-    <div className="explore-container">
+    <div className="explore-container common-container">
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Explore</h1>
         <form onSubmit={handleSearch} className="flex items-center">
@@ -106,9 +106,13 @@ const Explore = () => {
             <Loader />
           ) : (
             trendingTags.map(tag => (
-              <div key={tag.id} className="tag-item bg-gray-200 p-2 rounded-lg">
+              <Link
+                key={tag.id}
+                to={`/tags/${tag.id}`}
+                className="tag-item bg-gray-200 p-2 rounded-lg"
+              >
                 {tag.name}
-              </div>
+              </Link>
             ))
           )}
         </div>
