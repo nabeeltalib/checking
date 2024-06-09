@@ -31,33 +31,33 @@ const GridListList = ({ lists, showUser = true, showStats = true }: GridListList
             </div>
           </Link>
           {showUser && list.creator && (
-            <div className="px-4 py-2 bg-dark-3 flex items-center">
+            <Link to={`/profile/${list.creator.$id}`} className="px-4 py-2 bg-dark-3 flex items-center">
               <img
                 src={list.creator.imageUrl || "/assets/icons/profile-placeholder.svg"}
                 alt={`${list.creator.name}'s profile`}
                 className="w-8 h-8 rounded-full mr-2"
               />
               <p className="text-light-1">{list.creator.name}</p>
-            </div>
+            </Link>
           )}
           {showStats && (
             <div className="px-4 py-2 bg-dark-3 flex justify-between items-center">
-              <div className="flex items-center">
+              <Link to={`/lists/${list.$id}/likes`} className="flex items-center">
                 <img
                   src="/assets/icons/like.svg"
                   alt="Likes"
                   className="w-4 h-4 mr-1"
                 />
-                <p className="text-light-1">{list?.likes.length || 0}</p>
-              </div>
-              <div className="flex items-center">
+                <p className="text-light-1">{list?.likes?.length || 0}</p>
+              </Link>
+              <Link to={`/lists/${list.$id}/comments`} className="flex items-center">
                 <img
                   src="/assets/icons/comment.svg"
                   alt="Comments"
                   className="w-4 h-4 mr-1"
                 />
                 <p className="text-light-1">{list?.comments?.length || 0}</p>
-              </div>
+              </Link>
             </div>
           )}
         </div>

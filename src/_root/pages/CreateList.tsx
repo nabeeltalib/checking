@@ -2,12 +2,12 @@ import ListForm from "@/components/forms/ListForm";
 import { useCreateList } from "@/lib/react-query/queries";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { IList } from "@/types"; // Assuming you have a type defined for List
+import { IList } from "@/types";
 
 const CreateList = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { mutateAsync: createList, isLoading } = useCreateList();
+  const { mutate: createList, isLoading } = useCreateList();
 
   const handleCreateList = async (listData: IList) => {
     try {

@@ -1,61 +1,34 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { createComment, getComments } from "@/lib/appwrite/api";
+import { useGetComments, useCreateComment } from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
 import { Loader } from "@/components/shared";
-
-interface Comment {
-  $id: string;
-  listId: string;
-  userId: string;
-  content: string;
-  userName: string;
-  userImageUrl: string;
-}
 
 const Comments: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useUserContext();
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: comments, isLoading } = useGetComments(id!);
+  const { mutate: createComment } = useCreateComment();
   const [newComment, setNewComment] = useState("");
-
-  useEffect(() => {
-    const fetchComments = async () => {
-      try {
-        const fetchedComments = await getComments(id);
-        setComments(fetchedComments.documents);
-      } catch (error) {
-        console.error("Failed to fetch comments:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchComments();
-  }, [id]);
 
   const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newComment.trim() === "") return;
 
     try {
-      const comment = await createComment({
+      await createComment({
         listId: id!,
         userId: user.id,
         content: newComment,
       });
 
-      if (comment) {
-        setComments([comment, ...comments]);
-        setNewComment("");
-      }
+      setNewComment("");
     } catch (error) {
       console.error("Failed to create comment:", error);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return <Loader />;
   }
 
@@ -102,8 +75,8 @@ const Comments: React.FC = () => {
               </button>
             </form>
             <div>
-              {comments.length > 0 ? (
-                comments.map((comment) => (
+              {comments?.documents.length > 0 ? (
+                comments.documents.map((comment: any) => (
                   <div
                     key={comment.$id}
                     className="mb-4 p-4 border rounded-lg dark:border-zinc-700"

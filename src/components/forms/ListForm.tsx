@@ -98,7 +98,7 @@ const ListForm = ({ list, action }: ListFormProps) => {
     if (!newList) {
       toast({ title: `${action} list failed. Please try again.` });
     }
-    navigate("/");
+    navigate(`/lists/${newList.$id}`);
   };
 
   return (
@@ -155,7 +155,16 @@ const ListForm = ({ list, action }: ListFormProps) => {
                   className="w-full bg-dark-3 text-light-1 border-none"
                 />
               </FormControl>
-              <FormDescription>Enter items for your list</FormDescription>
+              <FormDescription>
+                Enter items for your list. You can also select from AI-powered suggestions:
+                <ul className="list-disc pl-5 mt-2">
+                  {aiSuggestions.map((suggestion, index) => (
+                    <li key={index} className="cursor-pointer" onClick={() => form.setValue('items', suggestion)}>
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
