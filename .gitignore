@@ -7,10 +7,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node modules and build directories
 node_modules
 dist
 dist-ssr
+build
+.cache
+
+# Local environment files
 *.local
+.env
+.env.local
+.env.*.local
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +30,51 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional prettier cache
+.prettiercache
+
+# Coverage directory used by testing tools
+coverage
+
+# Next.js build output
+.next
+
+# Gatsby files
+.cache/
+# Comment in the public line in if your project uses Gatsby and not Next.js
+# public
+
+# SvelteKit build directory
+.svelte-kit
+
+# Storybook build output
+.out
+
+# Nuxt.js build / generate output
+.nuxt
+output
+
+# Vue.js build / generate output
+.vuepress/dist
+
+# Optional REPL history
+node_repl_history
+
+# IDE files
+*.iml
+*.ipr
+*.iws
+
+# System files
+Thumbs.db
+Desktop.ini

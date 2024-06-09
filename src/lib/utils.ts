@@ -1,12 +1,15 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+// Merge Tailwind CSS classes
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+// Convert a file to a URL
 export const convertFileToUrl = (file: File) => URL.createObjectURL(file);
 
+// Format a date string into a more readable format
 export function formatDateString(dateString: string) {
   const options: Intl.DateTimeFormatOptions = {
     year: "numeric",
@@ -25,17 +28,16 @@ export function formatDateString(dateString: string) {
   return `${formattedDate} at ${time}`;
 }
 
-// 
+// Format a date string into a relative time string
 export const multiFormatDateString = (timestamp: string = ""): string => {
-  const timestampNum = Math.round(new Date(timestamp).getTime() / 1000);
-  const date: Date = new Date(timestampNum * 1000);
-  const now: Date = new Date();
+  const date = new Date(timestamp);
+  const now = new Date();
 
-  const diff: number = now.getTime() - date.getTime();
-  const diffInSeconds: number = diff / 1000;
-  const diffInMinutes: number = diffInSeconds / 60;
-  const diffInHours: number = diffInMinutes / 60;
-  const diffInDays: number = diffInHours / 24;
+  const diff = now.getTime() - date.getTime();
+  const diffInSeconds = diff / 1000;
+  const diffInMinutes = diffInSeconds / 60;
+  const diffInHours = diffInMinutes / 60;
+  const diffInDays = diffInHours / 24;
 
   switch (true) {
     case Math.floor(diffInDays) >= 30:
@@ -53,6 +55,23 @@ export const multiFormatDateString = (timestamp: string = ""): string => {
   }
 };
 
+// Check if a user has liked a list
 export const checkIsLiked = (likeList: string[], userId: string) => {
   return likeList.includes(userId);
+};
+
+// Validate email format
+export const isValidEmail = (email: string) => {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(email);
+};
+
+// Validate if a string is a valid URL
+export const isValidURL = (url: string) => {
+  try {
+    new URL(url);
+    return true;
+  } catch (_) {
+    return false;
+  }
 };

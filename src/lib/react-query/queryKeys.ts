@@ -7,14 +7,6 @@ export enum QUERY_KEYS {
   GET_USERS = "getUsers",
   GET_USER_BY_ID = "getUserById",
 
-  // POST KEYS
-  GET_POSTS = "getPosts",
-  GET_INFINITE_POSTS = "getInfinitePosts",
-  GET_RECENT_POSTS = "getRecentPosts",
-  GET_POST_BY_ID = "getPostById",
-  GET_USER_POSTS = "getUserPosts",
-  GET_FILE_PREVIEW = "getFilePreview",
-
   // LIST KEYS
   GET_LISTS = "getLists",
   GET_INFINITE_LISTS = "getInfiniteLists",
@@ -23,6 +15,14 @@ export enum QUERY_KEYS {
   GET_USER_LISTS = "getUserLists",
 
   // SEARCH KEYS
-  SEARCH_POSTS = "searchPosts",
   SEARCH_LISTS = "searchLists",
+
+  // COMMENT KEYS
+  GET_COMMENTS = "getComments",
+
+  // SUGGESTION KEYS
+  GET_SUGGESTIONS = "getSuggestions",
+
+  // COLLABORATION KEYS
+  GET_COLLABORATIONS = "getCollaborations",
 }

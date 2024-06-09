@@ -3,8 +3,8 @@ import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { ListValidation } from "@/lib/validation";
 import { Button } from "@/components/ui/button";
-import { zodResolver } from "@hookform/resolvers/zod"
-import {Models} from "appwrite"
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Models } from "appwrite";
 import {
   Form,
   FormControl,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/select";
 import { useCreateList, useUpdateList } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
+import axios from 'axios';
+import { useState, useEffect } from 'react';
 
 type ListFormProps = {
   list?: Models.Document;
@@ -37,11 +39,27 @@ type ListFormProps = {
 };
 
 const ListForm = ({ list, action }: ListFormProps) => {
-  // ... (form setup and queries)
   const { user } = useUserContext();
   const { toast } = useToast();
   const navigate = useNavigate();
-  //validation for the form
+
+  // AI-powered suggestions for tags and items
+  const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    // Fetch AI-powered suggestions for list items
+    axios.get('/api/lists/suggestions').then(response => {
+      setAiSuggestions(response.data);
+    });
+
+    // Fetch categories
+    axios.get('/api/categories').then(response => {
+      setCategories(response.data);
+    });
+  }, []);
+
+  // Validation schema for the form
   const formSchema = z.object({
     title: z.string().min(3).max(100),
     description: z.string().min(3).max(1000),
@@ -60,39 +78,25 @@ const ListForm = ({ list, action }: ListFormProps) => {
       tags: list?.tags || [],
     },
   });
-  
-     const { mutateAsync: createList, isLoading: isLoadingCreate } =
-       useCreateList();
-     const { mutateAsync: updateList, isLoading: isLoadingUpdate } =
-       useUpdateList();
+
+  const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList();
+  const { mutateAsync: updateList, isLoading: isLoadingUpdate } = useUpdateList();
 
   // Handler
   const handleSubmit = async (value: z.infer<typeof ListValidation>) => {
-    // ACTION = UPDATE
     if (list && action === "Update") {
-      const updatedList = await updateList({
-        ...value,
-        listId: list.$id,
-      });
+      const updatedList = await updateList({ ...value, listId: list.$id });
 
       if (!updatedList) {
-        toast({
-          title: `${action} list failed. Please try again.`,
-        });
+        toast({ title: `${action} list failed. Please try again.` });
       }
       return navigate(`/lists/${list.$id}`);
     }
 
-    // ACTION = CREATE
-    const newList = await createList({
-      ...value,
-      userId: user.id,
-    });
+    const newList = await createList({ ...value, userId: user.id });
 
     if (!newList) {
-      toast({
-        title: `${action} list failed. Please try again.`,
-      });
+      toast({ title: `${action} list failed. Please try again.` });
     }
     navigate("/");
   };
@@ -100,8 +104,6 @@ const ListForm = ({ list, action }: ListFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-        {/* ... (form fields as per the schema title description items category and tags) */}
-        {/* Form title and description */}
         <FormField
           control={form.control}
           name="title"
@@ -110,12 +112,12 @@ const ListForm = ({ list, action }: ListFormProps) => {
               <FormLabel>Post Title</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="shadcn"
+                  placeholder="Enter a title"
                   {...field}
                   className="w-full bg-dark-3 text-light-1 border-none"
                 />
               </FormControl>
-              <FormDescription> Enter a title for your list</FormDescription>
+              <FormDescription>Enter a title for your list</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -129,20 +131,17 @@ const ListForm = ({ list, action }: ListFormProps) => {
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Description"
+                  placeholder="Enter a description"
                   {...field}
                   className="w-full bg-dark-3 text-light-1 border-none"
                 />
               </FormControl>
-              <FormDescription>
-                Enter a description for your list
-              </FormDescription>
+              <FormDescription>Enter a description for your list</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* Form items */}
         <FormField
           control={form.control}
           name="items"
@@ -151,7 +150,7 @@ const ListForm = ({ list, action }: ListFormProps) => {
               <FormLabel>Items</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Items"
+                  placeholder="Enter items"
                   {...field}
                   className="w-full bg-dark-3 text-light-1 border-none"
                 />
@@ -162,7 +161,6 @@ const ListForm = ({ list, action }: ListFormProps) => {
           )}
         />
 
-        {/* Form category */}
         <FormField
           control={form.control}
           name="category"
@@ -171,32 +169,20 @@ const ListForm = ({ list, action }: ListFormProps) => {
               <FormLabel>Category</FormLabel>
               <FormControl>
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="w-[200px] text-black bg-dark-3 text-light-1 border-none">
-                    <SelectValue placeholder="Select a Category" />
+                  <SelectTrigger className="w-full bg-dark-3 text-light-1 border-none">
+                    <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
-                  <SelectContent className="text-black bg-dark-4 text-light-1 border-none">
-                    <SelectGroup>
-                      <SelectLabel className="-ml-6">
-                        Restaraunts & Food
-                      </SelectLabel>
-                      <SelectItem value="fastfood">Fast Food</SelectItem>
-                      <SelectItem value="finedining">Fine Dining</SelectItem>
-                      <SelectItem value="streetfood">Street Food</SelectItem>
-                    </SelectGroup>
-
-                    <SelectGroup>
-                      <SelectLabel className="-ml-6">Musicians</SelectLabel>
-                      <SelectItem value="singers">Singers</SelectItem>
-                      <SelectItem value="rappers">Rappers</SelectItem>
-                      <SelectItem value="bands">Bands</SelectItem>
-                    </SelectGroup>
-
-                    <SelectGroup>
-                      <SelectLabel className="-ml-6">Sneakers</SelectLabel>
-                      <SelectItem value="jordans">Jordans</SelectItem>
-                      <SelectItem value="nike">Nike</SelectItem>
-                      <SelectItem value="adidas">Adidas</SelectItem>
-                    </SelectGroup>
+                  <SelectContent className="bg-dark-4 text-light-1 border-none">
+                    {categories.map(category => (
+                      <SelectGroup key={category.id}>
+                        <SelectLabel>{category.name}</SelectLabel>
+                        {category.subcategories.map(subcategory => (
+                          <SelectItem key={subcategory.id} value={subcategory.name}>
+                            {subcategory.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
                   </SelectContent>
                 </Select>
               </FormControl>
@@ -206,7 +192,6 @@ const ListForm = ({ list, action }: ListFormProps) => {
           )}
         />
 
-        {/* Form tags */}
         <FormField
           control={form.control}
           name="tags"
@@ -215,9 +200,9 @@ const ListForm = ({ list, action }: ListFormProps) => {
               <FormLabel>Tags</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Tags"
+                  placeholder="Enter tags"
                   {...field}
-                  className="text-black bg-dark-3 text-light-1 border-none"
+                  className="w-full bg-dark-3 text-light-1 border-none"
                 />
               </FormControl>
               <FormDescription>Enter tags for your list</FormDescription>
@@ -225,8 +210,6 @@ const ListForm = ({ list, action }: ListFormProps) => {
             </FormItem>
           )}
         />
-
-        {/* Form checkbox */}
 
         <div className="flex gap-4 items-center justify-end">
           <Button

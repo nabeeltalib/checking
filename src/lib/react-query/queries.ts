@@ -1,10 +1,4 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  useInfiniteQuery,
-} from "@tanstack/react-query";
-
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 import {
   createUserAccount,
@@ -24,6 +18,14 @@ import {
   saveList,
   deleteSavedList,
   getUserById,
+  createComment,
+  getComments,
+  createSuggestion,
+  getSuggestions,
+  updateSuggestion,
+  createCollaboration,
+  getCollaborations,
+  updateCollaboration,
 } from "@/lib/appwrite/api";
 import { INewList, INewUser, IUpdateList, IUpdateUser } from "@/types";
 
@@ -39,8 +41,7 @@ export const useCreateUserAccount = () => {
 
 export const useSignInAccount = () => {
   return useMutation({
-    mutationFn: (user: { email: string; password: string }) =>
-      signInAccount(user),
+    mutationFn: (user: { email: string; password: string }) => signInAccount(user),
   });
 };
 
@@ -62,7 +63,6 @@ export const useGetLists = () => {
       if (lastPage && lastPage.documents.length === 0) {
         return null;
       }
-
       const lastId = lastPage.documents[lastPage.documents.length - 1].$id;
       return lastId;
     },
@@ -74,6 +74,19 @@ export const useSearchLists = (searchTerm: string) => {
     queryKey: [QUERY_KEYS.SEARCH_LISTS, searchTerm],
     queryFn: () => searchLists(searchTerm),
     enabled: !!searchTerm,
+  });
+};
+
+export const useGetInfiniteLists = () => {
+  return useInfiniteQuery({
+    queryKey: [QUERY_KEYS.GET_INFINITE_LISTS],
+    queryFn: ({ pageParam = 0 }) => getInfiniteLists({ pageParam }),
+    getNextPageParam: (lastPage) => {
+      if (lastPage && lastPage.documents.length === 0) {
+        return undefined;
+      }
+      return lastPage.documents[lastPage.documents.length - 1].$id;
+    },
   });
 };
 
@@ -166,8 +179,7 @@ export const useLikeList = () => {
 export const useSaveList = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, listId }: { userId: string; listId: string }) =>
-      saveList(userId, listId),
+    mutationFn: ({ userId, listId }: { userId: string; listId: string }) => saveList(userId, listId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_RECENT_LISTS],
@@ -236,6 +248,109 @@ export const useUpdateUser = () => {
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.$id],
+      });
+    },
+  });
+};
+
+// ============================================================
+// COMMENT QUERIES
+// ============================================================
+
+export const useCreateComment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (comment: { listId: string; userId: string; content: string }) => createComment(comment),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_COMMENTS],
+      });
+    },
+  });
+};
+
+export const useGetComments = (listId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_COMMENTS, listId],
+    queryFn: () => getComments(listId),
+    enabled: !!listId,
+  });
+};
+
+// ============================================================
+// SUGGESTION QUERIES
+// ============================================================
+
+export const useCreateSuggestion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (suggestion: {
+      listId: string;
+      userId: string;
+      suggestedTitle: string;
+      suggestedDescription: string;
+      suggestedItems: string[];
+      status: string;
+    }) => createSuggestion(suggestion),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_SUGGESTIONS],
+      });
+    },
+  });
+};
+
+export const useGetSuggestions = (listId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_SUGGESTIONS, listId],
+    queryFn: () => getSuggestions(listId),
+    enabled: !!listId,
+  });
+};
+
+export const useUpdateSuggestion = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ suggestionId, status }: { suggestionId: string; status: string }) => updateSuggestion(suggestionId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_SUGGESTIONS],
+      });
+    },
+  });
+};
+
+// ============================================================
+// COLLABORATION QUERIES
+// ============================================================
+
+export const useCreateCollaboration = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (collaboration: { listId: string; userId: string; status: string }) => createCollaboration(collaboration),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_COLLABORATIONS],
+      });
+    },
+  });
+};
+
+export const useGetCollaborations = (listId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_COLLABORATIONS, listId],
+    queryFn: () => getCollaborations(listId),
+    enabled: !!listId,
+  });
+};
+
+export const useUpdateCollaboration = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ collaborationId, status }: { collaborationId: string; status: string }) => updateCollaboration(collaborationId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_COLLABORATIONS],
       });
     },
   });

@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useMemo } from "react";
 
 import { IUser, IListItem } from "@/types";
 import { getCurrentUser, getUserLists } from "@/lib/appwrite/api";
 
-export const INITIAL_USER = {
+const INITIAL_USER: IUser = {
   id: "",
   name: "",
   username: "",
@@ -20,7 +20,7 @@ const INITIAL_STATE = {
   isAuthenticated: false,
   setUser: () => {},
   setIsAuthenticated: () => {},
-  checkAuthUser: async () => false as boolean,
+  checkAuthUser: async () => false,
 };
 
 type IContextType = {
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const checkAuthUser = async () => {
+  const checkAuthUser = async (): Promise<boolean> => {
     setIsLoading(true);
     try {
       const currentAccount = await getCurrentUser();
@@ -56,13 +56,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           curatedList: curatedList,
         });
         setIsAuthenticated(true);
-
         return true;
       }
-
       return false;
     } catch (error) {
-      console.error(error);
+      console.error("Error checking auth user:", error);
       return false;
     } finally {
       setIsLoading(false);
@@ -71,27 +69,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const cookieFallback = localStorage.getItem("cookieFallback");
-    if (
-      cookieFallback === "[]" ||
-      cookieFallback === null ||
-      cookieFallback === undefined
-    ) {
+    if (!cookieFallback || cookieFallback === "[]") {
       navigate("/sign-in");
+    } else {
+      checkAuthUser();
     }
+  }, [navigate]);
 
-    checkAuthUser();
-  }, []);
-
-  const value = {
-    user,
-    setUser,
-    isLoading,
-    isAuthenticated,
-    setIsAuthenticated,
-    checkAuthUser,
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      setUser,
+      isLoading,
+      isAuthenticated,
+      setIsAuthenticated,
+      checkAuthUser,
+    }),
+    [user, isLoading, isAuthenticated]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export const useUserContext = () => useContext(AuthContext);
+export const useUserContext = (): IContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useUserContext must be used within an AuthProvider");
+  }
+  return context;
+};

@@ -12,32 +12,35 @@ const Topbar = () => {
 
   useEffect(() => {
     if (isSuccess) navigate(0);
-  }, [isSuccess]);
+  }, [isSuccess, navigate]);
 
   return (
-    <section className="fixed top-0 left-0 right-0 z-50 mb-4 bg-black">
-      <div className="flex-between py-4 px-5">
-        <Link to="/" className="flex gap-3 items-center">
+    <section className="fixed top-0 left-0 right-0 z-50 bg-dark-1 shadow-md">
+      <div className="container mx-auto flex justify-between items-center py-4 px-5">
+        <Link to="/" className="flex items-center gap-3">
           <img
             src="/assets/images/logo.svg"
-            alt="logo"
+            alt="Topfived logo"
             width={130}
             height={325}
+            className="object-contain"
           />
         </Link>
 
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            className="shad-button_ghost"
-            onClick={() => signOut()}>
-            <img src="/assets/icons/logout.svg" alt="logout" />
+            className="shad-button_ghost p-2"
+            onClick={() => signOut()}
+            aria-label="Sign out"
+          >
+            <img src="/assets/icons/logout.svg" alt="Sign out" className="h-6 w-6" />
           </Button>
-          <Link to={`/profile/${user.id}`} className="flex-center gap-3">
+          <Link to={`/profile/${user.id}`} className="flex items-center gap-3">
             <img
               src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
-              alt="profile"
-              className="h-8 w-8 rounded-full"
+              alt={`${user.name}'s profile`}
+              className="h-8 w-8 rounded-full object-cover"
             />
           </Link>
         </div>

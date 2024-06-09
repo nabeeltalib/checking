@@ -1,12 +1,62 @@
-import { ID, Query } from "appwrite";
-import { appwriteConfig, account, databases, storage, avatars } from "./config";
+import { Client, Account, Databases, Storage, Avatars, ID, Query } from "appwrite";
 import { IUpdateList, INewList, INewUser, IUpdateUser, IListItem } from "@/types";
+
+// Ensure environment variables are defined
+const {
+  VITE_APPWRITE_URL,
+  VITE_APPWRITE_PROJECT_ID,
+  VITE_APPWRITE_DATABASE_ID,
+  VITE_APPWRITE_STORAGE_ID,
+  VITE_APPWRITE_USER_COLLECTION_ID,
+  VITE_APPWRITE_LIST_COLLECTION_ID,
+  VITE_APPWRITE_SAVES_COLLECTION_ID,
+  VITE_APPWRITE_COMMENT_COLLECTION_ID,
+  VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
+  VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
+} = import.meta.env;
+
+if (
+  !VITE_APPWRITE_URL ||
+  !VITE_APPWRITE_PROJECT_ID ||
+  !VITE_APPWRITE_DATABASE_ID ||
+  !VITE_APPWRITE_STORAGE_ID ||
+  !VITE_APPWRITE_USER_COLLECTION_ID ||
+  !VITE_APPWRITE_LIST_COLLECTION_ID ||
+  !VITE_APPWRITE_SAVES_COLLECTION_ID ||
+  !VITE_APPWRITE_COMMENT_COLLECTION_ID ||
+  !VITE_APPWRITE_SUGGESTION_COLLECTION_ID ||
+  !VITE_APPWRITE_COLLABORATION_COLLECTION_ID
+) {
+  throw new Error("Missing Appwrite environment variables");
+}
+
+export const appwriteConfig = {
+  url: VITE_APPWRITE_URL,
+  projectId: VITE_APPWRITE_PROJECT_ID,
+  databaseId: VITE_APPWRITE_DATABASE_ID,
+  storageId: VITE_APPWRITE_STORAGE_ID,
+  userCollectionId: VITE_APPWRITE_USER_COLLECTION_ID,
+  listCollectionId: VITE_APPWRITE_LIST_COLLECTION_ID,
+  savesCollectionId: VITE_APPWRITE_SAVES_COLLECTION_ID,
+  commentCollectionId: VITE_APPWRITE_COMMENT_COLLECTION_ID,
+  suggestionCollectionId: VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
+  collaborationCollectionId: VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
+};
+
+const client = new Client();
+
+client.setEndpoint(appwriteConfig.url);
+client.setProject(appwriteConfig.projectId);
+
+export const account = new Account(client);
+export const databases = new Databases(client);
+export const storage = new Storage(client);
+export const avatars = new Avatars(client);
 
 // ============================================================
 // AUTH
 // ============================================================
 
-// ============================== SIGN UP
 export async function createUserAccount(user: INewUser) {
   try {
     const newAccount = await account.create(
@@ -30,12 +80,11 @@ export async function createUserAccount(user: INewUser) {
 
     return newUser;
   } catch (error) {
-    console.log(error);
+    console.error("Error creating user account:", error);
     return null;
   }
 }
 
-// ============================== SAVE USER TO DB
 export async function saveUserToDB(user: {
   accountId: string;
   email: string;
@@ -53,40 +102,31 @@ export async function saveUserToDB(user: {
 
     return newUser;
   } catch (error) {
-    console.log(error);
+    console.error("Error saving user to database:", error);
     return null;
   }
 }
 
-// ============================== SIGN IN
 export async function signInAccount(user: { email: string; password: string }) {
   try {
-    const session = await account.createEmailPasswordSession(
-      user.email, 
-      user.password 
-    );
-    console.log('session', session);
-
+    const session = await account.createEmailPasswordSession(user.email, user.password);
     return session;
   } catch (error) {
-    console.log(error);
+    console.error("Error signing in account:", error);
     return null;
   }
 }
 
-// ============================== GET ACCOUNT
 export async function getAccount() {
   try {
     const currentAccount = await account.get();
-
     return currentAccount;
   } catch (error) {
-    console.log(error);
+    console.error("Error getting account:", error);
     return null;
   }
 }
 
-// ============================== GET USER
 export async function getCurrentUser() {
   try {
     const currentAccount = await getAccount();
@@ -98,28 +138,26 @@ export async function getCurrentUser() {
       appwriteConfig.userCollectionId,
       [Query.equal("accountId", currentAccount.$id)]
     );
-    console.log('currentUser', currentUser);
+
     if (!currentUser || currentUser.total === 0) throw new Error("User not found");
 
     return currentUser.documents[0];
   } catch (error) {
-    console.log(error);
+    console.error("Error getting current user:", error);
     return null;
   }
 }
 
-// ============================== SIGN OUT
 export async function signOutAccount() {
   try {
     const session = await account.deleteSession("current");
-
     return session;
   } catch (error) {
-    console.log(error);
+    console.error("Error signing out account:", error);
     return null;
   }
 }
-// ============================== UPLOAD FILE
+
 export async function uploadFile(file: File) {
   try {
     const uploadedFile = await storage.createFile(
@@ -130,12 +168,11 @@ export async function uploadFile(file: File) {
 
     return uploadedFile;
   } catch (error) {
-    console.log(error);
+    console.error("Error uploading file:", error);
     return null;
   }
 }
 
-// ============================== GET FILE URL
 export function getFilePreview(fileId: string) {
   try {
     const fileUrl = storage.getFilePreview(
@@ -151,36 +188,30 @@ export function getFilePreview(fileId: string) {
 
     return fileUrl;
   } catch (error) {
-    console.log(error);
+    console.error("Error getting file preview:", error);
     return null;
   }
 }
 
-// ============================== DELETE FILE
 export async function deleteFile(fileId: string) {
   try {
     await storage.deleteFile(appwriteConfig.storageId, fileId);
-
     return { status: "ok" };
   } catch (error) {
-    console.log(error);
+    console.error("Error deleting file:", error);
     return null;
   }
 }
+
 // ============================================================
 // LISTS
 // ============================================================
 
-// ============================== CREATE LIST
-
 export async function createList(list: INewList) {
   try {
-    // Convert tags into array
     const tags = list.tags?.replace(/ /g, "").split(",") || [];
-    //convert list items from string to array
     const items = list.items?.replace(/ /g, "").split(",") || [];
-    console.log('list response', list);
-    // Create list
+    
     const newList = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
@@ -193,6 +224,7 @@ export async function createList(list: INewList) {
         tags: tags,
         bookmark_count: 0,
         shares_count: 0,
+        views: 0,
       }
     );
 
@@ -202,12 +234,11 @@ export async function createList(list: INewList) {
 
     return newList;
   } catch (error) {
-    console.log(error);
+    console.error("Error creating list:", error);
     return null;
   }
 }
 
-// ============================== GET LISTS
 export async function searchLists(searchTerm: string) {
   try {
     const lists = await databases.listDocuments(
@@ -220,7 +251,7 @@ export async function searchLists(searchTerm: string) {
 
     return lists;
   } catch (error) {
-    console.log(error);
+    console.error("Error searching lists:", error);
     return null;
   }
 }
@@ -243,12 +274,11 @@ export async function getInfiniteLists({ pageParam }: { pageParam: number }) {
 
     return lists;
   } catch (error) {
-    console.log(error);
+    console.error("Error getting infinite lists:", error);
     return null;
   }
 }
 
-// ============================== GET LIST BY ID
 export async function getListById(listId?: string) {
   if (!listId) throw new Error("List ID is required");
 
@@ -263,18 +293,15 @@ export async function getListById(listId?: string) {
 
     return list;
   } catch (error) {
-    console.log(error);
+    console.error("Error getting list by ID:", error);
     return null;
   }
 }
 
-// ============================== UPDATE LIST
 export async function updateList(list: IUpdateList) {
   try {
-    // Convert tags into array
     const tags = list.tags?.replace(/ /g, "").split(",") || [];
 
-    //  Update list
     const updatedList = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
@@ -293,12 +320,11 @@ export async function updateList(list: IUpdateList) {
 
     return updatedList;
   } catch (error) {
-    console.log(error);
+    console.error("Error updating list:", error);
     return null;
   }
 }
 
-// ============================== DELETE LIST
 export async function deleteList(listId?: string) {
   if (!listId) return;
   try {
@@ -312,12 +338,11 @@ export async function deleteList(listId?: string) {
 
     return { status: "Ok" };
   } catch (error) {
-    console.log(error);
+    console.error("Error deleting list:", error);
     return null;
   }
 }
 
-// ============================== LIKE / UNLIKE LIST
 export async function likeList(listId: string, likesArray: string[]) {
   try {
     const updatedList = await databases.updateDocument(
@@ -333,12 +358,11 @@ export async function likeList(listId: string, likesArray: string[]) {
 
     return updatedList;
   } catch (error) {
-    console.log(error);
+    console.error("Error liking list:", error);
     return null;
   }
 }
 
-// ============================== SAVE LIST
 export async function saveList(userId: string, listId: string) {
   try {
     const updatedList = await databases.createDocument(
@@ -355,12 +379,11 @@ export async function saveList(userId: string, listId: string) {
 
     return updatedList;
   } catch (error) {
-    console.log(error);
+    console.error("Error saving list:", error);
     return null;
   }
 }
 
-// ============================== DELETE SAVED LIST
 export async function deleteSavedList(savedRecordId: string) {
   try {
     const statusCode = await databases.deleteDocument(
@@ -373,12 +396,11 @@ export async function deleteSavedList(savedRecordId: string) {
 
     return { status: "Ok" };
   } catch (error) {
-    console.log(error);
+    console.error("Error deleting saved list:", error);
     return null;
   }
 }
 
-// ============================== GET USER'S LISTS
 export async function getUserLists(userId?: string) {
   if (!userId) return;
 
@@ -393,12 +415,11 @@ export async function getUserLists(userId?: string) {
 
     return lists;
   } catch (error) {
-    console.log(error);
+    console.error("Error getting user lists:", error);
     return null;
   }
 }
 
-// ============================== GET RECENT LISTS
 export async function getRecentLists() {
   try {
     const lists = await databases.listDocuments(
@@ -411,11 +432,11 @@ export async function getRecentLists() {
 
     return lists;
   } catch (error) {
-    console.log(error);
+    console.error("Error getting recent lists:", error);
     return null;
   }
 }
-// ============================== GET CURATED LIST
+
 export async function getCuratedList(userId: string): Promise<IListItem[]> {
   try {
     const lists = await databases.listDocuments(
@@ -426,12 +447,10 @@ export async function getCuratedList(userId: string): Promise<IListItem[]> {
 
     if (!lists) throw new Error("No curated list found for user");
 
-    // Extract the list items from the fetched lists
     const curatedList = lists.documents.map((list) => ({
       id: list.$id,
       title: list.title,
       description: list.description,
-      // Add other properties specific to list items
     }));
 
     return curatedList;
@@ -445,7 +464,6 @@ export async function getCuratedList(userId: string): Promise<IListItem[]> {
 // USER
 // ============================================================
 
-// ============================== GET USERS
 export async function getUsers(limit?: number) {
   const queries: any[] = [Query.orderDesc("$createdAt")];
 
@@ -464,12 +482,11 @@ export async function getUsers(limit?: number) {
 
     return users;
   } catch (error) {
-    console.log(error);
+    console.error("Error getting users:", error);
     return null;
   }
 }
 
-// ============================== GET USER BY ID
 export async function getUserById(userId: string) {
   try {
     const user = await databases.getDocument(
@@ -482,12 +499,11 @@ export async function getUserById(userId: string) {
 
     return user;
   } catch (error) {
-    console.log(error);
+    console.error("Error getting user by ID:", error);
     return null;
   }
 }
 
-// ============================== UPDATE USER
 export async function updateUser(user: IUpdateUser) {
   const hasFileToUpdate = user.file.length > 0;
   try {
@@ -497,11 +513,9 @@ export async function updateUser(user: IUpdateUser) {
     };
 
     if (hasFileToUpdate) {
-      // Upload new file to appwrite storage
       const uploadedFile = await uploadFile(user.file[0]);
       if (!uploadedFile) throw new Error("Failed to upload file");
 
-      // Get new file url
       const fileUrl = getFilePreview(uploadedFile.$id);
       if (!fileUrl) {
         await deleteFile(uploadedFile.$id);
@@ -511,7 +525,6 @@ export async function updateUser(user: IUpdateUser) {
       image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
     }
 
-    //  Update user
     const updatedUser = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
@@ -524,24 +537,214 @@ export async function updateUser(user: IUpdateUser) {
       }
     );
 
-    // Failed to update
     if (!updatedUser) {
-      // Delete new file that has been recently uploaded
       if (hasFileToUpdate) {
         await deleteFile(image.imageId);
       }
-      // If no new file uploaded, just throw error
       throw new Error("Failed to update user");
     }
 
-    // Safely delete old file after successful update
     if (user.imageId && hasFileToUpdate) {
       await deleteFile(user.imageId);
     }
 
     return updatedUser;
   } catch (error) {
-    console.log(error);
+    console.error("Error updating user:", error);
+    return null;
+  }
+}
+
+// ============================================================
+// COMMENTS
+// ============================================================
+
+export async function createComment(comment: {
+  listId: string;
+  userId: string;
+  content: string;
+}) {
+  try {
+    const newComment = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      ID.unique(),
+      {
+        listId: comment.listId,
+        userId: comment.userId,
+        content: comment.content,
+        createdAt: new Date().toISOString(),
+      }
+    );
+
+    if (!newComment) {
+      throw new Error("Failed to create comment");
+    }
+
+    return newComment;
+  } catch (error) {
+    console.error("Error creating comment:", error);
+    return null;
+  }
+}
+
+export async function getComments(listId: string) {
+  try {
+    const comments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      [Query.equal("listId", listId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!comments) throw new Error("No comments found");
+
+    return comments;
+  } catch (error) {
+    console.error("Error getting comments:", error);
+    return null;
+  }
+}
+
+// ============================================================
+// SUGGESTIONS
+// ============================================================
+
+export async function createSuggestion(suggestion: {
+  listId: string;
+  userId: string;
+  suggestedTitle: string;
+  suggestedDescription: string;
+  suggestedItems: string[];
+  status: string;
+}) {
+  try {
+    const newSuggestion = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.suggestionCollectionId,
+      ID.unique(),
+      {
+        listId: suggestion.listId,
+        userId: suggestion.userId,
+        suggestedTitle: suggestion.suggestedTitle,
+        suggestedDescription: suggestion.suggestedDescription,
+        suggestedItems: suggestion.suggestedItems,
+        status: suggestion.status,
+      }
+    );
+
+    if (!newSuggestion) {
+      throw new Error("Failed to create suggestion");
+    }
+
+    return newSuggestion;
+  } catch (error) {
+    console.error("Error creating suggestion:", error);
+    return null;
+  }
+}
+
+export async function getSuggestions(listId: string) {
+  try {
+    const suggestions = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.suggestionCollectionId,
+      [Query.equal("listId", listId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!suggestions) throw new Error("No suggestions found");
+
+    return suggestions;
+  } catch (error) {
+    console.error("Error getting suggestions:", error);
+    return null;
+  }
+}
+
+export async function updateSuggestion(suggestionId: string, status: string) {
+  try {
+    const updatedSuggestion = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.suggestionCollectionId,
+      suggestionId,
+      { status: status }
+    );
+
+    if (!updatedSuggestion) {
+      throw new Error("Failed to update suggestion");
+    }
+
+    return updatedSuggestion;
+  } catch (error) {
+    console.error("Error updating suggestion:", error);
+    return null;
+  }
+}
+
+// ============================================================
+// COLLABORATIONS
+// ============================================================
+
+export async function createCollaboration(collaboration: {
+  listId: string;
+  userId: string;
+  status: string;
+}) {
+  try {
+    const newCollaboration = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.collaborationCollectionId,
+      ID.unique(),
+      {
+        listId: collaboration.listId,
+        userId: collaboration.userId,
+        status: collaboration.status,
+      }
+    );
+
+    if (!newCollaboration) {
+      throw new Error("Failed to create collaboration");
+    }
+
+    return newCollaboration;
+  } catch (error) {
+    console.error("Error creating collaboration:", error);
+    return null;
+  }
+}
+
+export async function getCollaborations(listId: string) {
+  try {
+    const collaborations = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.collaborationCollectionId,
+      [Query.equal("listId", listId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!collaborations) throw new Error("No collaborations found");
+
+    return collaborations;
+  } catch (error) {
+    console.error("Error getting collaborations:", error);
+    return null;
+  }
+}
+
+export async function updateCollaboration(collaborationId: string, status: string) {
+  try {
+    const updatedCollaboration = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.collaborationCollectionId,
+      collaborationId,
+      { status: status }
+    );
+
+    if (!updatedCollaboration) {
+      throw new Error("Failed to update collaboration");
+    }
+
+    return updatedCollaboration;
+  } catch (error) {
+    console.error("Error updating collaboration:", error);
     return null;
   }
 }

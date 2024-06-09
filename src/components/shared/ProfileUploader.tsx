@@ -18,7 +18,7 @@ const ProfileUploader = ({ fieldChange, mediaUrl }: ProfileUploaderProps) => {
       fieldChange(acceptedFiles);
       setFileUrl(convertFileToUrl(acceptedFiles[0]));
     },
-    [file]
+    [fieldChange]
   );
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -29,16 +29,16 @@ const ProfileUploader = ({ fieldChange, mediaUrl }: ProfileUploaderProps) => {
   });
 
   return (
-    <div {...getRootProps()}>
-      <input {...getInputProps()} className="cursor-pointer" />
+    <div {...getRootProps()} className="cursor-pointer flex-center gap-4">
+      <input {...getInputProps()} className="hidden" />
 
       <div className="cursor-pointer flex-center gap-4">
         <img
           src={fileUrl || "/assets/icons/profile-placeholder.svg"}
-          alt="image"
+          alt="Profile"
           className="h-24 w-24 rounded-full object-cover object-top"
         />
-        <p className="text-primary-500 small-regular md:bbase-semibold">
+        <p className="text-primary-500 small-regular md:base-semibold">
           Change profile photo
         </p>
       </div>

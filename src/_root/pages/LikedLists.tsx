@@ -3,21 +3,31 @@ import { useGetCurrentUser } from "@/lib/react-query/queries";
 import GridListList from "@/components/shared/GridListList";
 
 const LikedLists = () => {
-  const { data: currentUser } = useGetCurrentUser();
+  const { data: currentUser, isLoading } = useGetCurrentUser();
 
-  if (!currentUser)
+  if (isLoading) {
     return (
       <div className="flex-center w-full h-full">
         <Loader />
       </div>
     );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="flex-center w-full h-full">
+        <p className="text-light-4">User not found</p>
+      </div>
+    );
+  }
+
   return (
     <>
-      {currentUser.liked.length === 0 && (
+      {currentUser.liked.length === 0 ? (
         <p className="text-light-4">No liked lists</p>
+      ) : (
+        <GridListList lists={currentUser.liked} showStats={false} />
       )}
-
-      <GridListList lists={currentUser.liked} showStats={false} />
     </>
   );
 };

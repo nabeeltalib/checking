@@ -1,16 +1,47 @@
 import { Client, Account, Databases, Storage, Avatars } from "appwrite";
 
+const {
+  VITE_APPWRITE_URL,
+  VITE_APPWRITE_PROJECT_ID,
+  VITE_APPWRITE_DATABASE_ID,
+  VITE_APPWRITE_STORAGE_ID,
+  VITE_APPWRITE_USER_COLLECTION_ID,
+  VITE_APPWRITE_LIST_COLLECTION_ID,
+  VITE_APPWRITE_SAVES_COLLECTION_ID,
+  VITE_APPWRITE_COMMENT_COLLECTION_ID,
+  VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
+  VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
+} = import.meta.env;
+
+if (
+  !VITE_APPWRITE_URL ||
+  !VITE_APPWRITE_PROJECT_ID ||
+  !VITE_APPWRITE_DATABASE_ID ||
+  !VITE_APPWRITE_STORAGE_ID ||
+  !VITE_APPWRITE_USER_COLLECTION_ID ||
+  !VITE_APPWRITE_LIST_COLLECTION_ID ||
+  !VITE_APPWRITE_SAVES_COLLECTION_ID ||
+  !VITE_APPWRITE_COMMENT_COLLECTION_ID ||
+  !VITE_APPWRITE_SUGGESTION_COLLECTION_ID ||
+  !VITE_APPWRITE_COLLABORATION_COLLECTION_ID
+) {
+  throw new Error("Missing Appwrite environment variables");
+}
+
 export const appwriteConfig = {
-  url: import.meta.env.VITE_APPWRITE_URL,
-  projectId: import.meta.env.VITE_APPWRITE_PROJECT_ID,
-  databaseId: import.meta.env.VITE_APPWRITE_DATABASE_ID,
-  storageId: import.meta.env.VITE_APPWRITE_STORAGE_ID,
-  userCollectionId: import.meta.env.VITE_APPWRITE_USER_COLLECTION_ID,
-  listCollectionId: import.meta.env.VITE_APPWRITE_LIST_COLLECTION_ID,
-  savesCollectionId: import.meta.env.VITE_APPWRITE_SAVES_COLLECTION_ID,
+  url: VITE_APPWRITE_URL,
+  projectId: VITE_APPWRITE_PROJECT_ID,
+  databaseId: VITE_APPWRITE_DATABASE_ID,
+  storageId: VITE_APPWRITE_STORAGE_ID,
+  userCollectionId: VITE_APPWRITE_USER_COLLECTION_ID,
+  listCollectionId: VITE_APPWRITE_LIST_COLLECTION_ID,
+  savesCollectionId: VITE_APPWRITE_SAVES_COLLECTION_ID,
+  commentCollectionId: VITE_APPWRITE_COMMENT_COLLECTION_ID,
+  suggestionCollectionId: VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
+  collaborationCollectionId: VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
 };
 
-export const client = new Client();
+const client = new Client();
 
 client.setEndpoint(appwriteConfig.url);
 client.setProject(appwriteConfig.projectId);

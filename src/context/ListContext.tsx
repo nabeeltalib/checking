@@ -1,18 +1,20 @@
 // src/context/ListContext.tsx
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { IList } from '@/types';
 import { getRecentLists } from '@/lib/appwrite/api';
+import { QUERY_KEYS } from '@/lib/react-query/queryKeys';
 
 interface ListContextProps {
   lists: IList[];
-  setLists: React.Dispatch<React.SetStateAction<IList[]>>;
-  fetchLists: () => Promise<void>;
+  isLoading: boolean;
+  refetch: () => void;
 }
 
 const ListContext = createContext<ListContextProps | undefined>(undefined);
 
-export const useListContext = () => {
+export const useListContext = (): ListContextProps => {
   const context = useContext(ListContext);
   if (!context) {
     throw new Error('useListContext must be used within a ListProvider');
@@ -20,27 +22,15 @@ export const useListContext = () => {
   return context;
 };
 
-export const ListProvider: React.FC = ({ children }) => {
-  const [lists, setLists] = useState<IList[]>([]);
+export const ListProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { data: lists = [], isLoading, refetch } = useQuery([QUERY_KEYS.GET_RECENT_LISTS], getRecentLists, {
+    refetchOnWindowFocus: false,
+  });
 
-  const fetchLists = async () => {
-    try {
-      const fetchedLists = await getRecentLists();
-      setLists(fetchedLists);
-    } catch (error) {
-      console.error('Failed to fetch lists:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchLists();
-  }, []);
-
-  const value: ListContextProps = {
-    lists,
-    setLists,
-    fetchLists,
-  };
+  const value = useMemo(
+    () => ({ lists, isLoading, refetch }),
+    [lists, isLoading, refetch]
+  );
 
   return <ListContext.Provider value={value}>{children}</ListContext.Provider>;
 };

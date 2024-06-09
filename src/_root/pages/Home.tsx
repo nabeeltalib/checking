@@ -1,8 +1,9 @@
 import { Models } from "appwrite";
 import { Link } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
+import { useGetRecentLists } from "@/lib/react-query/queries";
+import { Loader } from "@/components/shared";
 
-import {useGetRecentLists} from "@/lib/react-query/queries";
 type ListCardProps = {
   list: Models.Document;
 };
@@ -11,23 +12,19 @@ const ListCard = ({ list }: ListCardProps) => {
   if (!list) {
     return null;
   }
-  console.log(list);
+
   return (
     <div className="flex flex-col border border-gray-200 p-4 rounded-lg w-full mx-auto">
-      {/* creator img,name */}
       <div className="flex flex-row items-center gap-2 mb-2">
         <img
-          src={list.creator.imageUrl}
+          src={list.creator.imageUrl || "/assets/icons/profile-placeholder.svg"}
           alt={list.creator.name}
           className="rounded-full w-8 h-8"
         />
         <div className="flex flex-col gap-1">
-          <p className="text-sm text-gray-500 font-light">
-            {" "}
-            {list.creator.name}
-          </p>
-          <p className="text-xs text-gray-400 font-light"> 
-           {new Date(list.$createdAt).toLocaleDateString()}
+          <p className="text-sm text-gray-500 font-light">{list.creator.name}</p>
+          <p className="text-xs text-gray-400 font-light">
+            {new Date(list.$createdAt).toLocaleDateString()}
           </p>
         </div>
       </div>
@@ -56,18 +53,25 @@ const ListCard = ({ list }: ListCardProps) => {
 
 const Home = () => {
   const { user, isLoading } = useUserContext();
-  const { data: recentLists } = useGetRecentLists();
-  if (isLoading) {
-    return <div>Loading...</div>;
+  const { data: recentLists, isLoading: isListsLoading } = useGetRecentLists();
+
+  if (isLoading || isListsLoading) {
+    return (
+      <div className="flex-center w-full h-full">
+        <Loader />
+      </div>
+    );
   }
+
   if (!recentLists) {
     return <div>No lists found</div>;
   }
+
   return (
     <div className="flex flex-col gap-4 p-4 w-full items-center">
       <h1>Home</h1>
       <p>Welcome, {user.name}</p>
-      <div className="flex flex-col gap-4 max-w-5xl w-full gap-4">
+      <div className="flex flex-col gap-4 max-w-5xl w-full">
         {recentLists.documents.map((list: any) => (
           <ListCard key={list.$id} list={list} />
         ))}
@@ -75,4 +79,5 @@ const Home = () => {
     </div>
   );
 };
+
 export default Home;

@@ -2,6 +2,7 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState, useCallback } from "react";
 
 import {
   Form,
@@ -35,43 +36,66 @@ const UpdateProfile = () => {
     },
   });
 
-  // Queries
-  const { data: currentUser } = useGetUserById(id || "");
-  const { mutateAsync: updateUser, isLoading: isLoadingUpdate } =
-    useUpdateUser();
+  const { data: currentUser, isLoading: isLoadingUser } = useGetUserById(id || "");
+  const { mutateAsync: updateUser, isLoading: isLoadingUpdate } = useUpdateUser();
 
-  if (!currentUser)
+  useEffect(() => {
+    if (currentUser) {
+      form.reset({
+        file: [],
+        name: currentUser.name,
+        username: currentUser.username,
+        email: currentUser.email,
+        bio: currentUser.bio || "",
+      });
+    }
+  }, [currentUser, form]);
+
+  const handleUpdate = useCallback(
+    async (value: z.infer<typeof ProfileValidation>) => {
+      try {
+        const updatedUser = await updateUser({
+          userId: currentUser.$id,
+          name: value.name,
+          bio: value.bio,
+          file: value.file,
+          imageUrl: currentUser.imageUrl,
+          imageId: currentUser.imageId,
+        });
+
+        if (!updatedUser) {
+          throw new Error('Update user failed. Please try again.');
+        }
+
+        setUser({
+          ...user,
+          name: updatedUser.name,
+          bio: updatedUser.bio,
+          imageUrl: updatedUser.imageUrl,
+        });
+        navigate(`/profile/${id}`);
+      } catch (error) {
+        toast({ title: error.message });
+      }
+    },
+    [currentUser, updateUser, setUser, user, navigate, toast, id]
+  );
+
+  if (isLoadingUser) {
     return (
       <div className="flex-center w-full h-full">
         <Loader />
       </div>
     );
+  }
 
-  // Handler
-  const handleUpdate = async (value: z.infer<typeof ProfileValidation>) => {
-    const updatedUser = await updateUser({
-      userId: currentUser.$id,
-      name: value.name,
-      bio: value.bio,
-      file: value.file,
-      imageUrl: currentUser.imageUrl,
-      imageId: currentUser.imageId,
-    });
-
-    if (!updatedUser) {
-      toast({
-        title: `Update user failed. Please try again.`,
-      });
-    }
-
-    setUser({
-      ...user,
-      name: updatedUser?.name,
-      bio: updatedUser?.bio,
-      imageUrl: updatedUser?.imageUrl,
-    });
-    return navigate(`/profile/${id}`);
-  };
+  if (!currentUser) {
+    return (
+      <div className="flex-center w-full h-full">
+        <p>User not found.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1">
@@ -114,7 +138,12 @@ const UpdateProfile = () => {
                 <FormItem>
                   <FormLabel className="shad-form_label">Name</FormLabel>
                   <FormControl>
-                    <Input type="text" className="shad-input" {...field} />
+                    <Input
+                      type="text"
+                      className="shad-input"
+                      {...field}
+                      aria-label="Name"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -133,6 +162,7 @@ const UpdateProfile = () => {
                       className="shad-input"
                       {...field}
                       disabled
+                      aria-label="Username"
                     />
                   </FormControl>
                   <FormMessage />
@@ -152,6 +182,7 @@ const UpdateProfile = () => {
                       className="shad-input"
                       {...field}
                       disabled
+                      aria-label="Email"
                     />
                   </FormControl>
                   <FormMessage />
@@ -169,6 +200,7 @@ const UpdateProfile = () => {
                     <Textarea
                       className="shad-textarea custom-scrollbar"
                       {...field}
+                      aria-label="Bio"
                     />
                   </FormControl>
                   <FormMessage className="shad-form_message" />
@@ -180,13 +212,15 @@ const UpdateProfile = () => {
               <Button
                 type="button"
                 className="shad-button_dark_4"
-                onClick={() => navigate(-1)}>
+                onClick={() => navigate(-1)}
+                aria-label="Cancel">
                 Cancel
               </Button>
               <Button
                 type="submit"
                 className="shad-button_primary whitespace-nowrap"
-                disabled={isLoadingUpdate}>
+                disabled={isLoadingUpdate}
+                aria-label="Update Profile">
                 {isLoadingUpdate && <Loader />}
                 Update Profile
               </Button>

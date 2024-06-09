@@ -37,9 +37,7 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
     setIsSaved(!!savedListRecord);
   }, [savedListRecord]);
 
-  const handleLikeList = (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>
-  ) => {
+  const handleLikeList = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
     e.stopPropagation();
 
     let likesArray = [...likes];
@@ -54,9 +52,7 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
     likeList({ listId: list.$id, likesArray });
   };
 
-  const handleSaveList = (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
+  const handleSaveList = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.stopPropagation();
 
     if (savedListRecord) {
@@ -68,50 +64,44 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
     setIsSaved(true);
   };
 
-  const containerStyles = location.pathname.startsWith("/profile")
-    ? "w-full"
-    : "";
+  const containerStyles = location.pathname.startsWith("/profile") ? "w-full" : "";
 
   return (
-    <div
-      className={`flex flex-row flex-wrap w-full items-center z-20 gap-3  ${containerStyles}`}>
-        <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
-          <img
-            src={`${
-              checkIsLiked(likes, userId)
-                ? "/assets/icons/liked.svg"
-                : "/assets/icons/like.svg"
-            }`}
-            alt="like"
-            width={20}
-            height={20}
-            onClick={(e) => handleLikeList(e)}
-            className="cursor-pointer"
-          />
-          <p className="small-medium lg:base-medium">{likes.length} Likes</p>
-        </Button>
-        <Button
-          className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg"
-          onClick={(e) => handleSaveList(e)}>
-          <img
-            src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
-            alt="share"
-            width={20}
-            height={20}
-            className="cursor-pointer"
-          />
-          <p className="small-medium lg:base-medium">
-            {isSaved ? "Saved" : "Save"}
-          </p>
-        </Button>
-        <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
-          <img src="/assets/icons/share.svg" alt="share" />
-          Share
-        </Button>
-        <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
-          <img src="/assets/icons/chat.svg" alt="collaborate" />
-          Collaborate
-        </Button>
+    <div className={`flex flex-row flex-wrap w-full items-center z-20 gap-3 ${containerStyles}`}>
+      <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+        <img
+          src={checkIsLiked(likes, userId) ? "/assets/icons/liked.svg" : "/assets/icons/like.svg"}
+          alt="like"
+          width={20}
+          height={20}
+          onClick={handleLikeList}
+          className="cursor-pointer"
+        />
+        <p className="small-medium lg:base-medium">{likes.length} Likes</p>
+      </Button>
+      <Button
+        className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg"
+        onClick={handleSaveList}
+      >
+        <img
+          src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
+          alt="save"
+          width={20}
+          height={20}
+          className="cursor-pointer"
+        />
+        <p className="small-medium lg:base-medium">
+          {isSaved ? "Saved" : "Save"}
+        </p>
+      </Button>
+      <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+        <img src="/assets/icons/share.svg" alt="share" width={20} height={20} />
+        <p className="small-medium lg:base-medium">Share</p>
+      </Button>
+      <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+        <img src="/assets/icons/chat.svg" alt="collaborate" width={20} height={20} />
+        <p className="small-medium lg:base-medium">Collaborate</p>
+      </Button>
     </div>
   );
 };

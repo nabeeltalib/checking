@@ -7,18 +7,22 @@ import RightSidebar from "@/components/shared/RightSidebar";
 
 const RootLayout = () => {
   return (
-    <div className="w-full md:flex pt-16">
+    <div className="flex flex-col md:flex-row w-full pt-16">
       <Topbar />
-      <div className="md:flex hidden lg:w-[25%] md:w-[5%]">
-        <LeftSidebar />
+      <div className="md:hidden">
+        <Bottombar />
       </div>
-      <div className="w-full">
-      <Outlet />
+      <div className="flex flex-1">
+        <div className="hidden md:flex lg:w-[25%] md:w-[15%]">
+          <LeftSidebar />
+        </div>
+        <div className="flex-1 w-full p-4">
+          <Outlet />
+        </div>
+        <div className="hidden md:flex lg:w-[25%] md:w-[15%]">
+          <RightSidebar />
+        </div>
       </div>
-      <div className="md:flex hidden lg:w-[25%] md:w-[5%]">
-        <RightSidebar />
-      </div>
-      <Bottombar />
     </div>
   );
 };

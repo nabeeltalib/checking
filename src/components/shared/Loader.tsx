@@ -1,8 +1,8 @@
 const Loader = () => (
-  <div className="flex-center w-full">
+  <div className="flex justify-center items-center w-full h-full">
     <img
       src="/assets/icons/loader.svg"
-      alt="loader"
+      alt="Loading..."
       width={24}
       height={24}
       className="animate-spin"

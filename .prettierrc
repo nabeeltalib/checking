@@ -7,7 +7,8 @@
     "printWidth": 80,
     "bracketSameLine": true,
     "tailwindFunctions": [
-        "clsx",
-        "tv"
+      "clsx",
+      "tv"
     ]
-}
+  }
+  
