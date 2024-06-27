@@ -52,7 +52,7 @@ export type IList = {
   id: string;
   title: string;
   description: string;
-  items: string[];
+  items?: string[];
   tags?: string[];
   creator: {
     id: string;
@@ -87,6 +87,13 @@ export type IListItem = {
   description: string;
   // Add other properties specific to list items
 };
+
+export type ICategoryItem = {
+  id: string;
+  name: string;
+  // Add other properties specific to list items
+};
+
 
 export type IContextType = {
   user: IUser;

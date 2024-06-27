@@ -8,7 +8,7 @@ type ListCardProps = {
   list: Models.Document;
 };
 
-const ListCard = ({ list }: ListCardProps) => {
+const Home = ({ list }: ListCardProps) => {
   if (!list) {
     return null;
   }
@@ -16,12 +16,12 @@ const ListCard = ({ list }: ListCardProps) => {
   return (
     <div className="flex flex-col gap-4 p-4 w-full items-center common-container">
       <h1>Home</h1>
-      <p>Welcome, {user.name}</p>
+      {/* <p>Welcome, {user.name}</p>
       <div className="flex flex-col gap-4 max-w-5xl w-full">
         {recentLists.documents.map((list: any) => (
           <ListCard key={list.$id} list={list} />
         ))}
-      </div>
+      </div> */}
     </div>
   );
 };

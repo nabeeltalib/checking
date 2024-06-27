@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getCategories } from './api';
 
 const API_URL = "https://cloud.appwrite.io/v1"; // Replace with your backend URL
 
@@ -13,11 +14,7 @@ export const fetchAISuggestions = async () => {
 };
 
 export const fetchCategories = async () => {
-  try {
-    const response = await axios.get(`${API_URL}/categories`);
-    return response.data.categories;
-  } catch (error) {
-    console.error("Error fetching categories:", error);
-    return [];
-  }
+    // Query Categories Collection in Appwrite
+    const response = getCategories();
+    return response;
 };

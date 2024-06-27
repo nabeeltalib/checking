@@ -51,7 +51,7 @@ const SignupForm = () => {
       if (!session) {
         toast({ title: "Something went wrong. Please login your new account", });
         
-        navigate("/sign-in");
+        // navigate("/sign-in");
         
         return;
       }
