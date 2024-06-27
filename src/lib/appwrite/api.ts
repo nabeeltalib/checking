@@ -1,5 +1,5 @@
 import { Client, Account, Databases, Storage, Avatars, ID, Query } from "appwrite";
-import { IUpdateList, INewList, INewUser, IUpdateUser, IListItem } from "@/types";
+import { IUpdateList, INewList, INewUser, IUpdateUser, IListItem, ICategoryItem } from "@/types";
 
 // Ensure environment variables are defined
 const {
@@ -13,6 +13,7 @@ const {
   VITE_APPWRITE_COMMENT_COLLECTION_ID,
   VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
   VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
+  VITE_APPWRITE_CATEGORY_COLLECTION_ID,
 } = import.meta.env;
 
 if (
@@ -25,7 +26,8 @@ if (
   !VITE_APPWRITE_SAVES_COLLECTION_ID ||
   !VITE_APPWRITE_COMMENT_COLLECTION_ID ||
   !VITE_APPWRITE_SUGGESTION_COLLECTION_ID ||
-  !VITE_APPWRITE_COLLABORATION_COLLECTION_ID
+  !VITE_APPWRITE_COLLABORATION_COLLECTION_ID ||
+  !VITE_APPWRITE_CATEGORY_COLLECTION_ID
 ) {
   throw new Error("Missing Appwrite environment variables");
 }
@@ -41,6 +43,7 @@ export const appwriteConfig = {
   commentCollectionId: VITE_APPWRITE_COMMENT_COLLECTION_ID,
   suggestionCollectionId: VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
   collaborationCollectionId: VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
+  categoryCollectionId: VITE_APPWRITE_CATEGORY_COLLECTION_ID,
 };
 
 const client = new Client();
@@ -209,8 +212,9 @@ export async function deleteFile(fileId: string) {
 
 export async function createList(list: INewList) {
   try {
-    const tags = list.tags?.replace(/ /g, "").split(",") || [];
-    const items = list.items?.replace(/ /g, "").split(",") || [];
+    console.log(list.tags);
+    const tags = list.tags || [];
+    const items = list.items || [];
     
     const newList = await databases.createDocument(
       appwriteConfig.databaseId,
@@ -459,6 +463,33 @@ export async function getCuratedList(userId: string): Promise<IListItem[]> {
     return [];
   }
 }
+
+// ============================================================
+// CATEGORY
+// ============================================================
+
+export async function getCategories(): Promise<ICategoryItem[]> {
+  try {
+    const lists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.categoryCollectionId,
+    );
+
+    if (!lists) throw new Error("No category list found");
+
+    const categories = lists.documents.map((list) => ({
+      id: list.$id,
+      name: list.name,
+    }));
+
+    return categories;
+  } catch (error) {
+    console.error("Error fetching category list:", error);
+    return [];
+  }
+}
+
+
 
 // ============================================================
 // USER

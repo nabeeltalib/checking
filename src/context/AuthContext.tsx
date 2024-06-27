@@ -1,10 +1,10 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { createContext, useContext, useEffect, useState, useMemo } from "react";
 
 import { IUser, IListItem } from "@/types";
 import { getCurrentUser, getUserLists } from "@/lib/appwrite/api";
 
-const INITIAL_USER: IUser = {
+export const INITIAL_USER: IUser = {
   id: "",
   name: "",
   username: "",
@@ -18,8 +18,8 @@ const INITIAL_STATE = {
   user: INITIAL_USER,
   isLoading: false,
   isAuthenticated: false,
-  setUser: () => {},
-  setIsAuthenticated: () => {},
+  setUser: () => { },
+  setIsAuthenticated: () => { },
   checkAuthUser: async () => false,
 };
 
@@ -39,6 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<IUser>(INITIAL_USER);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const location = useLocation();
 
   const checkAuthUser = async (): Promise<boolean> => {
     setIsLoading(true);
@@ -70,7 +71,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const cookieFallback = localStorage.getItem("cookieFallback");
     if (!cookieFallback || cookieFallback === "[]") {
-      navigate("/sign-in");
+      if (location.pathname !== '/sign-up')
+        navigate("/sign-in");
+      console.log('cookieFallback' + cookieFallback);
     } else {
       checkAuthUser();
     }
