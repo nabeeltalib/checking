@@ -1,16 +1,17 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { IComment } from "@/types";
 
 interface CommentContextProps {
-  comments: any[];
-  addComment: (comment: any) => void;
+  comments: IComment[];
+  addComment: (comment: IComment) => void;
 }
 
 const CommentContext = createContext<CommentContextProps | undefined>(undefined);
 
-export const CommentProvider = ({ children }: { children: ReactNode }) => {
-  const [comments, setComments] = useState<any[]>([]);
+export const CommentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [comments, setComments] = useState<IComment[]>([]);
 
-  const addComment = (comment: any) => {
+  const addComment = (comment: IComment) => {
     setComments((prevComments) => [...prevComments, comment]);
   };
 
@@ -21,7 +22,7 @@ export const CommentProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useCommentContext = () => {
+export const useCommentContext = (): CommentContextProps => {
   const context = useContext(CommentContext);
   if (context === undefined) {
     throw new Error("useCommentContext must be used within a CommentProvider");

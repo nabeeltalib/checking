@@ -1,5 +1,3 @@
-// src/context/ListContext.tsx
-
 import React, { createContext, useContext, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { IList } from '@/types';
@@ -23,9 +21,11 @@ export const useListContext = (): ListContextProps => {
 };
 
 export const ListProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { data: lists = [], isLoading, refetch } = useQuery([QUERY_KEYS.GET_RECENT_LISTS], getRecentLists, {
+  const { data, isLoading, refetch } = useQuery<{ documents: IList[] }>([QUERY_KEYS.GET_RECENT_LISTS], getRecentLists, {
     refetchOnWindowFocus: false,
   });
+
+  const lists = data?.documents || [];
 
   const value = useMemo(
     () => ({ lists, isLoading, refetch }),

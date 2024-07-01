@@ -1,5 +1,6 @@
-import { Client, Account, Databases, Storage, Avatars, ID, Query } from "appwrite";
-import { IUpdateList, INewList, INewUser, IUpdateUser, IListItem, ICategoryItem } from "@/types";
+import { ID, Client, Account, AppwriteException, Databases, Storage, Avatars, Functions, Query } from "appwrite";
+import { IUpdateList, INewList, IList, INewUser, IUpdateUser, IListItem, ICategoryItem } from "@/types";
+import { appwriteConfig, databases, storage, functions } from '@/lib/appwrite/config';
 
 // Ensure environment variables are defined
 const {
@@ -14,6 +15,10 @@ const {
   VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
   VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
   VITE_APPWRITE_CATEGORY_COLLECTION_ID,
+  VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID,
+  VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID,
+  VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
+  VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID
 } = import.meta.env;
 
 if (
@@ -27,7 +32,11 @@ if (
   !VITE_APPWRITE_COMMENT_COLLECTION_ID ||
   !VITE_APPWRITE_SUGGESTION_COLLECTION_ID ||
   !VITE_APPWRITE_COLLABORATION_COLLECTION_ID ||
-  !VITE_APPWRITE_CATEGORY_COLLECTION_ID
+  !VITE_APPWRITE_CATEGORY_COLLECTION_ID ||
+  !VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID ||
+  !VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID ||
+  !VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID ||
+  !VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID
 ) {
   throw new Error("Missing Appwrite environment variables");
 }
@@ -44,8 +53,11 @@ export const appwriteConfig = {
   suggestionCollectionId: VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
   collaborationCollectionId: VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
   categoryCollectionId: VITE_APPWRITE_CATEGORY_COLLECTION_ID,
+  aiSuggestionsFunctionId: VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID,
+  generateListIdeaFunctionId: VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID,
+  analyzeSentimentFunctionId: VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
+  enhanceDescriptionFunctionId: VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
 };
-
 const client = new Client();
 
 client.setEndpoint(appwriteConfig.url);
@@ -55,6 +67,7 @@ export const account = new Account(client);
 export const databases = new Databases(client);
 export const storage = new Storage(client);
 export const avatars = new Avatars(client);
+export const functions = new Functions(client);
 
 // ============================================================
 // AUTH
@@ -210,12 +223,63 @@ export async function deleteFile(fileId: string) {
 // LISTS
 // ============================================================
 
+export async function getTrendingTags() {
+  try {
+    const tags = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      [Query.orderDesc('$createdAt'), Query.limit(10)]  // Remove tagsCount if it doesn't exist
+    );
+    return tags.documents.map(doc => doc.tags).flat().slice(0, 10);
+  } catch (error) {
+    console.error("Error fetching trending tags:", error);
+    throw error;
+  }
+}
+
+export async function getPopularCategories() {
+  try {
+    const categories = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.categoryCollectionId,
+      [Query.orderDesc('$createdAt'), Query.limit(10)]  // Remove usageCount if it doesn't exist
+    );
+    return categories.documents;
+  } catch (error) {
+    console.error("Error fetching popular categories:", error);
+    throw error;
+  }
+}
+
+export async function getRecentLists(pageParam?: string) {
+  const queries = [
+    Query.orderDesc('$createdAt'),
+    Query.limit(10)
+  ];
+  
+  if (pageParam) {
+    // Ensure pageParam is a string, not an object
+    queries.push(Query.cursorAfter(pageParam));
+  }
+
+  try {
+    const lists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      queries
+    );
+    return lists;
+  } catch (error) {
+    console.error("Error fetching recent lists:", error);
+    if (error instanceof AppwriteException) {
+      console.error("Appwrite error details:", error.message, error.code);
+    }
+    throw error; // Rethrow the error to be handled by the caller
+  }
+}
+
 export async function createList(list: INewList) {
   try {
-    console.log(list.tags);
-    const tags = list.tags || [];
-    const items = list.items || [];
-    
     const newList = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
@@ -224,8 +288,8 @@ export async function createList(list: INewList) {
         creator: list.userId,
         title: list.title,
         description: list.description,
-        items: items,
-        tags: tags,
+        items: list.items,
+        tags: list.tags,
         bookmark_count: 0,
         shares_count: 0,
         views: 0,
@@ -236,26 +300,12 @@ export async function createList(list: INewList) {
       throw new Error("Failed to create list");
     }
 
+    // Index the new list in Typesense
+    await indexList(newList as IList);
+
     return newList;
   } catch (error) {
     console.error("Error creating list:", error);
-    return null;
-  }
-}
-
-export async function searchLists(searchTerm: string) {
-  try {
-    const lists = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.listCollectionId,
-      [Query.search("title", searchTerm)]
-    );
-
-    if (!lists) throw new Error("No lists found");
-
-    return lists;
-  } catch (error) {
-    console.error("Error searching lists:", error);
     return null;
   }
 }
@@ -304,8 +354,6 @@ export async function getListById(listId?: string) {
 
 export async function updateList(list: IUpdateList) {
   try {
-    const tags = list.tags?.replace(/ /g, "").split(",") || [];
-
     const updatedList = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
@@ -314,13 +362,16 @@ export async function updateList(list: IUpdateList) {
         title: list.title,
         description: list.description,
         items: list.items,
-        tags: tags,
+        tags: list.tags,
       }
     );
 
     if (!updatedList) {
       throw new Error("Failed to update list");
     }
+
+    // Re-index the updated list in Typesense
+    await indexList(updatedList as IList);
 
     return updatedList;
   } catch (error) {
@@ -339,6 +390,13 @@ export async function deleteList(listId?: string) {
     );
 
     if (!statusCode) throw new Error("Failed to delete list");
+
+    // Delete the list index from Typesense
+    await functions.createExecution(
+      appwriteConfig.typesenseOperationsFunctionId,
+      JSON.stringify({ operation: 'delete', data: { listId } }),
+      false
+    );
 
     return { status: "Ok" };
   } catch (error) {
@@ -424,22 +482,7 @@ export async function getUserLists(userId?: string) {
   }
 }
 
-export async function getRecentLists() {
-  try {
-    const lists = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.listCollectionId,
-      [Query.orderDesc("$createdAt"), Query.limit(20)]
-    );
 
-    if (!lists) throw new Error("No recent lists found");
-
-    return lists;
-  } catch (error) {
-    console.error("Error getting recent lists:", error);
-    return null;
-  }
-}
 
 export async function getCuratedList(userId: string): Promise<IListItem[]> {
   try {
@@ -468,26 +511,6 @@ export async function getCuratedList(userId: string): Promise<IListItem[]> {
 // CATEGORY
 // ============================================================
 
-export async function getCategories(): Promise<ICategoryItem[]> {
-  try {
-    const lists = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.categoryCollectionId,
-    );
-
-    if (!lists) throw new Error("No category list found");
-
-    const categories = lists.documents.map((list) => ({
-      id: list.$id,
-      name: list.name,
-    }));
-
-    return categories;
-  } catch (error) {
-    console.error("Error fetching category list:", error);
-    return [];
-  }
-}
 
 
 
@@ -777,5 +800,258 @@ export async function updateCollaboration(collaborationId: string, status: strin
   } catch (error) {
     console.error("Error updating collaboration:", error);
     return null;
+  }
+}
+
+
+export async function getAISuggestions(userId: string): Promise<string[]> {
+  try {
+    const response = await fetch('/api/ai-suggestions');
+    if (!response.ok) {
+      throw new Error('Failed to fetch AI suggestions');
+    }
+    const data = await response.json();
+    return data.suggestions;
+  } catch (error) {
+    console.error("Error fetching AI suggestions:", error);
+    return [];
+  }
+}
+
+export async function getCategories(): Promise<{ id: string; name: string }[]> {
+  try {
+    const response = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.categoryCollectionId
+    );
+    return response.documents.map(doc => ({
+      id: doc.$id,
+      name: doc.name
+    }));
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    return [];
+  }
+}
+export async function searchLists(query: string): Promise<IList[]> {
+  try {
+    const response = await functions.createExecution(
+      appwriteConfig.typesenseOperationsFunctionId,
+      JSON.stringify({ operation: 'search', data: { query } }),
+      false
+    );
+
+    const results = JSON.parse(response.response);
+    return results.hits.map((hit: any) => ({
+      $id: hit.document.id,
+      $createdAt: new Date(hit.document.created_at).toISOString(),
+      $updatedAt: new Date(hit.document.created_at).toISOString(),
+      title: hit.document.title,
+      description: hit.document.description,
+      items: hit.document.items,
+      tags: hit.document.tags,
+      creator: hit.document.creator,
+      likes: [],
+      comments: [],
+      bookmarkCount: 0,
+      sharesCount: 0,
+      views: 0,
+    } as IList));
+  } catch (error) {
+    console.error("Error searching lists:", error);
+    return [];
+  }
+}
+
+export const shareList = async (listId: string): Promise<string> => {
+  try {
+    // Check if a shared link already exists for this list
+    const existingLinks = await databases.listDocuments(
+      "your_database_id",
+      "shared_links",
+      [
+        databases.Query.equal("listId", listId),
+        databases.Query.greaterThan("expiresAt", new Date().toISOString())
+      ]
+    );
+
+    if (existingLinks.documents.length > 0) {
+      // If a valid shared link exists, return it
+      return `https://yourapp.com/shared/${existingLinks.documents[0].$id}`;
+    }
+
+    // If no valid shared link exists, create a new one
+    const sharedLink = await databases.createDocument(
+      "your_database_id",
+      "shared_links",
+      ID.unique(),
+      {
+        listId: listId,
+        createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Expires in 30 days
+      }
+    );
+
+    return `https://yourapp.com/shared/${sharedLink.$id}`;
+  } catch (error) {
+    console.error("Error creating shared link:", error);
+    throw new Error("Failed to create shared link");
+  }
+};
+// Fetch user's friends
+export const getUserFriends = async (userId: string) => {
+  try {
+    const response = await databases.listDocuments(
+      import.meta.env.VITE_APPWRITE_DATABASE_ID,
+      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      [
+        Query.equal('userId', userId),
+        Query.equal('status', 'accepted') // Assuming you have a status field for friend requests
+      ]
+    );
+
+    return response.documents.map(doc => doc.friendId);
+  } catch (error) {
+    console.error('Error fetching user friends:', error);
+    throw error;
+  }
+};
+
+// Fetch lists created by user's friends
+export const getFriendsLists = async (userId: string) => {
+  try {
+    // First, get the user's friends
+    const friendIds = await getUserFriends(userId);
+
+    // Then, fetch lists created by these friends
+    const response = await databases.listDocuments(
+      import.meta.env.VITE_APPWRITE_DATABASE_ID,
+      import.meta.env.VITE_APPWRITE_LIST_COLLECTION_ID,
+      [
+        Query.equal('creator.$id', friendIds),
+        Query.orderDesc('$createdAt'),
+        Query.limit(20) // Adjust this number as needed
+      ]
+    );
+
+    return response.documents;
+  } catch (error) {
+    console.error('Error fetching friends lists:', error);
+    throw error;
+  }
+};
+// Function to send a friend request
+export const sendFriendRequest = async (userId: string, friendId: string) => {
+  try {
+    const result = await databases.createDocument(
+      import.meta.env.VITE_APPWRITE_DATABASE_ID,
+      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      ID.unique(),
+      {
+        userId: userId,
+        friendId: friendId,
+        status: 'pending'
+      }
+    );
+    return result;
+  } catch (error) {
+    console.error('Error sending friend request:', error);
+    throw error;
+  }
+};
+
+// Function to accept a friend request
+export const acceptFriendRequest = async (requestId: string) => {
+  try {
+    const result = await databases.updateDocument(
+      import.meta.env.VITE_APPWRITE_DATABASE_ID,
+      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      requestId,
+      { status: 'accepted' }
+    );
+    return result;
+  } catch (error) {
+    console.error('Error accepting friend request:', error);
+    throw error;
+  }
+};
+
+export const rejectFriendRequest = async (requestId: string) => {
+  try {
+    const result = await databases.deleteDocument(
+      import.meta.env.VITE_APPWRITE_DATABASE_ID,
+      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      requestId
+    );
+    return result;
+  } catch (error) {
+    console.error('Error rejecting friend request:', error);
+    throw error;
+  }
+};
+
+// Function to get all friend requests for a user
+export const getFriendRequests = async (userId: string) => {
+  try {
+    const result = await databases.listDocuments(
+      import.meta.env.VITE_APPWRITE_DATABASE_ID,
+      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      [
+        Query.equal('friendId', userId),
+        Query.equal('status', 'pending')
+      ]
+    );
+    return result.documents;
+  } catch (error) {
+    console.error('Error getting friend requests:', error);
+    throw error;
+  }
+};
+
+// Function to get all friends of a user
+export const getFriends = async (userId: string) => {
+  try {
+    const result = await databases.listDocuments(
+      import.meta.env.VITE_APPWRITE_DATABASE_ID,
+      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      [
+        Query.equal('status', 'accepted'),
+        Query.search('userId', userId)
+      ]
+    );
+    return result.documents.map(doc => doc.friendId);
+  } catch (error) {
+    console.error('Error getting friends:', error);
+    throw error;
+  }
+};
+
+// Function to get mutual friends
+export const getMutualFriends = async (userId: string, otherUserId: string) => {
+  try {
+    const userFriends = await getFriends(userId);
+    const otherUserFriends = await getFriends(otherUserId);
+    
+    const mutualFriends = userFriends.filter(friendId => 
+      otherUserFriends.includes(friendId)
+    );
+
+    return mutualFriends;
+  } catch (error) {
+    console.error('Error getting mutual friends:', error);
+    throw error;
+  }
+};
+
+export async function indexList(list: IList) {
+  try {
+    await functions.createExecution(
+      appwriteConfig.typesenseOperationsFunctionId,
+      JSON.stringify({ operation: 'index', data: { list } }),
+      false
+    );
+  } catch (error) {
+    console.error("Error indexing list:", error);
+    throw error;
   }
 }

@@ -20,18 +20,9 @@ export const ProfileValidation = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   username: z.string().min(2, { message: "Username must be at least 2 characters." }),
   email: z.string().email(),
-  bio: z.string().optional(),
+  bio: z.string().max(500, { message: "Bio must not exceed 500 characters." }).optional(),
 });
 
-// ============================================================
-// POST
-// ============================================================
-export const PostValidation = z.object({
-  caption: z.string().min(5, { message: "Minimum 5 characters." }).max(2200, { message: "Maximum 2,200 characters" }),
-  file: z.custom<File[]>(),
-  location: z.string().min(1, { message: "This field is required" }).max(1000, { message: "Maximum 1000 characters." }),
-  tags: z.string().optional(),
-});
 
 // ============================================================
 // LIST
@@ -39,8 +30,9 @@ export const PostValidation = z.object({
 export const ListValidation = z.object({
   title: z.string().min(1, { message: "Title is required." }).max(100, { message: "Maximum 100 characters." }),
   description: z.string().min(5, { message: "Minimum 5 characters." }).max(1000, { message: "Maximum 1,000 characters" }),
-  items: z.array(z.string()).min(1, { message: "At least one item is required." }),
-  tags: z.string().optional(),
+  items: z.array(z.string()).min(1, { message: "At least one item is required." }).max(100, { message: "Maximum 100 items allowed." }),
+  tags: z.array(z.string()).max(10, { message: "Maximum 10 tags allowed." }).optional(),
+  aiScore: z.number().min(0).max(1).optional(),
 });
 
 // ============================================================
@@ -67,8 +59,19 @@ export const SuggestionValidation = z.object({
 // ============================================================
 // COLLABORATION
 // ============================================================
+export const CollaborationStatus = z.enum(['pending', 'accepted', 'rejected']);
+
 export const CollaborationValidation = z.object({
   listId: z.string(),
   userId: z.string(),
-  status: z.string(),
+  status: CollaborationStatus,
 });
+
+// Add type inferences
+export type SignupValidationSchema = z.infer<typeof SignupValidation>;
+export type SigninValidationSchema = z.infer<typeof SigninValidation>;
+export type ProfileValidationSchema = z.infer<typeof ProfileValidation>;
+export type ListValidationSchema = z.infer<typeof ListValidation>;
+export type CommentValidationSchema = z.infer<typeof CommentValidation>;
+export type SuggestionValidationSchema = z.infer<typeof SuggestionValidation>;
+export type CollaborationValidationSchema = z.infer<typeof CollaborationValidation>;

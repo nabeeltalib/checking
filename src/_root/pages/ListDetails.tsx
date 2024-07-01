@@ -1,4 +1,3 @@
-// ... (import statements)
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import {
@@ -10,25 +9,41 @@ import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/shared";
 import GridListList from "@/components/shared/GridListList";
 import ListStats from "@/components/shared/ListStats";
+import { useToast } from "@/components/ui/use-toast";
 
 const ListDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user } = useUserContext();
+  const { toast } = useToast();
 
   const { data: list, isLoading } = useGetListById(id);
   const { data: userLists, isLoading: isUserListsLoading } = useGetUserLists(
     list?.creator.$id
   );
-  const { mutate: deleteList } = useDeleteList();
+  const { mutateAsync: deleteList, isLoading: isDeleting } = useDeleteList();
 
   const relatedLists = userLists?.documents.filter(
     (userList) => userList.$id !== id
   );
 
-  const handleDeleteList = () => {
-    deleteList(id);
-    navigate(-1);
+  const handleDeleteList = async () => {
+    if (!id) return;
+    try {
+      await deleteList(id);
+      toast({
+        title: "List deleted successfully!",
+        description: "Your list has been deleted and removed from the index.",
+        variant: "success",
+      });
+      navigate(-1);
+    } catch (error) {
+      toast({
+        title: "Error deleting list",
+        description: "An error occurred while deleting the list. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -82,8 +97,9 @@ const ListDetails = () => {
                 <div className="flex gap-4 mt-6">
                   <Button
                     onClick={handleDeleteList}
-                    className="shad-button_primary whitespace-nowrap">
-                    Delete List
+                    className="shad-button_primary whitespace-nowrap"
+                    disabled={isDeleting}>
+                    {isDeleting ? "Deleting..." : "Delete List"}
                   </Button>
                   <Button
                     onClick={() => navigate(`/update-list/${list.$id}`)}
@@ -97,7 +113,7 @@ const ListDetails = () => {
         </div>
       )}
 
-<div className="w-full">
+      <div className="w-full">
         <hr className="border w-full border-dark-4/80" />
         <h3 className="body-bold md:h3-bold w-full my-10">More Related Lists</h3>
         {isUserListsLoading || !relatedLists ? (

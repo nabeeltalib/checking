@@ -1,7 +1,6 @@
+import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { createContext, useContext, useEffect, useState, useMemo } from "react";
-
-import { IUser, IListItem } from "@/types";
+import { IUser } from "@/types";
 import { getCurrentUser, getUserLists } from "@/lib/appwrite/api";
 
 export const INITIAL_USER: IUser = {
@@ -14,27 +13,18 @@ export const INITIAL_USER: IUser = {
   curatedList: [],
 };
 
-const INITIAL_STATE = {
-  user: INITIAL_USER,
-  isLoading: false,
-  isAuthenticated: false,
-  setUser: () => { },
-  setIsAuthenticated: () => { },
-  checkAuthUser: async () => false,
-};
-
-type IContextType = {
+interface IAuthContext {
   user: IUser;
   isLoading: boolean;
   setUser: React.Dispatch<React.SetStateAction<IUser>>;
   isAuthenticated: boolean;
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
   checkAuthUser: () => Promise<boolean>;
-};
+}
 
-const AuthContext = createContext<IContextType>(INITIAL_STATE);
+const AuthContext = createContext<IAuthContext | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
   const [user, setUser] = useState<IUser>(INITIAL_USER);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -73,11 +63,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!cookieFallback || cookieFallback === "[]") {
       if (location.pathname !== '/sign-up')
         navigate("/sign-in");
-      console.log('cookieFallback' + cookieFallback);
     } else {
       checkAuthUser();
     }
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   const value = useMemo(
     () => ({
@@ -92,9 +81,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+};
 
-export const useUserContext = (): IContextType => {
+export const useUserContext = (): IAuthContext => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useUserContext must be used within an AuthProvider");

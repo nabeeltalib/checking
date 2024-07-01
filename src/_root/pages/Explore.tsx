@@ -1,153 +1,148 @@
 import React, { useEffect, useState } from 'react';
-import { useGetRecentLists } from '@/lib/react-query/queries';
+import { Link } from 'react-router-dom';
+import { useGetRecentLists, useGetAISuggestions, useSearchLists } from '@/lib/react-query/queries';
 import { Loader } from '@/components/shared';
 import ListCard from '@/components/shared/ListCard';
-import axios from 'axios';
+import useDebounce from '@/hooks/useDebounce';
+import { getTrendingTags, getPopularCategories } from '@/lib/appwrite/api';
+import { useUserContext } from "@/context/AuthContext";
+import { IList } from "@/types";
 
-const Explore = () => {
-  const { data, isLoading } = useGetRecentLists();
-  const [trendingTags, setTrendingTags] = useState([]);
-  const [popularCategories, setPopularCategories] = useState([]);
-  const [aiRecommendations, setAiRecommendations] = useState([]);
+const Explore: React.FC = () => {
+  const { user } = useUserContext();
+  const { data: recentListsData, isLoading: isLoadingRecentLists, error: recentListsError } = useGetRecentLists();
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
   const [isTagsLoading, setIsTagsLoading] = useState(true);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { data: aiSuggestions, isLoading: isLoadingAISuggestions, error: aiSuggestionsError } = useGetAISuggestions(user.id);
+  const [trendingTags, setTrendingTags] = useState<string[]>([]);
+  const [popularCategories, setPopularCategories] = useState<{ id: string; name: string }[]>([]);
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+  const { data: searchResults, isLoading: isSearchLoading } = useSearchLists(debouncedSearchQuery);
 
   useEffect(() => {
-    // Fetch trending tags
-    axios.get('/api/tags/trending').then(response => {
-      setTrendingTags(response.data.tags);
-      setIsTagsLoading(false);
-    });
-
-    // Fetch popular categories
-    axios.get('/api/categories/popular').then(response => {
-      setPopularCategories(response.data.categories);
-      setIsCategoriesLoading(false);
-    });
-
-    // Fetch AI-powered recommendations
-    axios.get('/api/lists/recommendations').then(response => {
-      setAiRecommendations(response.data.lists);
-    });
+    const fetchData = async () => {
+      try {
+        const [tags, categories] = await Promise.all([
+          getTrendingTags(),
+          getPopularCategories(),
+        ]);
+        setTrendingTags(tags);
+        setPopularCategories(categories);
+        setError(null);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError('Failed to fetch data. Please try again later.');
+      } finally {
+        setIsTagsLoading(false);
+        setIsCategoriesLoading(false);
+      }
+    };
+    fetchData();
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSearching(true);
-    axios.get(`/api/lists/search?q=${searchQuery}`).then(response => {
-      setSearchResults(response.data);
-      setIsSearching(false);
-    });
-  };
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+  if (isLoadingRecentLists || isLoadingAISuggestions) {
+    return <Loader />;
+  }
+
+  if (recentListsError || aiSuggestionsError || error) {
+    return <div className="text-red-500">{(recentListsError as Error)?.message || (aiSuggestionsError as Error)?.message || error}</div>;
+  }
+
+  const recentLists = recentListsData?.documents || [];
 
   return (
     <div className="explore-container common-container">
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Explore</h1>
-        <form onSubmit={handleSearch} className="flex items-center">
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-            aria-label="Search"
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 bg-primary-500 text-white rounded-r-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            aria-label="Search button"
-          >
-            Search
-          </button>
-        </form>
-        <div className="flex gap-4">
-          <img src="/assets/icons/profile.svg" alt="Profile" className="w-6 h-6" />
-          <img src="/assets/icons/notifications.svg" alt="Notifications" className="w-6 h-6" />
-        </div>
-      </header>
-
-      <div className="flex-between w-full max-w-5xl mt-16 mb-7">
-        <h3 className="body-bold md:h3-bold">Popular Lists</h3>
-
-        <div className="flex-center gap-3 bg-dark-3 rounded-xl px-4 py-2 cursor-pointer">
-          <p className="small-medium md:base-medium text-light-2">All</p>
-          <img
-            src="/assets/icons/filter.svg"
-            width={20}
-            height={20}
-            alt="filter"
-          />
-        </div>
-      </div>
-
-      <div className="categories mb-8">
-        <h4 className="text-xl font-semibold mb-4">Popular Categories</h4>
-        <div className="category-list flex gap-4 flex-wrap">
-          {isCategoriesLoading ? (
-            <Loader />
-          ) : (
-            popularCategories.map(category => (
-              <div key={category.id} className="category-item bg-gray-200 p-2 rounded-lg">
-                {category.name}
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      <div className="tags mb-8">
-        <h4 className="text-xl font-semibold mb-4">Trending Tags</h4>
-        <div className="tag-list flex gap-4 flex-wrap">
-          {isTagsLoading ? (
-            <Loader />
-          ) : (
-            trendingTags.map(tag => (
-              <Link
-                key={tag.id}
-                to={`/tags/${tag.id}`}
-                className="tag-item bg-gray-200 p-2 rounded-lg"
-              >
-                {tag.name}
-              </Link>
-            ))
-          )}
-        </div>
-      </div>
-
-      <div className="recommendations mb-8">
-        <h4 className="text-xl font-semibold mb-4">Recommended for You</h4>
-        <div className="recommendation-list grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-          {aiRecommendations.map(list => (
-            <ListCard key={list.$id} list={list} />
-          ))}
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-9 w-full max-w-5xl">
-        {isLoading ? (
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder="Search lists..."
+        className="w-full p-2 mb-4 rounded"
+      />
+      <section className="mb-8">
+        <h3 className="text-xl font-semibold text-light-1 mb-4">AI Suggested Lists</h3>
+        {isLoadingAISuggestions ? (
           <Loader />
-        ) : (
-          data?.documents.map((list: any) => (
-            <ListCard key={list.$id} list={list} />
-          ))
-        )}
-      </div>
-
-      {isSearching && <Loader />}
-      {!isSearching && searchResults.length > 0 && (
-        <div className="search-results">
-          <h4 className="text-xl font-semibold mb-4">Search Results</h4>
-          <div className="result-list grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-            {searchResults.map(list => (
-              <ListCard key={list.$id} list={list} />
+        ) : aiSuggestions && aiSuggestions.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {aiSuggestions.map((suggestion, index) => (
+              <div key={index} className="bg-dark-3 p-4 rounded-lg">
+                <p className="text-light-1">{suggestion}</p>
+              </div>
             ))}
           </div>
+        ) : (
+          <p className="text-light-2">No AI suggestions available.</p>
+        )}
+      </section>
+      <section className="mb-8">
+        <h3 className="text-xl font-semibold text-light-1 mb-4">Popular Categories</h3>
+        <div className="flex gap-4 flex-wrap">
+          {isCategoriesLoading ? (
+            <Loader />
+          ) : popularCategories.length > 0 ? (
+            popularCategories.map(category => (
+              <Link key={category.id} to={`/category/${category.id}`} className="bg-dark-4 text-light-1 px-3 py-1 rounded-full hover:bg-primary-500 transition-colors">
+                {category.name}
+              </Link>
+            ))
+          ) : (
+            <p>No categories found.</p>
+          )}
         </div>
-      )}
+      </section>
+
+      <section className="mb-8">
+        <h3 className="text-xl font-semibold text-light-1 mb-4">Trending Tags</h3>
+        <div className="flex gap-4 flex-wrap">
+          {isTagsLoading ? (
+            <Loader />
+          ) : trendingTags.length > 0 ? (
+            trendingTags.map(tag => (
+              <Link key={tag} to={`/tags/${tag}`} className="bg-dark-3 text-light-2 px-3 py-1 rounded-full hover:bg-primary-500 hover:text-light-1 transition-colors">
+                #{tag}
+              </Link>
+            ))
+          ) : (
+            <p>No trending tags found.</p>
+          )}
+        </div>
+      </section>
+
+      <section>
+        <h3 className="text-xl font-semibold text-light-1 mb-4">
+          {searchQuery ? 'Search Results' : 'Recent Lists'}
+        </h3>
+        {isSearchLoading ? (
+          <Loader />
+        ) : searchQuery ? (
+          searchResults && searchResults.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {searchResults.map((list: IList) => (
+                <ListCard key={list.$id} list={list} />
+              ))}
+            </div>
+          ) : (
+            <p>No results found.</p>
+          )
+        ) : (
+          recentLists.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recentLists.map((list: IList) => (
+                <ListCard key={list.$id} list={list} />
+              ))}
+            </div>
+          ) : (
+            <p>No recent lists available.</p>
+          )
+        )}
+      </section>
     </div>
   );
 };

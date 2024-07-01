@@ -1,22 +1,15 @@
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-
-import { INavLink } from "@/types";
+import { NavLink, useNavigate } from "react-router-dom";
 import { sidebarLinks } from "@/constants";
-import { Loader } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { useUserContext, INITIAL_USER } from "@/context/AuthContext";
 
 const LeftSidebar = () => {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
-  const { user, setUser, setIsAuthenticated, isLoading } = useUserContext();
-
+  const { setUser, setIsAuthenticated } = useUserContext();
   const { mutate: signOut } = useSignOutAccount();
 
-  const handleSignOut = async (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
+  const handleSignOut = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     signOut();
     setIsAuthenticated(false);
@@ -25,28 +18,31 @@ const LeftSidebar = () => {
   };
 
   return (
-    <div className="fixed top-0 left-0 flex flex-col justify-between w-16 lg:w-64 h-full p-6 bg-dark-3 border-r-2 border-dark-4/80 z-10">
+    <aside className="leftsidebar hidden md:flex flex-col justify-between min-w-[16rem] lg:w-64 h-screen p-6 bg-dark-2 border-r border-dark-4 overflow-auto">
       <div className="flex flex-col gap-8">
-        {sidebarLinks.map((link: INavLink, index: number) => (
+        {sidebarLinks.map((link) => (
           <NavLink
-            key={index}
+            key={link.label}
             to={link.route}
-            className="text-light-3 hover:text-primary-500 flex items-center gap-4 text-xl transition-colors duration-200"
+            className={({ isActive }) =>
+              `flex items-center gap-4 p-2 rounded-lg transition-colors duration-200 ${
+                isActive ? "bg-primary-500 text-light-1" : "text-light-2 hover:bg-dark-4"
+              }`
+            }
           >
             <img src={link.icon} alt={link.label} className="w-6 h-6" />
             <span className="hidden lg:inline">{link.label}</span>
           </NavLink>
         ))}
       </div>
-      <div className="flex flex-col gap-4">
-        <Button
-          onClick={handleSignOut}
-          className="bg-red-500 text-white flex items-center justify-center py-2 px-4 rounded-md"
-        >
-          Sign Out
-        </Button>
-      </div>
-    </div>
+      <Button
+        onClick={handleSignOut}
+        variant="destructive"
+        className="w-full mt-6"
+      >
+        Sign Out
+      </Button>
+    </aside>
   );
 };
 

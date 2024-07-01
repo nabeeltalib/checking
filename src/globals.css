@@ -325,7 +325,11 @@
     @apply text-base text-light-4 mb-6;
   }
 }
-
+:root {
+  --sidebar-width-md: 15%;
+  --sidebar-width-lg: 25%;
+  --topbar-height: 4rem; /* Adjust this value to match your Topbar height */
+}
 @layer components {
   /* SHADCN COMPONENTS */
   /* Form */

@@ -1,22 +1,26 @@
 import { NavLink } from 'react-router-dom';
 import { rightSidebarLinks } from '@/constants';
-import { INavLink } from '@/types';
 
 const RightSidebar = () => {
   return (
-    <div className="fixed top-0 right-0 flex flex-col gap-6 md:w-64 w-full md:w-64 p-6 h-full border-l-2 border-dark-4/80 z-10 bg-black overflow-y-auto">
-      <div className="flex flex-col gap-8">
-        {rightSidebarLinks.map((link: INavLink, index: number) => (
+    <aside className="rightsidebar hidden md:flex flex-col gap-6 min-w-[16rem] lg:w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 overflow-auto">
+      <h2 className="text-xl font-bold text-light-1 mb-4">Quick Links</h2>
+      <nav className="flex flex-col gap-4">
+        {rightSidebarLinks.map((link) => (
           <NavLink
-            key={index}
+            key={link.label}
             to={link.route}
-            className="text-light-3 text-white flex items-center gap-4 text-xl hover:text-primary-500 transition-colors duration-200"
+            className={({ isActive }) =>
+              `flex items-center gap-4 p-2 rounded-lg transition-colors duration-200 ${
+                isActive ? "bg-primary-500 text-light-1" : "text-light-2 hover:bg-dark-4"
+              }`
+            }
           >
             {link.label}
           </NavLink>
         ))}
-      </div>
-    </div>
+      </nav>
+    </aside>
   );
 }
 

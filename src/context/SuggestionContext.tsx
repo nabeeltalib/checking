@@ -1,16 +1,17 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { ISuggestion } from "@/types";
 
 interface SuggestionContextProps {
-  suggestions: any[];
-  addSuggestion: (suggestion: any) => void;
+  suggestions: ISuggestion[];
+  addSuggestion: (suggestion: ISuggestion) => void;
 }
 
 const SuggestionContext = createContext<SuggestionContextProps | undefined>(undefined);
 
-export const SuggestionProvider = ({ children }: { children: ReactNode }) => {
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+export const SuggestionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [suggestions, setSuggestions] = useState<ISuggestion[]>([]);
 
-  const addSuggestion = (suggestion: any) => {
+  const addSuggestion = (suggestion: ISuggestion) => {
     setSuggestions((prevSuggestions) => [...prevSuggestions, suggestion]);
   };
 
@@ -21,7 +22,7 @@ export const SuggestionProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useSuggestionContext = () => {
+export const useSuggestionContext = (): SuggestionContextProps => {
   const context = useContext(SuggestionContext);
   if (context === undefined) {
     throw new Error("useSuggestionContext must be used within a SuggestionProvider");

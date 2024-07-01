@@ -24,10 +24,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateList, useUpdateList } from "@/lib/react-query/queries";
+import { useCreateList, useUpdateList, useGenerateListIdea } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
 import { useState, useEffect } from "react";
-import { fetchAISuggestions, fetchCategories } from "@/lib/appwrite/aiService";
+import { getAISuggestions, getCategories } from "@/lib/appwrite/api";
+
 
 type ListFormProps = {
   list?: Models.Document;
@@ -40,20 +41,26 @@ const ListForm = ({ list, action }: ListFormProps) => {
   const navigate = useNavigate();
 
   // AI-powered suggestions for tags and items
-  const [aiSuggestions, setAiSuggestions] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetch AI-powered suggestions for list items
-    fetchAISuggestions().then((suggestions) => {
-      setAiSuggestions(suggestions);
-    });
+    const fetchData = async () => {
+      try {
+        const suggestions = await getAISuggestions(user.id);
+        setAiSuggestions(suggestions);
 
-    // Fetch categories
-    fetchCategories().then((categories) => {
-      setCategories(categories);
-    });
-  }, []);
+        const fetchedCategories = await getCategories();
+        setCategories(fetchedCategories);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to fetch data. Please try again later.');
+      }
+    };
+
+    fetchData();
+  }, [user.id]);
 
   // Validation schema for the form
   const formSchema = z.object({
@@ -75,13 +82,23 @@ const ListForm = ({ list, action }: ListFormProps) => {
       tags: list?.tags?.join(', ') || "",
     },
   });
+  
+  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea();
 
+  const handleGenerateIdea = () => {
+    generateListIdea(form.getValues("title"), {
+      onSuccess: (idea) => {
+        form.setValue("description", idea);
+      },
+    });
+  };
+
+  
   const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList();
   const { mutateAsync: updateList, isLoading: isLoadingUpdate } = useUpdateList();
 
   // Handler
   const handleSubmit = async (value: z.infer<typeof formSchema>) => {
-    console.log("handleSubmit");
     if (list && action === "Update") {
       const updatedList = await updateList({ ...value, listId: list.$id });
 
@@ -104,6 +121,7 @@ const ListForm = ({ list, action }: ListFormProps) => {
 
   return (
     <Form {...form}>
+      {error && <div className="text-red-500">{error}</div>}
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         <FormField
           control={form.control}
@@ -142,6 +160,14 @@ const ListForm = ({ list, action }: ListFormProps) => {
             </FormItem>
           )}
         />
+        <Button
+          type="button"
+          onClick={handleGenerateIdea}
+          disabled={isGeneratingIdea}
+          className="mb-4"
+        >
+          {isGeneratingIdea ? "Generating..." : "Get AI Description"}
+        </Button>
 
         <FormField
           control={form.control}

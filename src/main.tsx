@@ -5,10 +5,10 @@ import './globals.css';
 
 import { AuthProvider } from "@/context/AuthContext";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
-import { ListProvider } from "@/context/ListContext"; // Ensure ListProvider is imported if it's used globally
-import { CommentProvider } from "@/context/CommentContext"; // Hypothetical provider for comments
-import { SuggestionProvider } from "@/context/SuggestionContext"; // Hypothetical provider for suggestions
-import { CollaborationProvider } from "@/context/CollaborationContext"; // Hypothetical provider for collaborations
+import { ListProvider } from "@/context/ListContext";
+import { CommentProvider } from "@/context/CommentContext";
+import { SuggestionProvider } from "@/context/SuggestionContext";
+import { CollaborationProvider } from "@/context/CollaborationContext";
 
 import App from "./App";
 
@@ -17,8 +17,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <QueryProvider>
         <AuthProvider>
-          <ListProvider> {/* Ensuring ListProvider is included */}
-            <CommentProvider> {/* Hypothetical providers for new features */}
+          <ListProvider>
+            <CommentProvider>
               <SuggestionProvider>
                 <CollaborationProvider>
                   <App />

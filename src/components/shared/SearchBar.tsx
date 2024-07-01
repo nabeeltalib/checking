@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -6,9 +6,24 @@ interface SearchBarProps {
 
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  const debouncedSearch = useCallback(
+    (query: string) => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+      debounceTimer.current = setTimeout(() => {
+        onSearch(query);
+      }, 300);
+    },
+    [onSearch]
+  );
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
+    const query = event.target.value;
+    setSearchQuery(query);
+    debouncedSearch(query);
   };
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -17,18 +32,18 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center mb-4 w-full">
+    <form onSubmit={handleSubmit} className="flex items-center w-full max-w-md">
       <input
         type="text"
         placeholder="Search lists..."
         value={searchQuery}
         onChange={handleInputChange}
-        className="px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-500 w-full dark:bg-dark-3 dark:border-dark-4 dark:placeholder-light-4 dark:text-light-1"
+        className="w-full px-4 py-2 rounded-l-md bg-dark-3 border border-dark-4 text-light-1 placeholder-light-4 focus:outline-none focus:ring-2 focus:ring-primary-500"
         aria-label="Search lists"
       />
       <button
         type="submit"
-        className="px-4 py-2 bg-primary-500 text-white rounded-r-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        className="px-4 py-2 bg-primary-500 text-light-1 rounded-r-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
         aria-label="Search"
       >
         Search

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
+import { getAISuggestions, generateListIdea, enhanceListDescription } from "@/lib/appwrite/aiService";
 import {
   createUserAccount,
   signInAccount,
@@ -14,7 +15,12 @@ import {
   likeList,
   getRecentLists,
   getInfiniteLists,
+  getUserFriends, 
+  getFriendsLists,
   searchLists,
+  acceptFriendRequest, 
+  rejectFriendRequest,
+  getFriendRequests, 
   saveList,
   deleteSavedList,
   getUserById,
@@ -28,6 +34,7 @@ import {
   updateCollaboration,
 } from "@/lib/appwrite/api";
 import { INewList, INewUser, IUpdateList, IUpdateUser } from "@/types";
+import { analyzeSentiment } from "@/lib/appwrite/aiService";
 
 // ============================================================
 // AUTH QUERIES
@@ -69,13 +76,6 @@ export const useGetLists = () => {
   });
 };
 
-export const useSearchLists = (searchTerm: string) => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.SEARCH_LISTS, searchTerm],
-    queryFn: () => searchLists(searchTerm),
-    enabled: !!searchTerm,
-  });
-};
 
 export const useGetInfiniteLists = () => {
   return useInfiniteQuery({
@@ -91,9 +91,10 @@ export const useGetInfiniteLists = () => {
 };
 
 export const useGetRecentLists = () => {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: [QUERY_KEYS.GET_RECENT_LISTS],
-    queryFn: getRecentLists,
+    queryFn: ({ pageParam = null }) => getRecentLists(pageParam),
+    getNextPageParam: (lastPage) => lastPage.documents[lastPage.documents.length - 1]?.$id || null,
   });
 };
 
@@ -353,5 +354,108 @@ export const useUpdateCollaboration = () => {
         queryKey: [QUERY_KEYS.GET_COLLABORATIONS],
       });
     },
+  });
+};
+
+export const useTrendingTags = () => {
+  return useQuery({
+    queryKey: ['trendingTags'],
+    queryFn: getTrendingTags,
+  });
+};
+
+export const usePopularCategories = () => {
+  return useQuery({
+    queryKey: ['popularCategories'],
+    queryFn: getPopularCategories,
+  });
+};
+
+export const useRecentLists = () => {
+  return useInfiniteQuery({
+    queryKey: ['recentLists'],
+    queryFn: ({ pageParam }) => getRecentLists(pageParam),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.documents.length === 0) return undefined;
+      return lastPage.documents[lastPage.documents.length - 1].$id;
+    },
+  });
+};
+
+export const useSearchLists = (searchTerm: string) => {
+  return useInfiniteQuery({
+    queryKey: ['searchLists', searchTerm],
+    queryFn: ({ pageParam }) => searchLists(searchTerm, pageParam),
+    getNextPageParam: (lastPage) => lastPage?.documents[lastPage.documents.length - 1]?.$id,
+    enabled: searchTerm.length > 0,
+  });
+};
+
+// AI QUERIES
+export const useGetAISuggestions = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_AI_SUGGESTIONS, userId],
+    queryFn: () => getAISuggestions(userId),
+  });
+};
+
+export const useGenerateListIdea = () => {
+  return useMutation({
+    mutationFn: (prompt: string) => generateListIdea(prompt),
+  });
+};
+
+export const useEnhanceListDescription = () => {
+  return useMutation({
+    mutationFn: ({ listId, description }: { listId: string; description: string }) =>
+      enhanceListDescription(listId, description),
+  });
+};
+
+export const useAnalyzeSentiment = () => {
+  return useMutation({
+    mutationFn: (text: string) => analyzeSentiment(text),
+  });
+};
+export const useGetUserFriends = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_FRIENDS, userId],
+    queryFn: () => getUserFriends(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useGetFriendsLists = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_FRIENDS_LISTS, userId],
+    queryFn: () => getFriendsLists(userId),
+    enabled: !!userId,
+  });
+};
+export const useAcceptFriendRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (requestId: string) => acceptFriendRequest(requestId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['friendRequests']);
+      queryClient.invalidateQueries(['friends']);
+    },
+  });
+};
+
+export const useRejectFriendRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (requestId: string) => rejectFriendRequest(requestId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['friendRequests']);
+    },
+  });
+};
+export const useGetFriendRequests = (userId: string) => {
+  return useQuery({
+    queryKey: ['friendRequests', userId],
+    queryFn: () => getFriendRequests(userId),
+    enabled: !!userId,
   });
 };

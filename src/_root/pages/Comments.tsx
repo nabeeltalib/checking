@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useGetComments, useCreateComment } from "@/lib/react-query/queries";
+import { useGetComments, useCreateComment, useAnalyzeSentiment } from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
 import { Loader } from "@/components/shared";
+import { useToast } from "@/components/ui/use-toast";
 
 const Comments: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -10,6 +11,8 @@ const Comments: React.FC = () => {
   const { data: comments, isLoading } = useGetComments(id!);
   const { mutate: createComment } = useCreateComment();
   const [newComment, setNewComment] = useState("");
+  const { mutate: analyzeSentiment, isLoading: isAnalyzingSentiment } = useAnalyzeSentiment();
+  const { toast } = useToast();
 
   const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -22,9 +25,34 @@ const Comments: React.FC = () => {
         content: newComment,
       });
 
+      // Analyze sentiment of the new comment
+      analyzeSentiment(newComment, {
+        onSuccess: (sentiment) => {
+          console.log("Comment sentiment:", sentiment);
+          toast({
+            title: "Comment posted",
+            description: `Your comment has been posted. Sentiment: ${sentiment}`,
+            variant: sentiment === 'positive' ? 'default' : sentiment === 'negative' ? 'destructive' : 'secondary',
+          });
+        },
+        onError: (error) => {
+          console.error("Failed to analyze sentiment:", error);
+          toast({
+            title: "Error",
+            description: "Failed to analyze comment sentiment.",
+            variant: "destructive",
+          });
+        },
+      });
+
       setNewComment("");
     } catch (error) {
       console.error("Failed to create comment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to post comment.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -92,6 +120,15 @@ const Comments: React.FC = () => {
                       </span>
                     </div>
                     <p className="dark:text-gray-300">{comment.content}</p>
+                    {comment.sentiment && (
+                      <p className={`text-sm mt-2 ${
+                        comment.sentiment === 'positive' ? 'text-green-500' :
+                        comment.sentiment === 'negative' ? 'text-red-500' :
+                        'text-yellow-500'
+                      }`}>
+                        Sentiment: {comment.sentiment}
+                      </p>
+                      )}
                   </div>
                 ))
               ) : (

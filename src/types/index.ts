@@ -1,3 +1,5 @@
+import { Models } from "appwrite";
+
 export type INavLink = {
   imgURL: string;
   route: string;
@@ -12,24 +14,6 @@ export type IUpdateUser = {
   imageId: string;
   imageUrl: URL | string;
   file: File[];
-};
-
-export type INewPost = {
-  userId: string;
-  caption: string;
-  file: File[];
-  location?: string;
-  tags?: string;
-};
-
-export type IUpdatePost = {
-  postId: string;
-  caption: string;
-  imageId: string;
-  imageUrl: URL | string;
-  file: File[];
-  location?: string;
-  tags?: string;
 };
 
 export type INewList = {
@@ -48,31 +32,34 @@ export type IUpdateList = {
   tags?: string[];
 };
 
-export type IList = {
-  id: string;
+export interface IList extends Models.Document {
   title: string;
   description: string;
-  items?: string[];
-  tags?: string[];
+  items: string[];
+  tags: string[];
   creator: {
-    id: string;
+    $id: string;
     name: string;
     imageUrl: string;
   };
   likes: string[];
-  comments: IComment[];
+  comments: any[];
   createdAt: string;
-};
+  bookmarkCount: number;
+  sharesCount: number;
+  views: number;
+  aiScore?: number;
+  suggestions?: ISuggestion[];
+}
 
-export type IUser = {
-  id: string;
+export interface IUser extends Models.Document {
   name: string;
   username: string;
   email: string;
   imageUrl: string;
   bio: string;
   curatedList: string[];
-};
+}
 
 export type INewUser = {
   name: string;
@@ -106,11 +93,8 @@ export type IContextType = {
 
 // New types for Comments, Suggestions, and Collaborations
 
-export type INewComment = {
-  listId: string;
-  userId: string;
-  content: string;
-};
+export type INewComment = Omit<IComment, 'id' | 'createdAt'>;
+
 
 export type IComment = {
   id: string;
@@ -118,15 +102,6 @@ export type IComment = {
   userId: string;
   content: string;
   createdAt: string;
-};
-
-export type INewSuggestion = {
-  listId: string;
-  userId: string;
-  suggestedTitle: string;
-  suggestedDescription: string;
-  suggestedItems: string[];
-  status: string;
 };
 
 export type ISuggestion = {
@@ -138,19 +113,18 @@ export type ISuggestion = {
   suggestedItems: string[];
   status: string;
 };
+export type INewSuggestion = Omit<ISuggestion, 'id'>;
 
-export type INewCollaboration = {
-  listId: string;
-  userId: string;
-  status: string;
-};
+export type CollaborationStatus = 'pending' | 'accepted' | 'rejected';
 
 export type ICollaboration = {
   id: string;
   listId: string;
   userId: string;
-  status: string;
+  status: CollaborationStatus;
 };
+
+export type INewCollaboration = Omit<ICollaboration, 'id'>;
 
 export interface AICategory {
   id: string;
@@ -161,3 +135,18 @@ export interface AISuggestion {
   id: string;
   suggestion: string;
 };
+
+export type Sentiment = 'positive' | 'negative' | 'neutral';
+
+export interface SentimentAnalysisResult {
+  sentiment: Sentiment;
+}
+export interface IAICategory {
+  id: string;
+  name: string;
+}
+
+export interface IAISuggestion {
+  id: string;
+  suggestion: string;
+}

@@ -8,7 +8,8 @@ router.get("/ai-suggestions", async (req, res) => {
     const suggestions = await getAISuggestions();
     res.json({ suggestions });
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch AI suggestions" });
+    console.error("Error fetching AI suggestions:", error);
+    res.status(500).json({ error: "Failed to fetch AI suggestions", details: error.message });
   }
 });
 

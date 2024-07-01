@@ -7,55 +7,47 @@ interface GridListListProps {
   showStats?: boolean;
 }
 
-const GridListList = ({ lists, showUser = true, showStats = true }: GridListListProps) => {
+const GridListList: React.FC<GridListListProps> = ({ lists, showUser = true, showStats = true }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
       {lists?.map((list) => (
-        <div key={list.$id} className="bg-dark-4 rounded-lg shadow-md">
+        <div key={list.$id} className="bg-dark-4 rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
           <Link to={`/lists/${list.$id}`} className="block p-4">
-            <h3 className="text-xl font-bold text-light-1 mb-2">{list.title}</h3>
-            <p className="text-light-3 mb-4">{list.description}</p>
+            <h3 className="text-xl font-bold text-light-1 mb-2 line-clamp-1">{list.title}</h3>
+            <p className="text-light-3 mb-4 line-clamp-2">{list.description}</p>
             <ul className="list-disc list-inside mb-4 text-light-1">
-              {list.items.map((item: any, index: number) => (
-                <li key={index}>{item}</li>
+              {list.items.slice(0, 3).map((item: string, index: number) => (
+                <li key={index} className="line-clamp-1">{item}</li>
               ))}
+              {list.items.length > 3 && <li>...</li>}
             </ul>
             <div className="flex flex-wrap gap-2">
-              {list.tags.map((tag: any, index: number) => (
-                <span
-                  key={index}
-                  className="bg-dark-3 text-light-4 rounded-full px-2 py-1 text-xs">
+              {list.tags.slice(0, 3).map((tag: string, index: number) => (
+                <span key={index} className="bg-dark-3 text-light-4 rounded-full px-2 py-1 text-xs">
                   #{tag}
                 </span>
               ))}
+              {list.tags.length > 3 && <span className="bg-dark-3 text-light-4 rounded-full px-2 py-1 text-xs">+{list.tags.length - 3}</span>}
             </div>
           </Link>
           {showUser && list.creator && (
-            <Link to={`/profile/${list.creator.$id}`} className="px-4 py-2 bg-dark-3 flex items-center">
+            <Link to={`/profile/${list.creator.$id}`} className="px-4 py-2 bg-dark-3 flex items-center hover:bg-dark-2">
               <img
                 src={list.creator.imageUrl || "/assets/icons/profile-placeholder.svg"}
                 alt={`${list.creator.name}'s profile`}
-                className="w-8 h-8 rounded-full mr-2"
+                className="w-8 h-8 rounded-full mr-2 object-cover"
               />
-              <p className="text-light-1">{list.creator.name}</p>
+              <p className="text-light-1 truncate">{list.creator.name}</p>
             </Link>
           )}
           {showStats && (
             <div className="px-4 py-2 bg-dark-3 flex justify-between items-center">
-              <Link to={`/lists/${list.$id}/likes`} className="flex items-center">
-                <img
-                  src="/assets/icons/like.svg"
-                  alt="Likes"
-                  className="w-4 h-4 mr-1"
-                />
+              <Link to={`/lists/${list.$id}/likes`} className="flex items-center hover:text-primary-500">
+                <img src="/assets/icons/like.svg" alt="Likes" className="w-4 h-4 mr-1" />
                 <p className="text-light-1">{list?.likes?.length || 0}</p>
               </Link>
-              <Link to={`/lists/${list.$id}/comments`} className="flex items-center">
-                <img
-                  src="/assets/icons/comment.svg"
-                  alt="Comments"
-                  className="w-4 h-4 mr-1"
-                />
+              <Link to={`/lists/${list.$id}/comments`} className="flex items-center hover:text-primary-500">
+                <img src="/assets/icons/comment.svg" alt="Comments" className="w-4 h-4 mr-1" />
                 <p className="text-light-1">{list?.comments?.length || 0}</p>
               </Link>
             </div>

@@ -1,21 +1,44 @@
 import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useGetListById } from '@/lib/react-query/queries';
+import { useGetListById, useUpdateList } from '@/lib/react-query/queries';
 import { Loader } from '@/components/shared';
 import ListForm from '@/components/forms/ListForm';
 import { useUserContext } from '@/context/AuthContext';
+import { useToast } from "@/components/ui/use-toast";
+import { IList } from "@/types";
 
 const EditList = () => {
   const { id } = useParams();
   const { data: list, isLoading, isError } = useGetListById(id);
   const { user } = useUserContext();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { mutateAsync: updateList, isLoading: isUpdating } = useUpdateList();
 
   useEffect(() => {
     if (list && user && list.creator.$id !== user.id) {
       navigate(`/lists/${id}`);
     }
   }, [list, user, id, navigate]);
+
+  const handleUpdateList = async (updatedListData: IList) => {
+    if (!id) return;
+    try {
+      await updateList({ ...updatedListData, listId: id });
+      toast({
+        title: "List updated successfully!",
+        description: "Your list has been updated and re-indexed.",
+        variant: "success",
+      });
+      navigate(`/lists/${id}`);
+    } catch (error) {
+      toast({
+        title: "Error updating list",
+        description: "An error occurred while updating the list. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return <Loader />;
@@ -39,7 +62,7 @@ const EditList = () => {
           <h2 className="h3-bold md:h2-bold text-left w-full">Edit List</h2>
         </div>
 
-        <ListForm action="Update" list={list} />
+        <ListForm action="Update" list={list} onSubmit={handleUpdateList} isLoading={isUpdating} />
       </div>
     </div>
   );

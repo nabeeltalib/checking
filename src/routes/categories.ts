@@ -1,5 +1,5 @@
 import express from "express";
-import { getCategories } from "@/services/categoryService";
+import { getCategories } from "@/lib/appwrite/api";
 
 const router = express.Router();
 
@@ -8,7 +8,8 @@ router.get("/categories", async (req, res) => {
     const categories = await getCategories();
     res.json({ categories });
   } catch (error) {
-    res.status(500).json({ error: "Failed to fetch categories" });
+    console.error("Error fetching categories:", error);
+    res.status(500).json({ error: "Failed to fetch categories", details: error.message });
   }
 });
 

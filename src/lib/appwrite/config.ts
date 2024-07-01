@@ -1,4 +1,4 @@
-import { Client, Account, Databases, Storage, Avatars } from "appwrite";
+import { Client, Account, Databases, Storage, Avatars, Functions } from "appwrite";
 
 const {
   VITE_APPWRITE_URL,
@@ -11,6 +11,11 @@ const {
   VITE_APPWRITE_COMMENT_COLLECTION_ID,
   VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
   VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
+  VITE_APPWRITE_CATEGORY_COLLECTION_ID,
+  VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID,
+  VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID,
+  VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
+  VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
 } = import.meta.env;
 
 if (
@@ -23,8 +28,12 @@ if (
   !VITE_APPWRITE_SAVES_COLLECTION_ID ||
   !VITE_APPWRITE_COMMENT_COLLECTION_ID ||
   !VITE_APPWRITE_SUGGESTION_COLLECTION_ID ||
-  !VITE_APPWRITE_COLLABORATION_COLLECTION_ID
-) {
+  !VITE_APPWRITE_COLLABORATION_COLLECTION_ID ||
+  !VITE_APPWRITE_CATEGORY_COLLECTION_ID ||
+  !VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID ||
+  !VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID ||
+  !VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID ||
+  !VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID) {
   throw new Error("Missing Appwrite environment variables");
 }
 
@@ -39,6 +48,11 @@ export const appwriteConfig = {
   commentCollectionId: VITE_APPWRITE_COMMENT_COLLECTION_ID,
   suggestionCollectionId: VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
   collaborationCollectionId: VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
+  categoryCollectionId: VITE_APPWRITE_CATEGORY_COLLECTION_ID,
+  aiSuggestionsFunctionId: VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID,
+  generateListIdeaFunctionId: VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID,
+  analyzeSentimentFunctionId: VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
+  enhanceDescriptionFunctionId: VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
 };
 
 const client = new Client();
@@ -50,3 +64,5 @@ export const account = new Account(client);
 export const databases = new Databases(client);
 export const storage = new Storage(client);
 export const avatars = new Avatars(client);
+export const functions = new Functions(client);
+

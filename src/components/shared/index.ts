@@ -8,3 +8,8 @@ export { default as Loader } from "./Loader";
 export { default as ProfileUploader } from "./ProfileUploader";
 export { default as Topbar } from "./Topbar";
 export { default as UserCard } from "./UserCard";
+export { default as FriendsList } from "./FriendsList";
+export { default as FriendsLists } from "./FriendsLists";
+export { default as RightSidebar } from "./RightSidebar";
+export { default as SearchBar } from "./SearchBar";
+export { default as FriendRequests } from "./FriendRequests";

@@ -25,4 +25,15 @@ export enum QUERY_KEYS {
 
   // COLLABORATION KEYS
   GET_COLLABORATIONS = "getCollaborations",
+  
+  // ... existing keys
+  GET_USER_FRIENDS = "getUserFriends",
+  GET_FRIENDS_LISTS = "getFriendsLists",
+  
+  // AI KEYS
+  GET_AI_SUGGESTIONS = "getAISuggestions",
+  GENERATE_LIST_IDEA = "generateListIdea",
+  ENHANCE_LIST_DESCRIPTION = "enhanceListDescription", 
+  ANALYZE_SENTIMENT = "analyzeSentiment",
+  
 }

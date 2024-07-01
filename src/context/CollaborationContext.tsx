@@ -1,16 +1,17 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { ICollaboration } from "@/types";
 
 interface CollaborationContextProps {
-  collaborations: any[];
-  addCollaboration: (collaboration: any) => void;
+  collaborations: ICollaboration[];
+  addCollaboration: (collaboration: ICollaboration) => void;
 }
 
 const CollaborationContext = createContext<CollaborationContextProps | undefined>(undefined);
 
-export const CollaborationProvider = ({ children }: { children: ReactNode }) => {
-  const [collaborations, setCollaborations] = useState<any[]>([]);
+export const CollaborationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [collaborations, setCollaborations] = useState<ICollaboration[]>([]);
 
-  const addCollaboration = (collaboration: any) => {
+  const addCollaboration = (collaboration: ICollaboration) => {
     setCollaborations((prevCollaborations) => [...prevCollaborations, collaboration]);
   };
 
@@ -21,7 +22,7 @@ export const CollaborationProvider = ({ children }: { children: ReactNode }) => 
   );
 };
 
-export const useCollaborationContext = () => {
+export const useCollaborationContext = (): CollaborationContextProps => {
   const context = useContext(CollaborationContext);
   if (context === undefined) {
     throw new Error("useCollaborationContext must be used within a CollaborationProvider");
