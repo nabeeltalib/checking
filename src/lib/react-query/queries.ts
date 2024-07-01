@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
-import { getAISuggestions, generateListIdea, enhanceListDescription } from "@/lib/appwrite/aiService";
+import { getAISuggestions, generateListIdea, analyzeSentiment, enhanceListDescription } from '@/lib/appwrite/aiService';
 import {
   createUserAccount,
   signInAccount,
@@ -34,7 +34,6 @@ import {
   updateCollaboration,
 } from "@/lib/appwrite/api";
 import { INewList, INewUser, IUpdateList, IUpdateUser } from "@/types";
-import { analyzeSentiment } from "@/lib/appwrite/aiService";
 
 // ============================================================
 // AUTH QUERIES

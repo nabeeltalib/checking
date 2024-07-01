@@ -27,7 +27,8 @@ import {
 import { useCreateList, useUpdateList, useGenerateListIdea } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
 import { useState, useEffect } from "react";
-import { getAISuggestions, getCategories } from "@/lib/appwrite/api";
+import { getCategories } from "@/lib/appwrite/api";
+import { getAISuggestions } from '@/lib/appwrite/aiService';
 
 type ListFormProps = {
   list?: Models.Document;

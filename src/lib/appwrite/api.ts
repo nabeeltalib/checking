@@ -1,63 +1,55 @@
 import { ID, Client, Account, AppwriteException, Databases, Storage, Avatars, Functions, Query } from "appwrite";
 import { IUpdateList, INewList, IList, INewUser, IUpdateUser, IListItem, ICategoryItem } from "@/types";
 import { appwriteConfig, databases, storage, functions, account } from '@/lib/appwrite/config';
+import { getAISuggestions, generateListIdea, analyzeSentiment, enhanceListDescription } from '@/lib/appwrite/aiService';
 
 // Ensure environment variables are defined
-const {
-  VITE_APPWRITE_URL,
-  VITE_APPWRITE_PROJECT_ID,
-  VITE_APPWRITE_DATABASE_ID,
-  VITE_APPWRITE_STORAGE_ID,
-  VITE_APPWRITE_USER_COLLECTION_ID,
-  VITE_APPWRITE_LIST_COLLECTION_ID,
-  VITE_APPWRITE_SAVES_COLLECTION_ID,
-  VITE_APPWRITE_COMMENT_COLLECTION_ID,
-  VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
-  VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
-  VITE_APPWRITE_CATEGORY_COLLECTION_ID,
-  VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID,
-  VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID,
-  VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
-  VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID
-} = import.meta.env;
+const requiredEnvVars = [
+  'VITE_APPWRITE_URL',
+  'VITE_APPWRITE_PROJECT_ID',
+  'VITE_APPWRITE_DATABASE_ID',
+  'VITE_APPWRITE_STORAGE_ID',
+  'VITE_APPWRITE_USER_COLLECTION_ID',
+  'VITE_APPWRITE_LIST_COLLECTION_ID',
+  'VITE_APPWRITE_SAVES_COLLECTION_ID',
+  'VITE_APPWRITE_COMMENT_COLLECTION_ID',
+  'VITE_APPWRITE_SUGGESTION_COLLECTION_ID',
+  'VITE_APPWRITE_COLLABORATION_COLLECTION_ID',
+  'VITE_APPWRITE_CATEGORY_COLLECTION_ID',
+  'VITE_APPWRITE_SHARED_LINKS_COLLECTION_ID',
+  'VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID',
+  'VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID',
+  'VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID',
+  'VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID',
+  'VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID',
+];
 
-if (
-  !VITE_APPWRITE_URL ||
-  !VITE_APPWRITE_PROJECT_ID ||
-  !VITE_APPWRITE_DATABASE_ID ||
-  !VITE_APPWRITE_STORAGE_ID ||
-  !VITE_APPWRITE_USER_COLLECTION_ID ||
-  !VITE_APPWRITE_LIST_COLLECTION_ID ||
-  !VITE_APPWRITE_SAVES_COLLECTION_ID ||
-  !VITE_APPWRITE_COMMENT_COLLECTION_ID ||
-  !VITE_APPWRITE_SUGGESTION_COLLECTION_ID ||
-  !VITE_APPWRITE_COLLABORATION_COLLECTION_ID ||
-  !VITE_APPWRITE_CATEGORY_COLLECTION_ID ||
-  !VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID ||
-  !VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID ||
-  !VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID ||
-  !VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID
-) {
-  throw new Error("Missing Appwrite environment variables");
+const missingEnvVars = requiredEnvVars.filter(varName => !import.meta.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  throw new Error(`Missing Appwrite environment variables: ${missingEnvVars.join(', ')}`);
 }
 
 export const appwriteConfig = {
-  url: VITE_APPWRITE_URL,
-  projectId: VITE_APPWRITE_PROJECT_ID,
-  databaseId: VITE_APPWRITE_DATABASE_ID,
-  storageId: VITE_APPWRITE_STORAGE_ID,
-  userCollectionId: VITE_APPWRITE_USER_COLLECTION_ID,
-  listCollectionId: VITE_APPWRITE_LIST_COLLECTION_ID,
-  savesCollectionId: VITE_APPWRITE_SAVES_COLLECTION_ID,
-  commentCollectionId: VITE_APPWRITE_COMMENT_COLLECTION_ID,
-  suggestionCollectionId: VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
-  collaborationCollectionId: VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
-  categoryCollectionId: VITE_APPWRITE_CATEGORY_COLLECTION_ID,
-  aiSuggestionsFunctionId: VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID,
-  generateListIdeaFunctionId: VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID,
-  analyzeSentimentFunctionId: VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
-  enhanceDescriptionFunctionId: VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
+  url: import.meta.env.VITE_APPWRITE_URL,
+  projectId: import.meta.env.VITE_APPWRITE_PROJECT_ID,
+  databaseId: import.meta.env.VITE_APPWRITE_DATABASE_ID,
+  storageId: import.meta.env.VITE_APPWRITE_STORAGE_ID,
+  userCollectionId: import.meta.env.VITE_APPWRITE_USER_COLLECTION_ID,
+  listCollectionId: import.meta.env.VITE_APPWRITE_LIST_COLLECTION_ID,
+  savesCollectionId: import.meta.env.VITE_APPWRITE_SAVES_COLLECTION_ID,
+  commentCollectionId: import.meta.env.VITE_APPWRITE_COMMENT_COLLECTION_ID,
+  suggestionCollectionId: import.meta.env.VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
+  collaborationCollectionId: import.meta.env.VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
+  categoryCollectionId: import.meta.env.VITE_APPWRITE_CATEGORY_COLLECTION_ID,
+  sharedLinksCollectionId: import.meta.env.VITE_APPWRITE_SHARED_LINKS_COLLECTION_ID,
+  aiSuggestionsFunctionId: import.meta.env.VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID,
+  generateListIdeaFunctionId: import.meta.env.VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID,
+  analyzeSentimentFunctionId: import.meta.env.VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
+  enhanceDescriptionFunctionId: import.meta.env.VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
+  typesenseOperationsFunctionId: import.meta.env.VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID,
 };
+
 const client = new Client();
 
 client.setEndpoint(appwriteConfig.url);
@@ -821,20 +813,6 @@ export async function updateCollaboration(collaborationId: string, status: strin
 }
 
 
-export async function getAISuggestions(userId: string): Promise<string[]> {
-  try {
-    const response = await fetch('/api/ai-suggestions');
-    if (!response.ok) {
-      throw new Error('Failed to fetch AI suggestions');
-    }
-    const data = await response.json();
-    return data.suggestions;
-  } catch (error) {
-    console.error("Error fetching AI suggestions:", error);
-    return [];
-  }
-}
-
 export async function getCategories(): Promise<{ id: string; name: string }[]> {
   try {
     const response = await databases.listDocuments(
@@ -919,8 +897,8 @@ export const shareList = async (listId: string): Promise<string> => {
 export const getUserFriends = async (userId: string) => {
   try {
     const response = await databases.listDocuments(
-      import.meta.env.VITE_APPWRITE_DATABASE_ID,
-      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
+      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
       [
         Query.equal('userId', userId),
         Query.equal('status', 'accepted') // Assuming you have a status field for friend requests
@@ -942,8 +920,8 @@ export const getFriendsLists = async (userId: string) => {
 
     // Then, fetch lists created by these friends
     const response = await databases.listDocuments(
-      import.meta.env.VITE_APPWRITE_DATABASE_ID,
-      import.meta.env.VITE_APPWRITE_LIST_COLLECTION_ID,
+      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
+      appwriteConfig.VITE_APPWRITE_LIST_COLLECTION_ID,
       [
         Query.equal('creator.$id', friendIds),
         Query.orderDesc('$createdAt'),
@@ -961,8 +939,8 @@ export const getFriendsLists = async (userId: string) => {
 export const sendFriendRequest = async (userId: string, friendId: string) => {
   try {
     const result = await databases.createDocument(
-      import.meta.env.VITE_APPWRITE_DATABASE_ID,
-      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
+      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
       ID.unique(),
       {
         userId: userId,
@@ -981,8 +959,8 @@ export const sendFriendRequest = async (userId: string, friendId: string) => {
 export const acceptFriendRequest = async (requestId: string) => {
   try {
     const result = await databases.updateDocument(
-      import.meta.env.VITE_APPWRITE_DATABASE_ID,
-      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
+      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
       requestId,
       { status: 'accepted' }
     );
@@ -996,8 +974,8 @@ export const acceptFriendRequest = async (requestId: string) => {
 export const rejectFriendRequest = async (requestId: string) => {
   try {
     const result = await databases.deleteDocument(
-      import.meta.env.VITE_APPWRITE_DATABASE_ID,
-      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
+      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
       requestId
     );
     return result;
@@ -1011,8 +989,8 @@ export const rejectFriendRequest = async (requestId: string) => {
 export const getFriendRequests = async (userId: string) => {
   try {
     const result = await databases.listDocuments(
-      import.meta.env.VITE_APPWRITE_DATABASE_ID,
-      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
+      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
       [
         Query.equal('friendId', userId),
         Query.equal('status', 'pending')
@@ -1029,8 +1007,8 @@ export const getFriendRequests = async (userId: string) => {
 export const getFriends = async (userId: string) => {
   try {
     const result = await databases.listDocuments(
-      import.meta.env.VITE_APPWRITE_DATABASE_ID,
-      import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
+      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
       [
         Query.equal('status', 'accepted'),
         Query.search('userId', userId)

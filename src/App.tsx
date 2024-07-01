@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 import {
@@ -21,17 +21,10 @@ import RootLayout from "@/_root/RootLayout";
 import SignupForm from "@/_auth/forms/SignupForm";
 import SigninForm from "@/_auth/forms/SigninForm";
 import { Toaster } from "@/components/ui/toaster";
-import { createTypesenseSchema } from './lib/createTypesenseSchema';
-import { indexExistingLists } from './lib/indexExistingLists';
 
 import "./globals.css";
 
 const App = () => {
-  useEffect(() => {
-    createTypesenseSchema();
-    indexExistingLists();
-  }, []);
-
   return (
     <main className="flex h-screen">
       <Routes>

@@ -1,24 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { databases } from '@/lib/appwrite/config'; // Update this import path
+import { useParams, useNavigate } from 'react-router-dom';
+import { databases, appwriteConfig } from '@/lib/appwrite/config';
 import { Loader } from '@/components/shared';
-import { IList } from '@/types'; // Assuming you have a type for your list
+import { IList } from '@/types';
+import { AppwriteException } from 'appwrite';
 
 const SharedListView: React.FC = () => {
   const { sharedId } = useParams<{ sharedId: string }>();
   const [list, setList] = useState<IList | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSharedList = async () => {
-      if (!sharedId) return;
+      if (!sharedId) {
+        setError('No shared ID provided');
+        setLoading(false);
+        return;
+      }
       
       try {
         // Fetch the shared link document
         const sharedLink = await databases.getDocument(
-            appwriteConfig.databaseId,
-          import.meta.env.VITE_APPWRITE_SHARED_LINKS_COLLECTION_ID,
+          appwriteConfig.databaseId,
+          appwriteConfig.sharedLinksCollectionId,
           sharedId
         );
         
@@ -30,20 +36,26 @@ const SharedListView: React.FC = () => {
         // Fetch the actual list data
         const listData = await databases.getDocument(
           appwriteConfig.databaseId,
-          import.meta.env.VITE_APPWRITE_LIST_COLLECTION_ID,
+          appwriteConfig.listCollectionId,
           sharedLink.listId
         );
         setList(listData as IList);
       } catch (err) {
         console.error('Error fetching shared list:', err);
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        if (err instanceof AppwriteException) {
+          setError(`Appwrite error: ${err.message}`);
+        } else if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError('An unknown error occurred');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchSharedList();
-  }, [sharedId]);
+  }, [sharedId, navigate]);
 
   if (loading) return <Loader />;
   if (error) return <div className="text-red-500">{error}</div>;

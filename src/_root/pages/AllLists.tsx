@@ -5,7 +5,7 @@ import { Loader } from "@/components/shared";
 import { useGetInfiniteLists, useSearchLists } from "@/lib/react-query/queries";
 import ListCard from "@/components/shared/ListCard";
 import SearchBar from "@/components/shared/SearchBar";
-import { useGetAISuggestions } from "@/lib/react-query/queries";
+import { useGetAISuggestions } from "@/lib/appwrite/aiService";
 import { useUserContext } from "@/context/AuthContext";
 import { IList } from "@/types";
 
@@ -14,7 +14,7 @@ const AllLists = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { ref, inView } = useInView();
   const { user } = useUserContext();
-  const { data: aiSuggestions, isLoading: isLoadingAISuggestions } = useGetAISuggestions(user.id);
+  const { data: aiSuggestions, isLoading: isLoadingAISuggestions } = useGetAISuggestions(user?.id);
 
   const {
     data: lists,
