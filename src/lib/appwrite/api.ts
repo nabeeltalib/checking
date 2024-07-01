@@ -1,6 +1,6 @@
 import { ID, Client, Account, AppwriteException, Databases, Storage, Avatars, Functions, Query } from "appwrite";
 import { IUpdateList, INewList, IList, INewUser, IUpdateUser, IListItem, ICategoryItem } from "@/types";
-import { appwriteConfig, databases, storage, functions } from '@/lib/appwrite/config';
+import { appwriteConfig, databases, storage, functions, account } from '@/lib/appwrite/config';
 
 // Ensure environment variables are defined
 const {
@@ -145,9 +145,9 @@ export async function getAccount() {
 
 export async function getCurrentUser() {
   try {
-    const currentAccount = await getAccount();
+    const currentAccount = await account.get();
 
-    if (!currentAccount) throw new Error("Failed to get current account");
+    if (!currentAccount) throw new Error("Not authenticated");
 
     const currentUser = await databases.listDocuments(
       appwriteConfig.databaseId,
@@ -155,12 +155,29 @@ export async function getCurrentUser() {
       [Query.equal("accountId", currentAccount.$id)]
     );
 
-    if (!currentUser || currentUser.total === 0) throw new Error("User not found");
+    if (!currentUser || currentUser.total === 0) {
+      // User document doesn't exist, create it
+      const newUser = await databases.createDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.userCollectionId,
+        ID.unique(),
+        {
+          accountId: currentAccount.$id,
+          email: currentAccount.email,
+          name: currentAccount.name, // Make sure to include the name
+          username: currentAccount.name, // You might want to generate a username
+        }
+      );
+      return newUser;
+    }
 
     return currentUser.documents[0];
   } catch (error) {
     console.error("Error getting current user:", error);
-    return null;
+    if (error instanceof AppwriteException) {
+      console.error("Appwrite error details:", error.message, error.code);
+    }
+    throw error;
   }
 }
 
@@ -258,7 +275,6 @@ export async function getRecentLists(pageParam?: string) {
   ];
   
   if (pageParam) {
-    // Ensure pageParam is a string, not an object
     queries.push(Query.cursorAfter(pageParam));
   }
 
@@ -274,7 +290,8 @@ export async function getRecentLists(pageParam?: string) {
     if (error instanceof AppwriteException) {
       console.error("Appwrite error details:", error.message, error.code);
     }
-    throw error; // Rethrow the error to be handled by the caller
+    // Return an empty list instead of throwing
+    return { documents: [], total: 0 };
   }
 }
 

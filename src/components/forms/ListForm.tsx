@@ -29,7 +29,6 @@ import { Loader } from "@/components/shared";
 import { useState, useEffect } from "react";
 import { getAISuggestions, getCategories } from "@/lib/appwrite/api";
 
-
 type ListFormProps = {
   list?: Models.Document;
   action: "Create" | "Update";
@@ -40,7 +39,6 @@ const ListForm = ({ list, action }: ListFormProps) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // AI-powered suggestions for tags and items
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -62,14 +60,12 @@ const ListForm = ({ list, action }: ListFormProps) => {
     fetchData();
   }, [user.id]);
 
-  // Validation schema for the form
   const formSchema = z.object({
-    title: z.string().min(3).max(100),
-    description: z.string().min(3).max(1000),
-    items: z.string().min(3).max(1000),
-    category: z.string().min(3).max(100),
-    tags: z.string()
-      .transform((value) => value.split(',').map((tag) => tag.trim())),
+    title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
+    description: z.string().min(3, "Description must be at least 3 characters").max(1000, "Description must be less than 1000 characters"),
+    items: z.string().min(3, "Items must be at least 3 characters").max(1000, "Items must be less than 1000 characters"),
+    category: z.string().min(3, "Category must be at least 3 characters").max(100, "Category must be less than 100 characters"),
+    tags: z.string().transform((value) => value.split(',').map((tag) => tag.trim())),
   });
 
   const form = useForm({
@@ -77,13 +73,15 @@ const ListForm = ({ list, action }: ListFormProps) => {
     defaultValues: {
       title: list?.title || "",
       description: list?.description || "",
-      items: list?.items || "",
+      items: list?.items?.join(', ') || "",
       category: list?.category || "",
       tags: list?.tags?.join(', ') || "",
     },
   });
   
   const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea();
+  const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList();
+  const { mutateAsync: updateList, isLoading: isLoadingUpdate } = useUpdateList();
 
   const handleGenerateIdea = () => {
     generateListIdea(form.getValues("title"), {
@@ -93,29 +91,26 @@ const ListForm = ({ list, action }: ListFormProps) => {
     });
   };
 
-  
-  const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList();
-  const { mutateAsync: updateList, isLoading: isLoadingUpdate } = useUpdateList();
-
-  // Handler
   const handleSubmit = async (value: z.infer<typeof formSchema>) => {
-    if (list && action === "Update") {
-      const updatedList = await updateList({ ...value, listId: list.$id });
-
-      if (!updatedList) {
-        toast({ title: `${action} list failed. Please try again.` });
+    try {
+      if (list && action === "Update") {
+        const updatedList = await updateList({ ...value, listId: list.$id });
+        if (!updatedList) {
+          toast({ title: `${action} list failed. Please try again.` });
+        } else {
+          navigate(`/lists/${list.$id}`);
+        }
       } else {
-        navigate(`/lists/${list.$id}`);
+        const newList = await createList({ ...value, userId: user.id });
+        if (!newList) {
+          toast({ title: `${action} list failed. Please try again.` });
+        } else {
+          navigate(`/lists/${newList.$id}`);
+        }
       }
-      return;
-    }
-
-    const newList = await createList({ ...value, userId: user.id });
-
-    if (!newList) {
-      toast({ title: `${action} list failed. Please try again.` });
-    } else {
-      navigate(`/lists/${newList.$id}`);
+    } catch (error) {
+      console.error(`Error ${action.toLowerCase()}ing list:`, error);
+      toast({ title: `${action} list failed. Please try again.`, variant: "destructive" });
     }
   };
 
@@ -177,13 +172,13 @@ const ListForm = ({ list, action }: ListFormProps) => {
               <FormLabel>Items</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Enter items"
+                  placeholder="Enter items, separated by commas"
                   {...field}
                   className="w-full bg-dark-3 text-light-1 border-none"
                 />
               </FormControl>
               <FormDescription>
-                Enter items for your list. You can also select from AI-powered suggestions:
+                Enter items for your list, separated by commas. You can also select from AI-powered suggestions:
                 <ul className="list-disc pl-5 mt-2">
                   {aiSuggestions.map((suggestion, index) => (
                     <li key={index} className="cursor-pointer" onClick={() => form.setValue("items", suggestion)}>

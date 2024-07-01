@@ -61,8 +61,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const cookieFallback = localStorage.getItem("cookieFallback");
     if (!cookieFallback || cookieFallback === "[]") {
-      if (location.pathname !== '/sign-up')
+      if (location.pathname !== '/sign-up') {
         navigate("/sign-in");
+      }
     } else {
       checkAuthUser();
     }

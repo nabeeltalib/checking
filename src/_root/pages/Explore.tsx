@@ -7,6 +7,7 @@ import useDebounce from '@/hooks/useDebounce';
 import { getTrendingTags, getPopularCategories } from '@/lib/appwrite/api';
 import { useUserContext } from "@/context/AuthContext";
 import { IList } from "@/types";
+import { useToast } from "@/components/ui/use-toast";
 
 const Explore: React.FC = () => {
   const { user } = useUserContext();
@@ -18,6 +19,7 @@ const Explore: React.FC = () => {
   const { data: aiSuggestions, isLoading: isLoadingAISuggestions, error: aiSuggestionsError } = useGetAISuggestions(user.id);
   const [trendingTags, setTrendingTags] = useState<string[]>([]);
   const [popularCategories, setPopularCategories] = useState<{ id: string; name: string }[]>([]);
+  const { toast } = useToast();
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const { data: searchResults, isLoading: isSearchLoading } = useSearchLists(debouncedSearchQuery);
@@ -42,7 +44,26 @@ const Explore: React.FC = () => {
     };
     fetchData();
   }, []);
+  useEffect(() => {
+    if (recentListsError) {
+      toast({
+        title: "Error fetching recent lists",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    }
+    if (aiSuggestionsError) {
+      toast({
+        title: "Error fetching AI suggestions",
+        description: "Please try again later",
+        variant: "destructive",
+      });
+    }
+  }, [recentListsError, aiSuggestionsError, toast]);
 
+  if (isLoadingRecentLists || isLoadingAISuggestions) {
+    return <Loader />;
+  }
   if (error) {
     return <div className="text-red-500">{error}</div>;
   }

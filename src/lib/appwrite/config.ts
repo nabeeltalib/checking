@@ -16,6 +16,7 @@ const {
   VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID,
   VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
   VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
+  VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID,
 } = import.meta.env;
 
 if (
@@ -33,7 +34,9 @@ if (
   !VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID ||
   !VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID ||
   !VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID ||
-  !VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID) {
+  !VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID ||
+  !VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID
+) {
   throw new Error("Missing Appwrite environment variables");
 }
 
@@ -53,6 +56,7 @@ export const appwriteConfig = {
   generateListIdeaFunctionId: VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID,
   analyzeSentimentFunctionId: VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
   enhanceDescriptionFunctionId: VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
+  typesenseOperationsFunctionId: VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID,
 };
 
 const client = new Client();
@@ -65,4 +69,3 @@ export const databases = new Databases(client);
 export const storage = new Storage(client);
 export const avatars = new Avatars(client);
 export const functions = new Functions(client);
-
