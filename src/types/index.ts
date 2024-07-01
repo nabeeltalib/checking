@@ -16,26 +16,18 @@ export type IUpdateUser = {
   file: File[];
 };
 
-export type INewList = {
+export type INewList = Omit<IList, "creator" | "likes" | "comments" | "createdAt" | "bookmarkCount" | "sharesCount" | "views" | "aiScore" | "suggestions"> & {
   userId: string;
-  title: string;
-  description: string;
-  items: string[];
-  tags?: string[];
 };
 
-export type IUpdateList = {
+export type IUpdateList = Pick<IList, "title" | "description" | "items" | "tags"> & {
   listId: string;
-  title: string;
-  description: string;
-  items: string[];
-  tags?: string[];
 };
 
 export interface IList extends Models.Document {
   title: string;
   description: string;
-  items: string[];
+  items: string[];  // Array of serialized items
   tags: string[];
   creator: {
     $id: string;
@@ -51,6 +43,7 @@ export interface IList extends Models.Document {
   aiScore?: number;
   suggestions?: ISuggestion[];
 }
+
 
 export interface IUser extends Models.Document {
   name: string;
@@ -68,12 +61,10 @@ export type INewUser = {
   password: string;
 };
 
-export type IListItem = {
-  id: string;
-  title: string;
-  description: string;
-  // Add other properties specific to list items
-};
+export interface IListItem {
+  content: string;
+  isVisible: boolean;
+}
 
 export type ICategoryItem = {
   id: string;

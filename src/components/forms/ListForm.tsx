@@ -12,7 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
@@ -29,6 +29,7 @@ import { Loader } from "@/components/shared";
 import { useState, useEffect } from "react";
 import { getCategories } from "@/lib/appwrite/api";
 import { getAISuggestions } from '@/lib/appwrite/aiService';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 type ListFormProps = {
   list?: Models.Document;
@@ -64,7 +65,10 @@ const ListForm = ({ list, action }: ListFormProps) => {
   const formSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
     description: z.string().min(3, "Description must be at least 3 characters").max(1000, "Description must be less than 1000 characters"),
-    items: z.string().min(3, "Items must be at least 3 characters").max(1000, "Items must be less than 1000 characters"),
+    items: z.array(z.object({
+      content: z.string().min(1, "Item cannot be empty"),
+      isVisible: z.boolean(),
+    })).min(5, "At least 5 items are required").max(10, "Maximum 10 items allowed"),
     category: z.string().min(3, "Category must be at least 3 characters").max(100, "Category must be less than 100 characters"),
     tags: z.string().transform((value) => value.split(',').map((tag) => tag.trim())),
   });
@@ -74,10 +78,16 @@ const ListForm = ({ list, action }: ListFormProps) => {
     defaultValues: {
       title: list?.title || "",
       description: list?.description || "",
-      items: list?.items?.join(', ') || "",
+      items: list?.items?.map((item: string) => ({ content: item, isVisible: true })) || 
+             Array(5).fill({ content: "", isVisible: true }),
       category: list?.category || "",
       tags: list?.tags?.join(', ') || "",
     },
+  });
+
+  const { fields, append, remove, move } = useFieldArray({
+    control: form.control,
+    name: "items",
   });
   
   const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea();
@@ -113,6 +123,11 @@ const ListForm = ({ list, action }: ListFormProps) => {
       console.error(`Error ${action.toLowerCase()}ing list:`, error);
       toast({ title: `${action} list failed. Please try again.`, variant: "destructive" });
     }
+  };
+
+  const onDragEnd = (result: any) => {
+    if (!result.destination) return;
+    move(result.source.index, result.destination.index);
   };
 
   return (
@@ -165,33 +180,68 @@ const ListForm = ({ list, action }: ListFormProps) => {
           {isGeneratingIdea ? "Generating..." : "Get AI Description"}
         </Button>
 
-        <FormField
-          control={form.control}
-          name="items"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Items</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Enter items, separated by commas"
-                  {...field}
-                  className="w-full bg-dark-3 text-light-1 border-none"
-                />
-              </FormControl>
-              <FormDescription>
-                Enter items for your list, separated by commas. You can also select from AI-powered suggestions:
-                <ul className="list-disc pl-5 mt-2">
-                  {aiSuggestions.map((suggestion, index) => (
-                    <li key={index} className="cursor-pointer" onClick={() => form.setValue("items", suggestion)}>
-                      {suggestion}
-                    </li>
-                  ))}
-                </ul>
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="list-items">
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef}>
+                {fields.map((field, index) => (
+                  <Draggable key={field.id} draggableId={field.id} index={index}>
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        className="flex items-center mb-2"
+                      >
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.content`}
+                          render={({ field }) => (
+                            <FormItem className="flex-grow mr-2">
+                              <FormControl>
+                                <Input
+                                  placeholder={`Item ${index + 1}`}
+                                  {...field}
+                                  className="w-full bg-dark-3 text-light-1 border-none"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.isVisible`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <input
+                                  type="checkbox"
+                                  {...field}
+                                  checked={field.value}
+                                  className="mr-2"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <Button type="button" onClick={() => remove(index)} className="bg-red-500 text-white">
+                          Remove
+                        </Button>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+
+        {fields.length < 10 && (
+          <Button type="button" onClick={() => append({ content: '', isVisible: true })}>
+            Add Item
+          </Button>
+        )}
 
         <FormField
           control={form.control}

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import {
@@ -10,12 +11,19 @@ import { Loader } from "@/components/shared";
 import GridListList from "@/components/shared/GridListList";
 import ListStats from "@/components/shared/ListStats";
 import { useToast } from "@/components/ui/use-toast";
+import { IListItem } from "@/types";
+
+const deserializeItem = (itemString: string): IListItem => {
+  const [content, isVisible] = itemString.split('|');
+  return { content, isVisible: isVisible === 'true' };
+};
 
 const ListDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user } = useUserContext();
   const { toast } = useToast();
+  const [showAllItems, setShowAllItems] = useState(false);
 
   const { data: list, isLoading } = useGetListById(id);
   const { data: userLists, isLoading: isUserListsLoading } = useGetUserLists(
@@ -46,6 +54,11 @@ const ListDetails = () => {
     }
   };
 
+  const parsedItems = list ? list.items.map(deserializeItem) : [];
+  const visibleItems = showAllItems
+    ? parsedItems
+    : parsedItems.filter(item => item.isVisible).slice(0, 5);
+
   return (
     <div className="flex flex-col gap-6 w-full p-6 common-container">
       <button onClick={() => navigate(-1)} className="text-primary-500 mb-4">
@@ -73,12 +86,17 @@ const ListDetails = () => {
               <h2 className="body-bold lg:h2-bold">{list.title}</h2>
               <p>{list.description}</p>
               <ul className="list-items">
-                {list.items.map((item: string, index: number) => (
+                {visibleItems.map((item, index) => (
                   <li key={index} className="list-item my-3">
-                    {item}
+                    {item.content}
                   </li>
                 ))}
               </ul>
+              {parsedItems.length > 5 && (
+                <Button onClick={() => setShowAllItems(!showAllItems)}>
+                  {showAllItems ? "Show Less" : "Show More"}
+                </Button>
+              )}
               <ul className="flex gap-1 mt-2 text-light-3 flex-wrap">
                 {list.tags.map((tag: string, index: number) => (
                   <li

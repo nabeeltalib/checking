@@ -297,7 +297,7 @@ export async function createList(list: INewList) {
         creator: list.userId,
         title: list.title,
         description: list.description,
-        items: list.items,
+        items: list.items,  // Now we can pass the array directly
         tags: list.tags,
         bookmark_count: 0,
         shares_count: 0,
@@ -370,7 +370,7 @@ export async function updateList(list: IUpdateList) {
       {
         title: list.title,
         description: list.description,
-        items: list.items,
+        items: list.items,  // Now we can pass the array directly
         tags: list.tags,
       }
     );
@@ -1040,9 +1040,19 @@ export const getMutualFriends = async (userId: string, otherUserId: string) => {
 
 export async function indexList(list: IList) {
   try {
+    const document = {
+      id: list.$id,
+      title: list.title,
+      description: list.description,
+      items: list.items.map(item => item.content),  // Only index the content
+      tags: list.tags,
+      creator: list.creator.$id,
+      created_at: new Date(list.$createdAt).getTime()
+    };
+
     await functions.createExecution(
       appwriteConfig.typesenseOperationsFunctionId,
-      JSON.stringify({ operation: 'index', data: { list } }),
+      JSON.stringify({ operation: 'index', data: { document } }),
       false
     );
   } catch (error) {

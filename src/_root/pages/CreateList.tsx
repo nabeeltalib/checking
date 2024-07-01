@@ -17,7 +17,16 @@ const CreateList: React.FC = () => {
 
   const handleCreateList = async (listData: IList) => {
     try {
-      const newList = await createList(listData);
+      // Transform the items array to match the new structure
+      const transformedListData = {
+        ...listData,
+        items: listData.items.map(item => ({
+          content: item,
+          isVisible: true
+        }))
+      };
+
+      const newList = await createList(transformedListData);
       
       // Index the new list in Typesense
       await indexList(newList);
@@ -30,6 +39,7 @@ const CreateList: React.FC = () => {
       
       navigate(`/lists/${newList.$id}`);
     } catch (error) {
+      console.error("Error creating list:", error);
       toast({
         title: "Error creating list",
         description: "An error occurred while creating the list. Please try again.",
