@@ -15,8 +15,7 @@ export type IUpdateUser = {
   imageUrl: URL | string;
   file: File[];
 };
-
-export type INewList = Omit<IList, "creator" | "likes" | "comments" | "createdAt" | "bookmarkCount" | "sharesCount" | "views" | "aiScore" | "suggestions"> & {
+export type INewList = Omit<IList, '$id' | '$createdAt' | '$updatedAt' | 'userId'> & {
   userId: string;
 };
 
@@ -25,9 +24,10 @@ export type IUpdateList = Pick<IList, "title" | "description" | "items" | "tags"
 };
 
 export interface IList extends Models.Document {
+  userId: string;
   title: string;
   description: string;
-  items: string[];  // Array of serialized items
+  items: IListItem[];
   tags: string[];
   creator: {
     $id: string;

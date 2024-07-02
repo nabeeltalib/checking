@@ -23,15 +23,20 @@ export const ProfileValidation = z.object({
   bio: z.string().max(500, { message: "Bio must not exceed 500 characters." }).optional(),
 });
 
-
 // ============================================================
 // LIST
 // ============================================================
+export const ListItemValidation = z.object({
+  content: z.string().min(1, { message: "Content is required." }).max(500, { message: "Maximum 500 characters." }),
+  isVisible: z.boolean()
+});
+
 export const ListValidation = z.object({
+  userId: z.string(),
   title: z.string().min(1, { message: "Title is required." }).max(100, { message: "Maximum 100 characters." }),
   description: z.string().min(5, { message: "Minimum 5 characters." }).max(1000, { message: "Maximum 1,000 characters" }),
-  items: z.array(z.string()).min(1, { message: "At least one item is required." }).max(100, { message: "Maximum 100 items allowed." }),
-  tags: z.array(z.string()).max(10, { message: "Maximum 10 tags allowed." }).optional(),
+  items: z.array(ListItemValidation).min(1, { message: "At least one item is required." }).max(10, { message: "Maximum 10 items allowed." }),
+  tags: z.array(z.string().max(30, { message: "Maximum 30 characters per tag." })).max(10, { message: "Maximum 10 tags allowed." }),
   aiScore: z.number().min(0).max(1).optional(),
 });
 
@@ -52,7 +57,7 @@ export const SuggestionValidation = z.object({
   userId: z.string(),
   suggestedTitle: z.string().min(1, { message: "Title is required." }).max(100, { message: "Maximum 100 characters." }),
   suggestedDescription: z.string().min(5, { message: "Minimum 5 characters." }).max(1000, { message: "Maximum 1,000 characters" }),
-  suggestedItems: z.array(z.string()).min(1, { message: "At least one item is required." }),
+  suggestedItems: z.array(ListItemValidation).min(1, { message: "At least one item is required." }).max(10, { message: "Maximum 10 items allowed." }),
   status: z.string(),
 });
 
@@ -71,6 +76,7 @@ export const CollaborationValidation = z.object({
 export type SignupValidationSchema = z.infer<typeof SignupValidation>;
 export type SigninValidationSchema = z.infer<typeof SigninValidation>;
 export type ProfileValidationSchema = z.infer<typeof ProfileValidation>;
+export type ListItemValidationSchema = z.infer<typeof ListItemValidation>;
 export type ListValidationSchema = z.infer<typeof ListValidation>;
 export type CommentValidationSchema = z.infer<typeof CommentValidation>;
 export type SuggestionValidationSchema = z.infer<typeof SuggestionValidation>;

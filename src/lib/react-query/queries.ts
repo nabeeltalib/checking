@@ -99,17 +99,22 @@ export const useGetRecentLists = () => {
 
 export const useCreateList = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: (list: INewList) => createList(list),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_RECENT_LISTS],
-      });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_RECENT_LISTS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_INFINITE_LISTS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_LISTS] });
+    },
+    onError: (error) => {
+      console.error('Error creating list:', error);
+      // Handle error (e.g., show a toast notification)
     },
   });
 };
 
-export const useGetListById = (listId?: string) => {
+export const useGetListById = (listId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_LIST_BY_ID, listId],
     queryFn: () => getListById(listId),

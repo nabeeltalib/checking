@@ -287,35 +287,25 @@ export async function getRecentLists(pageParam?: string) {
   }
 }
 
-export async function createList(list: INewList) {
+export async function createList(list: INewList): Promise<IList> {
   try {
     const newList = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
       ID.unique(),
       {
-        creator: list.userId,
+        userId: list.userId,
         title: list.title,
         description: list.description,
-        items: list.items,  // Now we can pass the array directly
+        items: list.items,
         tags: list.tags,
-        bookmark_count: 0,
-        shares_count: 0,
-        views: 0,
+        aiScore: list.aiScore || 0,
       }
     );
-
-    if (!newList) {
-      throw new Error("Failed to create list");
-    }
-
-    // Index the new list in Typesense
-    await indexList(newList as IList);
-
-    return newList;
+    return newList as IList;
   } catch (error) {
     console.error("Error creating list:", error);
-    return null;
+    throw error;
   }
 }
 
@@ -342,22 +332,17 @@ export async function getInfiniteLists({ pageParam }: { pageParam: number }) {
   }
 }
 
-export async function getListById(listId?: string) {
-  if (!listId) throw new Error("List ID is required");
-
+export async function getListById(listId: string): Promise<IList> {
   try {
     const list = await databases.getDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
       listId
     );
-
-    if (!list) throw new Error("List not found");
-
-    return list;
+    return list as IList;
   } catch (error) {
-    console.error("Error getting list by ID:", error);
-    return null;
+    console.error("Error fetching list:", error);
+    throw error;
   }
 }
 
