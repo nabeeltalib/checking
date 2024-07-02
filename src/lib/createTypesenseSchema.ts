@@ -9,7 +9,7 @@ export async function createTypesenseSchema() {
       { name: 'id', type: 'string' },
       { name: 'title', type: 'string' },
       { name: 'description', type: 'string' },
-      { name: 'items', type: 'string[]' },
+      { name: 'items', type: 'object[]' },
       { name: 'tags', type: 'string[]' },
       { name: 'creator', type: 'string' },
       { name: 'created_at', type: 'int64' }

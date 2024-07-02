@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { databases, appwriteConfig } from '@/lib/appwrite/config';
 import { Loader } from '@/components/shared';
-import { IList } from '@/types';
+import { IList, IListItem } from '@/types';
 import { AppwriteException } from 'appwrite';
 
 const SharedListView: React.FC = () => {
@@ -66,8 +66,10 @@ const SharedListView: React.FC = () => {
       <h1 className="text-2xl font-bold mb-4">{list.title}</h1>
       <p className="mb-4">{list.description}</p>
       <ul className="list-disc pl-5">
-        {list.items.map((item: string, index: number) => (
-          <li key={index}>{item}</li>
+        {list.items.map((item: IListItem, index: number) => (
+          item.isVisible && (
+            <li key={index}>{item.content}</li>
+          )
         ))}
       </ul>
     </div>

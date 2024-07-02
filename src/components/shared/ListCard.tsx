@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useEnhanceListDescription } from "@/lib/react-query/queries";
 import { shareList } from "@/lib/appwrite/api";
-import { IList } from "@/types";
+import { IList, IListItem } from "@/types";
 
 type ListCardProps = {
   list: IList;
@@ -12,6 +12,11 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const { mutate: enhanceDescription, isLoading: isEnhancing } = useEnhanceListDescription();
   const [enhancedDescription, setEnhancedDescription] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
+
+  const visibleItems = useMemo(() => 
+    list.items.filter((item: IListItem) => item.isVisible).slice(0, 5),
+    [list.items]
+  );
 
   const handleEnhanceDescription = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -73,14 +78,14 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
 
       <Link to={`/lists/${list.$id}`} className="block mt-4">
         <ul className="list-items mb-4">
-          {list.items.slice(0, 5).map((item: string, index: number) => (
+          {visibleItems.map((item: IListItem, index: number) => (
             <li key={index} className="list-item text-light-1 mb-1 line-clamp-1">
-              {item}
+              {item.content}
             </li>
           ))}
           {list.items.length > 5 && (
             <li className="list-item text-light-1 mb-1">
-              and {list.items.length - 5} more...
+              and {list.items.length - visibleItems.length} more...
             </li>
           )}
         </ul>

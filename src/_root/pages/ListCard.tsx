@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useEnhanceListDescription } from "@/lib/react-query/queries";
 import { shareList } from "@/lib/appwrite/api";
@@ -8,14 +8,18 @@ type ListCardProps = {
   list: IList;
 };
 
-const deserializeItem = (itemString: string): IListItem => {
-  const [content, isVisible] = itemString.split('|');
-  return { content, isVisible: isVisible === 'true' };
+const deserializeItem = (item: string | IListItem): IListItem => {
+  if (typeof item === 'string') {
+    const [content, isVisible] = item.split('|');
+    return { content, isVisible: isVisible === 'true' };
+  }
+  return item;
 };
 
 const ListCard: React.FC<ListCardProps> = ({ list }) => {
-  const parsedItems = list.items.map(deserializeItem);
-  const visibleItems = parsedItems.filter(item => item.isVisible).slice(0, 5);
+  const parsedItems = useMemo(() => list.items.map(deserializeItem), [list.items]);
+  const [items] = useState<IListItem[]>(parsedItems);
+  const visibleItems = items.filter(item => item.isVisible).slice(0, 5);
   const { mutate: enhanceDescription, isLoading: isEnhancing } = useEnhanceListDescription();
   const [enhancedDescription, setEnhancedDescription] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
@@ -85,9 +89,9 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               {item.content}
             </li>
           ))}
-          {parsedItems.length > 5 && (
+          {items.length > 5 && (
             <li className="list-item text-light-1 mb-1">
-              and {parsedItems.length - 5} more...
+              and {items.length - 5} more...
             </li>
           )}
         </ul>

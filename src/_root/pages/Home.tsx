@@ -3,7 +3,7 @@ import { useUserContext } from "@/context/AuthContext";
 import { useListContext } from "@/context/ListContext";
 import { useGenerateListIdea } from "@/lib/react-query/queries";
 import { Loader, ListCard } from "@/components/shared";
-import { IList } from "@/types"; // Make sure to import IList type
+import { IList } from "@/types";
 
 const Home: React.FC = () => {
   const { user } = useUserContext();

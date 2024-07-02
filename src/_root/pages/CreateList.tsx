@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCreateList } from "@/lib/react-query/queries";
 import { useToast } from "@/components/ui/use-toast";
 import ListForm from "@/components/forms/ListForm";
-import { IList } from "@/types";
+import { IList, IListItem } from "@/types";
 import { Loader } from "@/components/shared";
 import { useGenerateListIdea } from "@/lib/react-query/queries";
 import { indexList } from "@/lib/appwrite/api";
@@ -17,13 +17,15 @@ const CreateList: React.FC = () => {
 
   const handleCreateList = async (listData: IList) => {
     try {
-      // Transform the items array to match the new structure
+      // Ensure listData.items is an array of IListItem
       const transformedListData = {
         ...listData,
-        items: listData.items.map(item => ({
-          content: item,
-          isVisible: true
-        }))
+        items: listData.items.map((item: string | IListItem) => {
+          if (typeof item === 'string') {
+            return { content: item, isVisible: true };
+          }
+          return item;
+        })
       };
 
       const newList = await createList(transformedListData);

@@ -30,6 +30,7 @@ import { useState, useEffect } from "react";
 import { getCategories } from "@/lib/appwrite/api";
 import { getAISuggestions } from '@/lib/appwrite/aiService';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { IListItem } from "@/types";
 
 type ListFormProps = {
   list?: Models.Document;
@@ -78,8 +79,13 @@ const ListForm = ({ list, action }: ListFormProps) => {
     defaultValues: {
       title: list?.title || "",
       description: list?.description || "",
-      items: list?.items?.map((item: string) => ({ content: item, isVisible: true })) || 
-             Array(5).fill({ content: "", isVisible: true }),
+      items: list?.items?.map((item: string | IListItem) => {
+        if (typeof item === 'string') {
+          const [content, isVisible] = item.split('|');
+          return { content, isVisible: isVisible === 'true' };
+        }
+        return item;
+      }) || Array(5).fill({ content: "", isVisible: true }),
       category: list?.category || "",
       tags: list?.tags?.join(', ') || "",
     },
@@ -132,7 +138,7 @@ const ListForm = ({ list, action }: ListFormProps) => {
 
   return (
     <Form {...form}>
-      {error && <div className="text-red-500">{error}</div>}
+      {error && <div className="text-red-500" role="alert">{error}</div>}
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         <FormField
           control={form.control}
@@ -219,12 +225,18 @@ const ListForm = ({ list, action }: ListFormProps) => {
                                   {...field}
                                   checked={field.value}
                                   className="mr-2"
+                                  aria-label={`Make item ${index + 1} visible`}
                                 />
                               </FormControl>
                             </FormItem>
                           )}
                         />
-                        <Button type="button" onClick={() => remove(index)} className="bg-red-500 text-white">
+                        <Button 
+                          type="button" 
+                          onClick={() => remove(index)} 
+                          className="bg-red-500 text-white"
+                          aria-label={`Remove item ${index + 1}`}
+                        >
                           Remove
                         </Button>
                       </div>
@@ -238,7 +250,11 @@ const ListForm = ({ list, action }: ListFormProps) => {
         </DragDropContext>
 
         {fields.length < 10 && (
-          <Button type="button" onClick={() => append({ content: '', isVisible: true })}>
+          <Button 
+            type="button" 
+            onClick={() => append({ content: '', isVisible: true })}
+            aria-label="Add new item"
+          >
             Add Item
           </Button>
         )}

@@ -5,7 +5,7 @@ import { Loader } from '@/components/shared';
 import ListForm from '@/components/forms/ListForm';
 import { useUserContext } from '@/context/AuthContext';
 import { useToast } from "@/components/ui/use-toast";
-import { IList } from "@/types";
+import { IList, IListItem } from "@/types";
 
 const EditList = () => {
   const { id } = useParams();
@@ -24,7 +24,17 @@ const EditList = () => {
   const handleUpdateList = async (updatedListData: IList) => {
     if (!id) return;
     try {
-      await updateList({ ...updatedListData, listId: id });
+      const transformedListData = {
+        ...updatedListData,
+        items: updatedListData.items.map((item: string | IListItem) => {
+          if (typeof item === 'string') {
+            return { content: item, isVisible: true };
+          }
+          return item;
+        }),
+        listId: id
+      };
+      await updateList(transformedListData);
       toast({
         title: "List updated successfully!",
         description: "Your list has been updated and re-indexed.",

@@ -2,6 +2,8 @@ import { Models } from "appwrite";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import { useCreateCollaboration } from "@/lib/react-query/queries";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface UserDocument extends Models.Document {
   imageUrl?: string;
@@ -14,15 +16,40 @@ type UserCardProps = {
   listId: string;
 };
 
-const UserCard = ({ user, listId }: UserCardProps) => {
-  const { mutate: createCollaboration } = useCreateCollaboration();
+const UserCard: React.FC<UserCardProps> = ({ user, listId }) => {
+  const { mutate: createCollaboration, isLoading } = useCreateCollaboration();
+  const [isCollaborating, setIsCollaborating] = useState(false);
+  const { toast } = useToast();
 
   const handleCollaborate = () => {
-    createCollaboration({
-      listId,
-      userId: user.$id,
-      status: "pending",
-    });
+    setIsCollaborating(true);
+    createCollaboration(
+      {
+        listId,
+        userId: user.$id,
+        status: "pending",
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Collaboration request sent",
+            description: `A collaboration request has been sent to ${user.name}.`,
+            variant: "success",
+          });
+        },
+        onError: (error) => {
+          console.error('Error creating collaboration:', error);
+          toast({
+            title: "Error",
+            description: "Failed to send collaboration request. Please try again.",
+            variant: "destructive",
+          });
+        },
+        onSettled: () => {
+          setIsCollaborating(false);
+        },
+      }
+    );
   };
 
   return (
@@ -48,8 +75,9 @@ const UserCard = ({ user, listId }: UserCardProps) => {
         className="shad-button_primary px-5"
         aria-label={`Collaborate with ${user.name}`}
         onClick={handleCollaborate}
+        disabled={isLoading || isCollaborating}
       >
-        Collaborate
+        {isLoading || isCollaborating ? "Sending..." : "Collaborate"}
       </Button>
     </div>
   );

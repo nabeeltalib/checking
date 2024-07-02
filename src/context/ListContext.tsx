@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { IList } from '@/types';
+import { IList, IListItem } from '@/types';
 import { getRecentLists } from '@/lib/appwrite/api';
 import { QUERY_KEYS } from '@/lib/react-query/queryKeys';
 
@@ -25,7 +25,18 @@ export const ListProvider: React.FC<{ children: React.ReactNode }> = ({ children
     refetchOnWindowFocus: false,
   });
 
-  const lists = data?.documents || [];
+  const lists = useMemo(() => {
+    return data?.documents.map(list => ({
+      ...list,
+      items: list.items.map((item: string | IListItem) => {
+        if (typeof item === 'string') {
+          const [content, isVisible] = item.split('|');
+          return { content, isVisible: isVisible === 'true' };
+        }
+        return item;
+      })
+    })) || [];
+  }, [data]);
 
   const value = useMemo(
     () => ({ lists, isLoading, refetch }),
