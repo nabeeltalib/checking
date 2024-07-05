@@ -1,7 +1,5 @@
 import { ID, Client, Account, AppwriteException, Databases, Storage, Avatars, Functions, Query } from "appwrite";
 import { IUpdateList, INewList, IList, INewUser, IUpdateUser, IListItem, ICategoryItem } from "@/types";
-import { appwriteConfig, databases, storage, functions, account } from '@/lib/appwrite/config';
-import { getAISuggestions, generateListIdea, analyzeSentiment, enhanceListDescription } from '@/lib/appwrite/aiService';
 
 // Ensure environment variables are defined
 const requiredEnvVars = [
@@ -48,12 +46,12 @@ export const appwriteConfig = {
   analyzeSentimentFunctionId: import.meta.env.VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
   enhanceDescriptionFunctionId: import.meta.env.VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
   typesenseOperationsFunctionId: import.meta.env.VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID,
+  friendsCollectionId: import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
 };
 
 const client = new Client();
 
-client.setEndpoint(appwriteConfig.url);
-client.setProject(appwriteConfig.projectId);
+client.setEndpoint(appwriteConfig.url).setProject(appwriteConfig.projectId);
 
 export const account = new Account(client);
 export const databases = new Databases(client);
@@ -73,7 +71,7 @@ export async function createUserAccount(user: INewUser) {
       user.password,
       user.name
     );
-
+    console.log({newAccount})
     if (!newAccount) throw new Error("Failed to create account");
 
     const avatarUrl = avatars.getInitials(user.name);
@@ -87,8 +85,8 @@ export async function createUserAccount(user: INewUser) {
     });
 
     return newUser;
-  } catch (error) {
-    console.error("Error creating user account:", error);
+  } catch (error:any) {
+    console.error("Error creating user account:", error.message);
     return null;
   }
 }
@@ -105,19 +103,27 @@ export async function saveUserToDB(user: {
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
       ID.unique(),
-      user
+      {
+        accountId: user.accountId,
+        Email: user.email,
+        Name: user.name,
+        ImageUrl: user.imageUrl,
+        Username: user.username || user.name
+      }
     );
 
     return newUser;
   } catch (error) {
     console.error("Error saving user to database:", error);
-    return null;
+    return error;
   }
 }
 
 export async function signInAccount(user: { email: string; password: string }) {
   try {
     const session = await account.createEmailPasswordSession(user.email, user.password);
+    console.log('asasgsag ',await account.get())
+    console.log({session})
     return session;
   } catch (error) {
     console.error("Error signing in account:", error);
@@ -274,11 +280,11 @@ export async function getRecentLists(pageParam?: string) {
     const lists = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      queries
+      // queries
     );
     return lists;
-  } catch (error) {
-    console.error("Error fetching recent lists:", error);
+  } catch (error:any) {
+    console.error("Error fetching recent lists:", error.message);
     if (error instanceof AppwriteException) {
       console.error("Appwrite error details:", error.message, error.code);
     }
@@ -813,16 +819,16 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
     return [];
   }
 }
-export async function searchLists(query: string): Promise<IList[]> {
+export async function searchLists(query: string,userId:string): Promise<IList[]> {
   try {
     const response = await functions.createExecution(
       appwriteConfig.typesenseOperationsFunctionId,
-      JSON.stringify({ operation: 'search', data: { query } }),
+      JSON.stringify({ operation: 'search', data: { query,userId } }),
       false
     );
 
-    const results = JSON.parse(response.response);
-    return results.hits.map((hit: any) => ({
+    const results = JSON.parse(response.responseBody);
+    return results?.hits?.map((hit: any) => ({
       $id: hit.document.id,
       $createdAt: new Date(hit.document.created_at).toISOString(),
       $updatedAt: new Date(hit.document.created_at).toISOString(),
@@ -882,8 +888,8 @@ export const shareList = async (listId: string): Promise<string> => {
 export const getUserFriends = async (userId: string) => {
   try {
     const response = await databases.listDocuments(
-      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
-      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
       [
         Query.equal('userId', userId),
         Query.equal('status', 'accepted') // Assuming you have a status field for friend requests
@@ -905,8 +911,8 @@ export const getFriendsLists = async (userId: string) => {
 
     // Then, fetch lists created by these friends
     const response = await databases.listDocuments(
-      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
-      appwriteConfig.VITE_APPWRITE_LIST_COLLECTION_ID,
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
       [
         Query.equal('creator.$id', friendIds),
         Query.orderDesc('$createdAt'),
@@ -924,8 +930,8 @@ export const getFriendsLists = async (userId: string) => {
 export const sendFriendRequest = async (userId: string, friendId: string) => {
   try {
     const result = await databases.createDocument(
-      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
-      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
       ID.unique(),
       {
         userId: userId,
@@ -944,8 +950,8 @@ export const sendFriendRequest = async (userId: string, friendId: string) => {
 export const acceptFriendRequest = async (requestId: string) => {
   try {
     const result = await databases.updateDocument(
-      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
-      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
       requestId,
       { status: 'accepted' }
     );
@@ -959,8 +965,8 @@ export const acceptFriendRequest = async (requestId: string) => {
 export const rejectFriendRequest = async (requestId: string) => {
   try {
     const result = await databases.deleteDocument(
-      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
-      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
       requestId
     );
     return result;
@@ -974,8 +980,8 @@ export const rejectFriendRequest = async (requestId: string) => {
 export const getFriendRequests = async (userId: string) => {
   try {
     const result = await databases.listDocuments(
-      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
-      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
       [
         Query.equal('friendId', userId),
         Query.equal('status', 'pending')
@@ -992,8 +998,8 @@ export const getFriendRequests = async (userId: string) => {
 export const getFriends = async (userId: string) => {
   try {
     const result = await databases.listDocuments(
-      appwriteConfig.VITE_APPWRITE_DATABASE_ID,
-      appwriteConfig.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
       [
         Query.equal('status', 'accepted'),
         Query.search('userId', userId)

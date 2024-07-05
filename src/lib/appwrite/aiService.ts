@@ -1,16 +1,17 @@
-import { functions, appwriteConfig } from './config';
+import { functions, appwriteConfig } from './api';
 import { AppwriteException } from 'appwrite';
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/lib/react-query/queryKeys';
 
 export const getAISuggestions = async (userId: string): Promise<string[]> => {
   try {
+    console.log({ userId });
     const execution = await functions.createExecution(
       appwriteConfig.aiSuggestionsFunctionId,
       JSON.stringify({ userId }),
       false
     );
-    return JSON.parse(execution.response).suggestions;
+    return JSON.parse(execution.responseBody).suggestions;
   } catch (error) {
     console.error("Error fetching AI suggestions:", error);
     if (error instanceof AppwriteException) {
@@ -28,14 +29,14 @@ export const useGetAISuggestions = (userId: string) => {
   });
 };
 
-export const generateListIdea = async (prompt: string): Promise<string> => {
+export const generateListIdea = async (prompt: string,userId:string): Promise<string> => {
   try {
     const execution = await functions.createExecution(
       appwriteConfig.generateListIdeaFunctionId,
-      JSON.stringify({ prompt }),
+      JSON.stringify({ prompt,userId }),
       false
     );
-    return JSON.parse(execution.response).listIdea;
+    return JSON.parse(execution.responseBody).listIdea;
   } catch (error) {
     console.error("Error generating list idea:", error);
     if (error instanceof AppwriteException) {
@@ -52,7 +53,7 @@ export const analyzeSentiment = async (text: string): Promise<string> => {
       JSON.stringify({ text }),
       false
     );
-    return JSON.parse(execution.response).sentiment;
+    return JSON.parse(execution.responseBody).sentiment;
   } catch (error) {
     console.error("Error analyzing sentiment:", error);
     if (error instanceof AppwriteException) {
@@ -69,7 +70,7 @@ export const enhanceListDescription = async (listId: string, description: string
       JSON.stringify({ listId, description }),
       false
     );
-    return JSON.parse(execution.response).enhancedDescription;
+    return JSON.parse(execution.responseBody).enhancedDescription;
   } catch (error) {
     console.error("Error enhancing list description:", error);
     if (error instanceof AppwriteException) {

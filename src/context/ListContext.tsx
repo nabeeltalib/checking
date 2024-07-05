@@ -26,9 +26,9 @@ export const ListProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const lists = useMemo(() => {
-    return data?.documents.map(list => ({
+    return data?.documents?.map(list => ({
       ...list,
-      items: list.items.map((item: string | IListItem) => {
+      items: list.items?.map((item: string | IListItem) => {
         if (typeof item === 'string') {
           const [content, isVisible] = item.split('|');
           return { content, isVisible: isVisible === 'true' };

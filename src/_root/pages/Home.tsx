@@ -8,7 +8,7 @@ import { IList } from "@/types";
 const Home: React.FC = () => {
   const { user } = useUserContext();
   const { lists, isLoading, error } = useListContext(); // Add error handling
-  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea();
+  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user.id);
   const [listIdea, setListIdea] = useState<string | null>(null);
 
   const handleGenerateIdea = () => {

@@ -7,12 +7,14 @@ import { IList, IListItem } from "@/types";
 import { Loader } from "@/components/shared";
 import { useGenerateListIdea } from "@/lib/react-query/queries";
 import { indexList } from "@/lib/appwrite/api";
+import { useUserContext } from "@/context/AuthContext";
 
 const CreateList: React.FC = () => {
   const { toast } = useToast();
+  const { user } = useUserContext();
   const navigate = useNavigate();
   const { mutateAsync: createList, isLoading } = useCreateList();
-  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea();
+  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user.id);
   const [listIdea, setListIdea] = useState<string | null>(null);
 
   const handleCreateList = async (listData: IList) => {

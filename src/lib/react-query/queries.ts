@@ -1,6 +1,16 @@
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
-import { getAISuggestions, generateListIdea, analyzeSentiment, enhanceListDescription } from '@/lib/appwrite/aiService';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery
+} from '@tanstack/react-query';
+import { QUERY_KEYS } from '@/lib/react-query/queryKeys';
+import {
+  getAISuggestions,
+  generateListIdea,
+  analyzeSentiment,
+  enhanceListDescription
+} from '@/lib/appwrite/aiService';
 import {
   createUserAccount,
   signInAccount,
@@ -15,12 +25,12 @@ import {
   likeList,
   getRecentLists,
   getInfiniteLists,
-  getUserFriends, 
+  getUserFriends,
   getFriendsLists,
   searchLists,
-  acceptFriendRequest, 
+  acceptFriendRequest,
   rejectFriendRequest,
-  getFriendRequests, 
+  getFriendRequests,
   saveList,
   deleteSavedList,
   getUserById,
@@ -31,9 +41,9 @@ import {
   updateSuggestion,
   createCollaboration,
   getCollaborations,
-  updateCollaboration,
-} from "@/lib/appwrite/api";
-import { INewList, INewUser, IUpdateList, IUpdateUser } from "@/types";
+  updateCollaboration
+} from '@/lib/appwrite/api';
+import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
 
 // ============================================================
 // AUTH QUERIES
@@ -41,19 +51,20 @@ import { INewList, INewUser, IUpdateList, IUpdateUser } from "@/types";
 
 export const useCreateUserAccount = () => {
   return useMutation({
-    mutationFn: (user: INewUser) => createUserAccount(user),
+    mutationFn: (user: INewUser) => createUserAccount(user)
   });
 };
 
 export const useSignInAccount = () => {
   return useMutation({
-    mutationFn: (user: { email: string; password: string }) => signInAccount(user),
+    mutationFn: (user: { email: string; password: string }) =>
+      signInAccount(user)
   });
 };
 
 export const useSignOutAccount = () => {
   return useMutation({
-    mutationFn: signOutAccount,
+    mutationFn: signOutAccount
   });
 };
 
@@ -66,26 +77,25 @@ export const useGetLists = () => {
     queryKey: [QUERY_KEYS.GET_INFINITE_LISTS],
     queryFn: getInfiniteLists as any,
     getNextPageParam: (lastPage: any) => {
-      if (lastPage && lastPage.documents.length === 0) {
+      if (lastPage && lastPage?.documents?.length === 0) {
         return null;
       }
       const lastId = lastPage.documents[lastPage.documents.length - 1].$id;
       return lastId;
-    },
+    }
   });
 };
-
 
 export const useGetInfiniteLists = () => {
   return useInfiniteQuery({
     queryKey: [QUERY_KEYS.GET_INFINITE_LISTS],
     queryFn: ({ pageParam = 0 }) => getInfiniteLists({ pageParam }),
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       if (lastPage && lastPage.documents.length === 0) {
         return undefined;
       }
       return lastPage.documents[lastPage.documents.length - 1].$id;
-    },
+    }
   });
 };
 
@@ -93,7 +103,8 @@ export const useGetRecentLists = () => {
   return useInfiniteQuery({
     queryKey: [QUERY_KEYS.GET_RECENT_LISTS],
     queryFn: ({ pageParam = null }) => getRecentLists(pageParam),
-    getNextPageParam: (lastPage) => lastPage.documents[lastPage.documents.length - 1]?.$id || null,
+    getNextPageParam: lastPage =>
+      lastPage.documents[lastPage.documents.length - 1]?.$id || null
   });
 };
 
@@ -103,14 +114,18 @@ export const useCreateList = () => {
   return useMutation({
     mutationFn: (list: INewList) => createList(list),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_RECENT_LISTS] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_INFINITE_LISTS] });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_LISTS]
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_INFINITE_LISTS]
+      });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_LISTS] });
     },
-    onError: (error) => {
+    onError: error => {
       console.error('Error creating list:', error);
       // Handle error (e.g., show a toast notification)
-    },
+    }
   });
 };
 
@@ -118,7 +133,7 @@ export const useGetListById = (listId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_LIST_BY_ID, listId],
     queryFn: () => getListById(listId),
-    enabled: !!listId,
+    enabled: !!listId
   });
 };
 
@@ -126,7 +141,7 @@ export const useGetUserLists = (userId?: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_USER_LISTS, userId],
     queryFn: () => getUserLists(userId),
-    enabled: !!userId,
+    enabled: !!userId
   });
 };
 
@@ -134,11 +149,11 @@ export const useUpdateList = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (list: IUpdateList) => updateList(list),
-    onSuccess: (data) => {
+    onSuccess: data => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_LIST_BY_ID, data?.$id],
+        queryKey: [QUERY_KEYS.GET_LIST_BY_ID, data?.$id]
       });
-    },
+    }
   });
 };
 
@@ -148,9 +163,9 @@ export const useDeleteList = () => {
     mutationFn: (listId?: string) => deleteList(listId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_RECENT_LISTS],
+        queryKey: [QUERY_KEYS.GET_RECENT_LISTS]
       });
-    },
+    }
   });
 };
 
@@ -159,43 +174,44 @@ export const useLikeList = () => {
   return useMutation({
     mutationFn: ({
       listId,
-      likesArray,
+      likesArray
     }: {
       listId: string;
       likesArray: string[];
     }) => likeList(listId, likesArray),
-    onSuccess: (data) => {
+    onSuccess: data => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_LIST_BY_ID, data?.$id],
+        queryKey: [QUERY_KEYS.GET_LIST_BY_ID, data?.$id]
       });
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_RECENT_LISTS],
+        queryKey: [QUERY_KEYS.GET_RECENT_LISTS]
       });
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_LISTS],
+        queryKey: [QUERY_KEYS.GET_LISTS]
       });
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER]
       });
-    },
+    }
   });
 };
 
 export const useSaveList = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ userId, listId }: { userId: string; listId: string }) => saveList(userId, listId),
+    mutationFn: ({ userId, listId }: { userId: string; listId: string }) =>
+      saveList(userId, listId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_RECENT_LISTS],
+        queryKey: [QUERY_KEYS.GET_RECENT_LISTS]
       });
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_LISTS],
+        queryKey: [QUERY_KEYS.GET_LISTS]
       });
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER]
       });
-    },
+    }
   });
 };
 
@@ -205,15 +221,15 @@ export const useDeleteSavedList = () => {
     mutationFn: (savedRecordId: string) => deleteSavedList(savedRecordId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_RECENT_LISTS],
+        queryKey: [QUERY_KEYS.GET_RECENT_LISTS]
       });
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_LISTS],
+        queryKey: [QUERY_KEYS.GET_LISTS]
       });
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER]
       });
-    },
+    }
   });
 };
 
@@ -224,14 +240,14 @@ export const useDeleteSavedList = () => {
 export const useGetCurrentUser = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_CURRENT_USER],
-    queryFn: getCurrentUser,
+    queryFn: getCurrentUser
   });
 };
 
 export const useGetUsers = (limit?: number) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_USERS],
-    queryFn: () => getUsers(limit),
+    queryFn: () => getUsers(limit)
   });
 };
 
@@ -239,7 +255,7 @@ export const useGetUserById = (userId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_USER_BY_ID, userId],
     queryFn: () => getUserById(userId),
-    enabled: !!userId,
+    enabled: !!userId
   });
 };
 
@@ -247,14 +263,14 @@ export const useUpdateUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (user: IUpdateUser) => updateUser(user),
-    onSuccess: (data) => {
+    onSuccess: data => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER]
       });
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.$id],
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.$id]
       });
-    },
+    }
   });
 };
 
@@ -265,12 +281,16 @@ export const useUpdateUser = () => {
 export const useCreateComment = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (comment: { listId: string; userId: string; content: string }) => createComment(comment),
+    mutationFn: (comment: {
+      listId: string;
+      userId: string;
+      content: string;
+    }) => createComment(comment),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_COMMENTS],
+        queryKey: [QUERY_KEYS.GET_COMMENTS]
       });
-    },
+    }
   });
 };
 
@@ -278,7 +298,7 @@ export const useGetComments = (listId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_COMMENTS, listId],
     queryFn: () => getComments(listId),
-    enabled: !!listId,
+    enabled: !!listId
   });
 };
 
@@ -299,9 +319,9 @@ export const useCreateSuggestion = () => {
     }) => createSuggestion(suggestion),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_SUGGESTIONS],
+        queryKey: [QUERY_KEYS.GET_SUGGESTIONS]
       });
-    },
+    }
   });
 };
 
@@ -309,19 +329,25 @@ export const useGetSuggestions = (listId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_SUGGESTIONS, listId],
     queryFn: () => getSuggestions(listId),
-    enabled: !!listId,
+    enabled: !!listId
   });
 };
 
 export const useUpdateSuggestion = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ suggestionId, status }: { suggestionId: string; status: string }) => updateSuggestion(suggestionId, status),
+    mutationFn: ({
+      suggestionId,
+      status
+    }: {
+      suggestionId: string;
+      status: string;
+    }) => updateSuggestion(suggestionId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_SUGGESTIONS],
+        queryKey: [QUERY_KEYS.GET_SUGGESTIONS]
       });
-    },
+    }
   });
 };
 
@@ -332,12 +358,16 @@ export const useUpdateSuggestion = () => {
 export const useCreateCollaboration = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (collaboration: { listId: string; userId: string; status: string }) => createCollaboration(collaboration),
+    mutationFn: (collaboration: {
+      listId: string;
+      userId: string;
+      status: string;
+    }) => createCollaboration(collaboration),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_COLLABORATIONS],
+        queryKey: [QUERY_KEYS.GET_COLLABORATIONS]
       });
-    },
+    }
   });
 };
 
@@ -345,33 +375,39 @@ export const useGetCollaborations = (listId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_COLLABORATIONS, listId],
     queryFn: () => getCollaborations(listId),
-    enabled: !!listId,
+    enabled: !!listId
   });
 };
 
 export const useUpdateCollaboration = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ collaborationId, status }: { collaborationId: string; status: string }) => updateCollaboration(collaborationId, status),
+    mutationFn: ({
+      collaborationId,
+      status
+    }: {
+      collaborationId: string;
+      status: string;
+    }) => updateCollaboration(collaborationId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_COLLABORATIONS],
+        queryKey: [QUERY_KEYS.GET_COLLABORATIONS]
       });
-    },
+    }
   });
 };
 
 export const useTrendingTags = () => {
   return useQuery({
     queryKey: ['trendingTags'],
-    queryFn: getTrendingTags,
+    queryFn: getTrendingTags
   });
 };
 
 export const usePopularCategories = () => {
   return useQuery({
     queryKey: ['popularCategories'],
-    queryFn: getPopularCategories,
+    queryFn: getPopularCategories
   });
 };
 
@@ -379,19 +415,20 @@ export const useRecentLists = () => {
   return useInfiniteQuery({
     queryKey: ['recentLists'],
     queryFn: ({ pageParam }) => getRecentLists(pageParam),
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       if (lastPage.documents.length === 0) return undefined;
       return lastPage.documents[lastPage.documents.length - 1].$id;
-    },
+    }
   });
 };
 
-export const useSearchLists = (searchTerm: string) => {
+export const useSearchLists = (searchTerm: string,userId:string) => {
   return useInfiniteQuery({
     queryKey: ['searchLists', searchTerm],
-    queryFn: ({ pageParam }) => searchLists(searchTerm, pageParam),
-    getNextPageParam: (lastPage) => lastPage?.documents[lastPage.documents.length - 1]?.$id,
-    enabled: searchTerm.length > 0,
+    queryFn: ({ pageParam }) => searchLists(searchTerm, userId),
+    getNextPageParam: lastPage =>
+      lastPage?.documents?.[lastPage?.documents?.length - 1]?.$id,
+    enabled: searchTerm.length > 0
   });
 };
 
@@ -399,33 +436,38 @@ export const useSearchLists = (searchTerm: string) => {
 export const useGetAISuggestions = (userId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_AI_SUGGESTIONS, userId],
-    queryFn: () => getAISuggestions(userId),
+    queryFn: () => getAISuggestions(userId)
   });
 };
 
-export const useGenerateListIdea = () => {
+export const useGenerateListIdea = (userId: string) => {
   return useMutation({
-    mutationFn: (prompt: string) => generateListIdea(prompt),
+    mutationFn: (prompt: string) => generateListIdea(prompt, userId)
   });
 };
 
 export const useEnhanceListDescription = () => {
   return useMutation({
-    mutationFn: ({ listId, description }: { listId: string; description: string }) =>
-      enhanceListDescription(listId, description),
+    mutationFn: ({
+      listId,
+      description
+    }: {
+      listId: string;
+      description: string;
+    }) => enhanceListDescription(listId, description)
   });
 };
 
 export const useAnalyzeSentiment = () => {
   return useMutation({
-    mutationFn: (text: string) => analyzeSentiment(text),
+    mutationFn: (text: string) => analyzeSentiment(text)
   });
 };
 export const useGetUserFriends = (userId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_USER_FRIENDS, userId],
     queryFn: () => getUserFriends(userId),
-    enabled: !!userId,
+    enabled: !!userId
   });
 };
 
@@ -433,7 +475,7 @@ export const useGetFriendsLists = (userId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_FRIENDS_LISTS, userId],
     queryFn: () => getFriendsLists(userId),
-    enabled: !!userId,
+    enabled: !!userId
   });
 };
 export const useAcceptFriendRequest = () => {
@@ -443,7 +485,7 @@ export const useAcceptFriendRequest = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(['friendRequests']);
       queryClient.invalidateQueries(['friends']);
-    },
+    }
   });
 };
 
@@ -453,13 +495,13 @@ export const useRejectFriendRequest = () => {
     mutationFn: (requestId: string) => rejectFriendRequest(requestId),
     onSuccess: () => {
       queryClient.invalidateQueries(['friendRequests']);
-    },
+    }
   });
 };
 export const useGetFriendRequests = (userId: string) => {
   return useQuery({
     queryKey: ['friendRequests', userId],
     queryFn: () => getFriendRequests(userId),
-    enabled: !!userId,
+    enabled: !!userId
   });
 };

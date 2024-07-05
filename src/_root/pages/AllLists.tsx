@@ -24,7 +24,7 @@ const AllLists = () => {
     hasNextPage,
   } = useGetInfiniteLists();
 
-  const { data: searchResults, isLoading: isSearchLoading } = useSearchLists(searchQuery);
+  const { data: searchResults, isLoading: isSearchLoading } = useSearchLists(searchQuery,user.id);
 
   useEffect(() => {
     if (inView && hasNextPage) {

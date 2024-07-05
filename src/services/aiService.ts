@@ -1,20 +1,22 @@
-import { functions, appwriteConfig } from './config';
 import { AppwriteException } from 'appwrite';
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/lib/react-query/queryKeys';
+import { appwriteConfig, functions } from '@/lib/appwrite/api';
 
 export const getAISuggestions = async (userId: string): Promise<string[]> => {
   try {
+    console.log({ userId });
     const execution = await functions.createExecution(
       appwriteConfig.aiSuggestionsFunctionId,
       JSON.stringify({ userId }),
       false
     );
-    return JSON.parse(execution.response).suggestions;
+    console.log({ execution });
+    return JSON.parse(execution.responseBody).suggestions;
   } catch (error) {
-    console.error("Error fetching AI suggestions:", error);
+    console.error('Error fetching AI suggestions:', error);
     if (error instanceof AppwriteException) {
-      console.error("Appwrite error details:", error.message, error.code);
+      console.error('Appwrite error details:', error.message, error.code);
     }
     return [];
   }
@@ -24,7 +26,7 @@ export const useGetAISuggestions = (userId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_AI_SUGGESTIONS, userId],
     queryFn: () => getAISuggestions(userId),
-    enabled: !!userId,
+    enabled: !!userId
   });
 };
 
@@ -35,13 +37,13 @@ export const generateListIdea = async (prompt: string): Promise<string> => {
       JSON.stringify({ prompt }),
       false
     );
-    return JSON.parse(execution.response).listIdea;
+    return JSON.parse(execution.responseBody).listIdea;
   } catch (error) {
-    console.error("Error generating list idea:", error);
+    console.error('Error generating list idea:', error);
     if (error instanceof AppwriteException) {
-      console.error("Appwrite error details:", error.message, error.code);
+      console.error('Appwrite error details:', error.message, error.code);
     }
-    throw new Error("Failed to generate list idea");
+    throw new Error('Failed to generate list idea');
   }
 };
 
@@ -52,29 +54,32 @@ export const analyzeSentiment = async (text: string): Promise<string> => {
       JSON.stringify({ text }),
       false
     );
-    return JSON.parse(execution.response).sentiment;
+    return JSON.parse(execution.responseBody).sentiment;
   } catch (error) {
-    console.error("Error analyzing sentiment:", error);
+    console.error('Error analyzing sentiment:', error);
     if (error instanceof AppwriteException) {
-      console.error("Appwrite error details:", error.message, error.code);
+      console.error('Appwrite error details:', error.message, error.code);
     }
-    throw new Error("Failed to analyze sentiment");
+    throw new Error('Failed to analyze sentiment');
   }
 };
 
-export const enhanceListDescription = async (listId: string, description: string): Promise<string> => {
+export const enhanceListDescription = async (
+  listId: string,
+  description: string
+): Promise<string> => {
   try {
     const execution = await functions.createExecution(
       appwriteConfig.enhanceDescriptionFunctionId,
       JSON.stringify({ listId, description }),
       false
     );
-    return JSON.parse(execution.response).enhancedDescription;
+    return JSON.parse(execution.responseBody).enhancedDescription;
   } catch (error) {
-    console.error("Error enhancing list description:", error);
+    console.error('Error enhancing list description:', error);
     if (error instanceof AppwriteException) {
-      console.error("Appwrite error details:", error.message, error.code);
+      console.error('Appwrite error details:', error.message, error.code);
     }
-    throw new Error("Failed to enhance list description");
+    throw new Error('Failed to enhance list description');
   }
 };
