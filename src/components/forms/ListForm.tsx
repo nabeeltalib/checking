@@ -37,7 +37,7 @@ type ListFormProps = {
   action: "Create" | "Update";
 };
 
-const ListForm = ({ list, action }: ListFormProps) => {
+const ListForm = ({ list, action,onSubmit }: ListFormProps) => {
   const { user } = useUserContext();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -96,8 +96,8 @@ const ListForm = ({ list, action }: ListFormProps) => {
     name: "items",
   });
   
-  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea();
-  const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList();
+  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user.id);
+  const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList(user.id);
   const { mutateAsync: updateList, isLoading: isLoadingUpdate } = useUpdateList();
 
   const handleGenerateIdea = () => {
@@ -110,15 +110,16 @@ const ListForm = ({ list, action }: ListFormProps) => {
 
   const handleSubmit = async (value: z.infer<typeof formSchema>) => {
     try {
+      console.log({action,value})
       if (list && action === "Update") {
-        const updatedList = await updateList({ ...value, listId: list.$id });
+        const updatedList = await updateList({ ...value, listId: list.$id ,UpdatedAt:new Date()});
         if (!updatedList) {
           toast({ title: `${action} list failed. Please try again.` });
         } else {
           navigate(`/lists/${list.$id}`);
         }
       } else {
-        const newList = await createList({ ...value, userId: user.id });
+        const newList = await createList({ ...value, userId: user.id,CreatedAt:new Date(),UpdatedAt:new Date()});
         if (!newList) {
           toast({ title: `${action} list failed. Please try again.` });
         } else {
@@ -135,7 +136,7 @@ const ListForm = ({ list, action }: ListFormProps) => {
     if (!result.destination) return;
     move(result.source.index, result.destination.index);
   };
-
+  console.log(form.formState.errors, 'errrer')
   return (
     <Form {...form}>
       {error && <div className="text-red-500" role="alert">{error}</div>}

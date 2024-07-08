@@ -13,8 +13,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const [enhancedDescription, setEnhancedDescription] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
 
-  const visibleItems = useMemo(() => 
-    list.items.filter((item: IListItem) => item.isVisible).slice(0, 5),
+  const visibleItems = useMemo(() => list.items, //.filter((item: IListItem) => item.isVisible).slice(0, 5),
     [list.items]
   );
 
@@ -53,10 +52,10 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   return (
     <div className="list-card bg-dark-3 p-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
       <h3 className="list-title text-xl font-bold mb-2 text-white line-clamp-2">
-        {list.title}
+        {list?.title|| list?.Title}
       </h3>
       <p className="list-description text-light-3 mb-4 line-clamp-3">
-        {enhancedDescription || list.description}
+        {enhancedDescription || list?.description||list?.Description}
       </p>
       
       <div className="flex justify-between items-center mt-2">
@@ -80,16 +79,16 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         <ul className="list-items mb-4">
           {visibleItems.map((item: IListItem, index: number) => (
             <li key={index} className="list-item text-light-1 mb-1 line-clamp-1">
-              {item.content}
+              {item?.content || item}
             </li>
           ))}
-          {list.items.length > 5 && (
+          {/* {list.items.length > 5 && (
             <li className="list-item text-light-1 mb-1">
               and {list.items.length - visibleItems.length} more...
             </li>
-          )}
+          )} */}
         </ul>
-        <div className="list-tags flex flex-wrap gap-2">
+        {/* <div className="list-tags flex flex-wrap gap-2">
           {list.tags.map((tag: string) => (
             <span
               key={tag}
@@ -98,7 +97,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               #{tag}
             </span>
           ))}
-        </div>
+        </div> */}
       </Link>
       
       <Link to={`/lists/${list.$id}`} className="mt-2 inline-block text-primary-500">

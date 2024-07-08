@@ -57,7 +57,7 @@ export const multiFormatDateString = (timestamp: string = ""): string => {
 
 // Check if a user has liked a list
 export const checkIsLiked = (likeList: string[], userId: string) => {
-  return likeList.includes(userId);
+  return likeList?.includes(userId);
 };
 
 // Validate email format

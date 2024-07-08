@@ -40,7 +40,7 @@ const AllLists = () => {
     toast({ title: "Something went wrong." });
     return null;
   }
-
+console.log({searchResults})
   return (
     <div className="common-container">
       <div className="list-container">
@@ -75,11 +75,12 @@ const AllLists = () => {
                 ) : searchResults && searchResults.length === 0 ? (
                   <p>No results found.</p>
                 ) : (
-                  searchResults?.map((list: IList) => (
-                    <li key={list.$id} className="flex-1 min-w-[200px] w-full">
-                      <ListCard list={list} />
-                    </li>
-                  ))
+                  null
+                  // searchResults?.map((list: IList) => (
+                  //   <li key={list.$id} className="flex-1 min-w-[200px] w-full">
+                  //     <ListCard list={list} />
+                  //   </li>
+                  // ))
                 )}
               </ul>
             ) : (

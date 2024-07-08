@@ -10,16 +10,17 @@ type ListCardProps = {
 
 const deserializeItem = (item: string | IListItem): IListItem => {
   if (typeof item === 'string') {
-    const [content, isVisible] = item.split('|');
+    const [content, isVisible] = item?.split('|');
     return { content, isVisible: isVisible === 'true' };
   }
   return item;
 };
 
 const ListCard: React.FC<ListCardProps> = ({ list }) => {
-  const parsedItems = useMemo(() => list.items.map(deserializeItem), [list.items]);
-  const [items] = useState<IListItem[]>(parsedItems);
-  const visibleItems = items.filter(item => item.isVisible).slice(0, 5);
+  console.log({list})
+  // const parsedItems = useMemo(() => list?.items?.map(deserializeItem), [list?.items]);
+  // const [items] = useState<IListItem[]>(parsedItems);
+  const visibleItems = list?.items;//?.filter(item => item.isVisible).slice(0, 5);
   const { mutate: enhanceDescription, isLoading: isEnhancing } = useEnhanceListDescription();
   const [enhancedDescription, setEnhancedDescription] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
@@ -28,7 +29,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     e.preventDefault();
     e.stopPropagation();
     enhanceDescription(
-      { listId: list.$id, description: list.description },
+      { listId: list?.$id, description: list?.Description },
       {
         onSuccess: (enhanced) => setEnhancedDescription(enhanced),
         onError: (error) => {
@@ -59,10 +60,10 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   return (
     <div className="list-card bg-dark-3 p-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
       <h3 className="list-title text-xl font-bold mb-2 text-white line-clamp-2">
-        {list.title}
+        {list.Title}
       </h3>
       <p className="list-description text-light-3 mb-4 line-clamp-3">
-        {enhancedDescription || list.description}
+        {enhancedDescription || list.Description}
       </p>
       
       <div className="flex justify-between items-center mt-2">
@@ -84,19 +85,19 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
 
       <Link to={`/lists/${list.$id}`} className="block mt-4">
         <ul className="list-items mb-4">
-          {visibleItems.map((item, index) => (
+          {visibleItems?.map((item, index) => (
             <li key={index} className="list-item text-light-1 mb-1 line-clamp-1">
-              {item.content}
+              {item?.content||item}
             </li>
           ))}
-          {items.length > 5 && (
+          {/* {items?.length > 5 && (
             <li className="list-item text-light-1 mb-1">
-              and {items.length - 5} more...
+              and {items?.length - 5} more...
             </li>
-          )}
+          )} */}
         </ul>
-        <div className="list-tags flex flex-wrap gap-2">
-          {list.tags.map((tag: string) => (
+        {/* <div className="list-tags flex flex-wrap gap-2">
+          {list?.tags?.map((tag: string) => (
             <span
               key={tag}
               className="list-tag bg-dark-4 text-light-3 rounded-full px-2 py-1 text-xs"
@@ -104,7 +105,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               #{tag}
             </span>
           ))}
-        </div>
+        </div> */}
       </Link>
       
       <Link to={`/lists/${list.$id}`} className="mt-2 inline-block text-primary-500">

@@ -1,4 +1,4 @@
-import { Models } from "appwrite";
+import { Models } from 'appwrite';
 
 export type INavLink = {
   imgURL: string;
@@ -15,11 +15,17 @@ export type IUpdateUser = {
   imageUrl: URL | string;
   file: File[];
 };
-export type INewList = Omit<IList, '$id' | '$createdAt' | '$updatedAt' | 'userId'> & {
+export type INewList = Omit<
+  IList,
+  '$id' | '$createdAt' | '$updatedAt' | 'userId'
+> & {
   userId: string;
 };
 
-export type IUpdateList = Pick<IList, "title" | "description" | "items" | "tags"> & {
+export type IUpdateList = Pick<
+  IList,
+  'title' | 'description' | 'items' | 'tags'
+> & {
   listId: string;
 };
 
@@ -42,8 +48,9 @@ export interface IList extends Models.Document {
   views: number;
   aiScore?: number;
   suggestions?: ISuggestion[];
+  CreatedAt?: Date;
+  UpdatedAt?: Date;
 }
-
 
 export interface IUser extends Models.Document {
   name: string;
@@ -72,7 +79,6 @@ export type ICategoryItem = {
   // Add other properties specific to list items
 };
 
-
 export type IContextType = {
   user: IUser;
   isLoading: boolean;
@@ -85,7 +91,6 @@ export type IContextType = {
 // New types for Comments, Suggestions, and Collaborations
 
 export type INewComment = Omit<IComment, 'id' | 'createdAt'>;
-
 
 export type IComment = {
   id: string;
@@ -120,12 +125,12 @@ export type INewCollaboration = Omit<ICollaboration, 'id'>;
 export interface AICategory {
   id: string;
   name: string;
-};
+}
 
 export interface AISuggestion {
   id: string;
   suggestion: string;
-};
+}
 
 export type Sentiment = 'positive' | 'negative' | 'neutral';
 

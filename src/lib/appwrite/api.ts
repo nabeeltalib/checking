@@ -1,5 +1,23 @@
-import { ID, Client, Account, AppwriteException, Databases, Storage, Avatars, Functions, Query } from "appwrite";
-import { IUpdateList, INewList, IList, INewUser, IUpdateUser, IListItem, ICategoryItem } from "@/types";
+import {
+  ID,
+  Client,
+  Account,
+  AppwriteException,
+  Databases,
+  Storage,
+  Avatars,
+  Functions,
+  Query
+} from 'appwrite';
+import {
+  IUpdateList,
+  INewList,
+  IList,
+  INewUser,
+  IUpdateUser,
+  IListItem,
+  ICategoryItem
+} from '@/types';
 
 // Ensure environment variables are defined
 const requiredEnvVars = [
@@ -19,13 +37,17 @@ const requiredEnvVars = [
   'VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID',
   'VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID',
   'VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID',
-  'VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID',
+  'VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID'
 ];
 
-const missingEnvVars = requiredEnvVars.filter(varName => !import.meta.env[varName]);
+const missingEnvVars = requiredEnvVars.filter(
+  varName => !import.meta.env[varName]
+);
 
 if (missingEnvVars.length > 0) {
-  throw new Error(`Missing Appwrite environment variables: ${missingEnvVars.join(', ')}`);
+  throw new Error(
+    `Missing Appwrite environment variables: ${missingEnvVars.join(', ')}`
+  );
 }
 
 export const appwriteConfig = {
@@ -37,16 +59,24 @@ export const appwriteConfig = {
   listCollectionId: import.meta.env.VITE_APPWRITE_LIST_COLLECTION_ID,
   savesCollectionId: import.meta.env.VITE_APPWRITE_SAVES_COLLECTION_ID,
   commentCollectionId: import.meta.env.VITE_APPWRITE_COMMENT_COLLECTION_ID,
-  suggestionCollectionId: import.meta.env.VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
-  collaborationCollectionId: import.meta.env.VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
+  suggestionCollectionId: import.meta.env
+    .VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
+  collaborationCollectionId: import.meta.env
+    .VITE_APPWRITE_COLLABORATION_COLLECTION_ID,
   categoryCollectionId: import.meta.env.VITE_APPWRITE_CATEGORY_COLLECTION_ID,
-  sharedLinksCollectionId: import.meta.env.VITE_APPWRITE_SHARED_LINKS_COLLECTION_ID,
-  aiSuggestionsFunctionId: import.meta.env.VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID,
-  generateListIdeaFunctionId: import.meta.env.VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID,
-  analyzeSentimentFunctionId: import.meta.env.VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
-  enhanceDescriptionFunctionId: import.meta.env.VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
-  typesenseOperationsFunctionId: import.meta.env.VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID,
-  friendsCollectionId: import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+  sharedLinksCollectionId: import.meta.env
+    .VITE_APPWRITE_SHARED_LINKS_COLLECTION_ID,
+  aiSuggestionsFunctionId: import.meta.env
+    .VITE_APPWRITE_AI_SUGGESTIONS_FUNCTION_ID,
+  generateListIdeaFunctionId: import.meta.env
+    .VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID,
+  analyzeSentimentFunctionId: import.meta.env
+    .VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID,
+  enhanceDescriptionFunctionId: import.meta.env
+    .VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
+  typesenseOperationsFunctionId: import.meta.env
+    .VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID,
+  friendsCollectionId: import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID
 };
 
 const client = new Client();
@@ -71,8 +101,8 @@ export async function createUserAccount(user: INewUser) {
       user.password,
       user.name
     );
-    console.log({newAccount})
-    if (!newAccount) throw new Error("Failed to create account");
+    console.log({ newAccount });
+    if (!newAccount) throw new Error('Failed to create account');
 
     const avatarUrl = avatars.getInitials(user.name);
 
@@ -81,12 +111,12 @@ export async function createUserAccount(user: INewUser) {
       name: newAccount.name,
       email: newAccount.email,
       username: user.username,
-      imageUrl: avatarUrl,
+      imageUrl: avatarUrl
     });
 
     return newUser;
-  } catch (error:any) {
-    console.error("Error creating user account:", error.message);
+  } catch (error: any) {
+    console.error('Error creating user account:', error.message);
     return null;
   }
 }
@@ -114,19 +144,22 @@ export async function saveUserToDB(user: {
 
     return newUser;
   } catch (error) {
-    console.error("Error saving user to database:", error);
+    console.error('Error saving user to database:', error);
     return error;
   }
 }
 
 export async function signInAccount(user: { email: string; password: string }) {
   try {
-    const session = await account.createEmailPasswordSession(user.email, user.password);
-    console.log('asasgsag ',await account.get())
-    console.log({session})
+    const session = await account.createEmailPasswordSession(
+      user.email,
+      user.password
+    );
+    console.log('asasgsag ', await account.get());
+    console.log({ session });
     return session;
   } catch (error) {
-    console.error("Error signing in account:", error);
+    console.error('Error signing in account:', error);
     return null;
   }
 }
@@ -136,7 +169,7 @@ export async function getAccount() {
     const currentAccount = await account.get();
     return currentAccount;
   } catch (error) {
-    console.error("Error getting account:", error);
+    console.error('Error getting account:', error);
     return null;
   }
 }
@@ -145,12 +178,12 @@ export async function getCurrentUser() {
   try {
     const currentAccount = await account.get();
 
-    if (!currentAccount) throw new Error("Not authenticated");
+    if (!currentAccount) throw new Error('Not authenticated');
 
     const currentUser = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
-      [Query.equal("accountId", currentAccount.$id)]
+      [Query.equal('accountId', currentAccount.$id)]
     );
 
     if (!currentUser || currentUser.total === 0) {
@@ -163,7 +196,7 @@ export async function getCurrentUser() {
           accountId: currentAccount.$id,
           email: currentAccount.email,
           name: currentAccount.name, // Make sure to include the name
-          username: currentAccount.name, // You might want to generate a username
+          username: currentAccount.name // You might want to generate a username
         }
       );
       return newUser;
@@ -171,9 +204,9 @@ export async function getCurrentUser() {
 
     return currentUser.documents[0];
   } catch (error) {
-    console.error("Error getting current user:", error);
+    console.error('Error getting current user:', error);
     if (error instanceof AppwriteException) {
-      console.error("Appwrite error details:", error.message, error.code);
+      console.error('Appwrite error details:', error.message, error.code);
     }
     throw error;
   }
@@ -181,10 +214,10 @@ export async function getCurrentUser() {
 
 export async function signOutAccount() {
   try {
-    const session = await account.deleteSession("current");
+    const session = await account.deleteSession('current');
     return session;
   } catch (error) {
-    console.error("Error signing out account:", error);
+    console.error('Error signing out account:', error);
     return null;
   }
 }
@@ -199,7 +232,7 @@ export async function uploadFile(file: File) {
 
     return uploadedFile;
   } catch (error) {
-    console.error("Error uploading file:", error);
+    console.error('Error uploading file:', error);
     return null;
   }
 }
@@ -211,15 +244,15 @@ export function getFilePreview(fileId: string) {
       fileId,
       2000,
       2000,
-      "top",
+      'top',
       100
     );
 
-    if (!fileUrl) throw new Error("Failed to get file preview");
+    if (!fileUrl) throw new Error('Failed to get file preview');
 
     return fileUrl;
   } catch (error) {
-    console.error("Error getting file preview:", error);
+    console.error('Error getting file preview:', error);
     return null;
   }
 }
@@ -227,9 +260,9 @@ export function getFilePreview(fileId: string) {
 export async function deleteFile(fileId: string) {
   try {
     await storage.deleteFile(appwriteConfig.storageId, fileId);
-    return { status: "ok" };
+    return { status: 'ok' };
   } catch (error) {
-    console.error("Error deleting file:", error);
+    console.error('Error deleting file:', error);
     return null;
   }
 }
@@ -243,11 +276,14 @@ export async function getTrendingTags() {
     const tags = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      [Query.orderDesc('$createdAt'), Query.limit(10)]  // Remove tagsCount if it doesn't exist
+      [Query.orderDesc('$createdAt'), Query.limit(10)] // Remove tagsCount if it doesn't exist
     );
-    return tags.documents.map(doc => doc.tags).flat().slice(0, 10);
+    return tags.documents
+      .map(doc => doc.tags)
+      .flat()
+      .slice(0, 10);
   } catch (error) {
-    console.error("Error fetching trending tags:", error);
+    console.error('Error fetching trending tags:', error);
     throw error;
   }
 }
@@ -257,21 +293,18 @@ export async function getPopularCategories() {
     const categories = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.categoryCollectionId,
-      [Query.orderDesc('$createdAt'), Query.limit(10)]  // Remove usageCount if it doesn't exist
+      [Query.orderDesc('$createdAt'), Query.limit(10)] // Remove usageCount if it doesn't exist
     );
     return categories.documents;
   } catch (error) {
-    console.error("Error fetching popular categories:", error);
+    console.error('Error fetching popular categories:', error);
     throw error;
   }
 }
 
 export async function getRecentLists(pageParam?: string) {
-  const queries = [
-    Query.orderDesc('$createdAt'),
-    Query.limit(10)
-  ];
-  
+  const queries = [Query.orderDesc('$createdAt'), Query.limit(10)];
+
   if (pageParam) {
     queries.push(Query.cursorAfter(pageParam));
   }
@@ -280,20 +313,20 @@ export async function getRecentLists(pageParam?: string) {
     const lists = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      // queries
+      queries
     );
     return lists;
-  } catch (error:any) {
-    console.error("Error fetching recent lists:", error.message);
+  } catch (error: any) {
+    console.error('Error fetching recent lists:', error.message);
     if (error instanceof AppwriteException) {
-      console.error("Appwrite error details:", error.message, error.code);
+      console.error('Appwrite error details:', error.message, error.code);
     }
     // Return an empty list instead of throwing
     return { documents: [], total: 0 };
   }
 }
 
-export async function createList(list: INewList): Promise<IList> {
+export async function createList(list: INewList,userId:string): Promise<IList> {
   try {
     const newList = await databases.createDocument(
       appwriteConfig.databaseId,
@@ -301,22 +334,26 @@ export async function createList(list: INewList): Promise<IList> {
       ID.unique(),
       {
         userId: list.userId,
-        title: list.title,
-        description: list.description,
-        items: list.items,
-        tags: list.tags,
+        Title: list.title,
+        Description: list.description,
+        items: list.items.map((v:{content:string})=>v.content),
+        // tags: list.tags,
         aiScore: list.aiScore || 0,
+        CreatedAt: list.CreatedAt,
+        UpdatedAt: list.UpdatedAt,
+        creator:userId
       }
     );
+    console.log({ newList });
     return newList as IList;
   } catch (error) {
-    console.error("Error creating list:", error);
+    console.error('Error creating list:', error);
     throw error;
   }
 }
 
 export async function getInfiniteLists({ pageParam }: { pageParam: number }) {
-  const queries: any[] = [Query.orderDesc("$updatedAt"), Query.limit(9)];
+  const queries: any[] = [Query.orderDesc('$updatedAt'), Query.limit(9)];
 
   if (pageParam) {
     queries.push(Query.cursorAfter(pageParam.toString()));
@@ -329,11 +366,11 @@ export async function getInfiniteLists({ pageParam }: { pageParam: number }) {
       queries
     );
 
-    if (!lists) throw new Error("No lists found");
+    if (!lists) throw new Error('No lists found');
 
     return lists;
   } catch (error) {
-    console.error("Error getting infinite lists:", error);
+    console.error('Error getting infinite lists:', error);
     return null;
   }
 }
@@ -347,7 +384,7 @@ export async function getListById(listId: string): Promise<IList> {
     );
     return list as IList;
   } catch (error) {
-    console.error("Error fetching list:", error);
+    console.error('Error fetching list:', error);
     throw error;
   }
 }
@@ -361,13 +398,13 @@ export async function updateList(list: IUpdateList) {
       {
         title: list.title,
         description: list.description,
-        items: list.items,  // Now we can pass the array directly
-        tags: list.tags,
+        items: list.items, // Now we can pass the array directly
+        tags: list.tags
       }
     );
 
     if (!updatedList) {
-      throw new Error("Failed to update list");
+      throw new Error('Failed to update list');
     }
 
     // Re-index the updated list in Typesense
@@ -375,7 +412,7 @@ export async function updateList(list: IUpdateList) {
 
     return updatedList;
   } catch (error) {
-    console.error("Error updating list:", error);
+    console.error('Error updating list:', error);
     return null;
   }
 }
@@ -389,7 +426,7 @@ export async function deleteList(listId?: string) {
       listId
     );
 
-    if (!statusCode) throw new Error("Failed to delete list");
+    if (!statusCode) throw new Error('Failed to delete list');
 
     // Delete the list index from Typesense
     await functions.createExecution(
@@ -398,9 +435,9 @@ export async function deleteList(listId?: string) {
       false
     );
 
-    return { status: "Ok" };
+    return { status: 'Ok' };
   } catch (error) {
-    console.error("Error deleting list:", error);
+    console.error('Error deleting list:', error);
     return null;
   }
 }
@@ -412,15 +449,15 @@ export async function likeList(listId: string, likesArray: string[]) {
       appwriteConfig.listCollectionId,
       listId,
       {
-        likes: likesArray,
+        likes: likesArray
       }
     );
 
-    if (!updatedList) throw new Error("Failed to like list");
+    if (!updatedList) throw new Error('Failed to like list');
 
     return updatedList;
   } catch (error) {
-    console.error("Error liking list:", error);
+    console.error('Error liking list:', error);
     return null;
   }
 }
@@ -433,15 +470,15 @@ export async function saveList(userId: string, listId: string) {
       ID.unique(),
       {
         user: userId,
-        list: listId,
+        list: listId
       }
     );
 
-    if (!updatedList) throw new Error("Failed to save list");
+    if (!updatedList) throw new Error('Failed to save list');
 
     return updatedList;
   } catch (error) {
-    console.error("Error saving list:", error);
+    console.error('Error saving list:', error);
     return null;
   }
 }
@@ -454,11 +491,11 @@ export async function deleteSavedList(savedRecordId: string) {
       savedRecordId
     );
 
-    if (!statusCode) throw new Error("Failed to delete saved list");
+    if (!statusCode) throw new Error('Failed to delete saved list');
 
-    return { status: "Ok" };
+    return { status: 'Ok' };
   } catch (error) {
-    console.error("Error deleting saved list:", error);
+    console.error('Error deleting saved list:', error);
     return null;
   }
 }
@@ -470,39 +507,37 @@ export async function getUserLists(userId?: string) {
     const lists = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
+      [Query.equal('creator', userId), Query.orderDesc('$createdAt')]
     );
 
-    if (!lists) throw new Error("No lists found for user");
+    if (!lists) throw new Error('No lists found for user');
 
     return lists;
   } catch (error) {
-    console.error("Error getting user lists:", error);
+    console.error('Error getting user lists:', error);
     return null;
   }
 }
-
-
 
 export async function getCuratedList(userId: string): Promise<IListItem[]> {
   try {
     const lists = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
+      [Query.equal('creator', userId), Query.orderDesc('$createdAt')]
     );
 
-    if (!lists) throw new Error("No curated list found for user");
+    if (!lists) throw new Error('No curated list found for user');
 
-    const curatedList = lists.documents.map((list) => ({
+    const curatedList = lists.documents.map(list => ({
       id: list.$id,
       title: list.title,
-      description: list.description,
+      description: list.description
     }));
 
     return curatedList;
   } catch (error) {
-    console.error("Error fetching curated list:", error);
+    console.error('Error fetching curated list:', error);
     return [];
   }
 }
@@ -511,15 +546,12 @@ export async function getCuratedList(userId: string): Promise<IListItem[]> {
 // CATEGORY
 // ============================================================
 
-
-
-
 // ============================================================
 // USER
 // ============================================================
 
 export async function getUsers(limit?: number) {
-  const queries: any[] = [Query.orderDesc("$createdAt")];
+  const queries: any[] = [Query.orderDesc('$createdAt')];
 
   if (limit) {
     queries.push(Query.limit(limit));
@@ -532,11 +564,11 @@ export async function getUsers(limit?: number) {
       queries
     );
 
-    if (!users) throw new Error("No users found");
+    if (!users) throw new Error('No users found');
 
     return users;
   } catch (error) {
-    console.error("Error getting users:", error);
+    console.error('Error getting users:', error);
     return null;
   }
 }
@@ -549,11 +581,11 @@ export async function getUserById(userId: string) {
       userId
     );
 
-    if (!user) throw new Error("User not found");
+    if (!user) throw new Error('User not found');
 
     return user;
   } catch (error) {
-    console.error("Error getting user by ID:", error);
+    console.error('Error getting user by ID:', error);
     return null;
   }
 }
@@ -563,17 +595,17 @@ export async function updateUser(user: IUpdateUser) {
   try {
     let image = {
       imageUrl: user.imageUrl,
-      imageId: user.imageId,
+      imageId: user.imageId
     };
 
     if (hasFileToUpdate) {
       const uploadedFile = await uploadFile(user.file[0]);
-      if (!uploadedFile) throw new Error("Failed to upload file");
+      if (!uploadedFile) throw new Error('Failed to upload file');
 
       const fileUrl = getFilePreview(uploadedFile.$id);
       if (!fileUrl) {
         await deleteFile(uploadedFile.$id);
-        throw new Error("Failed to get file URL");
+        throw new Error('Failed to get file URL');
       }
 
       image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
@@ -587,7 +619,7 @@ export async function updateUser(user: IUpdateUser) {
         name: user.name,
         bio: user.bio,
         imageUrl: image.imageUrl,
-        imageId: image.imageId,
+        imageId: image.imageId
       }
     );
 
@@ -595,7 +627,7 @@ export async function updateUser(user: IUpdateUser) {
       if (hasFileToUpdate) {
         await deleteFile(image.imageId);
       }
-      throw new Error("Failed to update user");
+      throw new Error('Failed to update user');
     }
 
     if (user.imageId && hasFileToUpdate) {
@@ -604,7 +636,7 @@ export async function updateUser(user: IUpdateUser) {
 
     return updatedUser;
   } catch (error) {
-    console.error("Error updating user:", error);
+    console.error('Error updating user:', error);
     return null;
   }
 }
@@ -627,17 +659,17 @@ export async function createComment(comment: {
         listId: comment.listId,
         userId: comment.userId,
         content: comment.content,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date().toISOString()
       }
     );
 
     if (!newComment) {
-      throw new Error("Failed to create comment");
+      throw new Error('Failed to create comment');
     }
 
     return newComment;
   } catch (error) {
-    console.error("Error creating comment:", error);
+    console.error('Error creating comment:', error);
     return null;
   }
 }
@@ -647,14 +679,14 @@ export async function getComments(listId: string) {
     const comments = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.commentCollectionId,
-      [Query.equal("listId", listId), Query.orderDesc("$createdAt")]
+      [Query.equal('listId', listId), Query.orderDesc('$createdAt')]
     );
 
-    if (!comments) throw new Error("No comments found");
+    if (!comments) throw new Error('No comments found');
 
     return comments;
   } catch (error) {
-    console.error("Error getting comments:", error);
+    console.error('Error getting comments:', error);
     return null;
   }
 }
@@ -682,17 +714,17 @@ export async function createSuggestion(suggestion: {
         suggestedTitle: suggestion.suggestedTitle,
         suggestedDescription: suggestion.suggestedDescription,
         suggestedItems: suggestion.suggestedItems,
-        status: suggestion.status,
+        status: suggestion.status
       }
     );
 
     if (!newSuggestion) {
-      throw new Error("Failed to create suggestion");
+      throw new Error('Failed to create suggestion');
     }
 
     return newSuggestion;
   } catch (error) {
-    console.error("Error creating suggestion:", error);
+    console.error('Error creating suggestion:', error);
     return null;
   }
 }
@@ -702,14 +734,14 @@ export async function getSuggestions(listId: string) {
     const suggestions = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.suggestionCollectionId,
-      [Query.equal("listId", listId), Query.orderDesc("$createdAt")]
+      [Query.equal('listId', listId), Query.orderDesc('$createdAt')]
     );
 
-    if (!suggestions) throw new Error("No suggestions found");
+    if (!suggestions) throw new Error('No suggestions found');
 
     return suggestions;
   } catch (error) {
-    console.error("Error getting suggestions:", error);
+    console.error('Error getting suggestions:', error);
     return null;
   }
 }
@@ -724,12 +756,12 @@ export async function updateSuggestion(suggestionId: string, status: string) {
     );
 
     if (!updatedSuggestion) {
-      throw new Error("Failed to update suggestion");
+      throw new Error('Failed to update suggestion');
     }
 
     return updatedSuggestion;
   } catch (error) {
-    console.error("Error updating suggestion:", error);
+    console.error('Error updating suggestion:', error);
     return null;
   }
 }
@@ -751,17 +783,17 @@ export async function createCollaboration(collaboration: {
       {
         listId: collaboration.listId,
         userId: collaboration.userId,
-        status: collaboration.status,
+        status: collaboration.status
       }
     );
 
     if (!newCollaboration) {
-      throw new Error("Failed to create collaboration");
+      throw new Error('Failed to create collaboration');
     }
 
     return newCollaboration;
   } catch (error) {
-    console.error("Error creating collaboration:", error);
+    console.error('Error creating collaboration:', error);
     return null;
   }
 }
@@ -771,19 +803,22 @@ export async function getCollaborations(listId: string) {
     const collaborations = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.collaborationCollectionId,
-      [Query.equal("listId", listId), Query.orderDesc("$createdAt")]
+      [Query.equal('listId', listId), Query.orderDesc('$createdAt')]
     );
 
-    if (!collaborations) throw new Error("No collaborations found");
+    if (!collaborations) throw new Error('No collaborations found');
 
     return collaborations;
   } catch (error) {
-    console.error("Error getting collaborations:", error);
+    console.error('Error getting collaborations:', error);
     return null;
   }
 }
 
-export async function updateCollaboration(collaborationId: string, status: string) {
+export async function updateCollaboration(
+  collaborationId: string,
+  status: string
+) {
   try {
     const updatedCollaboration = await databases.updateDocument(
       appwriteConfig.databaseId,
@@ -793,16 +828,15 @@ export async function updateCollaboration(collaborationId: string, status: strin
     );
 
     if (!updatedCollaboration) {
-      throw new Error("Failed to update collaboration");
+      throw new Error('Failed to update collaboration');
     }
 
     return updatedCollaboration;
   } catch (error) {
-    console.error("Error updating collaboration:", error);
+    console.error('Error updating collaboration:', error);
     return null;
   }
 }
-
 
 export async function getCategories(): Promise<{ id: string; name: string }[]> {
   try {
@@ -815,36 +849,55 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
       name: doc.name
     }));
   } catch (error) {
-    console.error("Error fetching categories:", error);
+    console.error('Error fetching categories:', error);
     return [];
   }
 }
-export async function searchLists(query: string,userId:string): Promise<IList[]> {
-  try {
-    const response = await functions.createExecution(
-      appwriteConfig.typesenseOperationsFunctionId,
-      JSON.stringify({ operation: 'search', data: { query,userId } }),
-      false
-    );
+export async function searchLists(
+  query: string,
+  userId: string
+): Promise<IList[]> {
+  const queries = [Query.search('Title',query),Query.orderDesc('$createdAt'), Query.limit(10)];
 
-    const results = JSON.parse(response.responseBody);
-    return results?.hits?.map((hit: any) => ({
-      $id: hit.document.id,
-      $createdAt: new Date(hit.document.created_at).toISOString(),
-      $updatedAt: new Date(hit.document.created_at).toISOString(),
-      title: hit.document.title,
-      description: hit.document.description,
-      items: hit.document.items,
-      tags: hit.document.tags,
-      creator: hit.document.creator,
-      likes: [],
-      comments: [],
-      bookmarkCount: 0,
-      sharesCount: 0,
-      views: 0,
-    } as IList));
+  // if (pageParam) {
+  //   queries.push(Query.cursorAfter(pageParam));
+  // }
+
+  try {
+    const lists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      queries
+    );
+    return lists;
+    // const response = await functions.createExecution(
+    //   appwriteConfig.typesenseOperationsFunctionId,
+    //   JSON.stringify({ operation: 'search', data: { query, userId } }),
+    //   false
+    // );
+
+    // const results = JSON.parse(response.responseBody);
+    // console.log('asfsafs', {results})
+    // return results?.hits?.map(
+    //   (hit: any) =>
+    //     ({
+    //       $id: hit.document.id,
+    //       $createdAt: new Date(hit.document.created_at).toISOString(),
+    //       $updatedAt: new Date(hit.document.created_at).toISOString(),
+    //       title: hit.document.title,
+    //       description: hit.document.description,
+    //       items: hit.document.items,
+    //       tags: hit.document.tags,
+    //       creator: hit.document.creator,
+    //       likes: [],
+    //       comments: [],
+    //       bookmarkCount: 0,
+    //       sharesCount: 0,
+    //       views: 0
+    //     }) as IList
+    // );
   } catch (error) {
-    console.error("Error searching lists:", error);
+    console.error('Error searching lists:', error);
     return [];
   }
 }
@@ -853,11 +906,11 @@ export const shareList = async (listId: string): Promise<string> => {
   try {
     // Check if a shared link already exists for this list
     const existingLinks = await databases.listDocuments(
-      "your_database_id",
-      "shared_links",
+      'your_database_id',
+      'shared_links',
       [
-        databases.Query.equal("listId", listId),
-        databases.Query.greaterThan("expiresAt", new Date().toISOString())
+        databases.Query.equal('listId', listId),
+        databases.Query.greaterThan('expiresAt', new Date().toISOString())
       ]
     );
 
@@ -868,20 +921,20 @@ export const shareList = async (listId: string): Promise<string> => {
 
     // If no valid shared link exists, create a new one
     const sharedLink = await databases.createDocument(
-      "your_database_id",
-      "shared_links",
+      'your_database_id',
+      'shared_links',
       ID.unique(),
       {
         listId: listId,
         createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Expires in 30 days
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // Expires in 30 days
       }
     );
 
     return `https://yourapp.com/shared/${sharedLink.$id}`;
   } catch (error) {
-    console.error("Error creating shared link:", error);
-    throw new Error("Failed to create shared link");
+    console.error('Error creating shared link:', error);
+    throw new Error('Failed to create shared link');
   }
 };
 // Fetch user's friends
@@ -982,10 +1035,7 @@ export const getFriendRequests = async (userId: string) => {
     const result = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.friendsCollectionId,
-      [
-        Query.equal('friendId', userId),
-        Query.equal('status', 'pending')
-      ]
+      [Query.equal('friendId', userId), Query.equal('status', 'pending')]
     );
     return result.documents;
   } catch (error) {
@@ -1000,10 +1050,7 @@ export const getFriends = async (userId: string) => {
     const result = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.friendsCollectionId,
-      [
-        Query.equal('status', 'accepted'),
-        Query.search('userId', userId)
-      ]
+      [Query.equal('status', 'accepted'), Query.search('userId', userId)]
     );
     return result.documents.map(doc => doc.friendId);
   } catch (error) {
@@ -1017,8 +1064,8 @@ export const getMutualFriends = async (userId: string, otherUserId: string) => {
   try {
     const userFriends = await getFriends(userId);
     const otherUserFriends = await getFriends(otherUserId);
-    
-    const mutualFriends = userFriends.filter(friendId => 
+
+    const mutualFriends = userFriends.filter(friendId =>
       otherUserFriends.includes(friendId)
     );
 
@@ -1035,7 +1082,7 @@ export async function indexList(list: IList) {
       id: list.$id,
       title: list.title,
       description: list.description,
-      items: list.items.map(item => item.content),  // Only index the content
+      items: list.items.map(item => item.content), // Only index the content
       tags: list.tags,
       creator: list.creator.$id,
       created_at: new Date(list.$createdAt).getTime()
@@ -1047,7 +1094,7 @@ export async function indexList(list: IList) {
       false
     );
   } catch (error) {
-    console.error("Error indexing list:", error);
+    console.error('Error indexing list:', error);
     throw error;
   }
 }

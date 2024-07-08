@@ -36,8 +36,10 @@ const Explore: React.FC = () => {
   const { toast } = useToast();
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const { data: searchResults, isLoading: isSearchLoading } =
-    useSearchLists(debouncedSearchQuery,user.id);
+  const { data: searchResults, isLoading: isSearchLoading } = useSearchLists(
+    debouncedSearchQuery,
+    user.id
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -97,7 +99,10 @@ const Explore: React.FC = () => {
   }
 
   const recentLists = recentListsData?.pages || [];
-console.log({searchResults,recentListsData})
+  console.log(
+    { searchResults, recentListsData, isSearchLoading },
+    recentLists?.[0]?.documents
+  );
   return (
     <div className="explore-container common-container">
       <input
@@ -156,9 +161,9 @@ console.log({searchResults,recentListsData})
           {isTagsLoading ? (
             <Loader />
           ) : trendingTags.length > 0 ? (
-            trendingTags?.map(tag => (
+            trendingTags?.map((tag, i) => (
               <Link
-                key={tag}
+                key={i}
                 to={`/tags/${tag}`}
                 className="bg-dark-3 text-light-2 px-3 py-1 rounded-full hover:bg-primary-500 hover:text-light-1 transition-colors">
                 #{tag}
@@ -172,23 +177,23 @@ console.log({searchResults,recentListsData})
 
       <section>
         <h3 className="text-xl font-semibold text-light-1 mb-4">
-          {searchQuery ? 'Search Results' : 'Recent Lists'}
+          {searchQuery || isSearchLoading ? 'Search Results' : 'Recent Lists'}
         </h3>
         {isSearchLoading ? (
           <Loader />
         ) : searchQuery ? (
-          searchResults && searchResults.length > 0 ? (
+          searchResults?.pages?.[0]?.documents?.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {searchResults?.map((list: IList) => (
+              {searchResults?.pages?.[0]?.documents?.map((list: IList) => (
                 <ListCard key={list.$id} list={list} />
               ))}
             </div>
           ) : (
             <p>No results found.</p>
           )
-        ) : recentLists.length > 0 ? (
+        ) : recentLists?.[0]?.documents?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recentLists?.map((list: IList) => (
+            {recentLists?.[0]?.documents?.map((list: IList) => (
               <ListCard key={list.$id} list={list} />
             ))}
           </div>

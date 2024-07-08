@@ -18,7 +18,7 @@ type ListStatsProps = {
 
 const ListStats = ({ list, userId }: ListStatsProps) => {
   const location = useLocation();
-  const likesList = list.likes.map((user: Models.Document) => user.$id);
+  const likesList = list?.likes?.map((user: Models.Document) => user.$id);
 
   const [likes, setLikes] = useState<string[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
@@ -77,7 +77,7 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
           onClick={handleLikeList}
           className="cursor-pointer"
         />
-        <p className="small-medium lg:base-medium">{likes.length} Likes</p>
+        <p className="small-medium lg:base-medium">{likes?.length} Likes</p>
       </Button>
       <Button
         className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg"

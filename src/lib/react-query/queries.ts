@@ -108,11 +108,11 @@ export const useGetRecentLists = () => {
   });
 };
 
-export const useCreateList = () => {
+export const useCreateList = (userId:string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (list: INewList) => createList(list),
+    mutationFn: (list: INewList) => createList(list,userId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_RECENT_LISTS]

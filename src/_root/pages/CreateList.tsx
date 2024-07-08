@@ -1,24 +1,26 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useCreateList } from "@/lib/react-query/queries";
-import { useToast } from "@/components/ui/use-toast";
-import ListForm from "@/components/forms/ListForm";
-import { IList, IListItem } from "@/types";
-import { Loader } from "@/components/shared";
-import { useGenerateListIdea } from "@/lib/react-query/queries";
-import { indexList } from "@/lib/appwrite/api";
-import { useUserContext } from "@/context/AuthContext";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useCreateList } from '@/lib/react-query/queries';
+import { useToast } from '@/components/ui/use-toast';
+import ListForm from '@/components/forms/ListForm';
+import { IList, IListItem } from '@/types';
+import { Loader } from '@/components/shared';
+import { useGenerateListIdea } from '@/lib/react-query/queries';
+import { indexList } from '@/lib/appwrite/api';
+import { useUserContext } from '@/context/AuthContext';
 
 const CreateList: React.FC = () => {
   const { toast } = useToast();
   const { user } = useUserContext();
   const navigate = useNavigate();
   const { mutateAsync: createList, isLoading } = useCreateList();
-  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user.id);
+  const { mutate: generateListIdea, isLoading: isGeneratingIdea } =
+    useGenerateListIdea(user.id);
   const [listIdea, setListIdea] = useState<string | null>(null);
 
   const handleCreateList = async (listData: IList) => {
     try {
+      console.log({ listData });
       // Ensure listData.items is an array of IListItem
       const transformedListData = {
         ...listData,
@@ -31,30 +33,31 @@ const CreateList: React.FC = () => {
       };
 
       const newList = await createList(transformedListData);
-      
+
       // Index the new list in Typesense
       await indexList(newList);
-      
+
       toast({
-        title: "List created successfully!",
-        description: "Your new list has been created and indexed.",
-        variant: "success",
+        title: 'List created successfully!',
+        description: 'Your new list has been created and indexed.',
+        variant: 'success'
       });
-      
+
       navigate(`/lists/${newList.$id}`);
     } catch (error) {
-      console.error("Error creating list:", error);
+      console.error('Error creating list:', error);
       toast({
-        title: "Error creating list",
-        description: "An error occurred while creating the list. Please try again.",
-        variant: "destructive",
+        title: 'Error creating list',
+        description:
+          'An error occurred while creating the list. Please try again.',
+        variant: 'destructive'
       });
     }
   };
 
   const handleGenerateIdea = () => {
-    generateListIdea("Generate a list idea", {
-      onSuccess: (idea) => setListIdea(idea),
+    generateListIdea('Generate a list idea', {
+      onSuccess: idea => setListIdea(idea)
     });
   };
 
@@ -77,9 +80,8 @@ const CreateList: React.FC = () => {
         <button
           onClick={handleGenerateIdea}
           className="bg-primary-500 text-light-1 px-4 py-2 rounded-md mb-4"
-          disabled={isGeneratingIdea}
-        >
-          {isGeneratingIdea ? "Generating..." : "Get AI Suggestion"}
+          disabled={isGeneratingIdea}>
+          {isGeneratingIdea ? 'Generating...' : 'Get AI Suggestion'}
         </button>
 
         {listIdea && (
