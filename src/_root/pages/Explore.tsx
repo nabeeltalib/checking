@@ -15,25 +15,27 @@ import { useToast } from '@/components/ui/use-toast';
 
 const Explore: React.FC = () => {
   const { user } = useUserContext();
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [trendingTags, setTrendingTags] = useState<string[]>([]);
+  const [popularCategories, setPopularCategories] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [isTagsLoading, setIsTagsLoading] = useState(true);
+  const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const {
     data: recentListsData,
     isLoading: isLoadingRecentLists,
     error: recentListsError
   } = useGetRecentLists();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isTagsLoading, setIsTagsLoading] = useState(true);
-  const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
   const {
     data: aiSuggestions,
     isLoading: isLoadingAISuggestions,
     error: aiSuggestionsError
   } = useGetAISuggestions(user.id);
-  const [trendingTags, setTrendingTags] = useState<string[]>([]);
-  const [popularCategories, setPopularCategories] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const { toast } = useToast();
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const { data: searchResults, isLoading: isSearchLoading } = useSearchLists(
@@ -61,6 +63,7 @@ const Explore: React.FC = () => {
     };
     fetchData();
   }, []);
+
   useEffect(() => {
     if (recentListsError) {
       toast({
@@ -81,28 +84,17 @@ const Explore: React.FC = () => {
   if (isLoadingRecentLists || isLoadingAISuggestions) {
     return <Loader />;
   }
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
-  }
-  if (isLoadingRecentLists || isLoadingAISuggestions) {
-    return <Loader />;
-  }
 
-  if (recentListsError || aiSuggestionsError || error) {
+  if (error || recentListsError || aiSuggestionsError) {
     return (
       <div className="text-red-500">
-        {(recentListsError as Error)?.message ||
-          (aiSuggestionsError as Error)?.message ||
-          error}
+        {error || (recentListsError as Error)?.message || (aiSuggestionsError as Error)?.message}
       </div>
     );
   }
 
   const recentLists = recentListsData?.pages || [];
-  console.log(
-    { searchResults, recentListsData, isSearchLoading },
-    recentLists?.[0]?.documents
-  );
+
   return (
     <div className="explore-container common-container">
       <input
@@ -112,6 +104,7 @@ const Explore: React.FC = () => {
         placeholder="Search lists..."
         className="w-full p-2 mb-4 rounded text-black"
       />
+
       <section className="mb-8">
         <h3 className="text-xl font-semibold text-light-1 mb-4">
           AI Suggested Lists
@@ -120,7 +113,7 @@ const Explore: React.FC = () => {
           <Loader />
         ) : aiSuggestions && aiSuggestions.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {aiSuggestions?.map((suggestion, index) => (
+            {aiSuggestions.map((suggestion, index) => (
               <div key={index} className="bg-dark-3 p-4 rounded-lg">
                 <p className="text-light-1">{suggestion}</p>
               </div>
@@ -130,16 +123,16 @@ const Explore: React.FC = () => {
           <p className="text-light-2">No AI suggestions available.</p>
         )}
       </section>
+
       <section className="mb-8">
         <h3 className="text-xl font-semibold text-light-1 mb-4">
           Popular Categories
         </h3>
         <div className="flex gap-4 flex-wrap">
-          {/* {console.log({popularCategories})} */}
           {isCategoriesLoading ? (
             <Loader />
           ) : popularCategories.length > 0 ? (
-            popularCategories?.map((category, i) => (
+            popularCategories.map((category, i) => (
               <Link
                 key={i}
                 to={`/category/${category.$id}`}
@@ -161,7 +154,7 @@ const Explore: React.FC = () => {
           {isTagsLoading ? (
             <Loader />
           ) : trendingTags.length > 0 ? (
-            trendingTags?.map((tag, i) => (
+            trendingTags.map((tag, i) => (
               <Link
                 key={i}
                 to={`/tags/${tag}`}
@@ -184,7 +177,7 @@ const Explore: React.FC = () => {
         ) : searchQuery ? (
           searchResults?.pages?.[0]?.documents?.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {searchResults?.pages?.[0]?.documents?.map((list: IList) => (
+              {searchResults.pages[0].documents.map((list: IList) => (
                 <ListCard key={list.$id} list={list} />
               ))}
             </div>
@@ -193,7 +186,7 @@ const Explore: React.FC = () => {
           )
         ) : recentLists?.[0]?.documents?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recentLists?.[0]?.documents?.map((list: IList) => (
+            {recentLists[0].documents.map((list: IList) => (
               <ListCard key={list.$id} list={list} />
             ))}
           </div>

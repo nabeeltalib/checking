@@ -12,13 +12,14 @@ import GridListList from '@/components/shared/GridListList';
 import ListStats from '@/components/shared/ListStats';
 import { useToast } from '@/components/ui/use-toast';
 import { IListItem } from '@/types';
+import { formatDistanceToNow } from 'date-fns';
 
 const ListDetails: React.FC = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { user } = useUserContext();
   const { toast } = useToast();
-  const { data: list, isLoading } = useGetListById(id);
+  const { data: list, isLoading } = useGetListById(id || '');
   const { data: userLists, isLoading: isUserListsLoading } = useGetUserLists(user.id);
   const { mutateAsync: deleteList, isLoading: isDeleting } = useDeleteList();
 
@@ -36,105 +37,82 @@ const ListDetails: React.FC = () => {
     if (!id) return;
     try {
       await deleteList(id);
-      toast({
-        title: 'List deleted successfully!',
-        description: 'Your list has been deleted and removed from the index.',
-        variant: 'default'
-      });
+      toast({ title: 'List deleted successfully!' });
       navigate(-1);
     } catch (error) {
-      toast({
-        title: 'Error deleting list',
-        description: 'An error occurred while deleting the list. Please try again.',
-        variant: 'destructive'
-      });
+      toast({ title: 'Error deleting list', variant: 'destructive' });
     }
   };
 
   if (isLoading) return <Loader />;
-  if (!list) return <div>List not found</div>;
+  if (!list) return <div className="text-center text-light-1">List not found</div>;
 
   return (
-    <div className="flex flex-col gap-6 w-full p-6 common-container">
-      <button onClick={() => navigate(-1)} className="text-primary-500 mb-4">
-        &larr; Back
-      </button>
+    <div className="flex flex-col w-full max-w-2xl mx-auto">
+      <div className="sticky top-0 z-10 bg-dark-1 p-4 border-b border-dark-4">
+        <button onClick={() => navigate(-1)} className="text-primary-500 font-bold">
+          &larr; Back
+        </button>
+      </div>
 
-      <div className="flex flex-col gap-6 w-full max-w-5xl mx-auto">
-        <div className="flex flex-col gap-6 w-full">
-          <div className="flex items-center gap-3">
-            <img
-              src={list?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg'}
-              alt="creator"
-              className="w-12 h-12 rounded-full"
-            />
-            <div>
-              <p className="base-medium text-light-1">{list?.creator?.name}</p>
-              <p className="small-regular text-light-3">@{list?.creator?.username}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col flex-1 w-full small-medium lg:base-regular gap-y-4">
-            <h2 className="body-bold lg:h2-bold">{list.title}</h2>
-            <ul className="list-decimal list-inside">
-              {visibleItems?.map((item: IListItem, index: number) => (
-                <li key={index} className="list-item my-3">
-                  {item?.content || item}
-                </li>
-              ))}
-            </ul>
-            <ul className="flex gap-1 mt-2 text-light-3 flex-wrap">
-              {list?.tags?.map((tag: string, index: number) => (
-                <li key={`${tag}${index}`} className="text-light-3 small-regular">
-                  #{tag}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="w-full">
-            <ListStats list={list} userId={user.id} />
-
-            {list?.creator?.$id === user.id && (
-              <div className="flex gap-4 mt-6">
-                <Button
-                  onClick={handleDeleteList}
-                  className="shad-button_primary whitespace-nowrap"
-                  disabled={isDeleting}>
-                  {isDeleting ? 'Deleting...' : 'Delete List'}
-                </Button>
-                <Button
-                  onClick={() => navigate(`/update-list/${list?.$id}`)}
-                  className="shad-button_dark_4">
-                  Edit List
-                </Button>
-              </div>
-            )}
+      <div className="p-4 border-b border-dark-4">
+        <div className="flex items-center gap-3 mb-4">
+          <img
+            src={list?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg'}
+            alt="creator"
+            className="w-12 h-12 rounded-full object-cover"
+          />
+          <div>
+            <p className="font-bold text-light-1">{list?.creator?.name}</p>
+            <p className="text-light-3">@{list?.creator?.username}</p>
           </div>
         </div>
+
+        <h2 className="text-xl font-bold text-light-1 mb-2">{list.title}</h2>
+        
+        <ul className="mb-4">
+          {visibleItems?.map((item: IListItem, index: number) => (
+            <li key={index} className="mb-2 text-light-2">
+              {index + 1}. {item?.content || item}
+            </li>
+          ))}
+        </ul>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {list?.tags?.map((tag: string, index: number) => (
+            <span key={`${tag}${index}`} className="text-primary-500">
+              #{tag}
+            </span>
+          ))}
+        </div>
+
+        <p className="text-light-3 text-sm mb-4">
+          {formatDistanceToNow(new Date(list.$createdAt), { addSuffix: true })}
+        </p>
+
+        <ListStats list={list} userId={user.id} />
+
+        {list?.creator?.$id === user.id && (
+          <div className="flex gap-4 mt-4">
+            <Button
+              onClick={() => navigate(`/update-list/${list?.$id}`)}
+              className="bg-primary-500 text-light-1 px-4 py-2 rounded-full">
+              Edit List
+            </Button>
+            <Button
+              onClick={handleDeleteList}
+              className="bg-red-500 text-light-1 px-4 py-2 rounded-full"
+              disabled={isDeleting}>
+              {isDeleting ? 'Deleting...' : 'Delete List'}
+            </Button>
+          </div>
+        )}
       </div>
 
-      <div className="w-full">
-        <hr className="border w-full border-dark-4/80" />
-        <h3 className="body-bold md:h3-bold w-full my-10">More Related Lists</h3>
+      <div className="p-4">
+        <h3 className="text-xl font-bold text-light-1 mb-4">More Related Lists</h3>
         {isUserListsLoading ? <Loader /> : <GridListList lists={relatedLists} />}
       </div>
-
-      {/* Commented out sections for future implementation */}
-      {/* <div className="w-full">
-        <hr className="border w-full border-dark-4/80" />
-        <h3 className="body-bold md:h3-bold w-full my-10">Comments</h3>
-      </div>
-
-      <div className="w-full">
-        <hr className="border w-full border-dark-4/80" />
-        <h3 className="body-bold md:h3-bold w-full my-10">Suggestions</h3>
-      </div>
-
-      <div className="w-full">
-        <hr className="border w-full border-dark-4/80" />
-        <h3 className="body-bold md:h3-bold w-full my-10">Collaborations</h3>
-      </div> */}
     </div>
   );
 };

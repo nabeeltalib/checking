@@ -13,8 +13,8 @@ export const sidebarLinks = [
   },
   {
     imgURL: "/assets/icons/people.svg",
-    route: "/all-users",
-    label: "People",
+    route: "/all-lists",
+    label: "Discover",
     icon:"/assets/icons/people.svg"
   },
   {

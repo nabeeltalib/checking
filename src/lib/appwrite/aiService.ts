@@ -5,7 +5,10 @@ import { QUERY_KEYS } from '@/lib/react-query/queryKeys';
 
 export const getAISuggestions = async (userId: string): Promise<string[]> => {
   try {
-    console.log({ userId });
+    if (!userId) {
+      console.error("UserId is undefined or empty");
+      return [];
+    }
     const execution = await functions.createExecution(
       appwriteConfig.aiSuggestionsFunctionId,
       JSON.stringify({ userId }),
@@ -20,6 +23,7 @@ export const getAISuggestions = async (userId: string): Promise<string[]> => {
     return [];
   }
 };
+
 export const generateListItems = async (title: string): Promise<string[]> => {
   try {
     const execution = await functions.createExecution(
@@ -36,6 +40,7 @@ export const generateListItems = async (title: string): Promise<string[]> => {
     throw new Error("Failed to generate list items");
   }
 };
+
 export const useGetAISuggestions = (userId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_AI_SUGGESTIONS, userId],
@@ -44,11 +49,11 @@ export const useGetAISuggestions = (userId: string) => {
   });
 };
 
-export const generateListIdea = async (prompt: string,userId:string): Promise<string> => {
+export const generateListIdea = async (prompt: string, userId: string): Promise<string> => {
   try {
     const execution = await functions.createExecution(
       appwriteConfig.generateListIdeaFunctionId,
-      JSON.stringify({ prompt,userId }),
+      JSON.stringify({ prompt, userId }),
       false
     );
     return JSON.parse(execution.responseBody).listIdea;

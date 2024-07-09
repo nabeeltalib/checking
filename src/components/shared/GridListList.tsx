@@ -16,17 +16,17 @@ const GridListList: React.FC<GridListListProps> = ({ lists, showUser = true, sho
           <Link to={`/lists/${list.$id}`} className="block p-4">
             <h3 className="text-xl font-bold text-light-1 mb-2">{list.title}</h3>
             <ul className="list-decimal list-inside mb-4 text-light-1">
-              {list.items.slice(0, 5).map((item: IListItem, index: number) => (
+              {list.items && list.items.slice(0, 5).map((item: IListItem, index: number) => (
                 <li key={index} className="line-clamp-1">{item.content}</li>
               ))}
             </ul>
             <div className="flex flex-wrap gap-2">
-              {list.tags.slice(0, 3).map((tag: string, index: number) => (
+              {list.tags && list.tags.slice(0, 3).map((tag: string, index: number) => (
                 <span key={index} className="bg-dark-3 text-light-4 rounded-full px-2 py-1 text-xs">
                   #{tag}
                 </span>
               ))}
-              {list.tags.length > 3 && <span className="bg-dark-3 text-light-4 rounded-full px-2 py-1 text-xs">+{list.tags.length - 3}</span>}
+              {list.tags && list.tags.length > 3 && <span className="bg-dark-3 text-light-4 rounded-full px-2 py-1 text-xs">+{list.tags.length - 3}</span>}
             </div>
           </Link>
           {showUser && list.creator && (
@@ -43,11 +43,11 @@ const GridListList: React.FC<GridListListProps> = ({ lists, showUser = true, sho
             <div className="px-4 py-2 bg-dark-3 flex justify-between items-center">
               <Link to={`/lists/${list.$id}/likes`} className="flex items-center hover:text-primary-500">
                 <img src="/assets/icons/like.svg" alt="Likes" className="w-4 h-4 mr-1" />
-                <p className="text-light-1">{list?.likes?.length || 0}</p>
+                <p className="text-light-1">{list.likes?.length || 0}</p>
               </Link>
               <Link to={`/lists/${list.$id}/comments`} className="flex items-center hover:text-primary-500">
                 <img src="/assets/icons/comment.svg" alt="Comments" className="w-4 h-4 mr-1" />
-                <p className="text-light-1">{list?.comments?.length || 0}</p>
+                <p className="text-light-1">{list.comments?.length || 0}</p>
               </Link>
             </div>
           )}
