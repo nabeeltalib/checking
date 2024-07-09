@@ -67,22 +67,17 @@ const CreateList: React.FC = () => {
     <div className="flex flex-1 items-center justify-center py-10 px-6 min-h-screen bg-dark-1">
       <div className="max-w-5xl w-full bg-dark-2 rounded-xl p-8 shadow-md">
         <div className="flex items-center gap-3 mb-8">
+          
+          <h2 className="h2-bold md:h3-bold text-light-1">What's Your Top 5 </h2>
           <img
-            src="/assets/icons/add-list.svg"
+            src="/assets/icons/fire.svg"
             width={36}
             height={36}
             alt="Add List"
             className="invert-white"
           />
-          <h2 className="h3-bold md:h2-bold text-light-1">Create New List</h2>
         </div>
-
-        <button
-          onClick={handleGenerateIdea}
-          className="bg-primary-500 text-light-1 px-4 py-2 rounded-md mb-4"
-          disabled={isGeneratingIdea}>
-          {isGeneratingIdea ? 'Generating...' : 'Get AI Suggestion'}
-        </button>
+      
 
         {listIdea && (
           <div className="mb-4 p-4 bg-dark-3 rounded-lg">
@@ -92,7 +87,6 @@ const CreateList: React.FC = () => {
 
         <ListForm
           onSubmit={handleCreateList}
-          isLoading={isLoading}
           action="Create"
           initialIdea={listIdea}
         />

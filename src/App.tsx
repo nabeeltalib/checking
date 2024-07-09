@@ -39,7 +39,7 @@ const App = () => {
           <Route index element={<Home />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/saved" element={<Saved />} />
-          <Route path="/all-users" element={<AllLists />} />
+          <Route path="/all-lists" element={<AllLists />} />
           <Route path="/create-list" element={<CreateList />} />
           <Route path="/update-list/:id" element={<EditList />} />
           <Route path="/lists/:id" element={<ListDetails />} />

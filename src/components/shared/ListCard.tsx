@@ -1,36 +1,15 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { useEnhanceListDescription } from "@/lib/react-query/queries";
-import { shareList } from "@/lib/appwrite/api";
+import { motion } from "framer-motion";
 import { IList, IListItem } from "@/types";
+import { shareList } from "@/lib/appwrite/api";
 
 type ListCardProps = {
   list: IList;
 };
 
 const ListCard: React.FC<ListCardProps> = ({ list }) => {
-  const { mutate: enhanceDescription, isLoading: isEnhancing } = useEnhanceListDescription();
-  const [enhancedDescription, setEnhancedDescription] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
-
-  const visibleItems = useMemo(() => list.items, //.filter((item: IListItem) => item.isVisible).slice(0, 5),
-    [list.items]
-  );
-
-  const handleEnhanceDescription = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    enhanceDescription(
-      { listId: list.$id, description: list.description },
-      {
-        onSuccess: (enhanced) => setEnhancedDescription(enhanced),
-        onError: (error) => {
-          console.error('Error enhancing description:', error);
-          // TODO: Implement user-friendly error message
-        }
-      }
-    );
-  };
 
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,72 +17,91 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     setIsSharing(true);
     try {
       const shareableLink = await shareList(list.$id);
-      console.log('Shareable link:', shareableLink);
-      // TODO: Implement a proper way to show this link to the user, e.g., modal or toast
-      alert(`Shareable link: ${shareableLink}`);
+      navigator.clipboard.writeText(shareableLink);
+      alert("Link copied to clipboard!");
     } catch (error) {
       console.error('Error sharing list:', error);
-      // TODO: Implement user-friendly error message
+      alert("Failed to share list. Please try again.");
     } finally {
       setIsSharing(false);
     }
   };
 
   return (
-    <div className="list-card bg-dark-3 p-4 rounded-lg shadow-md transition-transform transform hover:scale-105">
-      <h3 className="list-title text-xl font-bold mb-2 text-white line-clamp-2">
-        {list?.title|| list?.Title}
-      </h3>
-      <p className="list-description text-light-3 mb-4 line-clamp-3">
-        {enhancedDescription || list?.description||list?.Description}
-      </p>
+    <motion.div 
+      className="social-card"
+      whileHover={{ y: -5 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="social-card-header">
+        <img 
+          src={list.creator?.imageUrl || "/assets/icons/profile-placeholder.svg"} 
+          alt={`${list.creator?.name}'s profile`} 
+          className="social-avatar"
+        />
+        <div>
+          <Link to={`/profile/${list.creator.$id}`} className="social-username">{list.creator?.name}</Link>
+          <p className="social-text-secondary">@{list.creator?.username}</p>
+        </div>
+      </div>
+
+      <div className="social-card-content">
+        <Link to={`/lists/${list.$id}`} className="block">
+          <h3 className="text-xl font-bold mb-2 text-light-1 hover:text-primary-500 transition-colors">
+            {list?.title || list?.Title}
+          </h3>
+          
+          <ol className="list-decimal list-inside mb-4 space-y-2">
+            {list.items.slice(0, 5).map((item: IListItem, index: number) => (
+              <li key={index} className="social-text-primary">
+                {item?.content || item}
+              </li>
+            ))}
+          </ol>
+
+          {list.tags && list.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {list.tags.slice(0, 3).map((tag: string, index: number) => (
+                <span key={index} className="bg-dark-4 text-light-2 px-2 py-1 rounded-full text-xs">
+                  #{tag}
+                </span>
+              ))}
+              {list.tags.length > 3 && (
+                <span className="bg-dark-4 text-light-2 px-2 py-1 rounded-full text-xs">
+                  +{list.tags.length - 3}
+                </span>
+              )}
+            </div>
+          )}
+        </Link>
+      </div>
       
-      <div className="flex justify-between items-center mt-2">
-        <button
-          onClick={handleEnhanceDescription}
-          className="bg-primary-500 text-light-1 px-2 py-1 rounded-md text-xs"
-          disabled={isEnhancing}
-        >
-          {isEnhancing ? "Enhancing..." : "Enhance Description"}
-        </button>
+      <div className="social-card-footer">
+        <div className="flex space-x-4 text-light-2">
+          <span className="flex items-center">
+            <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20" aria-label="Likes">
+              <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+            </svg>
+            {list.likes?.length || 0}
+          </span>
+          <span className="flex items-center">
+            <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20" aria-label="Comments">
+              <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
+            </svg>
+            {list.comments?.length || 0}
+          </span>
+        </div>
         <button
           onClick={handleShare}
-          className="bg-primary-500 text-light-1 px-2 py-1 rounded-md text-xs"
+          className="bg-primary-500 text-light-1 px-4 py-2 rounded-full text-sm font-medium hover:bg-primary-600 transition-colors"
           disabled={isSharing}
         >
           {isSharing ? "Sharing..." : "Share"}
         </button>
       </div>
-
-      <Link to={`/lists/${list.$id}`} className="block mt-4">
-        <ul className="list-items mb-4">
-          {visibleItems.map((item: IListItem, index: number) => (
-            <li key={index} className="list-item text-light-1 mb-1 line-clamp-1">
-              {item?.content || item}
-            </li>
-          ))}
-          {/* {list.items.length > 5 && (
-            <li className="list-item text-light-1 mb-1">
-              and {list.items.length - visibleItems.length} more...
-            </li>
-          )} */}
-        </ul>
-        {/* <div className="list-tags flex flex-wrap gap-2">
-          {list.tags.map((tag: string) => (
-            <span
-              key={tag}
-              className="list-tag bg-dark-4 text-light-3 rounded-full px-2 py-1 text-xs"
-            >
-              #{tag}
-            </span>
-          ))}
-        </div> */}
-      </Link>
-      
-      <Link to={`/lists/${list.$id}`} className="mt-2 inline-block text-primary-500">
-        View List
-      </Link>
-    </div>
+    </motion.div>
   );
 };
 

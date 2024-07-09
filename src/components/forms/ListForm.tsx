@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -24,36 +25,52 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateList, useUpdateList, useGenerateListIdea } from "@/lib/react-query/queries";
+import { useGenerateListItems, useCreateList, useUpdateList } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
-import { useState, useEffect } from "react";
 import { getCategories } from "@/lib/appwrite/api";
-import { getAISuggestions } from '@/lib/appwrite/aiService';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableItem } from './SortableItem';
 import { IListItem } from "@/types";
+import ConfirmationDialog from './ConfirmationDialog';
 
 type ListFormProps = {
   list?: Models.Document;
   action: "Create" | "Update";
 };
 
-const ListForm = ({ list, action,onSubmit }: ListFormProps) => {
+const ListForm = ({ list, action }: ListFormProps) => {
   const { user } = useUserContext();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [newCategory, setNewCategory] = useState("");
+  const [timespans, setTimespans] = useState<string[]>(["all-time", "decade", "year", "week"]);
+  const [newTimespan, setNewTimespan] = useState("");
+  const [locations, setLocations] = useState<string[]>([]);
+  const [newLocation, setNewLocation] = useState("");
+  const [showDescription, setShowDescription] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [generatedItems, setGeneratedItems] = useState<string[]>([]);
+  const [previousItems, setPreviousItems] = useState<IListItem[]>([]);
+  const [showUndoButton, setShowUndoButton] = useState(false);
+
+  const { mutate: generateListItems, isLoading: isGeneratingItems } = useGenerateListItems();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const suggestions = await getAISuggestions(user.id);
-        setAiSuggestions(suggestions);
-
         const fetchedCategories = await getCategories();
-        setCategories(fetchedCategories);
+        setCategories(fetchedCategories.map(cat => cat.name));
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to fetch data. Please try again later.');
@@ -61,17 +78,19 @@ const ListForm = ({ list, action,onSubmit }: ListFormProps) => {
     };
 
     fetchData();
-  }, [user.id]);
+  }, []);
 
   const formSchema = z.object({
     title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
-    description: z.string().min(3, "Description must be at least 3 characters").max(1000, "Description must be less than 1000 characters"),
+    description: z.string().max(1000, "Description must be less than 1000 characters").optional(),
     items: z.array(z.object({
       content: z.string().min(1, "Item cannot be empty"),
       isVisible: z.boolean(),
     })).min(5, "At least 5 items are required").max(10, "Maximum 10 items allowed"),
-    category: z.string().min(3, "Category must be at least 3 characters").max(100, "Category must be less than 100 characters"),
-    tags: z.string().transform((value) => value.split(',').map((tag) => tag.trim())),
+    categories: z.array(z.string()),
+    tags: z.array(z.string()),
+    timespans: z.array(z.string()),
+    locations: z.array(z.string()),
   });
 
   const form = useForm({
@@ -86,8 +105,10 @@ const ListForm = ({ list, action,onSubmit }: ListFormProps) => {
         }
         return item;
       }) || Array(5).fill({ content: "", isVisible: true }),
-      category: list?.category || "",
-      tags: list?.tags?.join(', ') || "",
+      categories: list?.categories || [],
+      tags: list?.tags || [],
+      timespans: list?.timespans || [],
+      locations: list?.locations || [],
     },
   });
 
@@ -95,31 +116,21 @@ const ListForm = ({ list, action,onSubmit }: ListFormProps) => {
     control: form.control,
     name: "items",
   });
-  
-  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user.id);
+
   const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList(user.id);
   const { mutateAsync: updateList, isLoading: isLoadingUpdate } = useUpdateList();
 
-  const handleGenerateIdea = () => {
-    generateListIdea(form.getValues("title"), {
-      onSuccess: (idea) => {
-        form.setValue("description", idea);
-      },
-    });
-  };
-
   const handleSubmit = async (value: z.infer<typeof formSchema>) => {
     try {
-      console.log({action,value})
       if (list && action === "Update") {
-        const updatedList = await updateList({ ...value, listId: list.$id ,UpdatedAt:new Date()});
+        const updatedList = await updateList({ ...value, listId: list.$id, UpdatedAt: new Date() });
         if (!updatedList) {
           toast({ title: `${action} list failed. Please try again.` });
         } else {
           navigate(`/lists/${list.$id}`);
         }
       } else {
-        const newList = await createList({ ...value, userId: user.id,CreatedAt:new Date(),UpdatedAt:new Date()});
+        const newList = await createList({ ...value, userId: user.id, CreatedAt: new Date(), UpdatedAt: new Date() });
         if (!newList) {
           toast({ title: `${action} list failed. Please try again.` });
         } else {
@@ -132,11 +143,90 @@ const ListForm = ({ list, action,onSubmit }: ListFormProps) => {
     }
   };
 
-  const onDragEnd = (result: any) => {
-    if (!result.destination) return;
-    move(result.source.index, result.destination.index);
+  const handleGenerateListItems = () => {
+    const title = form.getValues("title");
+    if (title) {
+      generateListItems(title, {
+        onSuccess: (items) => {
+          setGeneratedItems(items);
+          if (form.getValues("items").some(item => item.content !== "")) {
+            setIsConfirmDialogOpen(true);
+          } else {
+            applyGeneratedItems(items);
+          }
+        },
+        onError: (error) => {
+          toast({
+            title: "Failed to generate list items",
+            description: "Please try again or enter items manually.",
+            variant: "destructive",
+          });
+        }
+      });
+    } else {
+      toast({
+        title: "Title is required",
+        description: "Please enter a title before generating list items.",
+        variant: "destructive",
+      });
+    }
   };
-  console.log(form.formState.errors, 'errrer')
+
+  const applyGeneratedItems = (items: string[]) => {
+    setPreviousItems(form.getValues("items"));
+    form.setValue("items", items.map(item => ({ content: item, isVisible: true })));
+    setShowUndoButton(true);
+    setTimeout(() => setShowUndoButton(false), 10000); // Hide undo button after 10 seconds
+    toast({
+      title: "List items generated",
+      description: "5 items have been generated based on your title.",
+    });
+  };
+
+  const handleUndo = () => {
+    form.setValue("items", previousItems);
+    setShowUndoButton(false);
+    toast({
+      title: "Changes undone",
+      description: "Your previous list items have been restored.",
+    });
+  };
+
+  const handleDragEnd = (event) => {
+    const {active, over} = event;
+    
+    if (active.id !== over.id) {
+      const oldIndex = fields.findIndex((item) => item.id === active.id);
+      const newIndex = fields.findIndex((item) => item.id === over.id);
+      
+      move(oldIndex, newIndex);
+    }
+  };
+
+  const handleAddCategory = () => {
+    if (newCategory && !categories.includes(newCategory)) {
+      setCategories([...categories, newCategory]);
+      form.setValue("categories", [...form.getValues("categories"), newCategory]);
+      setNewCategory("");
+    }
+  };
+
+  const handleAddTimespan = () => {
+    if (newTimespan && !timespans.includes(newTimespan)) {
+      setTimespans([...timespans, newTimespan]);
+      form.setValue("timespans", [...form.getValues("timespans"), newTimespan]);
+      setNewTimespan("");
+    }
+  };
+
+  const handleAddLocation = () => {
+    if (newLocation && !locations.includes(newLocation)) {
+      setLocations([...locations, newLocation]);
+      form.setValue("locations", [...form.getValues("locations"), newLocation]);
+      setNewLocation("");
+    }
+  };
+
   return (
     <Form {...form}>
       {error && <div className="text-red-500" role="alert">{error}</div>}
@@ -146,7 +236,7 @@ const ListForm = ({ list, action,onSubmit }: ListFormProps) => {
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title</FormLabel>
+              <FormLabel>Let's Give Your Ranking A Title </FormLabel>
               <FormControl>
                 <Input
                   placeholder="Enter a title"
@@ -154,137 +244,217 @@ const ListForm = ({ list, action,onSubmit }: ListFormProps) => {
                   className="w-full bg-dark-3 text-light-1 border-none"
                 />
               </FormControl>
-              <FormDescription>Enter a title for your list</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Enter a description"
-                  {...field}
-                  className="w-full bg-dark-3 text-light-1 border-none"
-                />
-              </FormControl>
-              <FormDescription>Enter a description for your list</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button
-          type="button"
-          onClick={handleGenerateIdea}
-          disabled={isGeneratingIdea}
-          className="mb-4"
-        >
-          {isGeneratingIdea ? "Generating..." : "Get AI Description"}
-        </Button>
-
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="list-items">
-            {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef}>
-                {fields.map((field, index) => (
-                  <Draggable key={field.id} draggableId={field.id} index={index}>
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        className="flex items-center mb-2"
+        <div className="flex flex-col gap-4">
+          <FormField
+            control={form.control}
+            name="timespans"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Timespans</FormLabel>
+                <FormControl>
+                  <div>
+                    <div className="flex flex-wrap gap-2">
+                      <Select 
+                        onValueChange={(value) => {
+                          if (value && !field.value.includes(value)) {
+                            field.onChange([...field.value, value]);
+                          }
+                        }}
                       >
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.content`}
-                          render={({ field }) => (
-                            <FormItem className="flex-grow mr-2">
-                              <FormControl>
-                                <Input
-                                  placeholder={`Item ${index + 1}`}
-                                  {...field}
-                                  className="w-full bg-dark-3 text-light-1 border-none"
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.isVisible`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <input
-                                  type="checkbox"
-                                  {...field}
-                                  checked={field.value}
-                                  className="mr-2"
-                                  aria-label={`Make item ${index + 1} visible`}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <Button 
-                          type="button" 
-                          onClick={() => remove(index)} 
-                          className="bg-red-500 text-white"
-                          aria-label={`Remove item ${index + 1}`}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
+                        <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
+                          <SelectValue placeholder="Select a timespan" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-dark-4 text-light-1 border-none">
+                          {timespans
+                            .filter(timespan => !field.value.includes(timespan))
+                            .map((timespan) => (
+                              <SelectItem key={timespan} value={timespan}>
+                                {timespan}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        placeholder="New timespan"
+                        value={newTimespan}
+                        onChange={(e) => setNewTimespan(e.target.value)}
+                        className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
+                      />
+                      <Button type="button" onClick={handleAddTimespan} className="w-full md:w-auto">
+                        Add Timespan
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {field.value.map((timespan, index) => (
+                        <div key={index} className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
+                          {timespan}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newTimespans = field.value.filter((_, i) => i !== index);
+                              field.onChange(newTimespans);
+                            }}
+                            className="ml-2 text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </Droppable>
-        </DragDropContext>
+          />
 
-        {fields.length < 10 && (
-          <Button 
-            type="button" 
-            onClick={() => append({ content: '', isVisible: true })}
-            aria-label="Add new item"
+          <FormField
+            control={form.control}
+            name="locations"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Locations</FormLabel>
+                <FormControl>
+                  <div>
+                    <div className="flex flex-wrap gap-2">
+                      <Select 
+                        onValueChange={(value) => {
+                          if (value && !field.value.includes(value)) {
+                            field.onChange([...field.value, value]);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
+                          <SelectValue placeholder="Select a location" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-dark-4 text-light-1 border-none">
+                          {locations
+                            .filter(location => !field.value.includes(location))
+                            .map((location) => (
+                              <SelectItem key={location} value={location}>
+                                {location}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        placeholder="New location"
+                        value={newLocation}
+                        onChange={(e) => setNewLocation(e.target.value)}
+                        className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
+                      />
+                      <Button type="button" onClick={handleAddLocation} className="w-full md:w-auto">
+                        Add Location
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {field.value.map((location, index) => (
+                        <div key={index} className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
+                          {location}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newLocations = field.value.filter((_, i) => i !== index);
+                              field.onChange(newLocations);
+                            }}
+                            className="ml-2 text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <Button
+            type="button"
+            onClick={handleGenerateListItems}
+            disabled={isGeneratingItems}
+            className="bg-blue-900 text-light-1 px-4 py-2 rounded-md mb-4"
           >
-            Add Item
+            {isGeneratingItems ? "Generating..." : "Need Inspiration: Get Suggestions Based On Your Title"}
           </Button>
-        )}
 
-        <FormField
-          control={form.control}
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Category</FormLabel>
-              <FormControl>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="w-full bg-dark-3 text-light-1 border-none">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-dark-4 text-light-1 border-none">
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.name}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormDescription>Select a category for your list</FormDescription>
-              <FormMessage />
-            </FormItem>
+          {showUndoButton && (
+            <Button type="button" onClick={handleUndo} className="w-full">
+              Undo Generated Items
+            </Button>
           )}
-        />
+          <DndContext 
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext 
+              items={fields.map(field => field.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {fields.map((field, index) => (
+                <SortableItem key={field.id} id={field.id}>
+                  <div className="flex items-center mb-2">
+                    <div className="mr-2 cursor-move">⋮⋮</div>
+                    <FormField
+                      control={form.control}
+                      name={`items.${index}.content`}
+                      render={({ field }) => (
+                        <FormItem className="flex-grow mr-2">
+                          <FormControl>
+                            <Input
+                              placeholder={`Rank ${index + 1}`}
+                              {...field}
+                              className="w-full bg-dark-3 text-light-1 border-none"
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`items.${index}.isVisible`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <input
+                              type="checkbox"
+                              {...field}
+                              checked={field.value}
+                              className="mr-2"
+                              aria-label={`Make item ${index + 1} visible`}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    
+                  </div>
+                </SortableItem>
+              ))}
+            </SortableContext>
+          </DndContext>
+
+          {fields.length < 10 && (
+            <Button 
+              type="button" 
+              onClick={() => append({ content: '', isVisible: true })}
+              aria-label="Add new item"
+              className="px-4 py-2 rounded-md mb-4"
+            >
+              Add Row
+            </Button>
+          )}
+        </div>
 
         <FormField
           control={form.control}
@@ -295,7 +465,11 @@ const ListForm = ({ list, action,onSubmit }: ListFormProps) => {
               <FormControl>
                 <Input
                   placeholder="Enter tags separated by commas"
-                  {...field}
+                  onBlur={(e) => {
+                    const tags = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean);
+                    field.onChange(tags);
+                  }}
+                  defaultValue={field.value.join(', ')}
                   className="w-full bg-dark-3 text-light-1 border-none"
                 />
               </FormControl>
@@ -304,6 +478,98 @@ const ListForm = ({ list, action,onSubmit }: ListFormProps) => {
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="categories"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Categories</FormLabel>
+              <FormControl>
+                <div>
+                  <div className="flex flex-wrap gap-2">
+                    <Select 
+                      onValueChange={(value) => {
+                        if (value && !field.value.includes(value)) {
+                          field.onChange([...field.value, value]);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories
+                          .filter(category => !field.value.includes(category))
+                          .map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      placeholder="New category"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
+                    />
+                    <Button type="button" onClick={handleAddCategory} className="w-full md:w-auto">
+                      Add Category
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {field.value.map((category, index) => (
+                      <div key={index} className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
+                        {category}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newCategories = field.value.filter((_, i) => i !== index);
+                            field.onChange(newCategories);
+                          }}
+                          className="ml-2 text-xs"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/*<Button
+          type="button"
+          onClick={() => setShowDescription(!showDescription)}
+          className="px-4 py-2 rounded-md mb-4"
+        >
+          {showDescription ? "Hide Description" : "If you want to add description"}
+        </Button>*/}
+
+        {showDescription && (
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Enter a description"
+                    {...field}
+                    className="w-full bg-dark-3 text-light-1 border-none"
+                  />
+                </FormControl>
+                <FormDescription>Enter a description for your list</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <div className="flex gap-4 items-center justify-end">
           <Button type="button" className="shad-button_dark_4" onClick={() => navigate(-1)}>
@@ -319,6 +585,17 @@ const ListForm = ({ list, action,onSubmit }: ListFormProps) => {
           </Button>
         </div>
       </form>
+
+      <ConfirmationDialog
+        isOpen={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
+        onConfirm={() => {
+          applyGeneratedItems(generatedItems);
+          setIsConfirmDialogOpen(false);
+        }}
+        title="Replace existing items?"
+        description="This will replace your current list items with the generated ones. Are you sure?"
+      />
     </Form>
   );
 };

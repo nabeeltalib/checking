@@ -7,23 +7,24 @@ import { IList } from "@/types";
 
 const Home: React.FC = () => {
   const { user } = useUserContext();
-  const { lists, isLoading, error } = useListContext(); // Add error handling
-  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user.id);
+  const { lists, isLoading, error } = useListContext();
+  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user?.id || "");
   const [listIdea, setListIdea] = useState<string | null>(null);
 
   const handleGenerateIdea = () => {
+    setListIdea(null); // Clear previous idea
     generateListIdea("Generate a random list idea", {
       onSuccess: (idea) => setListIdea(idea),
     });
   };
 
   if (isLoading) return <Loader />;
-  if (error) return <div>Error loading lists: {error.message}</div>;
+  if (error) return <div className="text-red-500 p-4">Error loading lists: {error.message}</div>;
 
   return (
     <div className="flex flex-col gap-4 p-4 w-full items-center common-container">
       <h1 className="h3-bold md:h2-bold text-left w-full">Recent Lists</h1>
-      <p>Welcome, {user.name}</p>
+      <p>Welcome, {user?.name || "Guest"}</p>
       <div className="w-full max-w-5xl">
         <h2 className="h3-bold md:h2-bold text-left w-full mt-8">Need Inspiration?</h2>
         <button
@@ -33,7 +34,11 @@ const Home: React.FC = () => {
         >
           {isGeneratingIdea ? "Generating..." : "Generate List Idea"}
         </button>
-        {listIdea && (
+        {isGeneratingIdea ? (
+          <div className="mt-4 p-4 bg-dark-3 rounded-lg">
+            <Loader />
+          </div>
+        ) : listIdea && (
           <div className="mt-4 p-4 bg-dark-3 rounded-lg">
             <p className="text-light-1">{listIdea}</p>
           </div>
@@ -45,7 +50,7 @@ const Home: React.FC = () => {
             <ListCard key={list.$id} list={list} />
           ))
         ) : (
-          <p>No recent lists available.</p>
+          <p className="text-light-2">No recent lists available.</p>
         )}
       </div>
     </div>

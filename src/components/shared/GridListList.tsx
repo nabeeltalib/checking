@@ -14,13 +14,11 @@ const GridListList: React.FC<GridListListProps> = ({ lists, showUser = true, sho
       {lists?.map((list) => (
         <div key={list.$id} className="bg-dark-4 rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
           <Link to={`/lists/${list.$id}`} className="block p-4">
-            <h3 className="text-xl font-bold text-light-1 mb-2 line-clamp-1">{list.title}</h3>
-            <p className="text-light-3 mb-4 line-clamp-2">{list.description}</p>
-            <ul className="list-disc list-inside mb-4 text-light-1">
-              {list.items.filter((item: IListItem) => item.isVisible).slice(0, 3).map((item: IListItem, index: number) => (
+            <h3 className="text-xl font-bold text-light-1 mb-2">{list.title}</h3>
+            <ul className="list-decimal list-inside mb-4 text-light-1">
+              {list.items.slice(0, 5).map((item: IListItem, index: number) => (
                 <li key={index} className="line-clamp-1">{item.content}</li>
               ))}
-              {list.items.filter((item: IListItem) => item.isVisible).length > 3 && <li>...</li>}
             </ul>
             <div className="flex flex-wrap gap-2">
               {list.tags.slice(0, 3).map((tag: string, index: number) => (

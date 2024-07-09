@@ -9,6 +9,7 @@ import {
   getAISuggestions,
   generateListIdea,
   analyzeSentiment,
+  generateListItems,
   enhanceListDescription
 } from '@/lib/appwrite/aiService';
 import {
@@ -27,12 +28,20 @@ import {
   getInfiniteLists,
   getUserFriends,
   getFriendsLists,
+  sendFriendRequest,
+  getFriends,
+  getNotifications,
+  getPublicLists,
+  getPopularLists,
   searchLists,
   acceptFriendRequest,
   rejectFriendRequest,
   getFriendRequests,
   saveList,
   deleteSavedList,
+  createNotification, 
+  markNotificationAsRead, 
+  deleteNotification, 
   getUserById,
   createComment,
   getComments,
@@ -44,6 +53,7 @@ import {
   updateCollaboration
 } from '@/lib/appwrite/api';
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
+import { getAISuggestionsRoute } from '@/routes';
 
 // ============================================================
 // AUTH QUERIES
@@ -436,7 +446,7 @@ export const useSearchLists = (searchTerm: string,userId:string) => {
 export const useGetAISuggestions = (userId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_AI_SUGGESTIONS, userId],
-    queryFn: () => getAISuggestions(userId)
+    queryFn: () => getAISuggestionsRoute(userId),
   });
 };
 
@@ -478,16 +488,6 @@ export const useGetFriendsLists = (userId: string) => {
     enabled: !!userId
   });
 };
-export const useAcceptFriendRequest = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (requestId: string) => acceptFriendRequest(requestId),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['friendRequests']);
-      queryClient.invalidateQueries(['friends']);
-    }
-  });
-};
 
 export const useRejectFriendRequest = () => {
   const queryClient = useQueryClient();
@@ -498,10 +498,99 @@ export const useRejectFriendRequest = () => {
     }
   });
 };
+
+export const useGenerateListItems = () => {
+  return useMutation({
+    mutationFn: (title: string) => generateListItems(title),
+  });
+};
+
+// Friend-related queries
+export const useSendFriendRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, friendId }: { userId: string; friendId: string }) =>
+      sendFriendRequest(userId, friendId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_FRIEND_REQUESTS] });
+    },
+  });
+};
+
+// Public lists queries
+export const useGetPublicLists = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_PUBLIC_LISTS],
+    queryFn: getPublicLists,
+  });
+};
+
+export const useGetPopularLists = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_POPULAR_LISTS],
+    queryFn: getPopularLists,
+  });
+};
+export const useGetNotifications = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_NOTIFICATIONS, userId],
+    queryFn: () => getNotifications(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useCreateNotification = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createNotification,
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.GET_NOTIFICATIONS]);
+    },
+  });
+};
+
+export const useMarkNotificationAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: markNotificationAsRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.GET_NOTIFICATIONS]);
+    },
+  });
+};
+
+export const useDeleteNotification = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteNotification,
+    onSuccess: () => {
+      queryClient.invalidateQueries([QUERY_KEYS.GET_NOTIFICATIONS]);
+    },
+  });
+};
+export const useAcceptFriendRequest = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (requestId: string) => acceptFriendRequest(requestId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_FRIEND_REQUESTS] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.GET_FRIENDS] });
+    },
+  });
+};
+
 export const useGetFriendRequests = (userId: string) => {
   return useQuery({
-    queryKey: ['friendRequests', userId],
+    queryKey: [QUERY_KEYS.GET_FRIEND_REQUESTS, userId],
     queryFn: () => getFriendRequests(userId),
-    enabled: !!userId
+    enabled: !!userId,
+  });
+};
+
+export const useGetFriends = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_FRIENDS, userId],
+    queryFn: () => getFriends(userId),
+    enabled: !!userId,
   });
 };

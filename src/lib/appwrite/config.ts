@@ -19,6 +19,7 @@ const requiredEnvVars = [
   'VITE_APPWRITE_GENERATE_LIST_IDEA_FUNCTION_ID',
   'VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID',
   'VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID',
+  'VITE_APPWRITE_NOTIFICATIONS_COLLECTION_ID',
   'VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID',
 ];
 
@@ -47,6 +48,7 @@ export const appwriteConfig = {
   enhanceDescriptionFunctionId: import.meta.env.VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
   typesenseOperationsFunctionId: import.meta.env.VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID,
   friendsCollectionId: import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+  notificationsCollectionId: import.meta.env.VITE_APPWRITE_NOTIFICATIONS_COLLECTION_ID,
 };
 
 const client = new Client();

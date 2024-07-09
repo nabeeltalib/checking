@@ -13,6 +13,8 @@ export enum QUERY_KEYS {
   GET_RECENT_LISTS = "getRecentLists",
   GET_LIST_BY_ID = "getListById",
   GET_USER_LISTS = "getUserLists",
+  GET_PUBLIC_LISTS = "getPublicLists",
+  GET_POPULAR_LISTS = "getPopularLists",
 
   // SEARCH KEYS
   SEARCH_LISTS = "searchLists",
@@ -36,4 +38,7 @@ export enum QUERY_KEYS {
   ENHANCE_LIST_DESCRIPTION = "enhanceListDescription", 
   ANALYZE_SENTIMENT = "analyzeSentiment",
   
+  GET_NOTIFICATIONS = "getNotifications",
+  GET_FRIEND_REQUESTS = "getFriendRequests",
+  GET_FRIENDS = "getFriends",
 }

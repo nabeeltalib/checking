@@ -979,41 +979,6 @@ export const getFriendsLists = async (userId: string) => {
     throw error;
   }
 };
-// Function to send a friend request
-export const sendFriendRequest = async (userId: string, friendId: string) => {
-  try {
-    const result = await databases.createDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.friendsCollectionId,
-      ID.unique(),
-      {
-        userId: userId,
-        friendId: friendId,
-        status: 'pending'
-      }
-    );
-    return result;
-  } catch (error) {
-    console.error('Error sending friend request:', error);
-    throw error;
-  }
-};
-
-// Function to accept a friend request
-export const acceptFriendRequest = async (requestId: string) => {
-  try {
-    const result = await databases.updateDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.friendsCollectionId,
-      requestId,
-      { status: 'accepted' }
-    );
-    return result;
-  } catch (error) {
-    console.error('Error accepting friend request:', error);
-    throw error;
-  }
-};
 
 export const rejectFriendRequest = async (requestId: string) => {
   try {
@@ -1025,36 +990,6 @@ export const rejectFriendRequest = async (requestId: string) => {
     return result;
   } catch (error) {
     console.error('Error rejecting friend request:', error);
-    throw error;
-  }
-};
-
-// Function to get all friend requests for a user
-export const getFriendRequests = async (userId: string) => {
-  try {
-    const result = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.friendsCollectionId,
-      [Query.equal('friendId', userId), Query.equal('status', 'pending')]
-    );
-    return result.documents;
-  } catch (error) {
-    console.error('Error getting friend requests:', error);
-    throw error;
-  }
-};
-
-// Function to get all friends of a user
-export const getFriends = async (userId: string) => {
-  try {
-    const result = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.friendsCollectionId,
-      [Query.equal('status', 'accepted'), Query.search('userId', userId)]
-    );
-    return result.documents.map(doc => doc.friendId);
-  } catch (error) {
-    console.error('Error getting friends:', error);
     throw error;
   }
 };
@@ -1096,5 +1031,167 @@ export async function indexList(list: IList) {
   } catch (error) {
     console.error('Error indexing list:', error);
     throw error;
+  }
+}
+// New functions for friends
+export async function sendFriendRequest(userId: string, friendId: string) {
+  try {
+    const result = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
+      ID.unique(),
+      {
+        userId: userId,
+        friendId: friendId,
+        status: 'pending'
+      }
+    );
+    return result;
+  } catch (error) {
+    console.error('Error sending friend request:', error);
+    throw error;
+  }
+}
+
+export async function acceptFriendRequest(requestId: string) {
+  try {
+    const result = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
+      requestId,
+      { status: 'accepted' }
+    );
+    return result;
+  } catch (error) {
+    console.error('Error accepting friend request:', error);
+    throw error;
+  }
+}
+
+export async function getFriendRequests(userId: string) {
+  try {
+    const result = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
+      [Query.equal('friendId', userId), Query.equal('status', 'pending')]
+    );
+    return result.documents;
+  } catch (error) {
+    console.error('Error getting friend requests:', error);
+    throw error;
+  }
+}
+
+export async function getFriends(userId: string) {
+  try {
+    const result = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
+      [Query.equal('status', 'accepted'), Query.equal('userId', userId)]
+    );
+    return result.documents;
+  } catch (error) {
+    console.error('Error getting friends:', error);
+    throw error;
+  }
+}
+
+// New functions for public lists
+export async function getPublicLists() {
+  try {
+    const result = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      [Query.equal('isPublic', true), Query.orderDesc('$createdAt')]
+    );
+    return result.documents;
+  } catch (error) {
+    console.error('Error getting public lists:', error);
+    throw error;
+  }
+}
+
+export async function getPopularLists() {
+  try {
+    const result = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      [Query.orderDesc('views'), Query.limit(10)]
+    );
+    return result.documents;
+  } catch (error) {
+    console.error('Error getting popular lists:', error);
+    throw error;
+  }
+}
+export async function createNotification(notification: {
+  userId: string;
+  type: 'friend_request' | 'list_like' | 'list_comment';
+  message: string;
+}) {
+  try {
+    const newNotification = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.notificationsCollectionId,
+      ID.unique(),
+      {
+        userId: notification.userId,
+        type: notification.type,
+        message: notification.message,
+        read: false,
+        createdAt: new Date().toISOString(),
+      }
+    );
+    return newNotification;
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    return null;
+  }
+}
+
+export async function getNotifications(userId: string) {
+  try {
+    const notifications = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.notificationsCollectionId,
+      [
+        Query.equal("userId", userId),
+        Query.orderDesc("$createdAt"),
+        Query.limit(50)  // Adjust as needed
+      ]
+    );
+    return notifications.documents;
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    return [];
+  }
+}
+
+export async function markNotificationAsRead(notificationId: string) {
+  try {
+    const updatedNotification = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.notificationsCollectionId,
+      notificationId,
+      { read: true }
+    );
+    return updatedNotification;
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    return null;
+  }
+}
+
+export async function deleteNotification(notificationId: string) {
+  try {
+    await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.notificationsCollectionId,
+      notificationId
+    );
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    return { success: false };
   }
 }

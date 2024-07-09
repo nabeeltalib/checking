@@ -20,7 +20,22 @@ export const getAISuggestions = async (userId: string): Promise<string[]> => {
     return [];
   }
 };
-
+export const generateListItems = async (title: string): Promise<string[]> => {
+  try {
+    const execution = await functions.createExecution(
+      appwriteConfig.generateListItemsFunctionId,
+      JSON.stringify({ title }),
+      false
+    );
+    return JSON.parse(execution.responseBody).items;
+  } catch (error) {
+    console.error("Error generating list items:", error);
+    if (error instanceof AppwriteException) {
+      console.error("Appwrite error details:", error.message, error.code);
+    }
+    throw new Error("Failed to generate list items");
+  }
+};
 export const useGetAISuggestions = (userId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_AI_SUGGESTIONS, userId],

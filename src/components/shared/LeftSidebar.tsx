@@ -9,6 +9,7 @@ const LeftSidebar = () => {
   const { setUser, setIsAuthenticated } = useUserContext();
   const { mutate: signOut } = useSignOutAccount();
   const { pathname } = useLocation();
+
   const handleSignOut = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     signOut();
@@ -18,7 +19,7 @@ const LeftSidebar = () => {
   };
 
   return (
-    <aside className="leftsidebar hidden md:flex flex-col justify-between lg:w-64 h-screen p-6 bg-dark-2 border-r border-dark-4 overflow-auto">
+    <aside className="leftsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-r border-dark-4 overflow-y-auto fixed left-0 top-0">
       <div className="flex flex-col gap-8">
         {sidebarLinks.map(link => (
           <NavLink
@@ -34,7 +35,7 @@ const LeftSidebar = () => {
             <img
               src={link.icon}
               alt={link.label}
-              className={`w-6 h-6 ${link.route === pathname && 'invert'}`}
+              className={`w-6 h-6 ${pathname === link.route ? 'invert' : ''}`}
             />
             <span className="hidden lg:inline">{link.label}</span>
           </NavLink>

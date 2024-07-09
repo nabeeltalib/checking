@@ -28,7 +28,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
   const [user, setUser] = useState<IUser>(INITIAL_USER);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const location = useLocation();
 
   const checkAuthUser = async (): Promise<boolean> => {
@@ -59,14 +60,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    const cookieFallback = localStorage.getItem("cookieFallback");
-    if (!cookieFallback || cookieFallback === "[]") {
-      if (location.pathname !== '/sign-up') {
-        navigate("/sign-in");
+    const initAuth = async () => {
+      const cookieFallback = localStorage.getItem("cookieFallback");
+      if (!cookieFallback || cookieFallback === "[]") {
+        if (location.pathname !== '/sign-up') {
+          navigate("/sign-in");
+        }
+      } else {
+        await checkAuthUser();
       }
-    } else {
-      checkAuthUser();
-    }
+      setIsInitialized(true);
+    };
+
+    initAuth();
   }, [navigate, location.pathname]);
 
   const value = useMemo(
@@ -80,6 +86,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }),
     [user, isLoading, isAuthenticated]
   );
+
+  if (!isInitialized) {
+    return <div>Loading...</div>; // Or a proper loading component
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

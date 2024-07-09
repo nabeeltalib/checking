@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUserContext } from '@/context/AuthContext';
 import {
@@ -18,12 +18,8 @@ const ListDetails: React.FC = () => {
   const { id } = useParams();
   const { user } = useUserContext();
   const { toast } = useToast();
-  const [showAllItems, setShowAllItems] = useState(false);
-  console.log({ id });
   const { data: list, isLoading } = useGetListById(id);
-  const { data: userLists, isLoading: isUserListsLoading } = useGetUserLists(
-    user.id
-  );
+  const { data: userLists, isLoading: isUserListsLoading } = useGetUserLists(user.id);
   const { mutateAsync: deleteList, isLoading: isDeleting } = useDeleteList();
 
   const relatedLists = useMemo(
@@ -33,11 +29,8 @@ const ListDetails: React.FC = () => {
 
   const visibleItems = useMemo(() => {
     if (!list) return [];
-    return list.items;
-    // return showAllItems
-    //   ? list.items
-    //   : list.items.filter((item: IListItem) => item.isVisible).slice(0, 5);
-  }, [list, showAllItems]);
+    return list.items.slice(0, 5);
+  }, [list]);
 
   const handleDeleteList = async () => {
     if (!id) return;
@@ -52,13 +45,12 @@ const ListDetails: React.FC = () => {
     } catch (error) {
       toast({
         title: 'Error deleting list',
-        description:
-          'An error occurred while deleting the list. Please try again.',
+        description: 'An error occurred while deleting the list. Please try again.',
         variant: 'destructive'
       });
     }
   };
-console.log({list})
+
   if (isLoading) return <Loader />;
   if (!list) return <div>List not found</div>;
 
@@ -72,40 +64,28 @@ console.log({list})
         <div className="flex flex-col gap-6 w-full">
           <div className="flex items-center gap-3">
             <img
-              src={
-                list?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg'
-              }
+              src={list?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg'}
               alt="creator"
               className="w-12 h-12 rounded-full"
             />
             <div>
               <p className="base-medium text-light-1">{list?.creator?.name}</p>
-              <p className="small-regular text-light-3">
-                @{list?.creator?.username}
-              </p>
+              <p className="small-regular text-light-3">@{list?.creator?.username}</p>
             </div>
           </div>
 
           <div className="flex flex-col flex-1 w-full small-medium lg:base-regular gap-y-4">
             <h2 className="body-bold lg:h2-bold">{list.title}</h2>
-            <p>{list.description}</p>
-            <ul className="list-items">
+            <ul className="list-decimal list-inside">
               {visibleItems?.map((item: IListItem, index: number) => (
                 <li key={index} className="list-item my-3">
                   {item?.content || item}
                 </li>
               ))}
             </ul>
-            {list.items.length > 5 && (
-              <Button onClick={() => setShowAllItems(!showAllItems)}>
-                {showAllItems ? 'Show Less' : 'Show More'}
-              </Button>
-            )}
             <ul className="flex gap-1 mt-2 text-light-3 flex-wrap">
               {list?.tags?.map((tag: string, index: number) => (
-                <li
-                  key={`${tag}${index}`}
-                  className="text-light-3 small-regular">
+                <li key={`${tag}${index}`} className="text-light-3 small-regular">
                   #{tag}
                 </li>
               ))}
@@ -136,33 +116,25 @@ console.log({list})
 
       <div className="w-full">
         <hr className="border w-full border-dark-4/80" />
-        <h3 className="body-bold md:h3-bold w-full my-10">
-          More Related Lists
-        </h3>
-        {isUserListsLoading ? (
-          <Loader />
-        ) : (
-          <GridListList lists={relatedLists} />
-        )}
+        <h3 className="body-bold md:h3-bold w-full my-10">More Related Lists</h3>
+        {isUserListsLoading ? <Loader /> : <GridListList lists={relatedLists} />}
       </div>
 
-      <div className="w-full">
+      {/* Commented out sections for future implementation */}
+      {/* <div className="w-full">
         <hr className="border w-full border-dark-4/80" />
         <h3 className="body-bold md:h3-bold w-full my-10">Comments</h3>
-        {/* TODO: Add comments component */}
       </div>
 
       <div className="w-full">
         <hr className="border w-full border-dark-4/80" />
         <h3 className="body-bold md:h3-bold w-full my-10">Suggestions</h3>
-        {/* TODO: Add suggestions component */}
       </div>
 
       <div className="w-full">
         <hr className="border w-full border-dark-4/80" />
         <h3 className="body-bold md:h3-bold w-full my-10">Collaborations</h3>
-        {/* TODO: Add collaborations component */}
-      </div>
+      </div> */}
     </div>
   );
 };

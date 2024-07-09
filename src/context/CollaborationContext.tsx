@@ -4,6 +4,7 @@ import { ICollaboration } from "@/types";
 interface CollaborationContextProps {
   collaborations: ICollaboration[];
   addCollaboration: (collaboration: ICollaboration) => void;
+  updateCollaboration: (id: string, updatedCollaboration: Partial<ICollaboration>) => void;
 }
 
 const CollaborationContext = createContext<CollaborationContextProps | undefined>(undefined);
@@ -15,8 +16,16 @@ export const CollaborationProvider: React.FC<{ children: ReactNode }> = ({ child
     setCollaborations((prevCollaborations) => [...prevCollaborations, collaboration]);
   };
 
+  const updateCollaboration = (id: string, updatedCollaboration: Partial<ICollaboration>) => {
+    setCollaborations((prevCollaborations) =>
+      prevCollaborations.map((collab) =>
+        collab.id === id ? { ...collab, ...updatedCollaboration } : collab
+      )
+    );
+  };
+
   return (
-    <CollaborationContext.Provider value={{ collaborations, addCollaboration }}>
+    <CollaborationContext.Provider value={{ collaborations, addCollaboration, updateCollaboration }}>
       {children}
     </CollaborationContext.Provider>
   );

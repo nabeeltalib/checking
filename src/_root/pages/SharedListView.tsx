@@ -58,17 +58,20 @@ const SharedListView: React.FC = () => {
   }, [sharedId, navigate]);
 
   if (loading) return <Loader />;
-  if (error) return <div className="text-red-500">{error}</div>;
-  if (!list) return <div>List not found</div>;
+  if (error) return <div className="text-red-500 p-4 text-center">{error}</div>;
+  if (!list) return <div className="text-light-1 p-4 text-center">List not found</div>;
 
   return (
-    <div className="shared-list-view">
-      <h1 className="text-2xl font-bold mb-4">{list.title}</h1>
-      <p className="mb-4">{list.description}</p>
-      <ul className="list-disc pl-5">
+    <div className="shared-list-view p-6 max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-light-1">{list.title}</h1>
+      {list.description && <p className="mb-6 text-light-2">{list.description}</p>}
+      <ul className="space-y-4">
         {list.items.map((item: IListItem, index: number) => (
           item.isVisible && (
-            <li key={index}>{item.content}</li>
+            <li key={index} className="flex items-start">
+              <span className="mr-2 text-primary-500">{index + 1}.</span>
+              <span className="text-light-1">{item.content}</span>
+            </li>
           )
         ))}
       </ul>

@@ -50,6 +50,7 @@ export interface IList extends Models.Document {
   suggestions?: ISuggestion[];
   CreatedAt?: Date;
   UpdatedAt?: Date;
+  isPublic: boolean;
 }
 
 export interface IUser extends Models.Document {
@@ -70,7 +71,8 @@ export type INewUser = {
 
 export interface IListItem {
   content: string;
-  isVisible: boolean;
+  isVisible: boolean;  
+  isMovable: boolean;
 }
 
 export type ICategoryItem = {
@@ -86,6 +88,10 @@ export type IContextType = {
   isAuthenticated: boolean;
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
   checkAuthUser: () => Promise<boolean>;
+  friends: IFriendRequest[];
+  setFriends: React.Dispatch<React.SetStateAction<IFriendRequest[]>>;
+  notifications: INotification[];
+  setNotifications: React.Dispatch<React.SetStateAction<INotification[]>>;
 };
 
 // New types for Comments, Suggestions, and Collaborations
@@ -112,6 +118,7 @@ export type ISuggestion = {
 export type INewSuggestion = Omit<ISuggestion, 'id'>;
 
 export type CollaborationStatus = 'pending' | 'accepted' | 'rejected';
+export type FriendStatus = 'pending' | 'accepted' | 'rejected';
 
 export type ICollaboration = {
   id: string;
@@ -145,4 +152,27 @@ export interface IAICategory {
 export interface IAISuggestion {
   id: string;
   suggestion: string;
+}
+export interface IFriendRequest {
+  $id: string;
+  userId: string;
+  friendId: string;
+  status: FriendStatus;
+}
+
+export interface INotification {
+  $id: string;
+  userId: string;
+  type: 'friend_request' | 'list_like' | 'list_comment';
+  message: string;
+  read: boolean;
+  createdAt: string;
+}
+export interface INotification {
+  $id: string;
+  userId: string;
+  type: 'friend_request' | 'list_like' | 'list_comment';
+  message: string;
+  read: boolean;
+  createdAt: string;
 }

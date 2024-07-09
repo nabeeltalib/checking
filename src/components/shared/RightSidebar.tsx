@@ -3,7 +3,7 @@ import { rightSidebarLinks } from '@/constants';
 
 const RightSidebar = () => {
   return (
-    <aside className="rightsidebar hidden md:flex flex-col gap-6 min-w-[16rem] lg:w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 overflow-auto">
+    <aside className="rightsidebar hidden lg:flex flex-col gap-6 w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 overflow-y-auto fixed right-0 top-0">
       <h2 className="text-xl font-bold text-light-1 mb-4">Quick Links</h2>
       <nav className="flex flex-col gap-4">
         {rightSidebarLinks.map((link) => (

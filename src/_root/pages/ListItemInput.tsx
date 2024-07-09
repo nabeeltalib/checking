@@ -1,7 +1,5 @@
-// src/components/ListItemInput.tsx
-
 import React, { useState } from 'react';
-import { IListItem } from '@/types'; // Make sure to import IListItem from your types file
+import { IListItem } from '@/types';
 
 interface ListItemInputProps {
   onAddItem: (item: IListItem) => void;
@@ -22,7 +20,7 @@ const ListItemInput: React.FC<ListItemInputProps> = ({ onAddItem }) => {
         isVisible: isVisible
       });
       setInputValue('');
-      setIsVisible(true); // Reset visibility to true after adding an item
+      setIsVisible(true);
     }
   };
 
@@ -45,15 +43,15 @@ const ListItemInput: React.FC<ListItemInputProps> = ({ onAddItem }) => {
         onKeyPress={handleKeyPress}
         placeholder="Enter a list item"
         aria-label="List item input"
-        className="flex-grow px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-dark-3 text-light-1"
+        className="flex-grow px-4 py-2 border border-dark-4 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-dark-3 text-light-1"
       />
       <button
         type="button"
         onClick={toggleVisibility}
         aria-label={isVisible ? "Set item as hidden" : "Set item as visible"}
         className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-          isVisible ? 'bg-green-500 hover:bg-green-600' : 'bg-yellow-500 hover:bg-yellow-600'
-        }`}
+          isVisible ? 'bg-primary-500 hover:bg-primary-600' : 'bg-dark-4 hover:bg-dark-3'
+        } text-light-1`}
       >
         {isVisible ? 'Visible' : 'Hidden'}
       </button>
@@ -61,7 +59,7 @@ const ListItemInput: React.FC<ListItemInputProps> = ({ onAddItem }) => {
         type="button"
         onClick={handleAddItem}
         aria-label="Add item"
-        className="px-4 py-2 text-white bg-primary-500 rounded-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        className="px-4 py-2 text-light-1 bg-primary-500 rounded-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
       >
         Add
       </button>

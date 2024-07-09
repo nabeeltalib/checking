@@ -2,22 +2,27 @@ import { Models } from "appwrite";
 import { Loader } from "@/components/shared";
 import { useGetCurrentUser } from "@/lib/react-query/queries";
 import GridListList from "@/components/shared/GridListList";
+import { IList } from "@/types";
 
 const Saved = () => {
   const { data: currentUser, isLoading } = useGetCurrentUser();
 
-  const savedLists = currentUser?.save
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (!currentUser) {
+    return <div className="text-light-4 text-center">User not found</div>;
+  }
+
+  const savedLists: IList[] = currentUser.save
     ?.map((savedList: Models.Document) => ({
       ...savedList.list,
       creator: {
         imageUrl: currentUser.imageUrl,
       },
     }))
-    .reverse();
-
-  if (isLoading) {
-    return <Loader />;
-  }
+    .reverse() || [];
 
   return (
     <div className="saved-container common-container">
@@ -33,7 +38,7 @@ const Saved = () => {
       </div>
 
       <div className="w-full flex justify-center max-w-5xl gap-9">
-        {savedLists?.length === 0 ? (
+        {savedLists.length === 0 ? (
           <p className="text-light-4">No saved lists</p>
         ) : (
           <GridListList lists={savedLists} showStats={false} />

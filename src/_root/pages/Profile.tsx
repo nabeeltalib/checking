@@ -16,11 +16,11 @@ const Profile: React.FC = () => {
 
   const { data: currentUser, isLoading: isLoadingCurrentUser } = useGetUserById(id || "");
   const { data: friends, isLoading: isLoadingFriends } = useGetUserFriends(id || "");
-  const { data: friendRequests, isLoading: isLoadingFriendRequests } = useGetFriendRequests(user.id);
+  const { data: friendRequests, isLoading: isLoadingFriendRequests } = useGetFriendRequests(user?.id || "");
 
-  if (!id) return null;
+  if (!id) return <div className="text-center text-light-1">User ID not found</div>;
 
-  if (isLoadingCurrentUser || isLoadingFriends || isLoadingFriendRequests) {
+  if (isLoadingCurrentUser) {
     return <Loader />;
   }
 
@@ -28,7 +28,7 @@ const Profile: React.FC = () => {
     return <div className="text-center text-light-1">User not found</div>;
   }
 
-  const isOwnProfile = currentUser.$id === user.id;
+  const isOwnProfile = currentUser.$id === user?.id;
 
   return (
     <div className="flex flex-col gap-6 w-full p-6 mx-auto common-container">
@@ -75,16 +75,22 @@ const Profile: React.FC = () => {
 
       {/* Content based on selected tab */}
       {pathname === `/profile/${id}` && (
-        <GridListList lists={currentUser.lists} showUser={false} />
+        <GridListList lists={currentUser.lists || []} showUser={false} />
       )}
       {pathname === `/profile/${id}/liked-lists` && <LikedLists />}
-      {pathname === `/profile/${id}/friends` && <FriendsList friends={friends} />}
+      {pathname === `/profile/${id}/friends` && (
+        isLoadingFriends ? <Loader /> : <FriendsList friends={friends || []} />
+      )}
 
       {/* Friend Requests section (only on own profile) */}
-      {isOwnProfile && !isLoadingFriendRequests && (
+      {isOwnProfile && (
         <div className="mt-8">
           <h2 className="text-xl font-bold text-light-1 mb-4">Friend Requests</h2>
-          <FriendRequests requests={friendRequests || []} />
+          {isLoadingFriendRequests ? (
+            <Loader />
+          ) : (
+            <FriendRequests requests={friendRequests || []} />
+          )}
         </div>
       )}
 
