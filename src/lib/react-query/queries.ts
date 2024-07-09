@@ -50,6 +50,7 @@ import {
   updateSuggestion,
   createCollaboration,
   getCollaborations,
+  signInWithGoogle, 
   updateCollaboration
 } from '@/lib/appwrite/api';
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
@@ -77,7 +78,14 @@ export const useSignOutAccount = () => {
     mutationFn: signOutAccount
   });
 };
-
+export const useSignInWithGoogle = () => {
+  return useMutation({
+    mutationFn: signInWithGoogle,
+    onSuccess: () => {
+      // You might want to invalidate or refetch user data here
+    },
+  });
+};
 // ============================================================
 // LIST QUERIES
 // ============================================================

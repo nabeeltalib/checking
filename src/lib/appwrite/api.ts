@@ -18,6 +18,7 @@ import {
   IListItem,
   ICategoryItem
 } from '@/types';
+import { account, databases, storage, avatars, appwriteConfig } from "./config";
 
 // Ensure environment variables are defined
 const requiredEnvVars = [
@@ -148,7 +149,49 @@ export async function saveUserToDB(user: {
     return error;
   }
 }
+export async function signInWithGoogle() {
+  try {
+    const session = await account.createOAuth2Session('google');
+    return session;
+  } catch (error) {
+    console.error("Error signing in with Google:", error);
+    if (error instanceof AppwriteException) {
+      console.error("Appwrite error details:", error.message, error.code);
+    }
+    throw error;
+  }
+}
 
+export async function getCurrentUser() {
+  try {
+    const currentAccount = await account.get();
+    if (!currentAccount) throw new Error("Not authenticated");
+
+    const currentUser = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [Query.equal("accountId", currentAccount.$id)]
+    );
+
+    if (!currentUser || currentUser.total === 0) {
+      // User document doesn't exist, create it
+      const avatarUrl = avatars.getInitials(currentAccount.name);
+      const newUser = await saveUserToDB({
+        accountId: currentAccount.$id,
+        name: currentAccount.name,
+        email: currentAccount.email,
+        username: currentAccount.name, // You might want to generate a unique username
+        imageUrl: avatarUrl,
+      });
+      return newUser;
+    }
+
+    return currentUser.documents[0];
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    return null;
+  }
+}
 export async function signInAccount(user: { email: string; password: string }) {
   try {
     const session = await account.createEmailPasswordSession(
@@ -171,44 +214,6 @@ export async function getAccount() {
   } catch (error) {
     console.error('Error getting account:', error);
     return null;
-  }
-}
-
-export async function getCurrentUser() {
-  try {
-    const currentAccount = await account.get();
-
-    if (!currentAccount) throw new Error('Not authenticated');
-
-    const currentUser = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      [Query.equal('accountId', currentAccount.$id)]
-    );
-
-    if (!currentUser || currentUser.total === 0) {
-      // User document doesn't exist, create it
-      const newUser = await databases.createDocument(
-        appwriteConfig.databaseId,
-        appwriteConfig.userCollectionId,
-        ID.unique(),
-        {
-          accountId: currentAccount.$id,
-          email: currentAccount.email,
-          name: currentAccount.name, // Make sure to include the name
-          username: currentAccount.name // You might want to generate a username
-        }
-      );
-      return newUser;
-    }
-
-    return currentUser.documents[0];
-  } catch (error) {
-    console.error('Error getting current user:', error);
-    if (error instanceof AppwriteException) {
-      console.error('Appwrite error details:', error.message, error.code);
-    }
-    throw error;
   }
 }
 
@@ -904,39 +909,37 @@ export async function searchLists(
 
 export const shareList = async (listId: string): Promise<string> => {
   try {
-    // Check if a shared link already exists for this list
     const existingLinks = await databases.listDocuments(
-      'your_database_id',
-      'shared_links',
+      appwriteConfig.databaseId,
+      appwriteConfig.sharedLinksCollectionId,
       [
-        databases.Query.equal('listId', listId),
-        databases.Query.greaterThan('expiresAt', new Date().toISOString())
+        Query.equal('listId', listId),
+        Query.greaterThan('expiresAt', new Date().toISOString())
       ]
     );
 
     if (existingLinks.documents.length > 0) {
-      // If a valid shared link exists, return it
-      return `https://yourapp.com/shared/${existingLinks.documents[0].$id}`;
+      return `${appwriteConfig.url}/shared/${existingLinks.documents[0].$id}`;
     }
 
-    // If no valid shared link exists, create a new one
     const sharedLink = await databases.createDocument(
-      'your_database_id',
-      'shared_links',
+      appwriteConfig.databaseId,
+      appwriteConfig.sharedLinksCollectionId,
       ID.unique(),
       {
         listId: listId,
         createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // Expires in 30 days
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
       }
     );
 
-    return `https://yourapp.com/shared/${sharedLink.$id}`;
+    return `${appwriteConfig.url}/shared/${sharedLink.$id}`;
   } catch (error) {
     console.error('Error creating shared link:', error);
     throw new Error('Failed to create shared link');
   }
 };
+
 // Fetch user's friends
 export const getUserFriends = async (userId: string) => {
   try {

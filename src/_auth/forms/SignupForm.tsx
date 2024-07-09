@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import Loader from "@/components/shared/Loader";
 import { useToast } from "@/components/ui/use-toast";
 
-import { useCreateUserAccount, useSignInAccount } from "@/lib/react-query/queries";
+import { useCreateUserAccount, useSignInAccount, useSignInWithGoogle } from "@/lib/react-query/queries";
 import { SignupValidation } from "@/lib/validation";
 import { useUserContext } from "@/context/AuthContext";
 
@@ -31,6 +31,7 @@ const SignupForm = () => {
   // Queries
   const { mutateAsync: createUserAccount, isLoading: isCreatingAccount } = useCreateUserAccount();
   const { mutateAsync: signInAccount, isLoading: isSigningInUser } = useSignInAccount();
+  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
 
   // Handler
   const handleSignup = async (user: z.infer<typeof SignupValidation>) => {
@@ -38,8 +39,7 @@ const SignupForm = () => {
       const newUser = await createUserAccount(user);
 
       if (!newUser) {
-        toast({ title: "Sign up failed. Please try again.", });
-        
+        toast({ title: "Sign up failed. Please try again." });
         return;
       }
 
@@ -49,10 +49,8 @@ const SignupForm = () => {
       });
 
       if (!session) {
-        toast({ title: "Something went wrong. Please login your new account", });
-        
-        // navigate("/sign-in");
-        
+        toast({ title: "Something went wrong. Please login your new account" });
+        navigate("/sign-in");
         return;
       }
 
@@ -60,15 +58,29 @@ const SignupForm = () => {
 
       if (isLoggedIn) {
         form.reset();
-
         navigate("/");
       } else {
-        toast({ title: "Login failed. Please try again.", });
-        
-        return;
+        toast({ title: "Login failed. Please try again." });
       }
     } catch (error) {
       console.log({ error });
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    try {
+      const session = await signInWithGoogle();
+      if (session) {
+        const isLoggedIn = await checkAuthUser();
+        if (isLoggedIn) {
+          navigate("/");
+        } else {
+          toast({ title: "Sign up failed. Please try again." });
+        }
+      }
+    } catch (error) {
+      console.error("Google sign-up error:", error);
+      toast({ title: "Google sign-up failed. Please try again." });
     }
   };
 
@@ -81,7 +93,7 @@ const SignupForm = () => {
           Create a new account
         </h2>
         <p className="text-light-3 small-medium md:base-regular mt-2">
-          To post on Topfived, Please enter your details
+          To use Snapgram, Please enter your details
         </p>
 
         <form
@@ -150,6 +162,28 @@ const SignupForm = () => {
               </div>
             ) : (
               "Sign Up"
+            )}
+          </Button>
+
+          <div className="flex-center">
+            <span className="text-small-regular text-light-2">or</span>
+          </div>
+
+          <Button 
+            type="button" 
+            className="shad-button_google"
+            onClick={handleGoogleSignUp}
+            disabled={isGoogleLoading}
+          >
+            {isGoogleLoading ? (
+              <div className="flex-center gap-2">
+                <Loader /> Loading...
+              </div>
+            ) : (
+              <>
+                <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
+                Sign up with Google
+              </>
             )}
           </Button>
 

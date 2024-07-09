@@ -10,7 +10,7 @@ import Loader from "@/components/shared/Loader";
 import { useToast } from "@/components/ui/use-toast";
 
 import { SigninValidation } from "@/lib/validation";
-import { useSignInAccount } from "@/lib/react-query/queries";
+import { useSignInAccount, useSignInWithGoogle } from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
 
 const SigninForm = () => {
@@ -18,8 +18,9 @@ const SigninForm = () => {
   const navigate = useNavigate();
   const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
 
-  // Query
+  // Queries
   const { mutateAsync: signInAccount, isLoading } = useSignInAccount();
+  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
 
   const form = useForm<z.infer<typeof SigninValidation>>({
     resolver: zodResolver(SigninValidation),
@@ -34,7 +35,6 @@ const SigninForm = () => {
 
     if (!session) {
       toast({ title: "Login failed. Please try again." });
-      
       return;
     }
 
@@ -42,13 +42,15 @@ const SigninForm = () => {
 
     if (isLoggedIn) {
       form.reset();
-
       navigate("/");
     } else {
-      toast({ title: "Login failed. Please try again.", });
-      
-      return;
+      toast({ title: "Login failed. Please try again." });
     }
+  };
+
+  const handleGoogleSignIn = () => {
+    signInWithGoogle();
+    // Note: This will redirect the user, so no need for further handling here
   };
 
   return (
@@ -62,6 +64,7 @@ const SigninForm = () => {
         <p className="text-light-3 small-medium md:base-regular mt-2">
           Welcome back! Please enter your details.
         </p>
+        
         <form
           onSubmit={form.handleSubmit(handleSignin)}
           className="flex flex-col gap-5 w-full mt-4">
@@ -100,6 +103,28 @@ const SigninForm = () => {
               </div>
             ) : (
               "Log in"
+            )}
+          </Button>
+
+          <div className="flex-center">
+            <span className="text-small-regular text-light-2">or</span>
+          </div>
+
+          <Button 
+            type="button" 
+            className="shad-button_google"
+            onClick={handleGoogleSignIn}
+            disabled={isGoogleLoading}
+          >
+            {isGoogleLoading ? (
+              <div className="flex-center gap-2">
+                <Loader /> Loading...
+              </div>
+            ) : (
+              <>
+                <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
+                Sign in with Google
+              </>
             )}
           </Button>
 
