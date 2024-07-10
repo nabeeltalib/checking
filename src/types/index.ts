@@ -60,6 +60,8 @@ export interface IUser extends Models.Document {
   imageUrl: string;
   bio: string;
   curatedList: string[];
+  save?: { list: IList }[];
+  $id: string;
 }
 
 export type INewUser = {

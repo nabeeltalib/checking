@@ -22,13 +22,7 @@ export const sidebarLinks = [
     route: "/saved",
     label: "Saved",
     icon:"/assets/icons/bookmark.svg"
-  },
-  {
-    imgURL: "/assets/icons/gallery-add.svg",
-    route: "/create-list",
-    label: "Create Post",
-    icon:"/assets/icons/gallery-add.svg"
-  },
+  },  
 ];
 
 export const bottombarLinks = [

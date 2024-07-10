@@ -1,8 +1,7 @@
-import { Models } from "appwrite";
 import { Loader } from "@/components/shared";
 import { useGetCurrentUser } from "@/lib/react-query/queries";
 import GridListList from "@/components/shared/GridListList";
-import { IList } from "@/types";
+import { IList, IUser } from "@/types";
 
 const Saved = () => {
   const { data: currentUser, isLoading } = useGetCurrentUser();
@@ -15,14 +14,18 @@ const Saved = () => {
     return <div className="text-light-4 text-center">User not found</div>;
   }
 
-  const savedLists: IList[] = currentUser.save
-    ?.map((savedList: Models.Document) => ({
-      ...savedList.list,
+  const savedLists: IList[] = currentUser?.save
+  ? currentUser.save.map((savedItem: any) => ({
+      ...savedItem.list,
       creator: {
-        imageUrl: currentUser.imageUrl,
+        $id: currentUser.$id,
+        name: currentUser.name,
+        imageUrl: currentUser.imageUrl || "/assets/icons/profile-placeholder.svg",
       },
     }))
-    .reverse() || [];
+  : [];
+
+  console.log("Saved Lists:", savedLists); // Add this line for debugging
 
   return (
     <div className="saved-container common-container">

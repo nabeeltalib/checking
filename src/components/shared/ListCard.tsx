@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { IList, IListItem } from "@/types";
+import { IList } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
 
@@ -37,36 +37,48 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   };
 
   const renderListItems = () => {
+    let items: Array<string | { content: string }> = [];
+
     if (Array.isArray(list.items)) {
-      return list.items.slice(0, 5).map((item, index) => (
-        <li key={index} className="text-light-2">
-          {typeof item === 'string' ? item : item.content}
-        </li>
-      ));
+      items = list.items;
     } else if (typeof list.items === 'string') {
-      // If items is a string, split it by newlines
-      return list.items.split('\n').slice(0, 5).map((item, index) => (
-        <li key={index} className="text-light-2">{item}</li>
-      ));
+      items = list.items.split('\n');
+    } else if (typeof list.items === 'object' && list.items !== null) {
+      items = Object.values(list.items);
     }
-    return null;
+
+    return items.slice(0, 5).map((item, index) => (
+      <li key={index} className="flex items-center mb-2">
+        <span className="flex-shrink-0 w-8 h-8 text-light-1 bg-gray-800 rounded-full flex items-center justify-center font-bold mr-3">
+          {index + 1}
+        </span>
+        <span className="text-light-2 truncate">
+          {typeof item === 'string' ? item : item.content || ''}
+        </span>
+      </li>
+    ));
   };
 
   return (
     <motion.div 
-      className="bg-dark-2 rounded-lg shadow-md overflow-hidden"
+      className="bg-dark-2 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
       whileHover={{ y: -5 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="p-4">
-        <div className="flex justify-between items-start mb-2">
+      <div className="p-6">
+        {/* Title moved outside of any links and styled for prominence */}
+        <h2 className="text-3xl font-bold mb-6 text-primary-500">
+          {list.title}
+        </h2>
+
+        <div className="flex justify-between items-start mb-4">
           <Link to={`/profile/${list.creator.$id}`} className="flex items-center">
             <img 
               src={list.creator?.imageUrl || "/assets/icons/profile-placeholder.svg"} 
               alt={`${list.creator?.name}'s profile`} 
-              className="w-10 h-10 rounded-full mr-2"
+              className="w-12 h-12 rounded-full mr-3 border-2 border-primary-500"
             />
             <div>
               <p className="font-semibold text-light-1">{list.creator?.name}</p>
@@ -75,32 +87,34 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           </Link>
           <button
             onClick={handleShare}
-            className="text-light-2 hover:text-primary-500 transition-colors"
+            className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
             disabled={isSharing}
           >
-            <Share2 size={20} />
+            <Share2 size={24} />
           </button>
         </div>
 
         <Link to={`/lists/${list.$id}`} className="block">
-          <h3 className="text-xl font-bold mb-2 text-light-1 hover:text-primary-500 transition-colors">
-            {list.title}
-          </h3>
-          
-          <ol className="list-decimal list-inside mb-4 space-y-2">
+          <ol className="list-none mb-6 space-y-3">
             {renderListItems()}
           </ol>
 
+          {Array.isArray(list.items) && list.items.length > 5 && (
+            <p className="text-primary-500 font-semibold text-sm mb-4">
+              + {list.items.length - 5} more items
+            </p>
+          )}
+
           {list.tags && list.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
+            <div className="flex flex-wrap gap-2 mb-4">
               {list.tags.slice(0, 3).map((tag: string, index: number) => (
-                <span key={index} className="bg-dark-4 text-light-2 px-2 py-1 rounded-full text-xs">
+                <span key={index} className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs">
                   #{tag}
                 </span>
               ))}
               {list.tags.length > 3 && (
-                <span className="bg-dark-4 text-light-2 px-2 py-1 rounded-full text-xs">
-                  +{list.tags.length - 3}
+                <span className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs">
+                  +{list.tags.length - 3} more
                 </span>
               )}
             </div>
@@ -108,14 +122,14 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         </Link>
       </div>
       
-      <div className="bg-dark-3 px-4 py-2 flex justify-between text-light-2 text-sm">
+      <div className="bg-dark-3 px-6 py-3 flex justify-between text-light-2 text-sm">
         <span className="flex items-center">
-          <img src="/assets/icons/like.svg" alt="Likes" className="w-4 h-4 mr-1" />
-          {list.likes?.length || 0}
+          <img src="/assets/icons/like.svg" alt="Likes" className="w-5 h-5 mr-2" />
+          {list.likes?.length || 0} Likes
         </span>
         <span className="flex items-center">
-          <img src="/assets/icons/comment.svg" alt="Comments" className="w-4 h-4 mr-1" />
-          {list.comments?.length || 0}
+          <img src="/assets/icons/comment.svg" alt="Comments" className="w-5 h-5 mr-2" />
+          {list.comments?.length || 0} Comments
         </span>
       </div>
     </motion.div>

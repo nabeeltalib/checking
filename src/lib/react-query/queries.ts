@@ -121,8 +121,11 @@ export const useGetRecentLists = () => {
   return useInfiniteQuery({
     queryKey: [QUERY_KEYS.GET_RECENT_LISTS],
     queryFn: ({ pageParam = null }) => getRecentLists(pageParam),
-    getNextPageParam: lastPage =>
-      lastPage.documents[lastPage.documents.length - 1]?.$id || null
+    getNextPageParam: lastPage => lastPage.documents[lastPage.documents.length - 1]?.$id || null,
+    onError: (error) => {
+      console.error('Error fetching recent lists:', error);
+      // You could also show a toast notification here
+    }
   });
 };
 
@@ -151,7 +154,10 @@ export const useGetListById = (listId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_LIST_BY_ID, listId],
     queryFn: () => getListById(listId),
-    enabled: !!listId
+    enabled: !!listId,
+    onError: (error) => {
+      console.error('Error fetching list:', error);
+    }
   });
 };
 

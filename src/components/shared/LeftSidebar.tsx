@@ -19,7 +19,7 @@ const LeftSidebar = () => {
   };
 
   return (
-    <aside className="leftsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-r border-dark-4 overflow-y-auto fixed left-0 top-0">
+    <aside className="leftsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-r border-dark-4 overflow-y-auto fixed left-0 top-10">
       <div className="flex flex-col gap-8">
         {sidebarLinks.map(link => (
           <NavLink

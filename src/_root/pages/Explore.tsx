@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  useGetRecentLists,
-  useGetAISuggestions,
-  useSearchLists
-} from '@/lib/react-query/queries';
+import { useGetRecentLists, useGetAISuggestions } from '@/lib/react-query/queries';
 import { Loader } from '@/components/shared';
 import ListCard from '@/components/shared/ListCard';
-import useDebounce from '@/hooks/useDebounce';
 import { getTrendingTags, getPopularCategories } from '@/lib/appwrite/api';
 import { useUserContext } from '@/context/AuthContext';
 import { IList } from '@/types';
@@ -16,11 +11,8 @@ import { useToast } from '@/components/ui/use-toast';
 const Explore: React.FC = () => {
   const { user } = useUserContext();
   const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState('');
   const [trendingTags, setTrendingTags] = useState<string[]>([]);
-  const [popularCategories, setPopularCategories] = useState<
-    { id: string; name: string }[]
-  >([]);
+  const [popularCategories, setPopularCategories] = useState<{ id: string; name: string }[]>([]);
   const [isTagsLoading, setIsTagsLoading] = useState(true);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,12 +28,6 @@ const Explore: React.FC = () => {
     isLoading: isLoadingAISuggestions,
     error: aiSuggestionsError
   } = useGetAISuggestions(user.id);
-
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const { data: searchResults, isLoading: isSearchLoading } = useSearchLists(
-    debouncedSearchQuery,
-    user.id
-  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,18 +79,10 @@ const Explore: React.FC = () => {
     );
   }
 
-  const recentLists = recentListsData?.pages || [];
+  const recentLists = recentListsData?.pages?.[0]?.documents || [];
 
   return (
     <div className="explore-container common-container">
-      <input
-        type="text"
-        value={searchQuery}
-        onChange={e => setSearchQuery(e.target.value)}
-        placeholder="Search lists..."
-        className="w-full p-2 mb-4 rounded text-black"
-      />
-
       <section className="mb-8">
         <h3 className="text-xl font-semibold text-light-1 mb-4">
           AI Suggested Lists
@@ -169,22 +147,8 @@ const Explore: React.FC = () => {
       </section>
 
       <section>
-        <h3 className="text-xl font-semibold text-light-1 mb-4">
-          {searchQuery || isSearchLoading ? 'Search Results' : 'Recent Lists'}
-        </h3>
-        {isSearchLoading ? (
-          <Loader />
-        ) : searchQuery ? (
-          searchResults?.pages?.[0]?.documents?.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {searchResults.pages[0].documents.map((list: IList) => (
-                <ListCard key={list.$id} list={list} />
-              ))}
-            </div>
-          ) : (
-            <p>No results found.</p>
-          )
-        ) : recentLists?.[0]?.documents?.length > 0 ? (
+        <h3 className="text-xl font-semibold text-light-1 mb-4">Recent Lists</h3>
+        {recentLists?.[0]?.documents?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recentLists[0].documents.map((list: IList) => (
               <ListCard key={list.$id} list={list} />

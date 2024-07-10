@@ -326,7 +326,7 @@ export async function getRecentLists(pageParam?: string) {
     if (error instanceof AppwriteException) {
       console.error('Appwrite error details:', error.message, error.code);
     }
-    // Return an empty list instead of throwing
+    // Instead of throwing, return an empty result
     return { documents: [], total: 0 };
   }
 }

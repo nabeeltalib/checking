@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader } from "@/components/shared";
-import { useGetInfiniteLists, useSearchLists, useGetAISuggestions } from "@/lib/react-query/queries";
+import { useGetInfiniteLists, useGetAISuggestions } from "@/lib/react-query/queries";
 import ListCard from "@/components/shared/ListCard";
-import SearchBar from "@/components/shared/SearchBar";
 import { useUserContext } from "@/context/AuthContext";
 import { IList } from "@/types";
 import { motion } from "framer-motion";
@@ -12,7 +11,6 @@ import { Models } from "appwrite";
 
 const AllLists: React.FC = () => {
   const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState("");
   const { ref, inView } = useInView();
   const { user } = useUserContext();
 
@@ -24,7 +22,6 @@ const AllLists: React.FC = () => {
     hasNextPage,
   } = useGetInfiniteLists();
 
-  const { data: searchResults, isLoading: isSearchLoading } = useSearchLists(searchQuery, user.id);
   const { data: aiSuggestions, isLoading: isLoadingAISuggestions } = useGetAISuggestions(user.id);
 
   useEffect(() => {
@@ -32,10 +29,6 @@ const AllLists: React.FC = () => {
       fetchNextPage();
     }
   }, [inView, hasNextPage, fetchNextPage]);
-
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
 
   if (isErrorLists) {
     toast({ title: "Something went wrong.", variant: "destructive" });
@@ -72,10 +65,6 @@ const AllLists: React.FC = () => {
         </motion.div>
       ) : null}
 
-      <div className="mb-8">
-        <SearchBar onSearch={handleSearch} />
-      </div>
-
       {isLoading && !lists ? (
         <Loader />
       ) : (
@@ -85,24 +74,14 @@ const AllLists: React.FC = () => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          {searchQuery
-            ? (isSearchLoading 
-                ? <Loader /> 
-                : searchResults && searchResults.length === 0 
-                  ? <p className="text-light-2">No results found.</p>
-                  : searchResults?.map((list: IList) => (
-                      <ListCard key={list.$id} list={list} />
-                    ))
-              )
-            : lists?.pages.map((page, pageIndex) => (
-                <React.Fragment key={pageIndex}>
-                  {page.documents.map((document: Models.Document) => {
-                    const list = document as unknown as IList;
-                    return <ListCard key={list.$id} list={list} />;
-                  })}
-                </React.Fragment>
-              ))
-          }
+          {lists?.pages.map((page, pageIndex) => (
+            <React.Fragment key={pageIndex}>
+              {page.documents.map((document: Models.Document) => {
+                const list = document as unknown as IList;
+                return <ListCard key={list.$id} list={list} />;
+              })}
+            </React.Fragment>
+          ))}
         </motion.div>
       )}
       

@@ -384,7 +384,7 @@ const ListForm = ({ list, action }: ListFormProps) => {
             disabled={isGeneratingItems}
             className="bg-blue-900 text-light-1 px-4 py-2 rounded-md mb-4"
           >
-            {isGeneratingItems ? "Generating..." : "Need Inspiration: Get Suggestions Based On Your Title"}
+            {isGeneratingItems ? "Generating..." : "Get Inspiration"}
           </Button>
 
           {showUndoButton && (

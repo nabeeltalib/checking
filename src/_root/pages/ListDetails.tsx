@@ -53,6 +53,8 @@ const ListDetails: React.FC = () => {
       </div>
 
       <div className="p-4 border-b border-dark-4">
+        <h1 className="text-3xl font-bold text-primary-500 mb-4">{list.title}</h1>
+
         <div className="flex items-start gap-4 mb-4">
           <div className="flex flex-col items-center">
             <img
@@ -74,12 +76,17 @@ const ListDetails: React.FC = () => {
           </div>
         </div>
 
-        <h2 className="text-xl font-bold text-light-1 mb-2">{list.title}</h2>
+        {list.description && (
+          <p className="text-light-2 mb-4">{list.description}</p>
+        )}
         
         <ul className="mb-4">
           {visibleItems?.map((item: IListItem, index: number) => (
-            <li key={index} className="mb-2 text-light-2">
-              {index + 1}. {item?.content || item}
+            <li key={index} className="mb-2 text-light-1 flex items-center">
+              <span className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center mr-3 text-light-1 font-bold">
+                {index + 1}
+              </span>
+              <span>{item?.content || item}</span>
             </li>
           ))}
         </ul>
