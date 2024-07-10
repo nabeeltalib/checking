@@ -10,7 +10,7 @@ import { IList } from "@/types";
 import { motion } from "framer-motion";
 import { Models } from "appwrite";
 
-const AllLists = () => {
+const AllLists: React.FC = () => {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const { ref, inView } = useInView();
@@ -49,14 +49,27 @@ const AllLists = () => {
       {isLoadingAISuggestions ? (
         <Loader />
       ) : aiSuggestions && aiSuggestions.length > 0 ? (
-        <div className="mb-8">
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <h2 className="text-xl font-semibold mb-4 text-light-2">AI Suggestions</h2>
           <ul className="space-y-2">
             {aiSuggestions.map((suggestion, index) => (
-              <li key={index} className="text-light-1">{suggestion}</li>
+              <motion.li 
+                key={index} 
+                className="text-light-1 bg-dark-3 p-3 rounded-lg"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+              >
+                {suggestion}
+              </motion.li>
             ))}
           </ul>
-        </div>
+        </motion.div>
       ) : null}
 
       <div className="mb-8">

@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useUserContext } from '@/context/AuthContext';
 import {
   useGetListById,
-  useGetUserLists,
-  useDeleteList
+  useGetRelatedLists, 
+  useDeleteList,
+  useGetUserById
 } from '@/lib/react-query/queries';
 import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/shared';
@@ -20,13 +21,9 @@ const ListDetails: React.FC = () => {
   const { user } = useUserContext();
   const { toast } = useToast();
   const { data: list, isLoading } = useGetListById(id || '');
-  const { data: userLists, isLoading: isUserListsLoading } = useGetUserLists(user.id);
   const { mutateAsync: deleteList, isLoading: isDeleting } = useDeleteList();
-
-  const relatedLists = useMemo(
-    () => userLists?.documents.filter(userList => userList.$id !== id) || [],
-    [userLists, id]
-  );
+  const { data: relatedLists, isLoading: isRelatedListsLoading } = useGetRelatedLists(id || '');
+  const { data: listCreator, isLoading: isCreatorLoading } = useGetUserById(list?.creator.$id || '');
 
   const visibleItems = useMemo(() => {
     if (!list) return [];
@@ -44,8 +41,8 @@ const ListDetails: React.FC = () => {
     }
   };
 
-  if (isLoading) return <Loader />;
-  if (!list) return <div className="text-center text-light-1">List not found</div>;
+  if (isLoading || isCreatorLoading) return <Loader />;
+  if (!list || !listCreator) return <div className="text-center text-light-1">List not found</div>;
 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto">
@@ -56,15 +53,24 @@ const ListDetails: React.FC = () => {
       </div>
 
       <div className="p-4 border-b border-dark-4">
-        <div className="flex items-center gap-3 mb-4">
-          <img
-            src={list?.creator?.imageUrl || '/assets/icons/profile-placeholder.svg'}
-            alt="creator"
-            className="w-12 h-12 rounded-full object-cover"
-          />
+        <div className="flex items-start gap-4 mb-4">
+          <div className="flex flex-col items-center">
+            <img
+              src={listCreator.imageUrl || '/assets/icons/profile-placeholder.svg'}
+              alt="creator"
+              className="w-16 h-16 rounded-full object-cover"
+            />
+            <div className="flex gap-4 mt-2 text-sm text-light-2">
+              <span>{listCreator.followersCount || 0} followers</span>
+              <span>{listCreator.followingCount || 0} following</span>
+            </div>
+          </div>
           <div>
-            <p className="font-bold text-light-1">{list?.creator?.name}</p>
-            <p className="text-light-3">@{list?.creator?.username}</p>
+            <p className="font-bold text-light-1">{listCreator.name}</p>
+            <p className="text-light-3">@{listCreator.username}</p>
+            <Link to={`/profile/${listCreator.$id}`} className="text-primary-500 text-sm mt-1 block">
+              View Profile
+            </Link>
           </div>
         </div>
 
@@ -110,8 +116,14 @@ const ListDetails: React.FC = () => {
       </div>
 
       <div className="p-4">
-        <h3 className="text-xl font-bold text-light-1 mb-4">More Related Lists</h3>
-        {isUserListsLoading ? <Loader /> : <GridListList lists={relatedLists} />}
+        <h3 className="text-xl font-bold text-light-1 mb-4">Related Lists</h3>
+        {isRelatedListsLoading ? (
+          <Loader />
+        ) : relatedLists && relatedLists.length > 0 ? (
+          <GridListList lists={relatedLists} />
+        ) : (
+          <p className="text-light-2">No related lists found</p>
+        )}
       </div>
     </div>
   );

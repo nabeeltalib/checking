@@ -250,6 +250,13 @@ export const useDeleteSavedList = () => {
     }
   });
 };
+export const useGetRelatedLists = (listId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_RELATED_LISTS, listId],
+    queryFn: () => getRelatedLists(listId),
+    enabled: !!listId,
+  });
+};
 
 // ============================================================
 // USER QUERIES

@@ -2,7 +2,7 @@ import React from "react";
 import { Link, Outlet, useParams, useLocation } from "react-router-dom";
 import { LikedLists } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById, useGetUserFriends, useGetFriendRequests } from "@/lib/react-query/queries";
+import { useGetUserById, useGetUserLists, useGetUserFriends, useGetFriendRequests } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
 import GridListList from "@/components/shared/GridListList";
 import FriendsList from "@/components/shared/FriendsList";
@@ -15,12 +15,13 @@ const Profile: React.FC = () => {
   const { pathname } = useLocation();
 
   const { data: currentUser, isLoading: isLoadingCurrentUser } = useGetUserById(id || "");
+  const { data: userLists, isLoading: isLoadingLists } = useGetUserLists(id || "");
   const { data: friends, isLoading: isLoadingFriends } = useGetUserFriends(id || "");
   const { data: friendRequests, isLoading: isLoadingFriendRequests } = useGetFriendRequests(user?.id || "");
 
   if (!id) return <div className="text-center text-light-1">User ID not found</div>;
 
-  if (isLoadingCurrentUser) {
+  if (isLoadingCurrentUser || isLoadingLists) {
     return <Loader />;
   }
 
@@ -40,10 +41,15 @@ const Profile: React.FC = () => {
           className="w-24 h-24 rounded-full mb-4 object-cover"
         />
         <h1 className="text-2xl font-bold text-light-1">{currentUser.name}</h1>
-        <p className="text-light-3">{currentUser.bio || "No bio available"}</p>
+        <p className="text-light-3">@{currentUser.username}</p>
+        <p className="text-light-3 mt-2">{currentUser.bio || "No bio available"}</p>
+        <div className="flex gap-4 mt-2 text-light-2">
+          <span>{currentUser.followersCount || 0} followers</span>
+          <span>{currentUser.followingCount || 0} following</span>
+        </div>
         {!isOwnProfile && (
           <button className="mt-4 bg-primary-500 text-white px-4 py-2 rounded">
-            Send Friend Request
+            Follow
           </button>
         )}
       </div>
@@ -75,7 +81,7 @@ const Profile: React.FC = () => {
 
       {/* Content based on selected tab */}
       {pathname === `/profile/${id}` && (
-        <GridListList lists={currentUser.lists || []} showUser={false} />
+        <GridListList lists={userLists || []} showUser={false} />
       )}
       {pathname === `/profile/${id}/liked-lists` && <LikedLists />}
       {pathname === `/profile/${id}/friends` && (

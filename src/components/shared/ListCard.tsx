@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { IList, IListItem } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
+import { Share2 } from "lucide-react";
 
 type ListCardProps = {
   list: IList;
@@ -17,8 +18,16 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     setIsSharing(true);
     try {
       const shareableLink = await shareList(list.$id);
-      navigator.clipboard.writeText(shareableLink);
-      alert("Link copied to clipboard!");
+      if (navigator.share) {
+        await navigator.share({
+          title: list.title,
+          text: `Check out this list: ${list.title}`,
+          url: shareableLink
+        });
+      } else {
+        await navigator.clipboard.writeText(shareableLink);
+        alert("Link copied to clipboard!");
+      }
     } catch (error) {
       console.error('Error sharing list:', error);
       alert("Failed to share list. Please try again.");
@@ -27,38 +36,59 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     }
   };
 
+  const renderListItems = () => {
+    if (Array.isArray(list.items)) {
+      return list.items.slice(0, 5).map((item, index) => (
+        <li key={index} className="text-light-2">
+          {typeof item === 'string' ? item : item.content}
+        </li>
+      ));
+    } else if (typeof list.items === 'string') {
+      // If items is a string, split it by newlines
+      return list.items.split('\n').slice(0, 5).map((item, index) => (
+        <li key={index} className="text-light-2">{item}</li>
+      ));
+    }
+    return null;
+  };
+
   return (
     <motion.div 
-      className="social-card"
+      className="bg-dark-2 rounded-lg shadow-md overflow-hidden"
       whileHover={{ y: -5 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="social-card-header">
-        <img 
-          src={list.creator?.imageUrl || "/assets/icons/profile-placeholder.svg"} 
-          alt={`${list.creator?.name}'s profile`} 
-          className="social-avatar"
-        />
-        <div>
-          <Link to={`/profile/${list.creator.$id}`} className="social-username">{list.creator?.name}</Link>
-          <p className="social-text-secondary">@{list.creator?.username}</p>
+      <div className="p-4">
+        <div className="flex justify-between items-start mb-2">
+          <Link to={`/profile/${list.creator.$id}`} className="flex items-center">
+            <img 
+              src={list.creator?.imageUrl || "/assets/icons/profile-placeholder.svg"} 
+              alt={`${list.creator?.name}'s profile`} 
+              className="w-10 h-10 rounded-full mr-2"
+            />
+            <div>
+              <p className="font-semibold text-light-1">{list.creator?.name}</p>
+              <p className="text-light-3 text-sm">@{list.creator?.username}</p>
+            </div>
+          </Link>
+          <button
+            onClick={handleShare}
+            className="text-light-2 hover:text-primary-500 transition-colors"
+            disabled={isSharing}
+          >
+            <Share2 size={20} />
+          </button>
         </div>
-      </div>
 
-      <div className="social-card-content">
         <Link to={`/lists/${list.$id}`} className="block">
           <h3 className="text-xl font-bold mb-2 text-light-1 hover:text-primary-500 transition-colors">
-            {list?.title || list?.Title}
+            {list.title}
           </h3>
           
           <ol className="list-decimal list-inside mb-4 space-y-2">
-            {list.items.slice(0, 5).map((item: IListItem, index: number) => (
-              <li key={index} className="social-text-primary">
-                {item?.content || item}
-              </li>
-            ))}
+            {renderListItems()}
           </ol>
 
           {list.tags && list.tags.length > 0 && (
@@ -78,28 +108,15 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         </Link>
       </div>
       
-      <div className="social-card-footer">
-        <div className="flex space-x-4 text-light-2">
-          <span className="flex items-center">
-            <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20" aria-label="Likes">
-              <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-            </svg>
-            {list.likes?.length || 0}
-          </span>
-          <span className="flex items-center">
-            <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20" aria-label="Comments">
-              <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
-            </svg>
-            {list.comments?.length || 0}
-          </span>
-        </div>
-        <button
-          onClick={handleShare}
-          className="bg-primary-500 text-light-1 px-4 py-2 rounded-full text-sm font-medium hover:bg-primary-600 transition-colors"
-          disabled={isSharing}
-        >
-          {isSharing ? "Sharing..." : "Share"}
-        </button>
+      <div className="bg-dark-3 px-4 py-2 flex justify-between text-light-2 text-sm">
+        <span className="flex items-center">
+          <img src="/assets/icons/like.svg" alt="Likes" className="w-4 h-4 mr-1" />
+          {list.likes?.length || 0}
+        </span>
+        <span className="flex items-center">
+          <img src="/assets/icons/comment.svg" alt="Comments" className="w-4 h-4 mr-1" />
+          {list.comments?.length || 0}
+        </span>
       </div>
     </motion.div>
   );

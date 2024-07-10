@@ -1198,3 +1198,32 @@ export async function deleteNotification(notificationId: string) {
     return { success: false };
   }
 }
+export async function getRelatedLists(listId: string, limit: number = 5) {
+  try {
+    const currentList = await getListById(listId);
+    if (!currentList) {
+      throw new Error('List not found');
+    }
+
+    const queries = [
+      Query.notEqual('$id', listId),
+      Query.limit(limit),
+    ];
+
+    // If the list has tags, use them to find related lists
+    if (currentList.tags && currentList.tags.length > 0) {
+      queries.push(Query.search('tags', currentList.tags.join(' ')));
+    }
+
+    const relatedLists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      queries
+    );
+
+    return relatedLists.documents;
+  } catch (error) {
+    console.error('Error fetching related lists:', error);
+    return [];
+  }
+}

@@ -15,6 +15,7 @@ export enum QUERY_KEYS {
   GET_USER_LISTS = "getUserLists",
   GET_PUBLIC_LISTS = "getPublicLists",
   GET_POPULAR_LISTS = "getPopularLists",
+  GET_RELATED_LISTS = "getRelatedLists",
 
   // SEARCH KEYS
   SEARCH_LISTS = "searchLists",

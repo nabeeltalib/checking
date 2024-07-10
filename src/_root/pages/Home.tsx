@@ -24,7 +24,16 @@ const Home: React.FC = () => {
   return (
     <div className="flex flex-col gap-4 p-4 w-full items-center common-container">
       <h1 className="h3-bold md:h2-bold text-left w-full">Recent Lists</h1>
-      <p>Welcome, {user?.name || "Guest"}</p>
+      <div className="flex items-center gap-4 mb-4">
+        <p>Welcome, {user?.name || "Guest"}</p>
+        {user && (
+          <div className="text-sm text-light-3">
+            <span>{user.followersCount || 0} followers</span>
+            <span className="mx-2">•</span>
+            <span>{user.followingCount || 0} following</span>
+          </div>
+        )}
+      </div>
       <div className="w-full max-w-5xl">
         <h2 className="h3-bold md:h2-bold text-left w-full mt-8">Need Inspiration?</h2>
         <button

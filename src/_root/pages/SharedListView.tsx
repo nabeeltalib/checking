@@ -4,6 +4,8 @@ import { databases, appwriteConfig } from '@/lib/appwrite/config';
 import { Loader } from '@/components/shared';
 import { IList, IListItem } from '@/types';
 import { AppwriteException } from 'appwrite';
+import { motion } from 'framer-motion';
+import { Share2 } from 'lucide-react';
 
 const SharedListView: React.FC = () => {
   const { sharedId } = useParams<{ sharedId: string }>();
@@ -21,19 +23,16 @@ const SharedListView: React.FC = () => {
       }
       
       try {
-        // Fetch the shared link document
         const sharedLink = await databases.getDocument(
           appwriteConfig.databaseId,
           appwriteConfig.sharedLinksCollectionId,
           sharedId
         );
         
-        // Check if the link has expired
         if (new Date(sharedLink.expiresAt) < new Date()) {
           throw new Error('This shared link has expired');
         }
 
-        // Fetch the actual list data
         const listData = await databases.getDocument(
           appwriteConfig.databaseId,
           appwriteConfig.listCollectionId,
@@ -57,25 +56,63 @@ const SharedListView: React.FC = () => {
     fetchSharedList();
   }, [sharedId, navigate]);
 
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: list?.title || 'Shared List',
+          text: 'Check out this list!',
+          url: window.location.href
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+      alert('Link copied to clipboard!');
+    }
+  };
+
   if (loading) return <Loader />;
   if (error) return <div className="text-red-500 p-4 text-center">{error}</div>;
   if (!list) return <div className="text-light-1 p-4 text-center">List not found</div>;
 
   return (
-    <div className="shared-list-view p-6 max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6 text-light-1">{list.title}</h1>
-      {list.description && <p className="mb-6 text-light-2">{list.description}</p>}
+    <motion.div 
+      className="shared-list-view p-6 max-w-3xl mx-auto"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-light-1">{list.title}</h1>
+        <button 
+          onClick={handleShare}
+          className="bg-primary-500 text-white p-2 rounded-full hover:bg-primary-600 transition-colors"
+        >
+          <Share2 size={20} />
+        </button>
+      </div>
+      {list.description && (
+        <p className="mb-6 text-light-2">{list.description}</p>
+      )}
       <ul className="space-y-4">
         {list.items.map((item: IListItem, index: number) => (
           item.isVisible && (
-            <li key={index} className="flex items-start">
-              <span className="mr-2 text-primary-500">{index + 1}.</span>
+            <motion.li 
+              key={index} 
+              className="flex items-start bg-dark-3 p-4 rounded-lg"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <span className="mr-2 text-primary-500 font-bold">{index + 1}.</span>
               <span className="text-light-1">{item.content}</span>
-            </li>
+            </motion.li>
           )
         ))}
       </ul>
-    </div>
+    </motion.div>
   );
 };
 

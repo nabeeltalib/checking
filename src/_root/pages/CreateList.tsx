@@ -68,9 +68,9 @@ const CreateList: React.FC = () => {
       <div className="max-w-5xl w-full bg-dark-2 rounded-xl p-8 shadow-md">
         <div className="flex items-center gap-3 mb-8">
           
-          <h2 className="h2-bold md:h3-bold text-light-1">What's Your Top 5 </h2>
+          <h2 className="h2-bold md:h3-bold text-light-1">What's Your Top 5 ? </h2>
           <img
-            src="/assets/icons/fire.svg"
+            src="/assets/icons/add-list.svg"
             width={36}
             height={36}
             alt="Add List"
