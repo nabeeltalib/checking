@@ -16,6 +16,7 @@ import {
   Collaborations,
   SharedListView,
 } from "@/_root/pages";
+import RemixList from "@/components/shared/list/RemixList"; // New import
 import AuthLayout from "@/_auth/AuthLayout";
 import RootLayout from "@/_root/RootLayout";
 import SignupForm from "@/_auth/forms/SignupForm";
@@ -49,6 +50,7 @@ const App = () => {
           <Route path="/lists/:id/suggestions" element={<Suggestions />} />
           <Route path="/lists/:id/collaborations" element={<Collaborations />} />
           <Route path="/shared/:sharedId" element={<SharedListView />} />
+          <Route path="/remix/:id" element={<RemixList />} /> {/* New route */}
         </Route>
       </Routes>
 

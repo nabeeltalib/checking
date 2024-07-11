@@ -1,6 +1,6 @@
 import { Models } from "appwrite";
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
 import { checkIsLiked } from "@/lib/utils";
@@ -18,6 +18,7 @@ type ListStatsProps = {
 
 const ListStats = ({ list, userId }: ListStatsProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const likesList = list?.likes?.map((user: Models.Document) => user.$id) || [];
 
   const [likes, setLikes] = useState<string[]>(likesList);
@@ -63,6 +64,10 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
     setIsSaved(!isSaved);
   };
 
+  const handleRemix = () => {
+    navigate(`/remix/${list.$id}`);
+  };
+
   const containerStyles = location.pathname.startsWith("/profile") ? "w-full" : "";
 
   return (
@@ -97,9 +102,12 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
         <img src="/assets/icons/chat.svg" alt="comment" width={20} height={20} />
         <p className="small-medium lg:base-medium">Comment</p>
       </Button>
-      <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
-        <img src="/assets/icons/lightbulb.svg" alt="suggest" width={20} height={20} />
-        <p className="small-medium lg:base-medium">Suggest</p>
+      <Button 
+        className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg"
+        onClick={handleRemix}
+      >
+        <img src="/assets/icons/remix.svg" alt="remix" width={20} height={20} />
+        <p className="small-medium lg:base-medium">Remix</p>
       </Button>
       <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
         <img src="/assets/icons/people.svg" alt="collaborate" width={20} height={20} />

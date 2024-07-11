@@ -31,15 +31,16 @@ import { getCategories } from "@/lib/appwrite/api";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortableItem } from './SortableItem';
-import { IListItem } from "@/types";
+import { IListItem, IList } from "@/types";
 import ConfirmationDialog from './ConfirmationDialog';
 
 type ListFormProps = {
   list?: Models.Document;
-  action: "Create" | "Update";
+  action: "Create" | "Update" | "Remix";
+  initialData?: Partial<IList>;
 };
 
-const ListForm = ({ list, action }: ListFormProps) => {
+const ListForm = ({ list, action, initialData }: ListFormProps) => {
   const { user } = useUserContext();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -93,22 +94,22 @@ const ListForm = ({ list, action }: ListFormProps) => {
     locations: z.array(z.string()),
   });
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: list?.title || "",
-      description: list?.description || "",
-      items: list?.items?.map((item: string | IListItem) => {
+      title: initialData?.title || list?.title || "",
+      description: initialData?.description || list?.description || "",
+      items: initialData?.items || list?.items?.map((item: string | IListItem) => {
         if (typeof item === 'string') {
           const [content, isVisible] = item.split('|');
           return { content, isVisible: isVisible === 'true' };
         }
         return item;
       }) || Array(5).fill({ content: "", isVisible: true }),
-      categories: list?.categories || [],
-      tags: list?.tags || [],
-      timespans: list?.timespans || [],
-      locations: list?.locations || [],
+      categories: initialData?.categories || list?.categories || [],
+      tags: initialData?.tags || list?.tags || [],
+      timespans: initialData?.timespans || list?.timespans || [],
+      locations: initialData?.locations || list?.locations || [],
     },
   });
 
@@ -122,15 +123,23 @@ const ListForm = ({ list, action }: ListFormProps) => {
 
   const handleSubmit = async (value: z.infer<typeof formSchema>) => {
     try {
-      if (list && action === "Update") {
-        const updatedList = await updateList({ ...value, listId: list.$id, UpdatedAt: new Date() });
+      if (action === "Update") {
+        const updatedList = await updateList({ ...value, listId: list!.$id, UpdatedAt: new Date() });
         if (!updatedList) {
           toast({ title: `${action} list failed. Please try again.` });
         } else {
-          navigate(`/lists/${list.$id}`);
+          navigate(`/lists/${list!.$id}`);
         }
       } else {
-        const newList = await createList({ ...value, userId: user.id, CreatedAt: new Date(), UpdatedAt: new Date() });
+        // For both "Create" and "Remix" actions
+        const newList = await createList({ 
+          ...value, 
+          userId: user.id, 
+          CreatedAt: new Date(), 
+          UpdatedAt: new Date(),
+          // For remix, we might want to add a reference to the original list
+          originalListId: action === "Remix" ? list?.$id : undefined
+        });
         if (!newList) {
           toast({ title: `${action} list failed. Please try again.` });
         } else {
@@ -298,6 +307,69 @@ const ListForm = ({ list, action }: ListFormProps) => {
                             onClick={() => {
                               const newTimespans = field.value.filter((_, i) => i !== index);
                               field.onChange(newTimespans);
+                            }}
+                            className="ml-2 text-xs"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="locations"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Locations</FormLabel>
+                <FormControl>
+                  <div>
+                    <div className="flex flex-wrap gap-2">
+                      <Select 
+                        onValueChange={(value) => {
+                          if (value && !field.value.includes(value)) {
+                            field.onChange([...field.value, value]);
+                          }
+                        }}
+                      >
+                        <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
+                          <SelectValue placeholder="Select a location" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-dark-4 text-light-1 border-none">
+                          {locations
+                            .filter(location => !field.value.includes(location))
+                            .map((location) => (
+                              <SelectItem key={location} value={location}>
+                                {location}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        placeholder="New location"
+                        value={newLocation}
+                        onChange={(e) => setNewLocation(e.target.value)}
+                        className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
+                      />
+                      <Button type="button" onClick={handleAddLocation} className="w-full md:w-auto">
+                        Add Location
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {field.value.map((location, index) => (
+                        <div key={index} className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
+                          {location}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newLocations = field.value.filter((_, i) => i !== index);
+                              field.onChange(newLocations);
                             }}
                             className="ml-2 text-xs"
                           >
@@ -571,7 +643,7 @@ const ListForm = ({ list, action }: ListFormProps) => {
           />
         )}
 
-        <div className="flex gap-4 items-center justify-end">
+<div className="flex gap-4 items-center justify-end">
           <Button type="button" className="shad-button_dark_4" onClick={() => navigate(-1)}>
             Cancel
           </Button>
@@ -581,7 +653,7 @@ const ListForm = ({ list, action }: ListFormProps) => {
             disabled={isLoadingCreate || isLoadingUpdate}
           >
             {(isLoadingCreate || isLoadingUpdate) && <Loader />}
-            {action} List
+            {action === "Remix" ? "Create Remixed List" : `${action} List`}
           </Button>
         </div>
       </form>
