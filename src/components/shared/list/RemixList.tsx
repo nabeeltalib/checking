@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetListById } from '@/lib/react-query/queries';
-import ListForm from './ListForm';
+import ListForm from '@/components/forms/ListForm';
 import { Loader } from "@/components/shared";
 import { useUserContext } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
