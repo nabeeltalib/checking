@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { getUserNotifications } from '@/lib/appwrite/api';
+import { getNotifications } from '@/lib/appwrite/api';
 import { INotification } from '@/types';
 
 const Notifications: React.FC<{ userId: string }> = ({ userId }) => {
-  const [notifications, setNotifications] = useState<INotification[]>([]);
+  const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      const userNotifications = await getUserNotifications(userId);
+      const userNotifications = await getNotifications(userId);
       setNotifications(userNotifications);
     };
     fetchNotifications();

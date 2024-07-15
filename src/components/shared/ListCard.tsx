@@ -12,6 +12,7 @@ type ListCardProps = {
 const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const [isSharing, setIsSharing] = useState(false);
 
+
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -82,7 +83,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
             />
             <div>
               <p className="font-semibold text-light-1">{list.creator?.name}</p>
-              <p className="text-light-3 text-sm">@{list.creator?.username}</p>
+              <p className="text-light-3 text-sm">@{list.creator?.name}</p>
             </div>
           </Link>
           <button

@@ -24,8 +24,15 @@ import SigninForm from "@/_auth/forms/SigninForm";
 import { Toaster } from "@/components/ui/toaster";
 
 import "./globals.css";
+import PreviewMode from "./_root/pages/PreviewMode";
+import Notifications from "./components/shared/Notifications";
+import Categories from "./_root/pages/Categories";
+import Collaborative from "./_root/pages/Collaborative";
+import Userlist from "./_root/pages/Userlist";
 
 const App = () => {
+
+  const userId = "";
   return (
     <main className="flex h-screen">
       <Routes>
@@ -39,6 +46,10 @@ const App = () => {
         <Route element={<RootLayout />}>
           <Route index element={<Home />} />
           <Route path="/explore" element={<Explore />} />
+          <Route path="/notifications" element={<Notifications userId={userId} />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/collaborations" element={<Collaborative />} />
+          <Route path="/userlists" element={<Userlist />} />
           <Route path="/saved" element={<Saved />} />
           <Route path="/all-lists" element={<AllLists />} />
           <Route path="/create-list" element={<CreateList />} />
@@ -51,6 +62,7 @@ const App = () => {
           <Route path="/lists/:id/collaborations" element={<Collaborations />} />
           <Route path="/shared/:sharedId" element={<SharedListView />} />
           <Route path="/remix/:id" element={<RemixList />} /> {/* New route */}
+          <Route path="/preview" element={<PreviewMode />} /> {/* New route */}
         </Route>
       </Routes>
 

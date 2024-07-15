@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { useUserContext } from "@/context/AuthContext";
@@ -12,6 +12,26 @@ const Topbar = () => {
   const { mutate: signOut, isSuccess } = useSignOutAccount();
   const [searchQuery, setSearchQuery] = useState("");
   const { data: searchResults, refetch: searchLists } = useSearchLists(searchQuery, user.id);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSearch ,setIsSearch] = useState(false)
+
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const handleProfileClick = () => {
+    console.log('Profile clicked');
+    closeDropdown();
+  };
+
+  const handleLogoutClick = () => {
+    console.log('Logout clicked');
+    closeDropdown();
+  };
+
+  const closeDropdown = () => {
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     if (isSuccess) navigate(0);
@@ -29,35 +49,54 @@ const Topbar = () => {
   };
 
   return (
-    <section className="fixed top-0 left-0 right-0 z-50 bg-dark-1 shadow-md">
-      <div className="container mx-auto flex justify-between items-center py-4 px-5">
-        <Link to="/" className="flex items-center gap-3">
+    <section className="fixed top-0 left-0 right-0 z-50 bg-dark-1 shadow-md w-full">
+     
+     
+      <div className="container mx-auto flex p-5 gap-8 w-full">
+      
+        <Link to="/" className="flex items-center gap-3 w-full">
           <img
             src="/assets/images/logo.svg"
             alt="Topfived logo"
             width={130}
-            height={325}
+            height={32}
             className="object-contain"
           />
         </Link>
 
-        <form onSubmit={handleSearch} className="flex-grow max-w-md mx-auto">
-          <Input
-            type="text"
-            placeholder="Search lists..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-dark-4 text-light-1 border-none focus:ring-2 focus:ring-primary-500"
-          />
+        <form onSubmit={handleSearch} className="flex-grow max-w-md mx-auto w-full">
+            
+            <div className="flex justify-center items-center gap-3">
+                <Input
+                type="text"
+                placeholder="Search lists..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`w-full bg-dark-4 text-light-1 border-none focus:ring-2 focus:ring-primary-500  ${isSearch ? "visible"  : "hidden"}  `}
+              />
+
+              <button
+              onClick={()=>{
+                
+                  setIsSearch(true)
+               
+              }}
+              >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" className="size-8">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+              </button>
+
+            </div>
         </form>
 
-        <div className="flex items-center gap-4">
-          <Button
-            className="shad-button_primary"
-            onClick={handleCreateList}
-          >
-            Create List
-          </Button>
+
+        <div className="flex w-full  items-center justify-evenly ">
+        
+        <Button className="shad-button_primary" onClick={handleCreateList}>
+        Create List
+      </Button>
+
 
           <Button
             variant="ghost"
@@ -65,17 +104,56 @@ const Topbar = () => {
             onClick={() => signOut()}
             aria-label="Sign out"
           >
-            <img src="/assets/icons/logout.svg" alt="Sign out" className="h-6 w-6" />
+            <img src="/assets/icons/logout.svg" alt="Sign out" className="h-8 w-8" />
           </Button>
-          <Link to={`/profile/${user.id}`} className="flex items-center gap-3">
-            <img
-              src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
-              alt={`${user.name}'s profile`}
-              className="h-8 w-8 rounded-full object-cover"
-            />
-          </Link>
+
+          <Link to="/notifications" className="hidden md:block">
+          <img
+            src="/assets/icons/notification.svg"
+            alt="notifications"
+            width={27}
+            height={22}
+          />
+        </Link>
+        
+         <div className="relative">
+           <div
+             className="flex items-center cursor-pointer"
+             onClick={toggleDropdown}
+           >
+             <img
+               className="w-8 h-8 rounded-full object-cover"
+               src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
+               alt="Profile"
+             />
+           </div>
+
+           {/* Profile Dropdown */}
+           {isOpen && (
+             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl overflow-hidden z-10 visible">
+               <Link
+                 to={`/profile/${user.id}/`}
+                 className="block px-4 py-2 text-sm text-gray-700 w-full text-left hover:bg-gray-100"
+               >
+                 Profile
+               </Link>
+               <button
+                 className="block px-4 py-2 text-sm text-gray-700 w-full text-left hover:bg-gray-100"
+                 onClick={() => signOut()}
+               >
+                 Logout
+               </button>
+             </div>
+           )}
+       
+            
+          </div>
+
         </div>
+      
       </div>
+    
+    
     </section>
   );
 };

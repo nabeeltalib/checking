@@ -38,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const currentAccount = await getCurrentUser();
+      
       if (currentAccount) {
         const curatedList = await getUserLists(currentAccount.$id);
         setUser({
