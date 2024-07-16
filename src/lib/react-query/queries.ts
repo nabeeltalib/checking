@@ -56,6 +56,7 @@ import {
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
 import { getAISuggestionsRoute } from '@/routes';
 
+
 // ============================================================
 // AUTH QUERIES
 // ============================================================
@@ -82,7 +83,7 @@ export const useSignInWithGoogle = () => {
   return useMutation({
     mutationFn: signInWithGoogle,
     onSuccess: () => {
-      // You might want to invalidate or refetch user data here
+    //gg
     },
   });
 };

@@ -94,7 +94,7 @@ export const rightSidebarLinks = [
   },
   {
     imgURL: "/assets/icons/user-profile.svg",
-    route: "/profile/:id*/",
+    route: "/profile",
     label: "User Profile",
   },
 ];

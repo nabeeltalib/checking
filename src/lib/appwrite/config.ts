@@ -276,7 +276,7 @@ export async function getRecentLists(pageParam?: string) {
       appwriteConfig.listCollectionId,
       queries
     );
-    return lists;
+    return lists.documents;
   } catch (error) {
     console.error("Error fetching recent lists:", error);
     if (error instanceof AppwriteException) {
@@ -459,7 +459,6 @@ export async function deleteSavedList(savedRecordId: string) {
 
 export async function getUserLists(userId?: string) {
   if (!userId) return;
-
   try {
     const lists = await databases.listDocuments(
       appwriteConfig.databaseId,

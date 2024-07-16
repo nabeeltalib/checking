@@ -48,7 +48,7 @@ const SigninForm = () => {
     }
   };
 
-  const handleGoogleSignIn = () => {
+ const handleGoogleSignIn = () => {
     signInWithGoogle();
     // Note: This will redirect the user, so no need for further handling here
   };

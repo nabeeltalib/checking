@@ -92,6 +92,7 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
     tags: z.array(z.string()),
     timespans: z.array(z.string()),
     locations: z.array(z.string()),
+    Public: z.boolean()
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -110,6 +111,7 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
       tags: initialData?.tags || list?.tags || [],
       timespans: initialData?.timespans || list?.timespans || [],
       locations: initialData?.locations || list?.locations || [],
+      Public: initialData?.public || list?.public || false,
     },
   });
 
@@ -613,7 +615,25 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
             </FormItem>
           )}
         />
-
+<FormField
+  control={form.control}
+  name="public"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Public </FormLabel>
+      <FormControl>
+        <input
+          type="checkbox"
+          checked={field.value}
+          onChange={(e) => field.onChange(e.target.checked)}
+        />
+      </FormControl>
+      <FormDescription>
+        Check if you want to make this list public.
+      </FormDescription>
+    </FormItem>
+  )}
+/>
         {/*<Button
           type="button"
           onClick={() => setShowDescription(!showDescription)}

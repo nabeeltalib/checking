@@ -50,7 +50,7 @@ export interface IList extends Models.Document {
   suggestions?: ISuggestion[];
   CreatedAt?: Date;
   UpdatedAt?: Date;
-  isPublic: boolean;
+  Public: boolean;
 }
 
 export interface IUser extends Models.Document {
@@ -72,9 +72,9 @@ export type INewUser = {
 };
 
 export interface IListItem {
-  content: string;
-  isVisible: boolean;  
-  isMovable: boolean;
+  id:string,
+  title:string,
+  description:string
 }
 
 export type ICategoryItem = {

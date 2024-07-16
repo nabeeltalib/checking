@@ -1105,7 +1105,7 @@ export async function getPublicLists() {
     const result = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      [Query.equal('isPublic', true), Query.orderDesc('$createdAt')]
+      [Query.equal('Public', true), Query.orderDesc('$createdAt')]
     );
     return result.documents;
   } catch (error) {
@@ -1119,7 +1119,7 @@ export async function getPopularLists() {
     const result = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      [Query.orderDesc('views'), Query.limit(10)]
+      [Query.greaterThan('Views', 2),Query.orderDesc('Views'), Query.limit(10)]
     );
     return result.documents;
   } catch (error) {
@@ -1127,6 +1127,7 @@ export async function getPopularLists() {
     throw error;
   }
 }
+
 export async function createNotification(notification: {
   userId: string;
   type: 'friend_request' | 'list_like' | 'list_comment';
