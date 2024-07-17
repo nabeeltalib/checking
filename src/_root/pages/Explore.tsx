@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetRecentLists, useGetAISuggestions } from '@/lib/react-query/queries';
 import { Loader } from '@/components/shared';
-import ListCard from '@/components/shared/ListCard';
 import { getTrendingTags, getPopularCategories } from '@/lib/appwrite/api';
 import { useUserContext } from '@/context/AuthContext';
 import { IList } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
+import ListCard2 from '@/components/shared/ListCard2';
 
 const Explore: React.FC = () => {
   const { user } = useUserContext();
@@ -151,7 +151,7 @@ const Explore: React.FC = () => {
         {recentLists?.[0]?.documents?.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recentLists[0].documents.map((list: IList) => (
-              <ListCard key={list.$id} list={list} />
+              <ListCard2 key={list.$id} list={list} />
             ))}
           </div>
         ) : (

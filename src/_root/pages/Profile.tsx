@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, Outlet, useParams, useLocation } from "react-router-dom";
+import { Outlet, useParams, useLocation } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById, useGetUserLists, useGetUserFriends, useGetFriendRequests } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
@@ -11,15 +11,16 @@ import FriendRequests from "@/components/shared/FriendRequests";
 
 const Profile: React.FC = () => {
   const { user } = useUserContext();
-  const { id } = useParams<{ id: string }>();
-  const { pathname } = useLocation();
-  const [activeTab, setActiveTab] = useState("lists");
+  const { profile } = useParams(); 
+  let id = profile ? profile ==="profile" ? user.id : profile : "";
 
+  const [activeTab, setActiveTab] = useState("lists");
   const { data: currentUser, isLoading: isLoadingCurrentUser } = useGetUserById(id || "");
   const { data: userLists, isLoading: isLoadingLists } = useGetUserLists(id || "");
   const { data: friends, isLoading: isLoadingFriends } = useGetUserFriends(id || "");
   const { data: friendRequests, isLoading: isLoadingFriendRequests } = useGetFriendRequests(user?.id || "");
 
+  console.log("userLists: ",userLists,"friends: ",friends, "friendRequests: ",friendRequests)
   if (!id) return <div className="text-center text-light-1">User ID not found</div>;
 
   if (isLoadingCurrentUser || isLoadingLists) {
@@ -31,20 +32,20 @@ const Profile: React.FC = () => {
   }
 
   const isOwnProfile = currentUser.$id === user?.id;
-
+  console.log(currentUser)
   return (
     <div className="flex flex-col gap-6 w-full p-6 mx-auto max-w-7xl">
       {/* User Info */}
       <div className="flex items-center gap-8 bg-dark-2 p-6 rounded-lg">
         <img
-          src={currentUser.imageUrl || "/assets/icons/profile-placeholder.svg"}
-          alt={`${currentUser.name}'s profile`}
+          src={currentUser.ImageUrl || "/assets/icons/profile-placeholder.svg"}
+          alt={`${currentUser.Name}'s profile`}
           className="w-32 h-32 rounded-full object-cover"
         />
         <div>
-          <h1 className="text-3xl font-bold text-light-1">{currentUser.name}</h1>
-          <p className="text-light-3">@{currentUser.username}</p>
-          <p className="text-light-2 mt-2">{currentUser.bio || "No bio available"}</p>
+          <h1 className="text-3xl font-bold text-light-1">{currentUser.Name}</h1>
+          <p className="text-light-3">@{currentUser.Username}</p>
+          <p className="text-light-2 mt-2">{currentUser.Bio || "No bio available"}</p>
           <div className="flex gap-4 mt-3 text-light-2">
             <span>{currentUser.followersCount || 0} followers</span>
             <span>{currentUser.followingCount || 0} following</span>
@@ -99,7 +100,7 @@ const Profile: React.FC = () => {
       {activeTab === "friends" && (
         <div>
           <h2 className="text-2xl font-bold text-light-1 mb-4">Friends</h2>
-          {isLoadingFriends ? <Loader /> : <FriendsList friends={friends || []} />}
+          {isLoadingFriends ? <Loader /> : <FriendsList friends={friends} />}
         </div>
       )}
 
@@ -110,7 +111,7 @@ const Profile: React.FC = () => {
           {isLoadingFriendRequests ? (
             <Loader />
           ) : (
-            <FriendRequests requests={friendRequests || []} />
+            <FriendRequests requests={friendRequests} />
           )}
         </div>
       )}

@@ -1,9 +1,11 @@
 import React from 'react';
 import { useGetNotifications } from '@/lib/react-query/queries';
 import { Bell } from 'lucide-react';
+import { useUserContext } from '@/context/AuthContext';
 
 export const NotificationBell: React.FC = () => {
-  const { data: notifications } = useGetNotifications();
+  const { user } = useUserContext();
+  const { data: notifications } = useGetNotifications(user.$id);
   const unreadCount = notifications?.filter(n => !n.read).length || 0;
 
   return (

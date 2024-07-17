@@ -25,44 +25,30 @@ import { Toaster } from "@/components/ui/toaster";
 
 import "./globals.css";
 import PreviewMode from "./_root/pages/PreviewMode";
-import Notifications from "./components/shared/Notifications";
 import Categories from "./_root/pages/Categories";
-import Collaborative from "./_root/pages/Collaborative";
 import Userlist from "./_root/pages/Userlist";
-import { getCurrentUser, getUserLists } from "./lib/appwrite/config";
-import { INITIAL_USER, useUserContext } from "./context/AuthContext";
+import { useUserContext } from "./context/AuthContext";
+import Notifications from "./components/shared/Notifications";
+import Trending from "./_root/pages/Trending";
+import Recomended from "./_root/pages/Recomended";
+import UserActivity from "./_root/pages/UserActivity";
+import FAB from "./components/shared/FAB";
+
 
 const App = () => {
 
-  const [user, setUser] = useState(INITIAL_USER)
+  const { user } = useUserContext();
   const { checkAuthUser } = useUserContext();
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   useEffect(() => {
   const fetchUser = async ()=>{
-    const currentAccount = await getCurrentUser();
     const isLoggedIn = await checkAuthUser();
     setIsLoggedIn(isLoggedIn);
-
-    if(currentAccount)
-    {const curatedList = await getUserLists(currentAccount.$id);
-    setUser({
-      id: currentAccount.$id,
-      name: currentAccount.name,
-      username: currentAccount.username,
-      email: currentAccount.email,
-      imageUrl: currentAccount.imageUrl,
-      bio: currentAccount.bio,
-      curatedList:curatedList,
-    });
-  }
-
   }  
 
   fetchUser();
   }, [])
-
-  const userId = user.$id;
 
   return (
    <>
@@ -77,7 +63,7 @@ const App = () => {
     </main>
     </>
 
-    {(user.$id || isLoggedIn ) ?
+    {(user.id || isLoggedIn ) ?
     <main className="flex h-screen">
       <Routes>
         {/* Public Routes */}
@@ -85,25 +71,27 @@ const App = () => {
         <Route element={<RootLayout />}>
           <Route index element={<Home />} />
           <Route path="/explore" element={<Explore />} />
-          <Route path="/notifications" element={<Notifications userId={userId} />} />
+          <Route path="/notifications" element={<Notifications />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/collaborations" element={<Collaborations />} />
           <Route path="/userlists" element={<Userlist />} />
+          <Route path="/trending" element={<Trending />} />
+          <Route path="/recomended" element={<Recomended />} />
+          <Route path="/userActivity" element={<UserActivity />} />
           <Route path="/saved" element={<Saved />} />
           <Route path="/all-lists" element={<AllLists />} />
           <Route path="/create-list" element={<CreateList />} />
           <Route path="/update-list/:id" element={<EditList />} />
           <Route path="/lists/:id" element={<ListDetails />} />
-          <Route path="/profile" element={<Profile id={user.$id} />} />
+          <Route path="/profile/:profile" element={<Profile />} />
           <Route path="/update-profile/:id" element={<UpdateProfile />} />
           <Route path="/lists/:id/comments" element={<Comments />} />
           <Route path="/lists/:id/suggestions" element={<Suggestions />} />
-          <Route path="/lists/:id/collaborations" element={<Collaborations />} />
           <Route path="/shared/:sharedId" element={<SharedListView />} />
           <Route path="/remix/:id" element={<RemixList />} /> {/* New route */}
         </Route>
       </Routes>
-
+      <FAB />
       <Toaster />
     </main> 
     : 

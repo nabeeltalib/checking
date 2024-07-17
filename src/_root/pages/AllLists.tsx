@@ -3,11 +3,11 @@ import { useInView } from "react-intersection-observer";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader } from "@/components/shared";
 import { useGetInfiniteLists, useGetAISuggestions } from "@/lib/react-query/queries";
-import ListCard from "@/components/shared/ListCard";
 import { useUserContext } from "@/context/AuthContext";
 import { IList } from "@/types";
 import { motion } from "framer-motion";
 import { Models } from "appwrite";
+import ListCard2 from "@/components/shared/ListCard2";
 
 const AllLists: React.FC = () => {
   const { toast } = useToast();
@@ -78,7 +78,7 @@ const AllLists: React.FC = () => {
             <React.Fragment key={pageIndex}>
               {page.documents.map((document: Models.Document) => {
                 const list = document as unknown as IList;
-                return <ListCard key={list.$id} list={list} />;
+                return <ListCard2 key={list.$id} list={list} />;
               })}
             </React.Fragment>
           ))}

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { IList, IListItem } from "@/types";
 
 interface GridListListProps {
-  lists: IList[];
+  lists: any[];
   showUser?: boolean;
   showStats?: boolean;
 }

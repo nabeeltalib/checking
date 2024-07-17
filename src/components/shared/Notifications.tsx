@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getNotifications } from '@/lib/appwrite/api';
-import { INotification } from '@/types';
+import { useUserContext } from '@/context/AuthContext';
+import { useDeleteNotification, useMarkNotificationAsRead } from '@/lib/react-query/queries';
 
-const Notifications: React.FC<{ userId: string }> = ({ userId }) => {
+const Notifications = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
-
+  const { user } = useUserContext();
+  const userId = user.id
   useEffect(() => {
     const fetchNotifications = async () => {
       const userNotifications = await getNotifications(userId);
@@ -13,14 +15,51 @@ const Notifications: React.FC<{ userId: string }> = ({ userId }) => {
     fetchNotifications();
   }, [userId]);
 
+  const markAsReadMutation = useMarkNotificationAsRead();
+  const deleteMutation = useDeleteNotification();
+
+  const handleMarkAsRead = (notification: any) => {
+    if (notification.read === false) {
+      markAsReadMutation.mutate(notification.$id);
+    }
+  };
+
+  const handleDelete = (notificationId: string) => {
+    deleteMutation.mutate(notificationId);
+    setNotifications((prevState)=> prevState.filter((i)=> i.$id !== notificationId))
+  };
+
   return (
-    <div className="notifications p-4">
-      <h2 className="h3-bold mb-4">Notifications</h2>
-      {notifications.map(notification => (
-        <div key={notification.id} className="notification-item p-2 mb-2 bg-dark-3 rounded">
-          {notification.content}
-        </div>
-      ))}
+    <div className="max-w-md mx-auto mt-8">
+      <h2 className="text-2xl font-bold mb-4">Notifications</h2>
+      {notifications?.length === 0 ? (
+        <p>No notifications</p>
+      ) : (
+        <ul className="space-y-4">
+          {notifications?.map((notification) => (
+            <li 
+              key={notification.$id} 
+              className={`p-4 rounded-lg shadow ${notification.read ? 'bg-gray-100' : 'bg-white'}`}
+            >
+              <p className="text-sm text-black" onClick={() => handleMarkAsRead(notification)} style={{cursor:"pointer"}}>{notification.message}</p>
+              <div className="mt-2 flex justify-between items-center">
+                <span className="text-xs text-gray-500">
+                  {new Date(notification.createdAt).toLocaleString()}
+                </span>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(notification.$id);
+                  }}
+                  className="text-red text-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

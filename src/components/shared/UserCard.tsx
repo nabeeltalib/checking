@@ -33,7 +33,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, listId }) => {
         onSuccess: () => {
           toast({
             title: "Collaboration request sent",
-            description: `A collaboration request has been sent to ${user.name}.`,
+            description: `A collaboration request has been sent to ${user.Name}.`,
             variant: "success",
           });
         },
@@ -55,17 +55,17 @@ const UserCard: React.FC<UserCardProps> = ({ user, listId }) => {
   return (
     <div className="user-card flex items-center gap-4 p-4 bg-dark-3 rounded-lg">
       <img
-        src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
-        alt={`${user.name}'s profile`}
+        src={user.ImageUrl || "/assets/icons/profile-placeholder.svg"}
+        alt={`${user.Name}'s profile`}
         className="rounded-full w-14 h-14 object-cover"
       />
 
       <div className="flex flex-col flex-1">
         <Link to={`/profile/${user.$id}`} className="base-medium text-light-1 text-left line-clamp-1">
-          {user.name}
+          {user.Name}
         </Link>
         <p className="small-regular text-light-3 text-left line-clamp-1">
-          @{user.username}
+          @{user.Username}
         </p>
       </div>
 
@@ -73,7 +73,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, listId }) => {
         type="button"
         size="sm"
         className="shad-button_primary px-5"
-        aria-label={`Collaborate with ${user.name}`}
+        aria-label={`Collaborate with ${user.Name}`}
         onClick={handleCollaborate}
         disabled={isLoading || isCollaborating}
       >

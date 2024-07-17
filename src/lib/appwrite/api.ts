@@ -517,7 +517,7 @@ export async function getUserLists(userId?: string) {
 
     if (!lists) throw new Error('No lists found for user');
 
-    return lists;
+    return lists.documents;
   } catch (error) {
     console.error('Error getting user lists:', error);
     return null;
@@ -813,7 +813,7 @@ export async function getCollaborations(listId: string) {
 
     if (!collaborations) throw new Error('No collaborations found');
 
-    return collaborations;
+    return collaborations.documents;
   } catch (error) {
     console.error('Error getting collaborations:', error);
     return null;
@@ -952,7 +952,7 @@ export const getUserFriends = async (userId: string) => {
       ]
     );
 
-    return response.documents.map(doc => doc.friendId);
+    return response.documents;
   } catch (error) {
     console.error('Error fetching user friends:', error);
     throw error;
@@ -1128,6 +1128,20 @@ export async function getPopularLists() {
   }
 }
 
+export async function getAllLists() {
+  try {
+    const result = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      []
+    );
+    return result.documents;
+  } catch (error) {
+    console.error('Error getting All lists:', error);
+    throw error;
+  }
+}
+
 export async function createNotification(notification: {
   userId: string;
   type: 'friend_request' | 'list_like' | 'list_comment';
@@ -1153,15 +1167,15 @@ export async function createNotification(notification: {
   }
 }
 
-export async function getNotifications(userId: string) {
+export async function getNotifications(userId:string) {
   try {
     const notifications = await databases.listDocuments(
       appwriteConfig.databaseId,
-      appwriteConfig.notificationsCollectionId,
+      import.meta.env.VITE_APPWRITE_NOTIFICATIONS_COLLECTION_ID,
       [
         Query.equal("userId", userId),
         Query.orderDesc("$createdAt"),
-        Query.limit(50)  // Adjust as needed
+        Query.limit(50) 
       ]
     );
     return notifications.documents;
@@ -1175,7 +1189,7 @@ export async function markNotificationAsRead(notificationId: string) {
   try {
     const updatedNotification = await databases.updateDocument(
       appwriteConfig.databaseId,
-      appwriteConfig.notificationsCollectionId,
+      import.meta.env.VITE_APPWRITE_NOTIFICATIONS_COLLECTION_ID,
       notificationId,
       { read: true }
     );
@@ -1190,7 +1204,7 @@ export async function deleteNotification(notificationId: string) {
   try {
     await databases.deleteDocument(
       appwriteConfig.databaseId,
-      appwriteConfig.notificationsCollectionId,
+      import.meta.env.VITE_APPWRITE_NOTIFICATIONS_COLLECTION_ID,
       notificationId
     );
     return { success: true };

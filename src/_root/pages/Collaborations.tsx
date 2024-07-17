@@ -1,17 +1,29 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useGetCollaborations, useUpdateCollaboration } from '@/lib/react-query/queries';
+import { useUserContext } from '@/context/AuthContext';
 
 const Collaborations = () => {
-  const { id: listId } = useParams();
+  const { user } = useUserContext();
+  let listId = user.curatedList[0].$id;
+  
+  
+  const [collaboration, setCollaboration] = useState<any>([])
+
   const { data: collaborations, isLoading } = useGetCollaborations(listId);
   const { mutate: updateCollaboration } = useUpdateCollaboration();
 
-  const handleAcceptCollaboration = (collaborationId) => {
+  // useEffect(()=>{
+  //   setCollaboration(collaborations)
+  // },[])
+
+  console.log("aaaaaaaaaaaa",collaboration)
+
+  const handleAcceptCollaboration = (collaborationId:any) => {
     updateCollaboration({ collaborationId, status: 'accepted' });
   };
 
-  const handleDeclineCollaboration = (collaborationId) => {
+  const handleDeclineCollaboration = (collaborationId:any) => {
     updateCollaboration({ collaborationId, status: 'rejected' });
   };
 
@@ -42,10 +54,10 @@ const Collaborations = () => {
             {/* Collaboration Invitations */}
             <div className="mb-8">
               <h3 className="text-lg font-semibold mb-2 dark:text-white">Collaboration Invitations</h3>
-              {collaborations?.documents.length > 0 ? (
+              {collaboration?.length > 0 ? (
                 <ul>
-                  {collaborations.documents.map((collaboration) => (
-                    <li key={collaboration.$id} className="mb-4">
+                  {collaboration.map((collaboration:any, index:number) => (
+                    <li key={index} className="mb-4">
                       <div className="flex justify-between items-center">
                         <div>
                           <p className="font-semibold dark:text-white">{collaboration.listId}</p>

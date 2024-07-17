@@ -1,6 +1,4 @@
-// File: src/components/shared/FriendRequests.tsx
 
-import React from 'react';
 import { useAcceptFriendRequest, useRejectFriendRequest } from '@/lib/react-query/queries';
 
 interface FriendRequest {
@@ -14,7 +12,7 @@ interface FriendRequestsProps {
   requests: FriendRequest[];
 }
 
-const FriendRequests: React.FC<FriendRequestsProps> = ({ requests }) => {
+const FriendRequests = ({ requests }) => {
   const acceptMutation = useAcceptFriendRequest();
   const rejectMutation = useRejectFriendRequest();
 
@@ -32,8 +30,8 @@ const FriendRequests: React.FC<FriendRequestsProps> = ({ requests }) => {
 
   return (
     <div className="space-y-4">
-      {requests.map((request) => (
-        <div key={request.$id} className="flex items-center justify-between bg-dark-3 p-4 rounded-lg">
+      {requests.map((request:any, index:number) => (
+        <div key={index} className="flex items-center justify-between bg-dark-3 p-4 rounded-lg">
           <div className="flex items-center space-x-4">
             <img
               src={request.imageUrl || "/assets/icons/profile-placeholder.svg"}

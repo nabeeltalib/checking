@@ -1,13 +1,14 @@
 import React from 'react';
 import { useGetNotifications, useMarkNotificationAsRead, useDeleteNotification } from '@/lib/react-query/queries';
-import { INotification } from '@/types';
+import { useUserContext } from '@/context/AuthContext';
 
 export const NotificationsList: React.FC = () => {
-  const { data: notifications } = useGetNotifications();
+  const { user } = useUserContext();
+  const { data: notifications } = useGetNotifications(user.$id);
   const markAsReadMutation = useMarkNotificationAsRead();
   const deleteMutation = useDeleteNotification();
 
-  const handleMarkAsRead = (notification: INotification) => {
+  const handleMarkAsRead = (notification: any) => {
     if (!notification.read) {
       markAsReadMutation.mutate(notification.$id);
     }

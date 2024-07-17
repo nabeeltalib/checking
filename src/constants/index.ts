@@ -54,6 +54,12 @@ export const bottombarLinks = [
     route: "/explore",
     label: "Explore",
   },
+  {
+    imgURL: "/assets/icons/people.svg",
+    route: "/all-lists",
+    label: "Discover",
+    icon:"/assets/icons/people.svg"
+  },
   // {
   //   imgURL: "/assets/icons/bookmark.svg",
   //   route: "/saved",
@@ -66,7 +72,7 @@ export const bottombarLinks = [
   },
   {
     imgURL: "/assets/icons/profile.svg",
-    route: "/profile/:id/",
+    route: "/profile/profile",
     label: "profile",
   },
   {
@@ -79,22 +85,22 @@ export const bottombarLinks = [
 export const rightSidebarLinks = [
   {
     imgURL: "/assets/icons/trending.svg",
-    route: "#",
+    route: "/trending",
     label: "Trending",
   },
   {
     imgURL: "/assets/icons/recommended.svg",
-    route: "#",
+    route: "/recomended",
     label: "Recommended",
   },
   {
     imgURL: "/assets/icons/people.svg",
-    route: "#",
+    route: "/userActivity",
     label: "User Activity",
   },
   {
     imgURL: "/assets/icons/user-profile.svg",
-    route: "/profile",
+    route: "/profile/profile",
     label: "User Profile",
   },
 ];

@@ -527,7 +527,7 @@ export async function getUsers(limit?: number) {
 
     if (!users) throw new Error("No users found");
 
-    return users;
+    return users.documents;
   } catch (error) {
     console.error("Error getting users:", error);
     return null;

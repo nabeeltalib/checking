@@ -1,16 +1,16 @@
+import { UserCard } from '@/components/shared';
 import { getUsers } from '@/lib/appwrite/config';
-import { Models } from 'appwrite';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const Userlist = () => {
-  type UserDocumentList = Models.DocumentList<Models.Document> | null;
 
-  const [users, setUsers] = useState<UserDocumentList | undefined>(undefined);
+  const [users, setUsers] = useState<any>([]);
 
   useEffect(() => {
     const getUserData = async () => {
       const usersData = await getUsers();
       setUsers(usersData);
+      console.log(users)
     };
 
     getUserData();
@@ -18,17 +18,16 @@ const Userlist = () => {
 
   return (
     <div>
-      Userlist:
       {users === undefined ? (
         <p>Loading...</p>
       ) : users === null ? (
         <p>No users found.</p>
       ) : (
-        <ul>
-          {users.documents.map((user) => (
-            <li key={user.$id}>{user.name}</li>
+        <div className='flex gap-5 flex-col'>
+          {users.map((user:any, index:number) => (
+            <UserCard user={user} key={index} listId=''/>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );
