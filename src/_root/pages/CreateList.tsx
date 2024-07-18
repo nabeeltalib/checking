@@ -13,7 +13,8 @@ const CreateList: React.FC = () => {
   const { toast } = useToast();
   const { user } = useUserContext();
   const navigate = useNavigate();
-  const { mutateAsync: createList, isLoading } = useCreateList();
+  
+  const { mutateAsync: createList, isLoading } = useCreateList(user.id);
   const { mutate: generateListIdea, isLoading: isGeneratingIdea } =
     useGenerateListIdea(user.id);
   const [listIdea, setListIdea] = useState<string | null>(null);
@@ -86,7 +87,7 @@ const CreateList: React.FC = () => {
         )}
 
         <ListForm
-          onSubmit={handleCreateList}
+          ontSubmit={handleCreateList}
           action="Create"
           initialIdea={listIdea}
         />

@@ -14,7 +14,7 @@ const Saved = () => {
     return <div className="text-light-4 text-center">User not found</div>;
   }
 
-  const savedLists: IList[] = currentUser?.save
+ const savedLists: IList[] = currentUser?.save
   ? currentUser.save.map((savedItem: any) => ({
       ...savedItem.list,
       creator: {

@@ -1,31 +1,38 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useUserContext } from "@/context/AuthContext";
-import { useListContext } from "@/context/ListContext";
 import { useGenerateListIdea } from "@/lib/react-query/queries";
-import { Loader, ListCard } from "@/components/shared";
-import { IList } from "@/types";
+import { Loader } from "@/components/shared";
+import { getPopularLists } from '@/lib/appwrite/api';
+import ListCard2 from '@/components/shared/ListCard2';
 
 const Home: React.FC = () => {
   const { user } = useUserContext();
-  const { lists, isLoading, error } : any = useListContext();
+  const [lists, setLists] = useState<any>([])
+
+  useEffect(()=>{
+    const fetchData =async ()=>{
+     const list = await getPopularLists();
+     setLists(list)
+    }
+
+    fetchData()
+ },[])
+
   const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user?.id || "");
   const [listIdea, setListIdea] = useState<string | null>(null);
 
   const handleGenerateIdea = () => {
-    setListIdea(null); // Clear previous idea
+    setListIdea(null); 
     generateListIdea("Generate a random list idea", {
       onSuccess: (idea) => setListIdea(idea),
     });
   };
-
-  if (isLoading) return <Loader />;
-  if (error) return <div className="text-red-500 p-4">Error loading lists: {error.message}</div>;
+  
 
   return (
     <div className="flex flex-col gap-4 p-4 w-full items-center common-container">
-      <h1 className="h3-bold md:h2-bold text-left w-full">Recent Lists</h1>
       <div className="flex items-center gap-4 mb-4">
-        <p>Welcome, {user?.name || "Guest"}</p>
+        <p>Welcome, {user.name || "Guest"}</p>
         {user && (
           <div className="text-sm text-light-3">
             <span>{user.followersCount || 0} followers</span>
@@ -54,9 +61,10 @@ const Home: React.FC = () => {
         )}
       </div>
       <div className="flex flex-col gap-4 max-w-5xl w-full">
+      <h1 className="h3-bold md:h2-bold text-left w-full">Trending Lists</h1>
         {lists && lists.length > 0 ? (
-          lists.map((list: IList) => (
-            <ListCard key={list.$id} list={list} />
+          lists.map((list: any) => (
+            <ListCard2 key={list.$id} list={list} />
           ))
         ) : (
           <p className="text-light-2">No recent lists available.</p>

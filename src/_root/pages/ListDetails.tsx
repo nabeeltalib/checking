@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useUserContext } from '@/context/AuthContext';
 import {
@@ -12,7 +12,6 @@ import { Loader } from '@/components/shared';
 import GridListList from '@/components/shared/GridListList';
 import ListStats from '@/components/shared/ListStats';
 import { useToast } from '@/components/ui/use-toast';
-import { IListItem } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
 
 const ListDetails: React.FC = () => {
@@ -25,10 +24,12 @@ const ListDetails: React.FC = () => {
   const { data: relatedLists, isLoading: isRelatedListsLoading } = useGetRelatedLists(id || '');
   const { data: listCreator, isLoading: isCreatorLoading } = useGetUserById(list?.creator.$id || '');
 
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const visibleItems = useMemo(() => {
     if (!list) return [];
-    return list.items.slice(0, 5);
-  }, [list]);
+    return isExpanded ? list.items : list.items.slice(0, 4);
+  }, [list, isExpanded]);
 
   const handleDeleteList = async () => {
     if (!id) return;
@@ -53,12 +54,12 @@ const ListDetails: React.FC = () => {
       </div>
 
       <div className="p-4 border-b border-dark-4">
-        <h1 className="text-3xl font-bold text-primary-500 mb-4">{list.title}</h1>
-
+        <h1 className="text-3xl font-bold text-primary-500 mb-4">{list.Title}</h1>
+  
         <div className="flex items-start gap-4 mb-4">
           <div className="flex flex-col items-center">
             <img
-              src={listCreator.imageUrl || '/assets/icons/profile-placeholder.svg'}
+              src={listCreator.ImageUrl || '/assets/icons/profile-placeholder.svg'}
               alt="creator"
               className="w-16 h-16 rounded-full object-cover"
             />
@@ -68,20 +69,20 @@ const ListDetails: React.FC = () => {
             </div>
           </div>
           <div>
-            <p className="font-bold text-light-1">{listCreator.name}</p>
-            <p className="text-light-3">@{listCreator.username}</p>
+            <p className="font-bold text-light-1">{listCreator.Name}</p>
+            <p className="text-light-3">@{listCreator.Username}</p>
             <Link to={`/profile/${listCreator.$id}`} className="text-primary-500 text-sm mt-1 block">
               View Profile
             </Link>
           </div>
         </div>
 
-        {list.description && (
-          <p className="text-light-2 mb-4">{list.description}</p>
+        {list.Description && (
+          <p className="text-light-2 mb-4">{list.Description}</p>
         )}
         
         <ul className="mb-4">
-          {visibleItems?.map((item: IListItem, index: number) => (
+          {visibleItems?.map((item: any, index: number) => (
             <li key={index} className="mb-2 text-light-1 flex items-center">
               <span className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center mr-3 text-light-1 font-bold">
                 {index + 1}
@@ -90,9 +91,17 @@ const ListDetails: React.FC = () => {
             </li>
           ))}
         </ul>
+        {list.items.length > 4 && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-primary-500"
+          >
+            {isExpanded ? 'Show Less' : 'Show More'}
+          </button>
+        )}
 
         <div className="flex flex-wrap gap-2 mb-4">
-          {list?.tags?.map((tag: string, index: number) => (
+          {list?.Tags?.map((tag: string, index: number) => (
             <span key={`${tag}${index}`} className="text-primary-500">
               #{tag}
             </span>
@@ -102,7 +111,7 @@ const ListDetails: React.FC = () => {
         <p className="text-light-3 text-sm mb-4">
           {formatDistanceToNow(new Date(list.$createdAt), { addSuffix: true })}
         </p>
-
+        
         <ListStats list={list} userId={user.id} />
 
         {list?.creator?.$id === user.id && (
@@ -120,7 +129,7 @@ const ListDetails: React.FC = () => {
             </Button>
           </div>
         )}
-      </div>
+      </div> 
 
       <div className="p-4">
         <h3 className="text-xl font-bold text-light-1 mb-4">Related Lists</h3>

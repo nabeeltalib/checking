@@ -134,7 +134,7 @@ export const useCreateList = (userId:string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (list: INewList) => createList(list,userId),
+    mutationFn: (list: any) => createList(list,userId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_RECENT_LISTS]
@@ -173,7 +173,7 @@ export const useGetUserLists = (userId?: string) => {
 export const useUpdateList = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (list: IUpdateList) => updateList(list),
+    mutationFn: (list:any) => updateList(list),
     onSuccess: data => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_LIST_BY_ID, data?.$id]

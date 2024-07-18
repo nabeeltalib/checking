@@ -331,16 +331,16 @@ export async function getRecentLists(pageParam?: string) {
   }
 }
 
-export async function createList(list: INewList,userId:string): Promise<IList> {
+export async function createList(list:any,userId:string): Promise<IList> {
   try {
     const newList = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
       ID.unique(),
       {
-        userId: list.userId,
-        Title: list.title,
-        Description: list.description,
+        userId: userId,
+        Title: list.Title,
+        Description: list.Description,
         items: list.items.map((v:{content:string})=>v.content),
         // tags: list.tags,
         aiScore: list.aiScore || 0,
@@ -394,17 +394,17 @@ export async function getListById(listId: string): Promise<IList> {
   }
 }
 
-export async function updateList(list: IUpdateList) {
+export async function updateList(list: any) {
   try {
     const updatedList = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
       list.listId,
       {
-        title: list.title,
-        description: list.description,
-        items: list.items, // Now we can pass the array directly
-        tags: list.tags
+        Title: list.Title,
+        Description: list.Description,
+        items: list.items.map((v:{content:string})=>v.content), 
+        Tags: list.Tags
       }
     );
 
@@ -684,12 +684,12 @@ export async function getComments(listId: string) {
     const comments = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.commentCollectionId,
-      [Query.equal('listId', listId), Query.orderDesc('$createdAt')]
+      [Query.equal('list', listId), Query.orderDesc('$createdAt')]
     );
 
     if (!comments) throw new Error('No comments found');
 
-    return comments;
+    return comments.documents;
   } catch (error) {
     console.error('Error getting comments:', error);
     return null;
@@ -1018,10 +1018,10 @@ export async function indexList(list: IList) {
   try {
     const document = {
       id: list.$id,
-      title: list.title,
-      description: list.description,
+      Title: list.Title,
+      Description: list.Description,
       items: list.items.map(item => item.content), // Only index the content
-      tags: list.tags,
+      Tags: list.Tags,
       creator: list.creator.$id,
       created_at: new Date(list.$createdAt).getTime()
     };

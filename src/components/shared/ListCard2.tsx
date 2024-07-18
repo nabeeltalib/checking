@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { IList } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
+import { useSaveList } from "@/lib/react-query/queries";
 
 type ListCardProps = {
   list: IList;
@@ -62,6 +63,24 @@ const ListCard2: React.FC<ListCardProps> = ({ list }) => {
     ));
   };
 
+  const [isSaved, setIsSaved] = useState(false);
+  const { mutate: saveList } = useSaveList();
+
+  const handleSaveList = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    e.stopPropagation();
+    // if (isSaved) {
+    //   const savedListRecord = currentUser?.save?.find(
+    //     (record: Models.Document) => record.list.$id === list.$id
+    //   );
+    //   if (savedListRecord) {
+    //     deleteSaveList(savedListRecord.$id);
+    //   }
+    // } else {
+    //   saveList({ userId: userId, listId: list.$id });
+    // }
+    // setIsSaved(!isSaved);
+  };
+
   return (
     <>
       <motion.div 
@@ -82,13 +101,13 @@ const ListCard2: React.FC<ListCardProps> = ({ list }) => {
           <div className="flex justify-between items-start mb-4">
             <Link to={`/profile/${list.creator.$id}`} className="flex items-center">
               <img 
-                src={list.creator?.imageUrl || "/assets/icons/profile-placeholder.svg"} 
-                alt={`${list.creator?.name}'s profile`} 
+                src={list.creator.ImageUrl || "/assets/icons/profile-placeholder.svg"} 
+                alt={`${list.creator.Name}'s profile`} 
                 className="w-12 h-12 rounded-full mr-3 border-2 border-primary-500"
               />
               <div>
-                <p className="font-semibold text-light-1">{list.creator?.name}</p>
-                <p className="text-light-3 text-sm">@{list.creator?.name}</p>
+                <p className="font-semibold text-light-1">{list.creator?.Name}</p>
+                <p className="text-light-3 text-sm">@{list.creator?.Username}</p>
               </div>
             </Link>
             <button
@@ -132,6 +151,17 @@ const ListCard2: React.FC<ListCardProps> = ({ list }) => {
           <span className="flex items-center">
             <img src="/assets/icons/like.svg" alt="Likes" className="w-5 h-5 mr-2" />
             {list.likes?.length || 0} Likes
+          </span>
+          <span className="flex items-center gap-2" onClick={handleSaveList}>
+        <img
+          src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
+          alt="save"
+          width={20}
+          height={20}
+        />
+        <p className="small-medium lg:base-medium">
+          {isSaved ? "Saved" : "Save"}
+        </p>
           </span>
           <span className="flex items-center">
             <img src="/assets/icons/comment.svg" alt="Comments" className="w-5 h-5 mr-2" />

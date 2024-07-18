@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -25,29 +25,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGenerateListItems, useCreateList, useUpdateList } from "@/lib/react-query/queries";
+import {
+  useGenerateListItems,
+  useCreateList,
+  useUpdateList,
+} from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
 import { getCategories } from "@/lib/appwrite/api";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { SortableItem } from './SortableItem';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { SortableItem } from "./SortableItem";
 import { IListItem, IList } from "@/types";
-import ConfirmationDialog from './ConfirmationDialog';
+import ConfirmationDialog from "./ConfirmationDialog";
 
 type ListFormProps = {
   list?: Models.Document;
   action: "Create" | "Update" | "Remix";
-  initialData?: Partial<IList>;
+  initialData?: any;
 };
 
-const ListForm = ({ list, action, initialData }: ListFormProps) => {
+const ListForm = ({ list, action, initialData }: any) => {
   const { user } = useUserContext();
   const { toast } = useToast();
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
-  const [timespans, setTimespans] = useState<string[]>(["all-time", "decade", "year", "week"]);
+  const [timespans, setTimespans] = useState<string[]>([
+    "all-time",
+    "decade",
+    "year",
+    "week",
+  ]);
   const [newTimespan, setNewTimespan] = useState("");
   const [locations, setLocations] = useState<string[]>([]);
   const [newLocation, setNewLocation] = useState("");
@@ -55,10 +76,11 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [generatedItems, setGeneratedItems] = useState<string[]>([]);
-  const [previousItems, setPreviousItems] = useState<IListItem[]>([]);
+  const [previousItems, setPreviousItems] = useState<any>([]);
   const [showUndoButton, setShowUndoButton] = useState(false);
 
-  const { mutate: generateListItems, isLoading: isGeneratingItems } = useGenerateListItems();
+  const { mutate: generateListItems, isLoading: isGeneratingItems } =
+    useGenerateListItems();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -71,10 +93,10 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
     const fetchData = async () => {
       try {
         const fetchedCategories = await getCategories();
-        setCategories(fetchedCategories.map(cat => cat.name));
+        setCategories(fetchedCategories.map((cat) => cat.name));
       } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to fetch data. Please try again later.');
+        console.error("Error fetching data:", err);
+        setError("Failed to fetch data. Please try again later.");
       }
     };
 
@@ -82,51 +104,72 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
   }, []);
 
   const formSchema = z.object({
-    title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
-    description: z.string().max(1000, "Description must be less than 1000 characters").optional(),
-    items: z.array(z.object({
-      content: z.string().min(1, "Item cannot be empty"),
-      isVisible: z.boolean(),
-    })).min(5, "At least 5 items are required").max(10, "Maximum 10 items allowed"),
-    categories: z.array(z.string()),
-    tags: z.array(z.string()),
+    Title: z
+      .string()
+      .min(3, "Title must be at least 3 characters")
+      .max(100, "Title must be less than 100 characters"),
+    Description: z
+      .string()
+      .max(1000, "Description must be less than 1000 characters")
+      .optional(),
+    items: z
+      .array(
+        z.object({
+          content: z.string().min(1, "Item cannot be empty"),
+          isVisible: z.boolean(),
+        })
+      )
+      .min(5, "At least 5 items are required")
+      .max(10, "Maximum 10 items allowed"),
+    Categories: z.array(z.string()),
+    Tags: z.array(z.string()),
     timespans: z.array(z.string()),
     locations: z.array(z.string()),
-    Public: z.boolean()
+    Public: z.boolean(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: initialData?.title || list?.title || "",
-      description: initialData?.description || list?.description || "",
-      items: initialData?.items || list?.items?.map((item: string | IListItem) => {
-        if (typeof item === 'string') {
-          const [content, isVisible] = item.split('|');
-          return { content, isVisible: isVisible === 'true' };
-        }
-        return item;
-      }) || Array(5).fill({ content: "", isVisible: true }),
-      categories: initialData?.categories || list?.categories || [],
-      tags: initialData?.tags || list?.tags || [],
+      Title: initialData?.Title || list?.Title || "",
+      Description: initialData?.Description || list?.Description || "",
+      items:
+        initialData?.items ||
+        list?.items?.map((item: string | IListItem) => {
+          if (typeof item === "string") {
+            const [content, isVisible] = item.split("|");
+            return { content, isVisible: isVisible === "true" };
+          }
+          return item;
+        }) ||
+        Array(5).fill({ content: "", isVisible: true }),
+      Categories: initialData?.categories || list?.categories || [],
+      Tags: initialData?.tags || list?.tags || [],
       timespans: initialData?.timespans || list?.timespans || [],
       locations: initialData?.locations || list?.locations || [],
       Public: initialData?.public || list?.public || false,
     },
   });
 
-  const { fields, append, remove, move } = useFieldArray({
+  const { fields, append, move } = useFieldArray({
     control: form.control,
     name: "items",
   });
 
-  const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList(user.id);
-  const { mutateAsync: updateList, isLoading: isLoadingUpdate } = useUpdateList();
+  const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList(
+    user.id
+  );
+  const { mutateAsync: updateList, isLoading: isLoadingUpdate } =
+    useUpdateList();
 
   const handleSubmit = async (value: z.infer<typeof formSchema>) => {
     try {
       if (action === "Update") {
-        const updatedList = await updateList({ ...value, listId: list!.$id, UpdatedAt: new Date() });
+        const updatedList = await updateList({
+          ...value,
+          listId: list.$id,
+          UpdatedAt: new Date(),
+        });
         if (!updatedList) {
           toast({ title: `${action} list failed. Please try again.` });
         } else {
@@ -134,13 +177,13 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
         }
       } else {
         // For both "Create" and "Remix" actions
-        const newList = await createList({ 
-          ...value, 
-          userId: user.id, 
-          CreatedAt: new Date(), 
+        const newList = await createList({
+          ...value,
+          userId: user.id,
+          CreatedAt: new Date(),
           UpdatedAt: new Date(),
           // For remix, we might want to add a reference to the original list
-          originalListId: action === "Remix" ? list?.$id : undefined
+          originalListId: action === "Remix" ? list?.$id : undefined,
         });
         if (!newList) {
           toast({ title: `${action} list failed. Please try again.` });
@@ -150,29 +193,32 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
       }
     } catch (error) {
       console.error(`Error ${action.toLowerCase()}ing list:`, error);
-      toast({ title: `${action} list failed. Please try again.`, variant: "destructive" });
+      toast({
+        title: `${action} list failed. Please try again.`,
+        variant: "destructive",
+      });
     }
   };
 
   const handleGenerateListItems = () => {
-    const title = form.getValues("title");
+    const title = form.getValues("Title");
     if (title) {
       generateListItems(title, {
         onSuccess: (items) => {
           setGeneratedItems(items);
-          if (form.getValues("items").some(item => item.content !== "")) {
+          if (form.getValues("items").some((item) => item.content !== "")) {
             setIsConfirmDialogOpen(true);
           } else {
             applyGeneratedItems(items);
           }
         },
-        onError: (error) => {
+        onError: (_error) => {
           toast({
             title: "Failed to generate list items",
             description: "Please try again or enter items manually.",
             variant: "destructive",
           });
-        }
+        },
       });
     } else {
       toast({
@@ -185,7 +231,10 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
 
   const applyGeneratedItems = (items: string[]) => {
     setPreviousItems(form.getValues("items"));
-    form.setValue("items", items.map(item => ({ content: item, isVisible: true })));
+    form.setValue(
+      "items",
+      items.map((item) => ({ content: item, isVisible: true }))
+    );
     setShowUndoButton(true);
     setTimeout(() => setShowUndoButton(false), 10000); // Hide undo button after 10 seconds
     toast({
@@ -203,13 +252,13 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
     });
   };
 
-  const handleDragEnd = (event) => {
-    const {active, over} = event;
-    
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
     if (active.id !== over.id) {
       const oldIndex = fields.findIndex((item) => item.id === active.id);
       const newIndex = fields.findIndex((item) => item.id === over.id);
-      
+
       move(oldIndex, newIndex);
     }
   };
@@ -217,7 +266,10 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
   const handleAddCategory = () => {
     if (newCategory && !categories.includes(newCategory)) {
       setCategories([...categories, newCategory]);
-      form.setValue("categories", [...form.getValues("categories"), newCategory]);
+      form.setValue("Categories", [
+        ...form.getValues("Categories"),
+        newCategory,
+      ]);
       setNewCategory("");
     }
   };
@@ -240,11 +292,15 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
 
   return (
     <Form {...form}>
-      {error && <div className="text-red-500" role="alert">{error}</div>}
+      {error && (
+        <div className="text-red-500" role="alert">
+          {error}
+        </div>
+      )}
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name="title"
+          name="Title"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Let's Give Your Ranking A Title </FormLabel>
@@ -270,19 +326,20 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
                 <FormControl>
                   <div>
                     <div className="flex flex-wrap gap-2">
-                      <Select 
+                      <Select
                         onValueChange={(value) => {
                           if (value && !field.value.includes(value)) {
                             field.onChange([...field.value, value]);
                           }
-                        }}
-                      >
+                        }}>
                         <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
                           <SelectValue placeholder="Select a timespan" />
                         </SelectTrigger>
                         <SelectContent className="bg-dark-4 text-light-1 border-none">
                           {timespans
-                            .filter(timespan => !field.value.includes(timespan))
+                            .filter(
+                              (timespan) => !field.value.includes(timespan)
+                            )
                             .map((timespan) => (
                               <SelectItem key={timespan} value={timespan}>
                                 {timespan}
@@ -296,22 +353,28 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
                         onChange={(e) => setNewTimespan(e.target.value)}
                         className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
                       />
-                      <Button type="button" onClick={handleAddTimespan} className="w-full md:w-auto">
+                      <Button
+                        type="button"
+                        onClick={handleAddTimespan}
+                        className="w-full md:w-auto">
                         Add Timespan
                       </Button>
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {field.value.map((timespan, index) => (
-                        <div key={index} className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
+                        <div
+                          key={index}
+                          className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
                           {timespan}
                           <button
                             type="button"
                             onClick={() => {
-                              const newTimespans = field.value.filter((_, i) => i !== index);
+                              const newTimespans = field.value.filter(
+                                (_, i) => i !== index
+                              );
                               field.onChange(newTimespans);
                             }}
-                            className="ml-2 text-xs"
-                          >
+                            className="ml-2 text-xs">
                             ×
                           </button>
                         </div>
@@ -333,19 +396,20 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
                 <FormControl>
                   <div>
                     <div className="flex flex-wrap gap-2">
-                      <Select 
+                      <Select
                         onValueChange={(value) => {
                           if (value && !field.value.includes(value)) {
                             field.onChange([...field.value, value]);
                           }
-                        }}
-                      >
+                        }}>
                         <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
                           <SelectValue placeholder="Select a location" />
                         </SelectTrigger>
                         <SelectContent className="bg-dark-4 text-light-1 border-none">
                           {locations
-                            .filter(location => !field.value.includes(location))
+                            .filter(
+                              (location) => !field.value.includes(location)
+                            )
                             .map((location) => (
                               <SelectItem key={location} value={location}>
                                 {location}
@@ -359,22 +423,28 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
                         onChange={(e) => setNewLocation(e.target.value)}
                         className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
                       />
-                      <Button type="button" onClick={handleAddLocation} className="w-full md:w-auto">
+                      <Button
+                        type="button"
+                        onClick={handleAddLocation}
+                        className="w-full md:w-auto">
                         Add Location
                       </Button>
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {field.value.map((location, index) => (
-                        <div key={index} className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
+                        <div
+                          key={index}
+                          className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
                           {location}
                           <button
                             type="button"
                             onClick={() => {
-                              const newLocations = field.value.filter((_, i) => i !== index);
+                              const newLocations = field.value.filter(
+                                (_, i) => i !== index
+                              );
                               field.onChange(newLocations);
                             }}
-                            className="ml-2 text-xs"
-                          >
+                            className="ml-2 text-xs">
                             ×
                           </button>
                         </div>
@@ -396,19 +466,20 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
                 <FormControl>
                   <div>
                     <div className="flex flex-wrap gap-2">
-                      <Select 
+                      <Select
                         onValueChange={(value) => {
                           if (value && !field.value.includes(value)) {
                             field.onChange([...field.value, value]);
                           }
-                        }}
-                      >
+                        }}>
                         <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
                           <SelectValue placeholder="Select a location" />
                         </SelectTrigger>
                         <SelectContent className="bg-dark-4 text-light-1 border-none">
                           {locations
-                            .filter(location => !field.value.includes(location))
+                            .filter(
+                              (location) => !field.value.includes(location)
+                            )
                             .map((location) => (
                               <SelectItem key={location} value={location}>
                                 {location}
@@ -422,22 +493,28 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
                         onChange={(e) => setNewLocation(e.target.value)}
                         className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
                       />
-                      <Button type="button" onClick={handleAddLocation} className="w-full md:w-auto">
+                      <Button
+                        type="button"
+                        onClick={handleAddLocation}
+                        className="w-full md:w-auto">
                         Add Location
                       </Button>
                     </div>
                     <div className="flex flex-wrap gap-2 mt-2">
                       {field.value.map((location, index) => (
-                        <div key={index} className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
+                        <div
+                          key={index}
+                          className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
                           {location}
                           <button
                             type="button"
                             onClick={() => {
-                              const newLocations = field.value.filter((_, i) => i !== index);
+                              const newLocations = field.value.filter(
+                                (_, i) => i !== index
+                              );
                               field.onChange(newLocations);
                             }}
-                            className="ml-2 text-xs"
-                          >
+                            className="ml-2 text-xs">
                             ×
                           </button>
                         </div>
@@ -456,8 +533,7 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
             type="button"
             onClick={handleGenerateListItems}
             disabled={isGeneratingItems}
-            className="bg-blue-900 text-light-1 px-4 py-2 rounded-md mb-4"
-          >
+            className="bg-blue-900 text-light-1 px-4 py-2 rounded-md mb-4">
             {isGeneratingItems ? "Generating..." : "Get Inspiration"}
           </Button>
 
@@ -466,15 +542,13 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
               Undo Generated Items
             </Button>
           )}
-          <DndContext 
+          <DndContext
             sensors={sensors}
             collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext 
-              items={fields.map(field => field.id)}
-              strategy={verticalListSortingStrategy}
-            >
+            onDragEnd={handleDragEnd}>
+            <SortableContext
+              items={fields.map((field) => field.id)}
+              strategy={verticalListSortingStrategy}>
               {fields.map((field, index) => (
                 <SortableItem key={field.id} id={field.id}>
                   <div className="flex items-center mb-2">
@@ -511,7 +585,6 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
                         </FormItem>
                       )}
                     />
-                    
                   </div>
                 </SortableItem>
               ))}
@@ -519,12 +592,11 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
           </DndContext>
 
           {fields.length < 10 && (
-            <Button 
-              type="button" 
-              onClick={() => append({ content: '', isVisible: true })}
+            <Button
+              type="button"
+              onClick={() => append({ content: "", isVisible: true })}
               aria-label="Add new item"
-              className="px-4 py-2 rounded-md mb-4"
-            >
+              className="px-4 py-2 rounded-md mb-4">
               Add Row
             </Button>
           )}
@@ -532,7 +604,7 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
 
         <FormField
           control={form.control}
-          name="tags"
+          name="Tags"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Tags</FormLabel>
@@ -540,14 +612,19 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
                 <Input
                   placeholder="Enter tags separated by commas"
                   onBlur={(e) => {
-                    const tags = e.target.value.split(',').map(tag => tag.trim()).filter(Boolean);
+                    const tags = e.target.value
+                      .split(",")
+                      .map((tag) => tag.trim())
+                      .filter(Boolean);
                     field.onChange(tags);
                   }}
-                  defaultValue={field.value.join(', ')}
+                  defaultValue={field.value.join(", ")}
                   className="w-full bg-dark-3 text-light-1 border-none"
                 />
               </FormControl>
-              <FormDescription>Enter tags for your list separated by commas</FormDescription>
+              <FormDescription>
+                Enter tags for your list separated by commas
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -555,26 +632,25 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
 
         <FormField
           control={form.control}
-          name="categories"
+          name="Categories"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Categories</FormLabel>
               <FormControl>
                 <div>
                   <div className="flex flex-wrap gap-2">
-                    <Select 
+                    <Select
                       onValueChange={(value) => {
                         if (value && !field.value.includes(value)) {
                           field.onChange([...field.value, value]);
                         }
-                      }}
-                    >
+                      }}>
                       <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
                         {categories
-                          .filter(category => !field.value.includes(category))
+                          .filter((category) => !field.value.includes(category))
                           .map((category) => (
                             <SelectItem key={category} value={category}>
                               {category}
@@ -588,22 +664,28 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
                       onChange={(e) => setNewCategory(e.target.value)}
                       className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
                     />
-                    <Button type="button" onClick={handleAddCategory} className="w-full md:w-auto">
+                    <Button
+                      type="button"
+                      onClick={handleAddCategory}
+                      className="w-full md:w-auto">
                       Add Category
                     </Button>
                   </div>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {field.value.map((category, index) => (
-                      <div key={index} className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
+                      <div
+                        key={index}
+                        className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
                         {category}
                         <button
                           type="button"
                           onClick={() => {
-                            const newCategories = field.value.filter((_, i) => i !== index);
+                            const newCategories = field.value.filter(
+                              (_, i) => i !== index
+                            );
                             field.onChange(newCategories);
                           }}
-                          className="ml-2 text-xs"
-                        >
+                          className="ml-2 text-xs">
                           ×
                         </button>
                       </div>
@@ -615,37 +697,38 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
             </FormItem>
           )}
         />
-<FormField
-  control={form.control}
-  name="public"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Public </FormLabel>
-      <FormControl>
-        <input
-          type="checkbox"
-          checked={field.value}
-          onChange={(e) => field.onChange(e.target.checked)}
+        <FormField
+          control={form.control}
+          name="Public"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Public </FormLabel>
+              <FormControl>
+                <input
+                  type="checkbox"
+                  checked={field.value}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                />
+              </FormControl>
+              <FormDescription>
+                Check if you want to make this list public.
+              </FormDescription>
+            </FormItem>
+          )}
         />
-      </FormControl>
-      <FormDescription>
-        Check if you want to make this list public.
-      </FormDescription>
-    </FormItem>
-  )}
-/>
-        {/*<Button
+        <Button
           type="button"
           onClick={() => setShowDescription(!showDescription)}
-          className="px-4 py-2 rounded-md mb-4"
-        >
-          {showDescription ? "Hide Description" : "If you want to add description"}
-        </Button>*/}
+          className="px-4 py-2 rounded-md mb-4">
+          {showDescription
+            ? "Hide Description"
+            : "If you want to add description"}
+        </Button>
 
         {showDescription && (
           <FormField
             control={form.control}
-            name="description"
+            name="Description"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Description</FormLabel>
@@ -656,22 +739,44 @@ const ListForm = ({ list, action, initialData }: ListFormProps) => {
                     className="w-full bg-dark-3 text-light-1 border-none"
                   />
                 </FormControl>
-                <FormDescription>Enter a description for your list</FormDescription>
+                <FormDescription>
+                  Enter a description for your list
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
         )}
 
-<div className="flex gap-4 items-center justify-end">
-          <Button type="button" className="shad-button_dark_4" onClick={() => navigate(-1)}>
+        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-2">
+          <Button
+            type="button"
+            className="shad-button_dark_4"
+            onClick={() => navigate(-1)}>
             Cancel
+          </Button>
+          <Button
+            type="button"
+            className="shad-button_dark_4"
+            onClick={() => navigate(-1)}>
+            Save as Draft
+          </Button>
+          <Button
+            type="button"
+            className="shad-button_dark_4"
+            onClick={() => navigate(-1)}>
+            Preview List
+          </Button>
+          <Button
+            type="button"
+            className="shad-button_dark_4"
+            onClick={() => navigate(-1)}>
+            Publish List
           </Button>
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"
-            disabled={isLoadingCreate || isLoadingUpdate}
-          >
+            disabled={isLoadingCreate || isLoadingUpdate}>
             {(isLoadingCreate || isLoadingUpdate) && <Loader />}
             {action === "Remix" ? "Create Remixed List" : `${action} List`}
           </Button>

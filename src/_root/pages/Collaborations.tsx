@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
 import { useGetCollaborations, useUpdateCollaboration } from '@/lib/react-query/queries';
 import { useUserContext } from '@/context/AuthContext';
 
@@ -13,11 +12,9 @@ const Collaborations = () => {
   const { data: collaborations, isLoading } = useGetCollaborations(listId);
   const { mutate: updateCollaboration } = useUpdateCollaboration();
 
-  // useEffect(()=>{
-  //   setCollaboration(collaborations)
-  // },[])
-
-  console.log("aaaaaaaaaaaa",collaboration)
+  useEffect(()=>{
+    setCollaboration(collaborations)
+  },[])
 
   const handleAcceptCollaboration = (collaborationId:any) => {
     updateCollaboration({ collaborationId, status: 'accepted' });

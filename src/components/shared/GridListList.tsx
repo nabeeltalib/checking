@@ -1,8 +1,7 @@
 import { Link } from "react-router-dom";
-import { IList, IListItem } from "@/types";
 
 interface GridListListProps {
-  lists: any[];
+  lists: any;
   showUser?: boolean;
   showStats?: boolean;
 }
@@ -10,12 +9,12 @@ interface GridListListProps {
 const GridListList: React.FC<GridListListProps> = ({ lists, showUser = true, showStats = true }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-      {lists?.map((list) => (
+      {lists?.map((list:any) => (
         <div key={list.$id} className="bg-dark-4 rounded-lg shadow-md overflow-hidden transition-transform hover:scale-105">
           <Link to={`/lists/${list.$id}`} className="block p-4">
             <h3 className="text-xl font-bold text-light-1 mb-2">{list.title}</h3>
             <ul className="list-decimal list-inside mb-4 text-light-1">
-              {list.items?.slice(0, 5).map((item: IListItem, index: number) => (
+              {list.items?.slice(0, 5).map((item: any, index: number) => (
                 <li key={index} className="line-clamp-1">{item.content}</li>
               ))}
             </ul>
