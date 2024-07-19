@@ -17,7 +17,7 @@ export const INITIAL_USER: IUser = {
 interface IAuthContext {
   user: IUser;
   isLoading: boolean;
-  setUser: React.Dispatch<React.SetStateAction<IUser>>;
+  setUser: React.Dispatch<React.SetStateAction<any>>;
   isAuthenticated: boolean;
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
   checkAuthUser: () => Promise<boolean>;
@@ -43,11 +43,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const curatedList = await getUserLists(currentAccount.$id);
         setUser({
           id: currentAccount.$id,
-          name: currentAccount.name,
-          username: currentAccount.username,
-          email: currentAccount.email,
-          imageUrl: currentAccount.imageUrl,
-          bio: currentAccount.bio,
+          name: currentAccount.Name,
+          username: currentAccount.Username,
+          email: currentAccount.Email,
+          imageUrl: currentAccount.ImageUrl,
+          bio: currentAccount.Bio,
           curatedList: curatedList,
         });
         setIsAuthenticated(true);

@@ -25,14 +25,15 @@ const UpdateProfile = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user, setUser } = useUserContext();
-  const form = useForm<z.infer<typeof ProfileValidation>>({
+  
+  const form = useForm<z.infer<typeof z.any>>({
     resolver: zodResolver(ProfileValidation),
     defaultValues: {
       file: [],
-      name: user.name,
-      username: user.username,
-      email: user.email,
-      bio: user.bio || "",
+      Name: user.Name,
+      Username: user.Username,
+      Email: user.Email,
+      Bio: user.Bio || "",
     },
   });
 
@@ -43,23 +44,23 @@ const UpdateProfile = () => {
     if (currentUser) {
       form.reset({
         file: [],
-        name: currentUser.name,
-        username: currentUser.username,
-        email: currentUser.email,
-        bio: currentUser.bio || "",
+        Name: currentUser.Name,
+        Username: currentUser.Username,
+        Email: currentUser.Email,
+        Bio: currentUser.Bio || "",
       });
     }
   }, [currentUser, form]);
 
   const handleUpdate = useCallback(
-    async (value: z.infer<typeof ProfileValidation>) => {
+    async (value: z.infer<typeof z.any>) => {
       try {
         const updatedUser = await updateUser({
           userId: currentUser.$id,
-          name: value.name,
-          bio: value.bio,
+          Name: value.name,
+          Bio: value.bio,
           file: value.file,
-          imageUrl: currentUser.imageUrl,
+          ImageUrl: currentUser.ImageUrl,
           imageId: currentUser.imageId,
         });
 
@@ -69,9 +70,9 @@ const UpdateProfile = () => {
 
         setUser({
           ...user,
-          name: updatedUser.name,
-          bio: updatedUser.bio,
-          imageUrl: updatedUser.imageUrl,
+          Name: updatedUser.Name,
+          Bio: updatedUser.Bio,
+          ImageUrl: updatedUser.ImageUrl,
         });
         navigate(`/profile/${id}`);
       } catch (error) {

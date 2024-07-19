@@ -22,9 +22,9 @@ const RemixList: React.FC = () => {
 
   const initialData = {
     ...originalList,
-    title: `${originalList.title} (Remixed)`,
+    title: `${originalList.Title} (Remixed)`,
     items: originalList.items,
-    creator: { $id: user.id, name: user.name, imageUrl: user.imageUrl },
+    creator: { $id: user.id, Name: user.Name, ImageUrl: user.ImageUrl },
     likes: [],
     saves: [],
     comments: [],
@@ -41,7 +41,7 @@ const RemixList: React.FC = () => {
     <div className="flex flex-col items-center w-full">
       <h1 className="h3-bold md:h2-bold w-full">Remix List</h1>
       <p className="text-light-3 small-medium md:base-regular mt-2 w-full">
-        You're creating a new list based on "{originalList.title}" by {originalList.creator.name}
+        You're creating a new list based on "{originalList.Title}" by {originalList.creator.Name}
       </p>
       <ListForm action="Create" initialData={initialData} />
       <Button 

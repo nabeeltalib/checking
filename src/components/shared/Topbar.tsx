@@ -5,6 +5,7 @@ import { useUserContext } from "@/context/AuthContext";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { Input } from "@/components/ui/input";
 import { useSearchLists } from "@/lib/react-query/queries";
+import { NotificationBell } from "./notifications/NotificationBell";
 
 const Topbar = () => {
   const navigate = useNavigate();
@@ -94,7 +95,7 @@ const Topbar = () => {
           </Button>
 
           <Link to="/notifications" className="hidden md:block">
-            <img src="/assets/icons/notification.svg" alt="notifications" width={27} height={22} />
+            <NotificationBell />
           </Link>
 
           <div className="relative">

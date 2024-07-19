@@ -134,20 +134,26 @@ const ListForm = ({ list, action, initialData }: any) => {
       Title: initialData?.Title || list?.Title || "",
       Description: initialData?.Description || list?.Description || "",
       items:
-        initialData?.items ||
-        list?.items?.map((item: string | IListItem) => {
+        initialData?.items.map((item: string | any) => {
           if (typeof item === "string") {
             const [content, isVisible] = item.split("|");
             return { content, isVisible: isVisible === "true" };
           }
           return item;
-        }) ||
-        Array(5).fill({ content: "", isVisible: true }),
-      Categories: initialData?.categories || list?.categories || [],
-      Tags: initialData?.tags || list?.tags || [],
+       }) ||
+        list?.items?.map((item: string | any) => {
+          if (typeof item === "string") {
+            const [content, isVisible] = item.split("|");
+            return { content, isVisible: isVisible === "true" };
+          }
+          return item;
+       })||
+       Array(5).fill({ content: "", isVisible: true }),
+      Categories: initialData?.Categories || list?.Categories || [],
+      Tags: initialData?.Tags || list?.Tags || [],
       timespans: initialData?.timespans || list?.timespans || [],
       locations: initialData?.locations || list?.locations || [],
-      Public: initialData?.public || list?.public || false,
+      Public: initialData?.Public || list?.Public || false,
     },
   });
 
@@ -202,6 +208,7 @@ const ListForm = ({ list, action, initialData }: any) => {
 
   const handleGenerateListItems = () => {
     const title = form.getValues("Title");
+    console.log("ttile: ",title)
     if (title) {
       generateListItems(title, {
         onSuccess: (items) => {
@@ -456,76 +463,6 @@ const ListForm = ({ list, action, initialData }: any) => {
               </FormItem>
             )}
           />
-
-          <FormField
-            control={form.control}
-            name="locations"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Locations</FormLabel>
-                <FormControl>
-                  <div>
-                    <div className="flex flex-wrap gap-2">
-                      <Select
-                        onValueChange={(value) => {
-                          if (value && !field.value.includes(value)) {
-                            field.onChange([...field.value, value]);
-                          }
-                        }}>
-                        <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
-                          <SelectValue placeholder="Select a location" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-dark-4 text-light-1 border-none">
-                          {locations
-                            .filter(
-                              (location) => !field.value.includes(location)
-                            )
-                            .map((location) => (
-                              <SelectItem key={location} value={location}>
-                                {location}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
-                      <Input
-                        placeholder="New location"
-                        value={newLocation}
-                        onChange={(e) => setNewLocation(e.target.value)}
-                        className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
-                      />
-                      <Button
-                        type="button"
-                        onClick={handleAddLocation}
-                        className="w-full md:w-auto">
-                        Add Location
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {field.value.map((location, index) => (
-                        <div
-                          key={index}
-                          className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
-                          {location}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newLocations = field.value.filter(
-                                (_, i) => i !== index
-                              );
-                              field.onChange(newLocations);
-                            }}
-                            className="ml-2 text-xs">
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
         </div>
 
         <div className="space-y-4">
@@ -568,23 +505,23 @@ const ListForm = ({ list, action, initialData }: any) => {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name={`items.${index}.isVisible`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <input
-                              type="checkbox"
-                              {...field}
-                              checked={field.value}
-                              className="mr-2"
-                              aria-label={`Make item ${index + 1} visible`}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
+                      <FormField
+                        control={form.control}
+                        name={`items.${index}.isVisible`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <input
+                                type="checkbox"
+                                {...field}
+                                checked={field.value}
+                                className="mr-2"
+                                aria-label={`Make item ${index + 1} visible`}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
                   </div>
                 </SortableItem>
               ))}
@@ -612,11 +549,11 @@ const ListForm = ({ list, action, initialData }: any) => {
                 <Input
                   placeholder="Enter tags separated by commas"
                   onBlur={(e) => {
-                    const tags = e.target.value
+                    const Tags = e.target.value
                       .split(",")
                       .map((tag) => tag.trim())
                       .filter(Boolean);
-                    field.onChange(tags);
+                    field.onChange(Tags);
                   }}
                   defaultValue={field.value.join(", ")}
                   className="w-full bg-dark-3 text-light-1 border-none"
@@ -696,7 +633,7 @@ const ListForm = ({ list, action, initialData }: any) => {
               <FormMessage />
             </FormItem>
           )}
-        />
+        />  
         <FormField
           control={form.control}
           name="Public"

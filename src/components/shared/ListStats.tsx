@@ -1,8 +1,8 @@
 import { Models } from "appwrite";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { shareList } from "@/lib/appwrite/api";
+import { createNotification, shareList } from "@/lib/appwrite/api";
 
 
 import { checkIsLiked } from "@/lib/utils";
@@ -12,17 +12,20 @@ import {
   useDeleteSavedList,
   useGetCurrentUser,
   useGetComments, // Assuming you have a hook to fetch comments
-  useGetUserById
+  useGetUserById,
+  useCreateComment,
+  useAnalyzeSentiment
 } from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
 import { Share2 } from "lucide-react";
+import { toast } from "../ui";
 
 type ListStatsProps = {
   list: Models.Document;
   userId: string;
 };
 
-const ListStats = ({ list, userId }: ListStatsProps) => {
+const ListStats = ({ list, userId }: any) => {
   const location = useLocation();
   const navigate = useNavigate();
   const likesList = list?.likes?.map((user: Models.Document) => user.$id) || [];
@@ -40,8 +43,12 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
   const { mutate: deleteSaveList } = useDeleteSavedList();
   const { data: currentUser } = useGetUserById(id);
   const { data: comments } = useGetComments(list.$id); 
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [visibleComments, setVisibleComments] = useState<any>([])
 
-
+  useEffect(() => {
+    setVisibleComments(()=> isExpanded ? comments : comments?.slice(0, 4));
+  }, [isExpanded,comments]);
 
   // useEffect(() => {
   //   if(currentUser){
@@ -113,6 +120,39 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
     }
   };
 
+  const [newComment, setNewComment] = useState("");
+  const { mutate: createComment } = useCreateComment();
+  console.log(list)
+  const handleCommentSubmit = async (e:any) => {
+    e.preventDefault();
+    if (newComment.trim() === "") return;
+
+    try {
+      await createComment({
+        listId: list.$id,
+        userId: id,
+        Content: newComment,
+      });
+
+     const respones =  await createNotification({
+        userId: list.userId,
+        type: "list_comment",
+        message:`${user.name} commented on your list "${list.Title}"`,
+      })
+
+      console.log(respones)
+
+      setNewComment("");
+    } catch (error) {
+      console.error("Failed to create comment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to post comment.",
+        variant: "destructive",
+      });
+    }
+  };
+
 
   return (
     <div className={`flex flex-row flex-wrap w-full items-center z-20 gap-3 ${containerStyles}`}>
@@ -161,7 +201,7 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
         onClick={handleRemix}
       >
         <img src="/assets/icons/remix.svg" alt="remix" width={20} height={20} />
-        <p className="small-medium lg:base-medium">Remix</p>
+        <p className="small-medium lg:base-medium">Create Alternative</p>
       </Button>
       <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
         <img src="/assets/icons/people.svg" alt="collaborate" width={20} height={20} />
@@ -174,7 +214,7 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
           <h3 className="text-lg font-semibold">Comments:</h3>
           {comments?.length > 0 ? (
             <ul>
-              {comments.map((comment) => (
+              {visibleComments?.map((comment) => (
 
                 <li key={comment.$id} className="py-2 border-b border-gray-200 flex gap-2 items-center">
                   <img src={comment.user.ImageUrl} alt="userImage" width={30} />
@@ -186,6 +226,30 @@ const ListStats = ({ list, userId }: ListStatsProps) => {
           ) : (
             <p className="text-sm text-gray-500">No comments yet.</p>
           )}
+
+          {comments?.length > 4 && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-primary-500"
+          >
+            {isExpanded ? 'Show Less' : 'Show More'}
+          </button>
+            )}
+
+            {<form onSubmit={handleCommentSubmit} className="mt-4 mb-2">
+              <textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Add a comment..."
+                className="w-full p-2 border rounded-lg bg-zinc-900 :text-white"
+              />
+              <button
+                type="submit"
+                className="mt-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+              >
+                Add a Comment
+              </button>
+            </form>}
         </div>
       )}
     </div>

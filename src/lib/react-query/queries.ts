@@ -316,7 +316,7 @@ export const useCreateComment = () => {
     mutationFn: (comment: {
       listId: string;
       userId: string;
-      content: string;
+      Content: string;
     }) => createComment(comment),
     onSuccess: () => {
       queryClient.invalidateQueries({

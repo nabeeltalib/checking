@@ -32,6 +32,7 @@ import Notifications from "./components/shared/Notifications";
 import Trending from "./_root/pages/Trending";
 import Recomended from "./_root/pages/Recomended";
 import UserActivity from "./_root/pages/UserActivity";
+import ManageList from "./_root/pages/ManageList";
 import FAB from "./components/shared/FAB";
 
 
@@ -89,6 +90,7 @@ const App = () => {
           <Route path="/lists/:id/suggestions" element={<Suggestions />} />
           <Route path="/shared/:sharedId" element={<SharedListView />} />
           <Route path="/remix/:id" element={<RemixList />} /> {/* New route */}
+          <Route path="/manage-list/:id" element={<ManageList />} /> {/* New route */}
         </Route>
       </Routes>
       <FAB />

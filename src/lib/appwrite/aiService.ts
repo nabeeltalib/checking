@@ -27,7 +27,7 @@ export const getAISuggestions = async (userId: string): Promise<string[]> => {
 export const generateListItems = async (title: string): Promise<string[]> => {
   try {
     const execution = await functions.createExecution(
-      appwriteConfig.generateListItemsFunctionId,
+      "667f7b2100386da9fe81",
       JSON.stringify({ title }),
       false
     );

@@ -342,7 +342,7 @@ export async function createList(list:any,userId:string): Promise<IList> {
         Title: list.Title,
         Description: list.Description,
         items: list.items.map((v:{content:string})=>v.content),
-        // tags: list.tags,
+        Tags: list.Tags,
         aiScore: list.aiScore || 0,
         CreatedAt: list.CreatedAt,
         UpdatedAt: list.UpdatedAt,
@@ -653,7 +653,7 @@ export async function updateUser(user: IUpdateUser) {
 export async function createComment(comment: {
   listId: string;
   userId: string;
-  content: string;
+  Content: string;
 }) {
   try {
     const newComment = await databases.createDocument(
@@ -661,10 +661,10 @@ export async function createComment(comment: {
       appwriteConfig.commentCollectionId,
       ID.unique(),
       {
-        listId: comment.listId,
-        userId: comment.userId,
-        content: comment.content,
-        createdAt: new Date().toISOString()
+        list: comment.listId,
+        user: comment.userId,
+        Content: comment.Content,
+        CreatedAt: new Date().toISOString()
       }
     );
 
@@ -1150,7 +1150,7 @@ export async function createNotification(notification: {
   try {
     const newNotification = await databases.createDocument(
       appwriteConfig.databaseId,
-      appwriteConfig.notificationsCollectionId,
+      import.meta.env.VITE_APPWRITE_NOTIFICATIONS_COLLECTION_ID,
       ID.unique(),
       {
         userId: notification.userId,

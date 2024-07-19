@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Outlet, useParams } from "react-router-dom";
+import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById, useGetUserLists, useGetUserFriends, useGetFriendRequests } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
@@ -11,8 +11,9 @@ import FriendRequests from "@/components/shared/FriendRequests";
 const Profile: React.FC = () => {
   const { user } = useUserContext();
   const { profile } = useParams(); 
-  console.log("User:",user)
   let id = profile ? profile === "profile" ? user.id : profile : "";
+  
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState("lists");
   const { data: currentUser, isLoading: isLoadingCurrentUser } = useGetUserById(id || "");
@@ -24,7 +25,6 @@ const Profile: React.FC = () => {
   const [isSavedExpanded, setSavedExpanded] = useState(false);
   const [isCollaborativeExpanded, setCollaborativeExpanded] = useState(false);
 
-  console.log("userLists: ", userLists, "friends: ", friends, "friendRequests: ", friendRequests);
   if (!id) return <div className="text-center text-light-1">User ID not found</div>;
 
   if (isLoadingCurrentUser || isLoadingLists) {
@@ -105,16 +105,19 @@ const Profile: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-8">
       <Button
           className={`tab-button flex gap-2`}
+          onClick={()=> navigate(`/update-profile/${id}`)}
         >
           Edit Profile
         </Button>
         <Button
           className={`tab-button flex gap-2`}
+          onClick={()=> navigate(`/manage-list/${id}`)}
         >
           Manage List
         </Button>
         <Button
           className={`tab-button flex gap-2`}
+          onClick={()=> navigate("/userActivity")}
         >
           View Activity
         </Button>
