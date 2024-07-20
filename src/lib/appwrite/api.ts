@@ -60,6 +60,7 @@ export const appwriteConfig = {
   listCollectionId: import.meta.env.VITE_APPWRITE_LIST_COLLECTION_ID,
   savesCollectionId: import.meta.env.VITE_APPWRITE_SAVES_COLLECTION_ID,
   commentCollectionId: import.meta.env.VITE_APPWRITE_COMMENT_COLLECTION_ID,
+  generateListItemFunctionId: import.meta.env.VITE_APPWRITE_GENERATE_LIST_ITEMS_FUNCTION_ID,
   suggestionCollectionId: import.meta.env
     .VITE_APPWRITE_SUGGESTION_COLLECTION_ID,
   collaborationCollectionId: import.meta.env

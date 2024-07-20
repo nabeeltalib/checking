@@ -55,6 +55,7 @@ import {
 } from '@/lib/appwrite/api';
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
 import { getAISuggestionsRoute } from '@/routes';
+import { generateListItem } from '@/routes/ai';
 
 
 // ============================================================
@@ -523,7 +524,7 @@ export const useRejectFriendRequest = () => {
 
 export const useGenerateListItems = () => {
   return useMutation({
-    mutationFn: (title: string) => generateListItems(title),
+    mutationFn: (title: string) => generateListItem(title),
   });
 };
 

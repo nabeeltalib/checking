@@ -1,5 +1,5 @@
 // import express from "express";
-import { getAISuggestions } from '@/services/aiService';
+import { generateListItems, getAISuggestions } from '@/services/aiService';
 
 // const router = express.Router();
 
@@ -21,6 +21,22 @@ export const getAISuggestionsRoute = (userId: string): Promise<any[]> =>
       const suggestions = await getAISuggestions(userId);
 
       return resolve(suggestions);
+    } catch (error: any) {
+      console.error('Error fetching AI suggestions:', error);
+      return reject({
+        error: 'Failed to fetch AI suggestions',
+        details: error.message
+      });
+    }
+  });
+
+  
+export const generateListItem = (Title: string): Promise<any[]> =>
+  new Promise(async (resolve, reject) => {
+    try {
+      const items = await generateListItems(Title);
+
+      return resolve(items);
     } catch (error: any) {
       console.error('Error fetching AI suggestions:', error);
       return reject({

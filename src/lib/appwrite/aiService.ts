@@ -24,11 +24,11 @@ export const getAISuggestions = async (userId: string): Promise<string[]> => {
   }
 };
 
-export const generateListItems = async (title: string): Promise<string[]> => {
+export const generateListItems = async (Title: string): Promise<any[]> => {
   try {
     const execution = await functions.createExecution(
-      "667f7b2100386da9fe81",
-      JSON.stringify({ title }),
+      appwriteConfig.generateListItemFunctionId,
+      JSON.stringify({ Title }),
       false
     );
     return JSON.parse(execution.responseBody).items;

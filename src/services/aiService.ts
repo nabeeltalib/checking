@@ -24,13 +24,14 @@ export const getAISuggestions = async (userId: string): Promise<string[]> => {
   }
 };
 
-export const generateListItems = async (title: string): Promise<string[]> => {
+export const generateListItems = async (Title: string): Promise<any[]> => {
   try {
     const execution = await functions.createExecution(
-      appwriteConfig.generateListItemsFunctionId,
-      JSON.stringify({ title }),
+      appwriteConfig.generateListItemFunctionId,
+      JSON.stringify({ Title }),
       false
     );
+    console.log(JSON.parse(execution.responseBody), 'aaaaaaadsadasdasd')
     return JSON.parse(execution.responseBody).items;
   } catch (error) {
     console.error("Error generating list items:", error);

@@ -75,7 +75,7 @@ const ListForm = ({ list, action, initialData }: any) => {
   const [showDescription, setShowDescription] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [generatedItems, setGeneratedItems] = useState<string[]>([]);
+  const [generatedItems, setGeneratedItems] = useState<any[]>([]);
   const [previousItems, setPreviousItems] = useState<any>([]);
   const [showUndoButton, setShowUndoButton] = useState(false);
 
@@ -487,9 +487,9 @@ const ListForm = ({ list, action, initialData }: any) => {
               items={fields.map((field) => field.id)}
               strategy={verticalListSortingStrategy}>
               {fields.map((field, index) => (
-                <SortableItem key={field.id} id={field.id}>
+              <SortableItem key={field.id} id={field.id}>
                   <div className="flex items-center mb-2">
-                    <div className="mr-2 cursor-move">⋮⋮</div>
+                    <div className="mr-2">⋮⋮</div>
                     <FormField
                       control={form.control}
                       name={`items.${index}.content`}
@@ -648,7 +648,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                 />
               </FormControl>
               <FormDescription>
-                Check if you want to make this list public.
+                Check if you want to publish this list.
               </FormDescription>
             </FormItem>
           )}
@@ -685,14 +685,14 @@ const ListForm = ({ list, action, initialData }: any) => {
           />
         )}
 
-        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-2">
+        <div className="flex flex-col sm:flex-row justify-end items-center gap-2 sm:gap-4 mb-2">
           <Button
             type="button"
             className="shad-button_dark_4"
             onClick={() => navigate(-1)}>
             Cancel
           </Button>
-          <Button
+          {/* <Button
             type="button"
             className="shad-button_dark_4"
             onClick={() => navigate(-1)}>
@@ -709,7 +709,7 @@ const ListForm = ({ list, action, initialData }: any) => {
             className="shad-button_dark_4"
             onClick={() => navigate(-1)}>
             Publish List
-          </Button>
+          </Button> */}
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"
