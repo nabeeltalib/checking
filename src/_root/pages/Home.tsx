@@ -10,7 +10,7 @@ const Home: React.FC = () => {
   const [lists, setLists] = useState<any>([])
 
   useEffect(()=>{
-    const fetchData =async ()=>{
+    const fetchData = async ()=>{
      const list = await getPopularLists();
      setLists(list)
     }

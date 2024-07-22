@@ -34,6 +34,7 @@ import Recomended from "./_root/pages/Recomended";
 import UserActivity from "./_root/pages/UserActivity";
 import ManageList from "./_root/pages/ManageList";
 import FAB from "./components/shared/FAB";
+import ListFromFriends from "./_root/pages/listFromFriends";
 
 
 const App = () => {
@@ -75,6 +76,7 @@ const App = () => {
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/collaborations" element={<Collaborations />} />
+          <Route path="/listfromfriends" element={<ListFromFriends />} />
           <Route path="/userlists" element={<Userlist />} />
           <Route path="/trending" element={<Trending />} />
           <Route path="/recomended" element={<Recomended />} />

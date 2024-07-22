@@ -455,7 +455,7 @@ export async function likeList(listId: string, likesArray: string[]) {
       appwriteConfig.listCollectionId,
       listId,
       {
-        likes: likesArray
+        Likes: likesArray
       }
     );
 
@@ -908,33 +908,26 @@ export async function searchLists(
   }
 }
 
-export const shareList = async (listId: string): Promise<string> => {
+export const shareList = async (listId: any): Promise<string> => {
   try {
-    const existingLinks = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.sharedLinksCollectionId,
-      [
-        Query.equal('listId', listId),
-        Query.greaterThan('expiresAt', new Date().toISOString())
-      ]
-    );
+    
 
-    if (existingLinks.documents.length > 0) {
-      return `${appwriteConfig.url}/shared/${existingLinks.documents[0].$id}`;
-    }
+    
+      return `${import.meta.env.VITE_APP_DOMAIN}/lists/${listId}`;
+    
 
-    const sharedLink = await databases.createDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.sharedLinksCollectionId,
-      ID.unique(),
-      {
-        listId: listId,
-        createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    );
-
-    return `${appwriteConfig.url}/shared/${sharedLink.$id}`;
+    // const sharedLink = await databases.createDocument(
+    //   appwriteConfig.databaseId,
+    //   appwriteConfig.sharedLinksCollectionId,
+    //   ID.unique(),
+    //   {
+    //     listId: listId,
+    //     createdAt: new Date().toISOString(),
+    //     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    //   }
+    // );
+    
+    // return `${appwriteConfig.url}/shared/${sharedLink.$id}`;
   } catch (error) {
     console.error('Error creating shared link:', error);
     throw new Error('Failed to create shared link');
@@ -949,7 +942,7 @@ export const getUserFriends = async (userId: string) => {
       appwriteConfig.friendsCollectionId,
       [
         Query.equal('userId', userId),
-        Query.equal('status', 'accepted') // Assuming you have a status field for friend requests
+        Query.equal('status', 'accepted') 
       ]
     );
 
@@ -959,6 +952,7 @@ export const getUserFriends = async (userId: string) => {
     throw error;
   }
 };
+
 
 // Fetch lists created by user's friends
 export const getFriendsLists = async (userId: string) => {
@@ -1047,7 +1041,8 @@ export async function sendFriendRequest(userId: string, friendId: string) {
       {
         userId: userId,
         friendId: friendId,
-        status: 'pending'
+        status: 'pending',
+        createdAt: new Date().toISOString()
       }
     );
     return result;
@@ -1078,6 +1073,20 @@ export async function getFriendRequests(userId: string) {
       appwriteConfig.databaseId,
       appwriteConfig.friendsCollectionId,
       [Query.equal('friendId', userId), Query.equal('status', 'pending')]
+    );
+    return result.documents;
+  } catch (error) {
+    console.error('Error getting friend requests:', error);
+    throw error;
+  }
+}
+
+export async function getSentRequests() {
+  try {
+    const result = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
+      []
     );
     return result.documents;
   } catch (error) {
@@ -1120,7 +1129,7 @@ export async function getPopularLists() {
     const result = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      [Query.greaterThan('Views', 2),Query.orderDesc('Views'), Query.limit(10)]
+      [Query.greaterThan('Views', 0),Query.orderDesc('Views'), Query.limit(10)]
     );
     return result.documents;
   } catch (error) {
@@ -1145,7 +1154,7 @@ export async function getAllLists() {
 
 export async function createNotification(notification: {
   userId: string;
-  type: 'friend_request' | 'list_like' | 'list_comment';
+  type: 'friend_request' | 'list_like' | 'list_comment' | 'friend_list';
   message: string;
 }) {
   try {

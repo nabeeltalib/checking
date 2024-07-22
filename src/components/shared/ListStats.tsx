@@ -2,7 +2,7 @@ import { Models } from "appwrite";
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { createNotification, shareList } from "@/lib/appwrite/api";
+import { createNotification } from "@/lib/appwrite/api";
 
 
 import { checkIsLiked } from "@/lib/utils";
@@ -17,7 +17,6 @@ import {
   useAnalyzeSentiment
 } from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
-import { Share2 } from "lucide-react";
 import { toast } from "../ui";
 
 type ListStatsProps = {
@@ -28,9 +27,9 @@ type ListStatsProps = {
 const ListStats = ({ list, userId }: any) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const likesList = list?.likes?.map((user: Models.Document) => user.$id) || [];
-
-  const [likes, setLikes] = useState<string[]>(likesList);
+  const likesList = list?.Likes || [];
+  
+  const [likes, setLikes] = useState<any[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(false); 
 
@@ -93,36 +92,8 @@ const ListStats = ({ list, userId }: any) => {
 
   const containerStyles = location.pathname.startsWith("/profile") ? "w-full" : "";
 
-  const [isSharing, setIsSharing] = useState(false);
-  
-
-  const handleShare = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsSharing(true);
-    try {
-      const shareableLink = await shareList(list.$id);
-      if (navigator.share) {
-        await navigator.share({
-          title: list.title,
-          text: `Check out this list: ${list.title}`,
-          url: shareableLink
-        });
-      } else {
-        await navigator.clipboard.writeText(shareableLink);
-        alert("Link copied to clipboard!");
-      }
-    } catch (error) {
-      console.error('Error sharing list:', error);
-      alert("Failed to share list. Please try again.");
-    } finally {
-      setIsSharing(false);
-    }
-  };
-
   const [newComment, setNewComment] = useState("");
   const { mutate: createComment } = useCreateComment();
-  console.log(list)
   const handleCommentSubmit = async (e:any) => {
     e.preventDefault();
     if (newComment.trim() === "") return;
@@ -139,8 +110,6 @@ const ListStats = ({ list, userId }: any) => {
         type: "list_comment",
         message:`${user.name} commented on your list "${list.Title}"`,
       })
-
-      console.log(respones)
 
       setNewComment("");
     } catch (error) {
@@ -189,13 +158,6 @@ const ListStats = ({ list, userId }: any) => {
         <img src="/assets/icons/chat.svg" alt="comment" width={20} height={20} />
         <p className="small-medium lg:base-medium">{comments?.length} Comment</p>
       </Button>
-      <button
-              onClick={handleShare}
-              className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
-              disabled={isSharing}
-            >
-              <Share2 size={24} />
-      </button>
       <Button 
         className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg"
         onClick={handleRemix}

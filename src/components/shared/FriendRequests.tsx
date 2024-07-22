@@ -12,7 +12,7 @@ interface FriendRequestsProps {
   requests: FriendRequest[];
 }
 
-const FriendRequests = ({ requests }) => {
+const FriendRequests = ({ requests }:any) => {
   const acceptMutation = useAcceptFriendRequest();
   const rejectMutation = useRejectFriendRequest();
 
@@ -28,17 +28,18 @@ const FriendRequests = ({ requests }) => {
     return <p className="text-light-2">No pending friend requests.</p>;
   }
 
+
   return (
     <div className="space-y-4">
       {requests.map((request:any, index:number) => (
         <div key={index} className="flex items-center justify-between bg-dark-3 p-4 rounded-lg">
           <div className="flex items-center space-x-4">
             <img
-              src={request.imageUrl || "/assets/icons/profile-placeholder.svg"}
-              alt={`${request.name}'s profile`}
+              src={request.userId.ImageUrl || "/assets/icons/profile-placeholder.svg"}
+              alt={`${request.userId.Name}'s profile`}
               className="w-12 h-12 rounded-full object-cover"
             />
-            <span className="text-light-1 font-medium">{request.name}</span>
+            <span className="text-light-1 font-medium">{request.userId.Name}</span>
           </div>
           <div className="space-x-2">
             <button

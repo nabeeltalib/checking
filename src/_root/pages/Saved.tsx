@@ -2,6 +2,7 @@ import { Loader } from "@/components/shared";
 import { useGetCurrentUser } from "@/lib/react-query/queries";
 import GridListList from "@/components/shared/GridListList";
 import { IList, IUser } from "@/types";
+import ListCard2 from "@/components/shared/ListCard2";
 
 const Saved = () => {
   const { data: currentUser, isLoading } = useGetCurrentUser();
@@ -39,12 +40,14 @@ const Saved = () => {
         />
         <h2 className="h3-bold md:h2-bold text-left w-full">Saved Lists</h2>
       </div>
-
-      <div className="w-full flex justify-center max-w-5xl gap-9">
+      
+      <div className="w-full flex justify-center ">
         {savedLists.length === 0 ? (
           <p className="text-light-4">No saved lists</p>
         ) : (
-          <GridListList lists={savedLists} showStats={false} />
+          savedLists.map((list, index)=>(
+            <ListCard2 list={list} key={index} />
+          ))
         )}
       </div>
     </div>

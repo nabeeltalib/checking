@@ -885,7 +885,7 @@ export const getUserFriends = async (userId: string) => {
       appwriteConfig.friendsCollectionId,
       [
         Query.equal('userId', userId),
-        Query.equal('status', 'accepted') // Assuming you have a status field for friend requests
+        Query.equal('status', 'accepted') 
       ]
     );
 

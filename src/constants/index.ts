@@ -37,8 +37,14 @@ export const sidebarLinks = [
   },  
   {
     imgURL: "/assets/icons/list.svg",
+    route: "/listfromfriends",
+    label: "Lists from friends",
+    icon:"/assets/icons/list.svg"
+  },  
+  {
+    imgURL: "/assets/icons/list.svg",
     route: "/userlists",
-    label: "User list",
+    label: "Users list",
     icon:"/assets/icons/list.svg"
   },  
 ];

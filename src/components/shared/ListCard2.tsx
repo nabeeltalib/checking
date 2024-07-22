@@ -1,16 +1,12 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { IList } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
 import { useSaveList } from "@/lib/react-query/queries";
 
-type ListCardProps = {
-  list: IList;
-};
 
-const ListCard2: React.FC<ListCardProps> = ({ list }) => {
+const ListCard2: React.FC<any> = ({ list }) => {
   const [isSharing, setIsSharing] = useState(false);
   
 
@@ -43,8 +39,8 @@ const ListCard2: React.FC<ListCardProps> = ({ list }) => {
   const renderListItems = () => {
     let items: Array<string | { content: string }> = [];
 
-    if (Array.isArray(list)) {
-      items = list;
+    if (Array.isArray(list.items)) {
+      items = list.items;
     } else if (typeof list.items === 'string') {
       items = list.split('\n');
     } else if (typeof list === 'object' && list !== null) {
@@ -81,6 +77,8 @@ const ListCard2: React.FC<ListCardProps> = ({ list }) => {
     // setIsSaved(!isSaved);
   };
 
+  console.log("list: ",list)
+
   return (
     <>
       <motion.div 
@@ -97,7 +95,7 @@ const ListCard2: React.FC<ListCardProps> = ({ list }) => {
           {list.Description ? <h4 className="text-xl font-bold mb-6 text-primary-500">
             {list.Description}
           </h4> : ""}
-
+            
           <div className="flex justify-between items-start mb-4">
             <Link to={`/profile/${list.creator.$id}`} className="flex items-center">
               <img 

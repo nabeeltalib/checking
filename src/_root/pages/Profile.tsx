@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById, useGetUserLists, useGetUserFriends, useGetFriendRequests } from "@/lib/react-query/queries";
+import { useGetUserById, useGetUserLists, useGetUserFriends, useGetFriendRequests, useSendFriendRequest } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
 import GridListList from "@/components/shared/GridListList";
 import { Button } from "@/components/ui/button";
 import FriendsList from "@/components/shared/FriendsList";
 import FriendRequests from "@/components/shared/FriendRequests";
+import { getSentRequests, sendFriendRequest } from "@/lib/appwrite/api";
 
 const Profile: React.FC = () => {
   const { user } = useUserContext();
@@ -24,6 +25,24 @@ const Profile: React.FC = () => {
   const [isCuratedExpanded, setCuratedExpanded] = useState(false);
   const [isSavedExpanded, setSavedExpanded] = useState(false);
   const [isCollaborativeExpanded, setCollaborativeExpanded] = useState(false);
+  const [sentRequest, setSentRequest] = useState<any>([])
+
+  const handleFriendRequest = async () =>{
+        const response = await sendFriendRequest(user.id, id);
+  }
+
+  useEffect(()=>{
+    const fetchData =async ()=>{
+      const res = await getSentRequests();
+      setSentRequest(res);
+      setSentRequest((prevState:any) => prevState.filter((req:any)=> req.userId.$id === user.id))
+    }
+
+    fetchData()
+  },[])
+
+  
+  let isAccepted = sentRequest.some((data:any)=> data.friendId.$id === id && data.status === "accepted")
 
   if (!id) return <div className="text-center text-light-1">User ID not found</div>;
 
@@ -67,11 +86,14 @@ const Profile: React.FC = () => {
             <span>{currentUser.followingCount || 0} following</span>
             <span>{userLists?.length || 0} lists</span>
           </div>
-          {!isOwnProfile && (
-            <Button className="mt-4 bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full">
-              Follow
+          {!isOwnProfile && !isAccepted ? (
+            <Button className="mt-4 bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
+            onClick={handleFriendRequest}
+            disabled={sentRequest.some((data:any) => data.friendId.$id === id)}
+            >
+              Send Friend Request
             </Button>
-          )}
+          ) : <h3>Friend</h3>} 
         </div>
       </div>
 
@@ -177,7 +199,7 @@ const Profile: React.FC = () => {
       {activeTab === "friends" && (
         <div>
           <h2 className="text-2xl font-bold text-light-1 mb-4">Friends</h2>
-          {isLoadingFriends ? <Loader /> : <FriendsList friends={friends} />}
+          {isLoadingFriends ? <Loader /> :  <FriendsList friends={friends} />}
         </div>
       )}
 

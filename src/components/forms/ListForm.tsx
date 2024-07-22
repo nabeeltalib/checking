@@ -31,7 +31,7 @@ import {
   useUpdateList,
 } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
-import { getCategories } from "@/lib/appwrite/api";
+import { createNotification, getCategories } from "@/lib/appwrite/api";
 import {
   DndContext,
   closestCenter,
@@ -49,6 +49,8 @@ import {
 import { SortableItem } from "./SortableItem";
 import { IListItem, IList } from "@/types";
 import ConfirmationDialog from "./ConfirmationDialog";
+import { getUserFriends } from "@/lib/appwrite/config";
+import SendNotifcation from "../shared/notifications/SendNotifcation";
 
 type ListFormProps = {
   list?: Models.Document;
@@ -78,6 +80,7 @@ const ListForm = ({ list, action, initialData }: any) => {
   const [generatedItems, setGeneratedItems] = useState<any[]>([]);
   const [previousItems, setPreviousItems] = useState<any>([]);
   const [showUndoButton, setShowUndoButton] = useState(false);
+  const [friendsLists, setFriendsLists] = useState<any>([]);
 
   const { mutate: generateListItems, isLoading: isGeneratingItems } =
     useGenerateListItems();
@@ -88,6 +91,15 @@ const ListForm = ({ list, action, initialData }: any) => {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  useEffect(() => {
+    const fetchFriendsLists = async () => {
+      const lists = await getUserFriends(user.id);
+      setFriendsLists(lists);
+    };
+
+    fetchFriendsLists();
+  }, [user.id]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -168,47 +180,67 @@ const ListForm = ({ list, action, initialData }: any) => {
   const { mutateAsync: updateList, isLoading: isLoadingUpdate } =
     useUpdateList();
 
-  const handleSubmit = async (value: z.infer<typeof formSchema>) => {
-    try {
-      if (action === "Update") {
-        const updatedList = await updateList({
-          ...value,
-          listId: list.$id,
-          UpdatedAt: new Date(),
-        });
-        if (!updatedList) {
-          toast({ title: `${action} list failed. Please try again.` });
+    const handleSubmit = async (value: z.infer<typeof formSchema>) => {
+      try {
+        if (action === "Update") {
+          const updatedList = await updateList({
+            ...value,
+            listId: list.$id,
+            UpdatedAt: new Date(),
+          });
+    
+          if (!updatedList) {
+            toast({ title: `${action} list failed. Please try again.` });
+          } else {
+            // Use for loop to handle asynchronous operations
+            for (const friend of friendsLists) {
+              await createNotification({
+                userId: friend.$id,
+                type: "friend_list",
+                message: `${user.name} Updated list: "${updatedList.Title}"`,
+              });
+            }
+
+            navigate(`/lists/${list!.$id}`);
+          }
         } else {
-          navigate(`/lists/${list!.$id}`);
+          // For both "Create" and "Remix" actions
+          const newList = await createList({
+            ...value,
+            userId: user.id,
+            CreatedAt: new Date(),
+            UpdatedAt: new Date(),
+            // For remix, we might want to add a reference to the original list
+            originalListId: action === "Remix" ? list?.$id : undefined,
+          });
+    
+          if (!newList) {
+            toast({ title: `${action} list failed. Please try again.` });
+          } else {
+            navigate(`/lists/${newList.$id}`);
+    
+            // Use for loop to handle asynchronous operations
+            for (const friend of friendsLists) {
+              await createNotification({
+                userId: friend.$id,
+                type: "friend_list",
+                message: `${user.name} Created list: "${newList.Title}"`,
+              });
+            }
+          }
         }
-      } else {
-        // For both "Create" and "Remix" actions
-        const newList = await createList({
-          ...value,
-          userId: user.id,
-          CreatedAt: new Date(),
-          UpdatedAt: new Date(),
-          // For remix, we might want to add a reference to the original list
-          originalListId: action === "Remix" ? list?.$id : undefined,
+      } catch (error) {
+        console.error(`Error ${action.toLowerCase()}ing list:`, error);
+        toast({
+          title: `${action} list failed. Please try again.`,
+          variant: "destructive",
         });
-        if (!newList) {
-          toast({ title: `${action} list failed. Please try again.` });
-        } else {
-          navigate(`/lists/${newList.$id}`);
-        }
       }
-    } catch (error) {
-      console.error(`Error ${action.toLowerCase()}ing list:`, error);
-      toast({
-        title: `${action} list failed. Please try again.`,
-        variant: "destructive",
-      });
-    }
-  };
+    };
+    
 
   const handleGenerateListItems = () => {
     const title = form.getValues("Title");
-    console.log("ttile: ",title)
     if (title) {
       generateListItems(title, {
         onSuccess: (items) => {

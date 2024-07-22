@@ -13,6 +13,8 @@ import GridListList from '@/components/shared/GridListList';
 import ListStats from '@/components/shared/ListStats';
 import { useToast } from '@/components/ui/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { shareList } from "@/lib/appwrite/api";
+import { Share2 } from "lucide-react";
 
 const ListDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -42,8 +44,35 @@ const ListDetails: React.FC = () => {
     }
   };
 
+  const [isSharing, setIsSharing] = useState(false);
+  
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsSharing(true);
+    try {
+      const shareableLink = await shareList(id);
+      if (navigator.share) {
+        await navigator.share({
+          title: list?.Title,
+          text: `Check out this list: ${list?.Title}`,
+          url: shareableLink
+        });
+      } else {
+        await navigator.clipboard.writeText(shareableLink);
+        alert("Link copied to clipboard!");
+      }
+    } catch (error) {
+      console.error('Error sharing list:', error);
+      alert("Failed to share list. Please try again.");
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
   if (isLoading || isCreatorLoading) return <Loader />;
-  if (!list || !listCreator) return <div className="text-center text-light-1">List not found</div>;
+  if (!list || !listCreator) return <div className="text-center text-light-1">List not found</div>;  
 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto">
@@ -68,13 +97,21 @@ const ListDetails: React.FC = () => {
               <span>{listCreator.followingCount || 0} following</span>
             </div>
           </div>
-          <div>
+          <div className='w-full'>
             <p className="font-bold text-light-1">{listCreator.Name}</p>
             <p className="text-light-3">@{listCreator.Username}</p>
             <Link to={`/profile/${listCreator.$id}`} className="text-primary-500 text-sm mt-1 block">
               View Profile
             </Link>
           </div>
+
+          <button
+              onClick={handleShare}
+              className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
+              disabled={isSharing}
+            >
+              <Share2 size={24} />
+            </button>
         </div>
 
         {list.Description && (
