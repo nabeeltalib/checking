@@ -3,7 +3,6 @@ import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Models } from "appwrite";
 import {
   Form,
   FormControl,
@@ -41,22 +40,14 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
-import { IListItem, IList } from "@/types";
 import ConfirmationDialog from "./ConfirmationDialog";
-import { getUserFriends } from "@/lib/appwrite/config";
-import SendNotifcation from "../shared/notifications/SendNotifcation";
+import { getUserFriends, indexList } from "@/lib/appwrite/config";
 
-type ListFormProps = {
-  list?: Models.Document;
-  action: "Create" | "Update" | "Remix";
-  initialData?: any;
-};
 
 const ListForm = ({ list, action, initialData }: any) => {
   const { user } = useUserContext();
@@ -192,6 +183,9 @@ const ListForm = ({ list, action, initialData }: any) => {
           if (!updatedList) {
             toast({ title: `${action} list failed. Please try again.` });
           } else {
+            // Index the new list in Typesense
+            await indexList(updatedList);
+
             // Use for loop to handle asynchronous operations
             for (const friend of friendsLists) {
               await createNotification({
@@ -217,8 +211,10 @@ const ListForm = ({ list, action, initialData }: any) => {
           if (!newList) {
             toast({ title: `${action} list failed. Please try again.` });
           } else {
-            navigate(`/lists/${newList.$id}`);
-    
+
+            // Index the new list in Typesense
+            await indexList(newList);
+
             // Use for loop to handle asynchronous operations
             for (const friend of friendsLists) {
               await createNotification({
@@ -227,6 +223,8 @@ const ListForm = ({ list, action, initialData }: any) => {
                 message: `${user.name} Created list: "${newList.Title}"`,
               });
             }
+
+            navigate(`/lists/${newList.$id}`);
           }
         }
       } catch (error) {
@@ -241,8 +239,16 @@ const ListForm = ({ list, action, initialData }: any) => {
 
   const handleGenerateListItems = () => {
     const title = form.getValues("Title");
+    const location = form.getValues("locations");
+    const timespans = form.getValues("timespans");
+
+    let obj = {
+      Title:title,
+      location: location,
+      timespans: timespans
+    }
     if (title) {
-      generateListItems(title, {
+      generateListItems(obj, {
         onSuccess: (items) => {
           setGeneratedItems(items);
           if (form.getValues("items").some((item) => item.content !== "")) {
@@ -275,7 +281,7 @@ const ListForm = ({ list, action, initialData }: any) => {
       items.map((item) => ({ content: item, isVisible: true }))
     );
     setShowUndoButton(true);
-    setTimeout(() => setShowUndoButton(false), 10000); // Hide undo button after 10 seconds
+    setTimeout(() => setShowUndoButton(false), 10000); 
     toast({
       title: "List items generated",
       description: "5 items have been generated based on your title.",

@@ -54,10 +54,10 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   };
 
   const renderListItems = () => {
-    let items: Array<string | { content: string }> = [];
+    let items: Array<any> = [];
 
-    if (Array.isArray(list)) {
-      items = list;
+    if (Array.isArray(list.items)) {
+      items = list.items;
     } else if (typeof list.items === 'string') {
       items = list.split('\n');
     } else if (typeof list === 'object' && list !== null) {

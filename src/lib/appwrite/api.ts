@@ -596,7 +596,7 @@ export async function getUserById(userId: string) {
   }
 }
 
-export async function updateUser(user: IUpdateUser) {
+export async function updateUser(user: any) {
   const hasFileToUpdate = user.file.length > 0;
   try {
     let image = {
@@ -862,7 +862,7 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
 export async function searchLists(
   query: string,
   userId: string
-): Promise<IList[]> {
+): Promise<any[]> {
   const queries = [Query.search('Title',query),Query.orderDesc('$createdAt'), Query.limit(10)];
 
   // if (pageParam) {
@@ -875,33 +875,32 @@ export async function searchLists(
       appwriteConfig.listCollectionId,
       queries
     );
-    return lists;
-    // const response = await functions.createExecution(
-    //   appwriteConfig.typesenseOperationsFunctionId,
-    //   JSON.stringify({ operation: 'search', data: { query, userId } }),
-    //   false
-    // );
+  
+    const response = await functions.createExecution(
+      appwriteConfig.typesenseOperationsFunctionId,
+      JSON.stringify({ operation: 'search', data: { query, userId } }),
+      false
+    );
 
-    // const results = JSON.parse(response.responseBody);
-    // console.log('asfsafs', {results})
-    // return results?.hits?.map(
-    //   (hit: any) =>
-    //     ({
-    //       $id: hit.document.id,
-    //       $createdAt: new Date(hit.document.created_at).toISOString(),
-    //       $updatedAt: new Date(hit.document.created_at).toISOString(),
-    //       title: hit.document.title,
-    //       description: hit.document.description,
-    //       items: hit.document.items,
-    //       tags: hit.document.tags,
-    //       creator: hit.document.creator,
-    //       likes: [],
-    //       comments: [],
-    //       bookmarkCount: 0,
-    //       sharesCount: 0,
-    //       views: 0
-    //     }) as IList
-    // );
+    const results = JSON.parse(response.responseBody);
+    console.log('Results: ', {results})
+    return results?.hits?.map(
+      (hit: any) =>
+        ({
+          id: hit.document.id,
+          createdAt: new Date(hit.document.created_at).toISOString(),
+          Title: hit.document.Title,
+          Description: hit.document.Description,
+          items: hit.document.items,
+          Tags: hit.document.Tags,
+          creator: hit.document.creator,
+          likes: [],
+          comments: [],
+          bookmarkCount: 0,
+          sharesCount: 0,
+          views: 0
+        }) 
+    );
   } catch (error) {
     console.error('Error searching lists:', error);
     return [];
@@ -1009,13 +1008,13 @@ export const getMutualFriends = async (userId: string, otherUserId: string) => {
   }
 };
 
-export async function indexList(list: IList) {
+export async function indexList(list: any) {
   try {
     const document = {
       id: list.$id,
       Title: list.Title,
       Description: list.Description,
-      items: list.items.map(item => item.content), // Only index the content
+      items: list.items.map((item : any) => item.content), // Only index the content
       Tags: list.Tags,
       creator: list.creator.$id,
       created_at: new Date(list.$createdAt).getTime()

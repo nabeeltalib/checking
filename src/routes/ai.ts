@@ -31,7 +31,7 @@ export const getAISuggestionsRoute = (userId: string): Promise<any[]> =>
   });
 
   
-export const generateListItem = (Title: string): Promise<any[]> =>
+export const generateListItem = (Title: object): Promise<any[]> =>
   new Promise(async (resolve, reject) => {
     try {
       const items = await generateListItems(Title);

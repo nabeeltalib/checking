@@ -56,7 +56,7 @@ export const generateListIdea = async (prompt: string, userId: string): Promise<
       JSON.stringify({ prompt, userId }),
       false
     );
-    return JSON.parse(execution.responseBody).listIdea;
+    return JSON.parse(execution.responseBody).suggestions;
   } catch (error) {
     console.error("Error generating list idea:", error);
     if (error instanceof AppwriteException) {

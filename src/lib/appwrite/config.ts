@@ -551,25 +551,26 @@ export async function getUserById(userId: string) {
   }
 }
 
-export async function updateUser(user: IUpdateUser) {
+export async function updateUser(user: any) {
+  console.log("sdsfsfdsfdsfsd",user)
   const hasFileToUpdate = user.file.length > 0;
   try {
     let image = {
-      imageUrl: user.imageUrl,
-      imageId: user.imageId,
+      ImageUrl: user.ImageUrl,
+      ImageId: user.ImageId || "",
     };
 
     if (hasFileToUpdate) {
       const uploadedFile = await uploadFile(user.file[0]);
       if (!uploadedFile) throw new Error("Failed to upload file");
-
+  
       const fileUrl = getFilePreview(uploadedFile.$id);
       if (!fileUrl) {
         await deleteFile(uploadedFile.$id);
         throw new Error("Failed to get file URL");
       }
 
-      image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
+      image = { ...image, ImageUrl: fileUrl, ImageId: uploadedFile.$id };
     }
 
     const updatedUser = await databases.updateDocument(
@@ -577,22 +578,22 @@ export async function updateUser(user: IUpdateUser) {
       appwriteConfig.userCollectionId,
       user.userId,
       {
-        name: user.name,
-        bio: user.bio,
-        imageUrl: image.imageUrl,
-        imageId: image.imageId,
+        Name: user.Name,
+        Bio: user.Bio,
+        ImageUrl: image.ImageUrl,
+        ImageId: image.ImageId,
       }
     );
 
     if (!updatedUser) {
       if (hasFileToUpdate) {
-        await deleteFile(image.imageId);
+        await deleteFile(image.ImageId);
       }
       throw new Error("Failed to update user");
     }
 
-    if (user.imageId && hasFileToUpdate) {
-      await deleteFile(user.imageId);
+    if (user.ImageId && hasFileToUpdate) {
+      await deleteFile(user.ImageId);
     }
 
     return updatedUser;
@@ -812,7 +813,7 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
     return [];
   }
 }
-export async function searchLists(query: string): Promise<IList[]> {
+export async function searchLists(query: string): Promise<any[]> {
   try {
     const response = await functions.createExecution(
       appwriteConfig.typesenseOperationsFunctionId,
@@ -825,17 +826,17 @@ export async function searchLists(query: string): Promise<IList[]> {
       $id: hit.document.id,
       $createdAt: new Date(hit.document.created_at).toISOString(),
       $updatedAt: new Date(hit.document.created_at).toISOString(),
-      title: hit.document.title,
-      description: hit.document.description,
+      Title: hit.document.Title,
+      Description: hit.document.Description,
       items: hit.document.items,
-      tags: hit.document.tags,
+      Tags: hit.document.Tags,
       creator: hit.document.creator,
       likes: [],
       comments: [],
       bookmarkCount: 0,
       sharesCount: 0,
       views: 0,
-    } as IList));
+    } ));
   } catch (error) {
     console.error("Error searching lists:", error);
     return [];
@@ -1022,19 +1023,20 @@ export const getMutualFriends = async (userId: string, otherUserId: string) => {
   }
 };
 
-export async function indexList(list: IList) {
+export async function indexList(list: any) {
   try {
     const document = {
       id: list.$id,
-      title: list.title,
-      description: list.description,
-      items: list.items.map(item => item.content),  // Only index the content
-      tags: list.tags,
+      userId: list.userId,
+      Title: list.Title,
+      Description: list.Description,
+      items: list.items, 
+      Tags: list.Tags,
       creator: list.creator.$id,
       created_at: new Date(list.$createdAt).getTime()
     };
 
-    await functions.createExecution(
+     await functions.createExecution(
       appwriteConfig.typesenseOperationsFunctionId,
       JSON.stringify({ operation: 'index', data: { document } }),
       false

@@ -49,14 +49,14 @@ const ListStats = ({ list, userId }: any) => {
     setVisibleComments(()=> isExpanded ? comments : comments?.slice(0, 4));
   }, [isExpanded,comments]);
 
-  // useEffect(() => {
-  //   if(currentUser){
-  //     const savedListRecord = currentUser.save?.find(
-  //       (record: Models.Document) => record.list.$id === list.$id
-  //     );
-  //     setIsSaved(!!savedListRecord);
-  //   }
-  // }, [currentUser, list.$id]);
+  useEffect(() => {
+    if(currentUser){
+      const savedListRecord = currentUser.save?.find(
+        (record: Models.Document) => record.list.$id === list.$id
+      );
+      setIsSaved(!!savedListRecord);
+    }
+  }, [currentUser, list.$id]);
 
   const handleLikeList = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
     e.stopPropagation();
@@ -67,19 +67,19 @@ const ListStats = ({ list, userId }: any) => {
     likeList({ listId: list.$id, likesArray: newLikes });
   };
 
-  const handleSaveList = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const handleSaveList = (e: any) => {
     e.stopPropagation();
-    // if (isSaved) {
-    //   const savedListRecord = currentUser?.save?.find(
-    //     (record: Models.Document) => record.list.$id === list.$id
-    //   );
-    //   if (savedListRecord) {
-    //     deleteSaveList(savedListRecord.$id);
-    //   }
-    // } else {
-    //   saveList({ userId: userId, listId: list.$id });
-    // }
-    // setIsSaved(!isSaved);
+    if (isSaved) {
+      const savedListRecord = currentUser?.save?.find(
+        (record: Models.Document) => record.list.$id === list.$id
+      );
+      if (savedListRecord) {
+        deleteSaveList(savedListRecord.$id);
+      }
+    } else {
+      saveList({ userId: userId, listId: list.$id });
+    }
+    setIsSaved(!isSaved);
   };
 
   const handleRemix = () => {

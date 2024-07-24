@@ -21,7 +21,6 @@ const CreateList: React.FC = () => {
 
   const handleCreateList = async (listData: IList) => {
     try {
-      console.log({ listData });
       // Ensure listData.items is an array of IListItem
       const transformedListData = {
         ...listData,

@@ -37,7 +37,7 @@ const ListCard2: React.FC<any> = ({ list }) => {
   
 
   const renderListItems = () => {
-    let items: Array<string | { content: string }> = [];
+    let items: Array<any> = [];
 
     if (Array.isArray(list.items)) {
       items = list.items;
@@ -76,8 +76,6 @@ const ListCard2: React.FC<any> = ({ list }) => {
     // }
     // setIsSaved(!isSaved);
   };
-
-  console.log("list: ",list)
 
   return (
     <>

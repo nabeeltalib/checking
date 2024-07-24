@@ -24,7 +24,7 @@ export const getAISuggestions = async (userId: string): Promise<string[]> => {
   }
 };
 
-export const generateListItems = async (Title: string): Promise<any[]> => {
+export const generateListItems = async (Title: object): Promise<any[]> => {
   try {
     const execution = await functions.createExecution(
       appwriteConfig.generateListItemFunctionId,

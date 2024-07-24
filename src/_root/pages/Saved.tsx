@@ -41,7 +41,7 @@ const Saved = () => {
         <h2 className="h3-bold md:h2-bold text-left w-full">Saved Lists</h2>
       </div>
       
-      <div className="w-full flex justify-center ">
+      <div className="w-full flex justify-center flex-col gap-3 ">
         {savedLists.length === 0 ? (
           <p className="text-light-4">No saved lists</p>
         ) : (

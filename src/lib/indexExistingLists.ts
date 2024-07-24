@@ -1,5 +1,4 @@
 // indexExistingLists.ts
-import { Query } from "appwrite";
 import { databases, functions, appwriteConfig } from '@/lib/appwrite/config';
 import { IListItem } from '@/types';
 
@@ -8,7 +7,7 @@ export async function indexExistingLists() {
       const lists = await databases.listDocuments(
         appwriteConfig.databaseId,
         appwriteConfig.listCollectionId,
-        [Query.limit(100)] // Adjust as needed
+        [] // Adjust as needed
       );
   
       for (const list of lists.documents) {

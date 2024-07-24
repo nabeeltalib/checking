@@ -56,6 +56,7 @@ import {
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
 import { getAISuggestionsRoute } from '@/routes';
 import { generateListItem } from '@/routes/ai';
+import { updateUser } from '../appwrite/config';
 
 
 // ============================================================
@@ -295,7 +296,7 @@ export const useGetUserById = (userId: string) => {
 export const useUpdateUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (user: IUpdateUser) => updateUser(user),
+    mutationFn: (user: any) => updateUser(user),
     onSuccess: data => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_CURRENT_USER]
@@ -458,7 +459,7 @@ export const useRecentLists = () => {
 export const useSearchLists = (searchTerm: string,userId:string) => {
   return useInfiniteQuery({
     queryKey: ['searchLists', searchTerm],
-    queryFn: ({ pageParam }) => searchLists(searchTerm, userId),
+    queryFn: () => searchLists(searchTerm, userId),
     getNextPageParam: lastPage =>
       lastPage?.documents?.[lastPage?.documents?.length - 1]?.$id,
     enabled: searchTerm.length > 0
@@ -524,7 +525,7 @@ export const useRejectFriendRequest = () => {
 
 export const useGenerateListItems = () => {
   return useMutation({
-    mutationFn: (title: string) => generateListItem(title),
+    mutationFn: (title: object) => generateListItem(title),
   });
 };
 

@@ -76,7 +76,7 @@ const AllLists: React.FC = () => {
         >
           {lists?.pages.map((page, pageIndex) => (
             <React.Fragment key={pageIndex}>
-              {page.documents.map((document: Models.Document) => {
+              {page?.documents.map((document: Models.Document) => {
                 const list = document as unknown as IList;
                 return <ListCard2 key={list.$id} list={list} />;
               })}

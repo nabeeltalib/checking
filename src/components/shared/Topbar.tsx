@@ -20,6 +20,9 @@ const Topbar = () => {
   const [isSearch, setIsSearch] = useState(false);
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
 
+  console.log("SearchResults: ",searchResults)
+
+
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
   };
@@ -32,7 +35,7 @@ const Topbar = () => {
     if (isSuccess) navigate(0);
   }, [isSuccess, navigate]);
 
-  const handleSearch = (e) => {
+  const handleSearch = (e:any) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       searchLists();
@@ -72,6 +75,18 @@ const Topbar = () => {
               </svg>
             </button>
           </div>
+
+          <ul>
+           {searchResults &&
+           searchResults?.pages.map((item:any)=>(
+            item.map((list:any, index:number)=>(
+              <div key={index} className="flex flex-col ml-1">
+              <Link className="mt-2" to={`${import.meta.env.VITE_APP_DOMAIN}/lists/${list.id}`} >Query Matches with list: "{list.Title}"</Link>
+              <hr style={{width:"26vw"}}/>
+              </div>
+            ))
+           ))}
+          </ul>
         </form>
 
         <button className="md:hidden" onClick={toggleOffCanvas}>

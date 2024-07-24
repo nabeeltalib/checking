@@ -1,9 +1,8 @@
 import * as z from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState, useCallback } from "react";
-
+import { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -16,24 +15,49 @@ import { useToast } from "@/components/ui/use-toast";
 import { Textarea, Input, Button } from "@/components/ui";
 import { ProfileUploader, Loader } from "@/components/shared";
 
-import { ProfileValidation } from "@/lib/validation";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById, useUpdateUser } from "@/lib/react-query/queries";
+
+const formSchema = z.object({
+  Name: z
+    .string()
+    .min(3, "Name must be at least 3 characters")
+    .max(100, "Name must be less than 100 characters"),
+  Username: z
+    .string()
+    .max(100, "Username must be less than 100 characters"),
+  Email: z
+    .string()
+    .max(100, "Email must be less than 100 characters"),
+  Bio: z
+    .string()
+    .max(500, "Bio must be less than 500 characters"),
+  ImageUrl: z
+    .string()
+    .max(256, "Image Url must be less than 256 characters")
+    .optional(),
+  accountId: z
+    .string()
+    .max(100, "accountId must be less than 100 characters"),
+    file: z.instanceof(File).optional(),
+});
 
 const UpdateProfile = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { id } = useParams();
   const { user, setUser } = useUserContext();
-  
-  const form = useForm<z.infer<typeof z.any>>({
-    resolver: zodResolver(ProfileValidation),
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      file: [],
-      Name: user.Name,
-      Username: user.Username,
-      Email: user.Email,
+      file: undefined,
+      Name: user.Name || "",
+      Username: user.Username || "",
+      Email: user.Email || "",
       Bio: user.Bio || "",
+      ImageUrl: user.imageUrl || "",
+      accountId: user.id || "",
     },
   });
 
@@ -43,44 +67,45 @@ const UpdateProfile = () => {
   useEffect(() => {
     if (currentUser) {
       form.reset({
-        file: [],
+        file: undefined,
         Name: currentUser.Name,
         Username: currentUser.Username,
         Email: currentUser.Email,
         Bio: currentUser.Bio || "",
+        ImageUrl: currentUser.ImageUrl || "",
+        accountId: currentUser.accountId || "",
       });
     }
   }, [currentUser, form]);
 
-  const handleUpdate = useCallback(
-    async (value: z.infer<typeof z.any>) => {
-      try {
-        const updatedUser = await updateUser({
-          userId: currentUser.$id,
-          Name: value.name,
-          Bio: value.bio,
-          file: value.file,
-          ImageUrl: currentUser.ImageUrl,
-          imageId: currentUser.imageId,
-        });
+  const handleUpdate = async (data: z.infer<typeof formSchema>) => {
+    try {
+      const updatedUser = await updateUser({
+        userId: user.id,
+        Name: data.Name,
+        Bio: data.Bio,
+        file: [data.file], 
+        ImageUrl: data.ImageUrl,
+      });
 
-        if (!updatedUser) {
-          throw new Error('Update user failed. Please try again.');
-        }
-
-        setUser({
-          ...user,
-          Name: updatedUser.Name,
-          Bio: updatedUser.Bio,
-          ImageUrl: updatedUser.ImageUrl,
-        });
-        navigate(`/profile/${id}`);
-      } catch (error) {
-        toast({ title: error.message });
+      if (!updatedUser) {
+        throw new Error('Update user failed. Please try again.');
       }
-    },
-    [currentUser, updateUser, setUser, user, navigate, toast, id]
-  );
+
+      setUser({
+        ...user,
+        Name: updatedUser.Name,
+        Bio: updatedUser.Bio,
+        ImageUrl: updatedUser.ImageUrl,
+      });
+      navigate(`/profile/${id}`);
+    } catch (error) {
+      toast({
+        title: `Update Profile failed. Please try again.`,
+        variant: "destructive",
+      });
+    }
+  }
 
   if (isLoadingUser) {
     return (
@@ -117,7 +142,7 @@ const UpdateProfile = () => {
             onSubmit={form.handleSubmit(handleUpdate)}
             className="flex flex-col gap-7 w-full mt-4 max-w-5xl"
           >
-            <FormField
+             <FormField
               control={form.control}
               name="file"
               render={({ field }) => (
@@ -125,7 +150,7 @@ const UpdateProfile = () => {
                   <FormControl>
                     <ProfileUploader
                       fieldChange={field.onChange}
-                      mediaUrl={currentUser.imageUrl}
+                      mediaUrl={currentUser.ImageUrl || ""}
                     />
                   </FormControl>
                   <FormMessage className="shad-form_message" />
@@ -135,7 +160,7 @@ const UpdateProfile = () => {
 
             <FormField
               control={form.control}
-              name="name"
+              name="Name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="shad-form_label">Name</FormLabel>
@@ -154,7 +179,7 @@ const UpdateProfile = () => {
 
             <FormField
               control={form.control}
-              name="username"
+              name="Username"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="shad-form_label">Username</FormLabel>
@@ -174,7 +199,7 @@ const UpdateProfile = () => {
 
             <FormField
               control={form.control}
-              name="email"
+              name="Email"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="shad-form_label">Email</FormLabel>
@@ -194,7 +219,7 @@ const UpdateProfile = () => {
 
             <FormField
               control={form.control}
-              name="bio"
+              name="Bio"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="shad-form_label">Bio</FormLabel>

@@ -1,25 +1,29 @@
 import React, { useEffect, useState } from 'react';
 import { useUserContext } from "@/context/AuthContext";
-import { useGenerateListIdea } from "@/lib/react-query/queries";
+import { useGenerateListIdea, useGetInfiniteLists } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
-import { getPopularLists } from '@/lib/appwrite/api';
 import ListCard2 from '@/components/shared/ListCard2';
+import { useInView } from "react-intersection-observer";
+import { toast } from '@/components/ui';
+import { IList } from '@/types';
+import { Models } from 'appwrite';
+import { motion } from "framer-motion";
 
 const Home: React.FC = () => {
   const { user } = useUserContext();
-  const [lists, setLists] = useState<any>([])
+  const { ref, inView } = useInView();
 
-  useEffect(()=>{
-    const fetchData = async ()=>{
-     const list = await getPopularLists();
-     setLists(list)
-    }
-
-    fetchData()
- },[])
+  const {
+    data: lists,
+    isLoading,
+    isError: isErrorLists,
+    fetchNextPage,
+    hasNextPage,
+  } = useGetInfiniteLists();
 
   const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user?.id || "");
-  const [listIdea, setListIdea] = useState<string | null>(null);
+  const [listIdea, setListIdea] = useState<any>([]);
+  const [sortOption, setSortOption] = useState<string>("");
 
   const handleGenerateIdea = () => {
     setListIdea(null); 
@@ -27,7 +31,42 @@ const Home: React.FC = () => {
       onSuccess: (idea) => setListIdea(idea),
     });
   };
-  
+
+  useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, fetchNextPage]);
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortOption(e.target.value);
+  };
+
+  const sortLists = (lists: Models.Document[]) => {
+    return [...lists].sort((a, b) => {
+      if (sortOption === "category") {
+        const categoryA = a.Categories && a.Categories.length > 0 ? a.Categories[0] : '';
+        const categoryB = b.categories && b.Categories.length > 0 ? b.Categories[0] : '';
+        if (!categoryA && !categoryB) return 0;
+        if (!categoryA) return 1;
+        if (!categoryB) return -1;
+        return categoryA.localeCompare(categoryB);
+      } else if (sortOption === "tags") {
+        const tagA = a.Tags && a.Tags.length > 0 ? a.Tags[0] : '';
+        const tagB = b.Tags && b.Tags.length > 0 ? b.Tags[0] : '';
+        if (!tagA && !tagB) return 0;
+        if (!tagA) return 1;
+        if (!tagB) return -1;
+        return tagA.localeCompare(tagB);
+      }
+      return 0;
+    });
+  };
+
+  if (isErrorLists) {
+    toast({ title: "Something went wrong.", variant: "destructive" });
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-4 p-4 w-full items-center common-container">
@@ -56,18 +95,44 @@ const Home: React.FC = () => {
           </div>
         ) : listIdea && (
           <div className="mt-4 p-4 bg-dark-3 rounded-lg">
-            <p className="text-light-1">{listIdea}</p>
+            <p className="text-light-1">{listIdea.map((list: any, index: number) => (
+              <p className='m' key={index}>{list}</p>
+            ))}</p>
           </div>
         )}
       </div>
       <div className="flex flex-col gap-4 max-w-5xl w-full">
-      <h1 className="h3-bold md:h2-bold text-left w-full">Trending Lists</h1>
-        {lists && lists.length > 0 ? (
-          lists.map((list: any) => (
-            <ListCard2 key={list.$id} list={list} />
-          ))
+        <h1 className="h3-bold md:h2-bold text-left w-full">Trending Lists</h1>
+        <div className='mb-2'>
+          <select className='bg-zinc-950 w-24 p-1' onChange={handleSortChange} value={sortOption}>
+            <option value="">All</option>
+            <option value="category">Category</option>
+            <option value="tags">Tags</option>
+          </select>
+        </div>
+        {isLoading && !lists ? (
+          <Loader />
         ) : (
-          <p className="text-light-2">No recent lists available.</p>
+          <motion.div
+            className="space-y-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            {lists?.pages.map((page, pageIndex) => (
+              <React.Fragment key={pageIndex}>
+                {sortLists(page.documents).map((document: Models.Document) => {
+                  const list = document as unknown as IList;
+                  return <ListCard2 key={list.$id} list={list} />;
+                })}
+              </React.Fragment>
+            ))}
+          </motion.div>
+        )}
+        {hasNextPage && (
+          <div ref={ref} className="mt-8 flex justify-center">
+            <Loader />
+          </div>
         )}
       </div>
     </div>
