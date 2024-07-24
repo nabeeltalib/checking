@@ -19,6 +19,7 @@ import {
   ICategoryItem
 } from '@/types';
 import { account, databases, storage, avatars, appwriteConfig } from "./config";
+import Categories from '@/_root/pages/Categories';
 
 // Ensure environment variables are defined
 const requiredEnvVars = [
@@ -344,6 +345,10 @@ export async function createList(list:any,userId:string): Promise<IList> {
         Description: list.Description,
         items: list.items.map((v:{content:string})=>v.content),
         Tags: list.Tags,
+        Categories: list.Categories,
+        locations: list.locations,
+        timespans: list.timespans,
+        Public: list.Public,
         aiScore: list.aiScore || 0,
         CreatedAt: list.CreatedAt,
         UpdatedAt: list.UpdatedAt,
@@ -404,6 +409,10 @@ export async function updateList(list: any) {
       {
         Title: list.Title,
         Description: list.Description,
+        Categories: list?.Categories || [],
+        timespans: list?.timespans || [],
+        locations: list?.locations || [],
+        Public: list.Public,
         items: list.items.map((v:{content:string})=>v.content), 
         Tags: list.Tags
       }

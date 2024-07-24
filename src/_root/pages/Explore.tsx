@@ -11,8 +11,8 @@ import ListCard2 from '@/components/shared/ListCard2';
 const Explore: React.FC = () => {
   const { user } = useUserContext();
   const { toast } = useToast();
-  const [trendingTags, setTrendingTags] = useState<string[]>([]);
-  const [popularCategories, setPopularCategories] = useState<{ id: string; name: string }[]>([]);
+  const [trendingTags, setTrendingTags] = useState<any[]>([]);
+  const [popularCategories, setPopularCategories] = useState<any[]>([]);
   const [isTagsLoading, setIsTagsLoading] = useState(true);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

@@ -149,6 +149,18 @@ const ListDetails: React.FC = () => {
           {formatDistanceToNow(new Date(list.$createdAt), { addSuffix: true })}
         </p>
         
+        {list.locations.length > 0 &&  <div className="text-blue-500">
+            {list.locations.map((location:any, index:number)=>(
+              <span key={index}>{location}</span>
+            ))}
+          </div> }
+
+          {list.timespans.length > 0 &&  <div className="text-blue-500">
+            {list.timespans.map((timespan:any, index:number)=>(
+              <span key={index}>{timespan}</span>
+            ))}
+          </div> }
+
         <ListStats list={list} userId={user.id} />
 
         {list?.creator?.$id === user.id && (

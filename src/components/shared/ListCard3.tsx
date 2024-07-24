@@ -133,6 +133,26 @@ const ListCard3: React.FC<any> = ({ list }) => {
           </div>
         )}
       </Link>
+
+      <div className="flex flex-wrap gap-2 mb-4">
+          {list?.Tags?.map((tag: string, index: number) => (
+            <span key={`${tag}${index}`} className="text-primary-500">
+              #{tag}
+            </span>
+          ))}
+        </div>
+
+      {list.locations.length > 0 &&  <div className="text-blue-500">
+            {list.locations.map((location:any, index:number)=>(
+              <span key={index}>{location}</span>
+            ))}
+          </div> }
+
+          {list.timespans.length > 0 &&  <div className="text-blue-500">
+            {list.timespans.map((timespan:any, index:number)=>(
+              <span key={index}>{timespan}</span>
+            ))}
+          </div> }
     </div>
 
     <div className="bg-dark-3 px-6 py-3 flex justify-between text-light-2 text-sm">
