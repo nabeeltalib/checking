@@ -61,7 +61,6 @@ const ListCard2: React.FC<any> = ({ list }) => {
 
   const [isSaved, setIsSaved] = useState(false);
   const { mutate: saveList } = useSaveList();
-  console.log(list.comments)
 
   const handleSaveList = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     // e.stopPropagation();

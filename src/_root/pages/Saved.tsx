@@ -26,8 +26,6 @@ const Saved = () => {
     }))
   : [];
 
-  console.log("Saved Lists:", savedLists); // Add this line for debugging
-
   return (
     <div className="saved-container common-container">
       <div className="flex gap-2 w-full max-w-5xl">

@@ -123,8 +123,7 @@ export const useGetInfiniteLists = () => {
 export const useGetRecentLists = () => {
   return useInfiniteQuery({
     queryKey: [QUERY_KEYS.GET_RECENT_LISTS],
-    queryFn: ({ pageParam = null }) => getRecentLists(pageParam),
-    getNextPageParam: lastPage => lastPage.documents[lastPage.documents.length - 1]?.$id || null,
+    queryFn: () => getRecentLists(),
     onError: (error) => {
       console.error('Error fetching recent lists:', error);
       // You could also show a toast notification here

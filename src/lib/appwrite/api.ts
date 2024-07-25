@@ -309,20 +309,15 @@ export async function getPopularCategories() {
   }
 }
 
-export async function getRecentLists(pageParam?: string) {
-  const queries = [Query.orderDesc('$createdAt'), Query.limit(10)];
-
-  if (pageParam) {
-    queries.push(Query.cursorAfter(pageParam));
-  }
+export async function getRecentLists() {
 
   try {
     const lists = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      queries
+      [Query.orderDesc('$createdAt'), Query.limit(10)]
     );
-    return lists;
+    return lists.documents;
   } catch (error: any) {
     console.log('Error fetching recent lists:', error.message);
     if (error instanceof AppwriteException) {

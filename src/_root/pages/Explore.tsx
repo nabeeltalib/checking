@@ -79,8 +79,6 @@ const Explore: React.FC = () => {
     );
   }
 
-  const recentLists = recentListsData?.pages?.[0]?.documents || [];
-
   return (
     <div className="explore-container common-container">
       <section className="mb-8">
@@ -148,9 +146,9 @@ const Explore: React.FC = () => {
 
       <section>
         <h3 className="text-xl font-semibold text-light-1 mb-4">Recent Lists</h3>
-        {recentLists?.[0]?.documents?.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recentLists[0].documents.map((list: IList) => (
+        {recentListsData?.length > 0 ? (
+          <div className="flex flex-col gap-4">
+            {recentListsData?.map((list: any) => (
               <ListCard2 key={list.$id} list={list} />
             ))}
           </div>
