@@ -324,9 +324,9 @@ export async function getRecentLists(pageParam?: string) {
     );
     return lists;
   } catch (error: any) {
-    console.error('Error fetching recent lists:', error.message);
+    console.log('Error fetching recent lists:', error.message);
     if (error instanceof AppwriteException) {
-      console.error('Appwrite error details:', error.message, error.code);
+      console.log('Appwrite error details:', error.message, error.code);
     }
     // Instead of throwing, return an empty result
     return { documents: [], total: 0 };

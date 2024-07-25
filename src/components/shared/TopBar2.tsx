@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useSearchLists } from "@/lib/react-query/queries";
 import { NotificationBell } from "./notifications/NotificationBell";
 
-const Topbar = () => {
+const Topbar2 = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
   const { mutate: signOut, isSuccess } = useSignOutAccount();
@@ -94,22 +94,6 @@ const Topbar = () => {
         </button>
 
         <div id="side-icons" className="hidden md:flex w-full items-center justify-evenly">
-          <Button className="shad-button_primary" onClick={handleCreateList}>
-            Create List
-          </Button>
-
-          <Button
-            variant="ghost"
-            className="shad-button_ghost p-2"
-            onClick={() => signOut()}
-            aria-label="Sign out"
-          >
-            <img src="/assets/icons/logout.svg" alt="Sign out" className="h-8 w-8" />
-          </Button>
-
-          <Link to="/notifications" className="hidden md:block">
-            <NotificationBell />
-          </Link>
 
           <div className="relative">
             <div className="flex items-center cursor-pointer" onClick={toggleDropdown}>
@@ -118,25 +102,8 @@ const Topbar = () => {
                 src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
                 alt="Profile"
               />
+              &nbsp;&nbsp; Guest User
             </div>
-
-            {/* Profile Dropdown */}
-            {isOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl overflow-hidden z-10 visible">
-                <Link
-                  to={`/profile/profile`}
-                  className="block px-4 py-2 text-sm text-gray-700 w-full text-left hover:bg-gray-100"
-                >
-                  Profile
-                </Link>
-                <button
-                  className="block px-4 py-2 text-sm text-gray-700 w-full text-left hover:bg-gray-100"
-                  onClick={() => signOut()}
-                >
-                  Logout
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
@@ -173,25 +140,8 @@ const Topbar = () => {
                   src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
                   alt="Profile"
                 />
-              </div>
-
-              {/* Profile Dropdown */}
-              {isOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl overflow-hidden z-10 visible">
-                  <Link
-                    to={`/profile/profile`}
-                    className="block px-4 py-2 text-sm text-gray-700 w-full text-left hover:bg-gray-100"
-                  >
-                    Profile
-                  </Link>
-                  <button
-                    className="block px-4 py-2 text-sm text-gray-700 w-full text-left hover:bg-gray-100"
-                    onClick={() => signOut()}
-                  >
-                    Logout
-                  </button>
                 </div>
-              )}
+
             </div>
           </div>
         </div>
@@ -200,4 +150,4 @@ const Topbar = () => {
   );
 };
 
-export default Topbar;
+export default Topbar2;

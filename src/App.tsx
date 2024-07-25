@@ -35,6 +35,7 @@ import UserActivity from "./_root/pages/UserActivity";
 import ManageList from "./_root/pages/ManageList";
 import FAB from "./components/shared/FAB";
 import ListFromFriends from "./_root/pages/listFromFriends";
+import RootLayout2 from "./_root/pages/RootLayout2";
 
 
 const App = () => {
@@ -71,7 +72,7 @@ const App = () => {
         {/* Public Routes */}
         {/* Private Routes */}
         <Route element={<RootLayout />}>
-          <Route index element={<Home />} />
+          <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/categories" element={<Categories />} />
@@ -101,7 +102,9 @@ const App = () => {
     : 
     <div>
     <Routes>
+    <Route element={<RootLayout2 />}>
     <Route path="/" element={<PreviewMode />} />
+    </Route>
     </Routes>
     </div>}
     </>);

@@ -37,7 +37,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   };
 
   const renderListItems = () => {
-    let items: Array<string | { content: string }> = [];
+    let items: Array<any> = [];
 
     if (Array.isArray(list.items)) {
       items = list.items;

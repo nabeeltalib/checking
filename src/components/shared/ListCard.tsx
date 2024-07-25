@@ -95,13 +95,13 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           <div className="flex justify-between items-start mb-4">
             <Link to={``} className="flex items-center">
               <img 
-                src={list.creator?.imageUrl || "/assets/icons/profile-placeholder.svg"} 
-                alt={`${list.creator?.name}'s profile`} 
+                src={list.creator?.ImageUrl || "/assets/icons/profile-placeholder.svg"} 
+                alt={`${list.creator?.Name}'s profile`} 
                 className="w-12 h-12 rounded-full mr-3 border-2 border-primary-500"
               />
               <div>
-                <p className="font-semibold text-light-1">{list.creator?.name}</p>
-                <p className="text-light-3 text-sm">@{list.creator?.name}</p>
+                <p className="font-semibold text-light-1">{list.creator?.Name}</p>
+                <p className="text-light-3 text-sm">@{list.creator?.Name}</p>
               </div>
             </Link>
             <button
@@ -171,6 +171,26 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
             {list.comments?.length || 0} Comments
           </span>
         </div>
+
+        <div className="w-full mt-4 p-4 border-t border-gray-300">
+          <h3 className="text-lg font-semibold">Comments:</h3>
+          {list.comments &&
+          list.comments?.length > 0 ? ( 
+            <ul>
+              {list.comments?.slice(0,2).map((comment:any, index:number) => (
+
+                <li key={index} className="py-2 border-b border-gray-200 flex gap-2 items-center">
+                  <img src={comment.user.ImageUrl} alt="userImage" width={30} />
+                  <span>{comment.user.Name}: </span>
+                  <span className="text-sm">{comment.Content}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500">No comments yet.</p>
+          )}
+          </div>
+
       </motion.div>
 
       {isDialogOpen && (

@@ -61,6 +61,7 @@ const ListCard2: React.FC<any> = ({ list }) => {
 
   const [isSaved, setIsSaved] = useState(false);
   const { mutate: saveList } = useSaveList();
+  console.log(list.comments)
 
   const handleSaveList = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     // e.stopPropagation();
@@ -184,6 +185,25 @@ const ListCard2: React.FC<any> = ({ list }) => {
             {list.comments?.length || 0} Comments
           </span>
         </div>
+        <div className="w-full mt-4 p-4 border-t border-gray-300">
+          <h3 className="text-lg font-semibold">Comments:</h3>
+          {list.comments &&
+          list.comments?.length > 0 ? ( 
+            <ul>
+              {list.comments?.slice(0,2).map((comment:any, index:number) => (
+
+                <li key={index} className="py-2 border-b border-gray-200 flex gap-2 items-center">
+                  <img src={comment.user.ImageUrl} alt="userImage" width={30} />
+                  <span>{comment.user.Name}: </span>
+                  <span className="text-sm">{comment.Content}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500">No comments yet.</p>
+          )}
+          </div>
+
       </motion.div>
     </>
   );

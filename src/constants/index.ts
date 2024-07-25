@@ -49,6 +49,15 @@ export const sidebarLinks = [
   },  
 ];
 
+export const sidebarLinks2 = [
+  {
+    imgURL: "/assets/icons/home.svg",
+    route: "#",
+    label: "Home",
+    icon:"/assets/icons/home.svg"
+  },
+];
+
 export const bottombarLinks = [
   {
     imgURL: "/assets/icons/home.svg",
@@ -107,6 +116,29 @@ export const rightSidebarLinks = [
   {
     imgURL: "/assets/icons/user-profile.svg",
     route: "/profile/profile",
+    label: "User Profile",
+  },
+];
+
+export const rightSidebarLinks2 = [
+  {
+    imgURL: "/assets/icons/trending.svg",
+    route: "#",
+    label: "Trending",
+  },
+  {
+    imgURL: "/assets/icons/recommended.svg",
+    route: "#",
+    label: "Recommended",
+  },
+  {
+    imgURL: "/assets/icons/people.svg",
+    route: "#",
+    label: "User Activity",
+  },
+  {
+    imgURL: "/assets/icons/user-profile.svg",
+    route: "#",
     label: "User Profile",
   },
 ];

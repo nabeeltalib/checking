@@ -61,11 +61,13 @@ const Profile: React.FC = () => {
         ...savedItem.list,
         creator: {
           $id: currentUser.$id,
-          name: currentUser.name,
-          imageUrl: currentUser.imageUrl || "/assets/icons/profile-placeholder.svg",
+          Name: currentUser.Name,
+          ImageUrl: currentUser.ImageUrl || "/assets/icons/profile-placeholder.svg",
         },
       }))
     : [];
+
+    console.log(savedLists)
 
   const isOwnProfile = currentUser.$id === user?.id;
   return (
