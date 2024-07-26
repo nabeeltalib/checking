@@ -5,6 +5,7 @@ import { useState } from "react";
 import LeftSidebar2 from "@/components/shared/LeftSidebar2";
 import RightSidebar2 from "@/components/shared/RightSidebar2";
 import Topbar2 from "@/components/shared/TopBar2";
+import Bottombar2 from "@/components/shared/Bottombar2";
 
 const RootLayout2 = () => {
 
@@ -38,6 +39,9 @@ const RootLayout2 = () => {
         <div className="hidden md:flex lg:w-[25%] md:w-[15%]">
           <RightSidebar2 />
         </div>
+        <div className="fixed bottom-0 left-0 right-0 md:hidden">
+        <Bottombar2 />
+      </div>
       </div>
 
       {isDialogOpen && (

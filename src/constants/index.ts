@@ -56,6 +56,18 @@ export const sidebarLinks2 = [
     label: "Home",
     icon:"/assets/icons/home.svg"
   },
+  {
+    imgURL: "/assets/icons/people.svg",
+    route: "#",
+    label: "Discover",
+    icon:"/assets/icons/people.svg"
+  },
+  {
+    imgURL: "/assets/icons/wallpaper.svg",
+    route: "#",
+    label: "Explore",
+    icon:"/assets/icons/wallpaper.svg"
+  },
 ];
 
 export const bottombarLinks = [
@@ -95,6 +107,26 @@ export const bottombarLinks = [
     route: "/notifications",
     label: "notification",
   },
+];
+
+export const bottombarLinks2 = [
+  {
+    imgURL: "/assets/icons/home.svg",
+    route: "#",
+    label: "Home",
+  },
+  {
+    imgURL: "/assets/icons/wallpaper.svg",
+    route: "#",
+    label: "Explore",
+  },
+  {
+    imgURL: "/assets/icons/people.svg",
+    route: "#",
+    label: "Discover",
+    icon:"/assets/icons/people.svg"
+  },
+
 ];
 
 export const rightSidebarLinks = [

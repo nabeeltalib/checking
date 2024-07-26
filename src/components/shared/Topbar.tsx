@@ -56,6 +56,14 @@ const Topbar = () => {
             className="object-contain"
           />
         </Link>
+        <Link to="/" className="items-center gap-3 flex md:hidden ">
+          <img
+            src="/assets/images/mobile.png"
+            alt="Topfived logo"
+            width={40}
+            className="object-contain"
+          />
+        </Link>
 
         <form onSubmit={handleSearch} className="flex-grow max-w-md mx-auto w-full">
           <div className="flex justify-center items-center gap-3">

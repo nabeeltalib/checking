@@ -47,12 +47,20 @@ const Topbar2 = () => {
   return (
     <section className="fixed top-0 left-0 right-0 z-50 bg-dark-1 shadow-md w-full">
       <div className="container mx-auto flex p-5 gap-8 w-full">
-        <Link to="/" className="items-center gap-3 w-full hidden md:flex ">
+      <Link to="/" className="items-center gap-3 w-full hidden md:flex ">
           <img
             src="/assets/images/logo.svg"
             alt="Topfived logo"
             width={130}
             height={32}
+            className="object-contain"
+          />
+        </Link>
+        <Link to="/" className="items-center gap-3  flex md:hidden ">
+          <img
+            src="/assets/images/mobile.png"
+            alt="Topfived logo"
+            width={40}
             className="object-contain"
           />
         </Link>
