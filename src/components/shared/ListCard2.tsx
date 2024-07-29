@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { shareList } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
-import { useSaveList } from "@/lib/react-query/queries";
+import { useGetUserById, useSaveList } from "@/lib/react-query/queries";
 import Comment from "./Comment";
+import { useUserContext } from "@/context/AuthContext";
 
 const ListCard2: React.FC<any> = ({ list }) => {
   const [isSharing, setIsSharing] = useState(false);
@@ -76,6 +77,13 @@ const ListCard2: React.FC<any> = ({ list }) => {
     // setIsSaved(!isSaved);
   };
 
+
+  const { user } = useUserContext();
+
+  const { data: currentUser} = useGetUserById(user.id || "");
+
+  const isOwnProfile = currentUser?.$id === user?.id;
+
   return (
     <>
       <motion.div
@@ -126,7 +134,7 @@ const ListCard2: React.FC<any> = ({ list }) => {
           </div>
 
           <Link to={`/lists/${list.$id}`} className="block">
-            <ol className="list-none mb-6 space-y-3">{renderListItems()}</ol>
+            <ol className=  "list-none mb-6 space-y-3">{renderListItems()}</ol>
 
             {Array.isArray(list.items) && list.items.length > 5 && (
               <p className="text-primary-500 font-semibold text-sm mb-4">

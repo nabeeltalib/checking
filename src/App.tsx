@@ -36,6 +36,8 @@ import ManageList from "./_root/pages/ManageList";
 import FAB from "./components/shared/FAB";
 import ListFromFriends from "./_root/pages/listFromFriends";
 import RootLayout2 from "./_root/pages/RootLayout2";
+import EmbedSelector from "./components/shared/EmbedSelector";
+import EmbedPreview from "./components/shared/EmbedPreview";
 
 
 const App = () => {
@@ -74,6 +76,8 @@ const App = () => {
         <Route element={<RootLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
+          <Route path="/embed" element={<EmbedSelector />} />
+          <Route path="/embedpreview" element={<EmbedPreview />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/collaborations" element={<Collaborations />} />
