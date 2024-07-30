@@ -12,7 +12,7 @@ const ManageList = () => {
     <div className='flex flex-col gap-3'>
       {
         userLists?.map((list:any, index:number)=>(
-          <ListCard2 list={list} key={index} />
+          <ListCard2 list={list} key={index} manageList={true} />
         ))
       }
         

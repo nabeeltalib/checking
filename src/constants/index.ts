@@ -150,6 +150,11 @@ export const rightSidebarLinks = [
     route: "/profile/profile",
     label: "User Profile",
   },
+  {
+    imgURL: "",
+    route: "/embed",
+    label: "View Embed List's",
+  },
 ];
 
 export const rightSidebarLinks2 = [

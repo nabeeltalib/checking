@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { shareList } from "@/lib/appwrite/api";
+import { createEmbedList, shareList } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
 import { useGetUserById, useSaveList } from "@/lib/react-query/queries";
 import Comment from "./Comment";
 import { useUserContext } from "@/context/AuthContext";
+import { Button } from "../ui";
+import { useToast } from "@/components/ui/use-toast";
 
-const ListCard2: React.FC<any> = ({ list }) => {
+const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
   const [isSharing, setIsSharing] = useState(false);
 
   const handleShare = async (e: React.MouseEvent) => {
@@ -77,12 +79,25 @@ const ListCard2: React.FC<any> = ({ list }) => {
     // setIsSaved(!isSaved);
   };
 
+  const { toast } = useToast();
 
-  const { user } = useUserContext();
+  const handleEmbed = async () =>{
+    try {
+   await createEmbedList(list.$id, list.Categories[0] || "")
+          toast({
+            title: "Success!",
+            description: `${list.Title} has been embedded sucessfully..`,
+            variant: "default",
+          });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to embed list ${list.Title}`,
+        variant: "destructive",
+      });
+    }
+  }
 
-  const { data: currentUser} = useGetUserById(user.id || "");
-
-  const isOwnProfile = currentUser?.$id === user?.id;
 
   return (
     <>
@@ -93,12 +108,15 @@ const ListCard2: React.FC<any> = ({ list }) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}>
         <div className="p-6">
-          <h2 className="text-3xl font-bold mb-6 text-primary-500">
-            {list.Title}
+          <h2 className="text-3xl font-bold flex justify-between mb-6 text-primary-500">
+            <span>{list.Title}</span>
+            <span>
+                {manageList && <Button onClick={handleEmbed}>add to embed</Button>}
+            </span>
           </h2>
           {list.Description ? (
             <h4 className="text-xl font-bold mb-6 text-primary-500">
-              {list.Description}
+              <span>{list.Description}</span>
             </h4>
           ) : (
             ""

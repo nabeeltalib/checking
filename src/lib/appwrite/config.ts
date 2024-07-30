@@ -49,6 +49,7 @@ export const appwriteConfig = {
   typesenseOperationsFunctionId: import.meta.env.VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID,
   friendsCollectionId: import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
   notificationsCollectionId: import.meta.env.VITE_APPWRITE_NOTIFICATIONS_COLLECTION_ID,
+  embedListCollectionId: import.meta.env.VITE_EMBED_LIST_COLLECTION_ID,
 };
 
 const client = new Client();

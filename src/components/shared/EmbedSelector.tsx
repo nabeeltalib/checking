@@ -1,9 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { List, BarChart } from 'lucide-react';
+import { getEmbededLists } from '@/lib/appwrite/api';
  
 const EmbedSelector = () => {
   const [embedType, setEmbedType] = useState('top5');
   const [customTitle, setCustomTitle] = useState('My Top 5 List');
+  const [embedLists, setEmbedLists] = useState<any>([]);
+	
+  useEffect(()=>{
+		const fetchData = async ()=>{
+			const resp = await getEmbededLists();
+			setEmbedLists(resp)
+		}
+
+		fetchData();
+	},[])
+
+	console.log("embedList: ",embedLists)
  
   const generateEmbedCode = () => {
 	const baseUrl = 'https://topfived.com/embed';
@@ -14,6 +27,7 @@ const EmbedSelector = () => {
 	});
 	return `<iframe src="${baseUrl}?${params}" width="100%" height="${embedType === 'top5' ? '300' : '400'}" frameborder="0"></iframe>`;
   };
+
  
   return (
 	<div className="max-w-2xl mx-auto p-6 text-black bg-white rounded-lg shadow-md">
@@ -52,37 +66,22 @@ const EmbedSelector = () => {
       	<div className="bg-white p-4 rounded border">
         	<h4 className="font-bold mb-2">{customTitle}</h4>
         	<ol className="list-decimal list-inside">
-              <li>Item 1</li>
-              <li>Item 2</li>
-              <li>Item 3</li>
-              <li>Item 4</li>
-              <li>Item 5</li>
+              {embedLists.map((embedlist:any, index:number)=>(
+				 <li key={index}>{index+1}. {embedlist.list.Title}</li>										
+			  ))}
             </ol>
       	</div>
     	) : (
       	<div className="bg-white p-4 rounded border">
         	<h4 className="font-bold mb-2">{customTitle}</h4>
         	<div className="space-y-2">
-          	<div className="flex justify-between">
-                <span>Item 1</span>
-                <span>95 pts</span>
-              </div>
-          	<div className="flex justify-between">
-                <span>Item 2</span>
-                <span>82 pts</span>
-              </div>
-          	<div className="flex justify-between">
-                <span>Item 3</span>
-                <span>78 pts</span>
-              </div>
-          	<div className="flex justify-between">
-                <span>Item 4</span>
-                <span>65 pts</span>
-              </div>
-          	<div className="flex justify-between">
-                <span>Item 5</span>
-                <span>51 pts</span>
-              </div>
+			  {embedLists.map((embedlist:any, index:number)=>(
+				<div key={index} className="flex justify-between">
+                <span>{index+1}. {embedlist.list.Title}</span>
+                <span>{embedlist.vote?.length * 25 || 0} pts</span>
+              </div>											
+			  ))}
+            
             </div>
       	</div>
     	)}
