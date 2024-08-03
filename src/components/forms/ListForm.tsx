@@ -185,7 +185,7 @@ const ListForm = ({ list, action, initialData }: any) => {
           } else {
             // Index the new list in Typesense
             await indexList(updatedList);
-            //test
+          
             // Use for loop to handle asynchronous operations
             for (const friend of friendsLists) {
               await createNotification({
