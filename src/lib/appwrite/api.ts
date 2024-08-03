@@ -346,6 +346,24 @@ export async function getEmbededLists() {
   }
 }
 
+export async function getEmbededList(listId:any) {
+  try {
+    const lists = await databases.getDocument(
+      appwriteConfig.databaseId,
+      import.meta.env.VITE_EMBED_LIST_COLLECTION_ID,
+      listId
+    );
+    return lists;
+  } catch (error: any) {
+    console.log('Error fetching recent lists:', error.message);
+    if (error instanceof AppwriteException) {
+      console.log('Appwrite error details:', error.message, error.code);
+    }
+    // Instead of throwing, return an empty result
+    return { documents: [], total: 0 };
+  }
+}
+
 export async function createList(list:any,userId:string): Promise<IList> {
   try {
     const newList = await databases.createDocument(
@@ -419,7 +437,7 @@ export async function getInfiniteLists({ pageParam }: { pageParam: number }) {
   }
 }
 
-export async function getListById(listId: string): Promise<IList> {
+export async function getListById(listId: any): Promise<IList> {
   try {
     const list = await databases.getDocument(
       appwriteConfig.databaseId,
@@ -427,6 +445,20 @@ export async function getListById(listId: string): Promise<IList> {
       listId
     );
     return list as IList;
+  } catch (error) {
+    console.error('Error fetching list:', error);
+    throw error;
+  }
+}
+
+export async function getItemById(itemId: any){
+  try {
+    const item = await databases.getDocument(
+      appwriteConfig.databaseId,
+      "66ab99e100295497dab9",
+      itemId
+    );
+    return item;
   } catch (error) {
     console.error('Error fetching list:', error);
     throw error;
@@ -1108,24 +1140,21 @@ export async function acceptFriendRequest(requestId: string) {
   }
 }
 
-export async function voteOnEmbedList(userId: any, embedListId: any) {
+export async function VoteOnItem(userId: any, itemId: any) {
   try {
-    // Fetch the current document
-    const document = await databases.getDocument(
-      appwriteConfig.databaseId,
-      import.meta.env.VITE_EMBED_LIST_COLLECTION_ID,
-      embedListId
-    );
+    const resp = await getItemById(itemId)
+    
+    const updatedVotes = Array.isArray(resp.vote) ? [...resp.vote, userId] : [userId];
+    const updatedUserId = Array.isArray(resp.userId) ? [...resp.userId, userId] : [userId];
 
-    // Ensure the vote field is an array and add the new userId
-    const updatedVotes = Array.isArray(document.vote) ? [...document.vote, userId] : [userId];
-
-    // Update the document with the new votes array
     const result = await databases.updateDocument(
       appwriteConfig.databaseId,
-      import.meta.env.VITE_EMBED_LIST_COLLECTION_ID,
-      embedListId,
-      { vote: updatedVotes }
+      "66ab99e100295497dab9",
+      itemId,
+      { 
+        vote: updatedVotes,
+        userId: updatedUserId
+      }
     );
 
     return result;

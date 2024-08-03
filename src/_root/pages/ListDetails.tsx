@@ -73,7 +73,7 @@ const ListDetails: React.FC = () => {
 
   if (isLoading || isCreatorLoading) return <Loader />;
   if (!list || !listCreator) return <div className="text-center text-light-1">List not found</div>;  
-
+ 
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto">
       <div className="sticky top-0 z-10 bg-dark-1 p-4 border-b border-dark-4">

@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { createEmbedList, shareList } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
-import { useGetUserById, useSaveList } from "@/lib/react-query/queries";
+import { useSaveList } from "@/lib/react-query/queries";
 import Comment from "./Comment";
-import { useUserContext } from "@/context/AuthContext";
 import { Button } from "../ui";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -21,7 +20,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
       if (navigator.share) {
         await navigator.share({
           title: list.title,
-          text: `Check out this list: ${list.title}`,
+          text: `Check out this list: ${list.Title}`,
           url: shareableLink,
         });
       } else {

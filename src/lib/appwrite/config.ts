@@ -333,7 +333,7 @@ export async function getInfiniteLists({ pageParam }: { pageParam: number }) {
   }
 }
 
-export async function getListById(listId: string): Promise<IList> {
+export async function getListById(listId: any): Promise<IList> {
   try {
     const list = await databases.getDocument(
       appwriteConfig.databaseId,
@@ -407,7 +407,7 @@ export async function likeList(listId: string, likesArray: string[]) {
       appwriteConfig.listCollectionId,
       listId,
       {
-        likes: likesArray,
+        Likes: likesArray,
       }
     );
 

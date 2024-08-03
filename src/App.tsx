@@ -77,7 +77,7 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/embed" element={<EmbedSelector />} />
-          <Route path="/embedpreview" element={<EmbedPreview />} />
+          <Route path="/embedpreview/:id" element={<EmbedPreview />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/collaborations" element={<Collaborations />} />

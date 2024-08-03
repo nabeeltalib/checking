@@ -9,20 +9,14 @@ import {
   useLikeList,
   useSaveList,
   useDeleteSavedList,
-  useGetCurrentUser,
   useGetComments, // Assuming you have a hook to fetch comments
   useGetUserById,
   useCreateComment,
-  useAnalyzeSentiment,
 } from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
 import { toast } from "../ui";
 import Comment from "./Comment";
 
-type ListStatsProps = {
-  list: Models.Document;
-  userId: string;
-};
 
 const ListStats = ({ list, userId }: any) => {
   const location = useLocation();
