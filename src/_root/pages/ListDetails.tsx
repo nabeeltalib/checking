@@ -30,7 +30,7 @@ const ListDetails: React.FC = () => {
 
   const visibleItems = useMemo(() => {
     if (!list) return [];
-    return isExpanded ? list.items : list.items.slice(0, 4);
+    return isExpanded ? list.item : list.item.slice(0, 4);
   }, [list, isExpanded]);
 
   const handleDeleteList = async () => {
@@ -120,15 +120,20 @@ const ListDetails: React.FC = () => {
         
         <ul className="mb-4">
           {visibleItems?.map((item: any, index: number) => (
-            <li key={index} className="mb-2 text-light-1 flex items-center">
+            <li key={index} className="mb-2 text-light-1 flex justify-between">
+              <p className='flex items-center'>
               <span className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center mr-3 text-light-1 font-bold">
                 {index + 1}
               </span>
               <span>{item?.content || item}</span>
+              </p>
+              <p className='flex gap-2 items-center'>
+                <img src={item.creator.ImageUrl} alt="item.creator.Name" width={30} className='rounded-full' />
+              </p>
             </li>
           ))}
         </ul>
-        {list.items.length > 4 && (
+        {list.item.length > 4 && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="text-primary-500"

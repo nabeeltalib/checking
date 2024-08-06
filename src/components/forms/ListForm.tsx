@@ -54,6 +54,8 @@ const ListForm = ({ list, action, initialData }: any) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+ 
+
   const [categories, setCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
   const [timespans, setTimespans] = useState<string[]>([
@@ -137,19 +139,19 @@ const ListForm = ({ list, action, initialData }: any) => {
       Title: initialData?.Title || list?.Title || "",
       Description: initialData?.Description || list?.Description || "",
       items:
-        initialData?.items.map((item: string | any) => {
+        initialData?.item.map((item: string | any) => {
           if (typeof item === "string") {
             const [content, isVisible] = item.split("|");
             return { content, isVisible: isVisible === "true" };
           }
-          return item;
+          return {content:item.content, isVisible:true};
        }) ||
-        list?.items?.map((item: string | any) => {
+        list?.item?.map((item: any) => {
           if (typeof item === "string") {
             const [content, isVisible] = item.split("|");
             return { content, isVisible: isVisible === "true" };
           }
-          return item;
+          return {content:item.content, isVisible:true};
        })||
        Array(5).fill({ content: "", isVisible: true }),
       Categories: initialData?.Categories || list?.Categories || [],
@@ -173,9 +175,23 @@ const ListForm = ({ list, action, initialData }: any) => {
 
     const handleSubmit = async (value: z.infer<typeof formSchema>) => {
       try {
+
         if (action === "Update") {
+
+          //Find each unique item created by any User
+        let item = list.item.map((item:any, index:number)=> {
+          if(value.items.some((i:any)=> i.content === item.content))
+          {
+            return {content: item.content, creator: item.creator.$id, id: item.$id}
+          }
+          else{
+            return {content: value.items[index].content, creator: user.id, id: item.$id}
+          }
+        })
+
           const updatedList = await updateList({
             ...value,
+            item:item,
             listId: list.$id,
             UpdatedAt: new Date(),
           });
@@ -198,6 +214,7 @@ const ListForm = ({ list, action, initialData }: any) => {
             navigate(`/lists/${list!.$id}`);
           }
         } else {
+          
           // For both "Create" and "Remix" actions
           const newList = await createList({
             ...value,

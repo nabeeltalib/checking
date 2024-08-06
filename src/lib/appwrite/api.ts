@@ -364,8 +364,36 @@ export async function getEmbededList(listId:any) {
   }
 }
 
+export async function createItem(content:string,userId:string){
+  try {
+    const newItem = await databases.createDocument(
+      appwriteConfig.databaseId,
+      "66ab99e100295497dab9",
+      ID.unique(),
+      {
+        content: content,
+        creator: userId
+      }
+    );
+
+    return newItem;
+  } catch (error) {
+    console.error('Error creating list:', error);
+    throw error;
+  }
+}
+
 export async function createList(list:any,userId:string): Promise<IList> {
   try {
+    let items = list.items.map((v:{content:string})=>v.content)
+    let itemArray = [];
+
+    for(let item of items)
+    {
+      let resp = await createItem(item,userId)
+      itemArray.push(resp.$id)
+    }
+
     const newList = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
@@ -374,7 +402,8 @@ export async function createList(list:any,userId:string): Promise<IList> {
         userId: userId,
         Title: list.Title,
         Description: list.Description,
-        items: list.items.map((v:{content:string})=>v.content),
+        items: items,
+        item: itemArray,
         Tags: list.Tags,
         Categories: list.Categories,
         locations: list.locations,
@@ -444,6 +473,7 @@ export async function getListById(listId: any): Promise<IList> {
       appwriteConfig.listCollectionId,
       listId
     );
+
     return list as IList;
   } catch (error) {
     console.error('Error fetching list:', error);
@@ -465,8 +495,35 @@ export async function getItemById(itemId: any){
   }
 }
 
+export async function updateItem(item: any){
+  try {
+    const resp = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      "66ab99e100295497dab9",
+      item.id,
+      {
+        content: item.content,
+        creator: item.creator,
+      }
+    );
+    return resp;
+  } catch (error) {
+    console.error('Error fetching list:', error);
+    throw error;
+  }
+}
+
 export async function updateList(list: any) {
   try {
+
+    let updatedItems = []
+    for(let i of list.item)
+    {
+      const resp = await updateItem(i);
+      updatedItems.push(resp.$id)
+    }
+
+
     const updatedList = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
@@ -478,7 +535,8 @@ export async function updateList(list: any) {
         timespans: list?.timespans || [],
         locations: list?.locations || [],
         Public: list.Public,
-        items: list.items.map((v:{content:string})=>v.content), 
+        items: list.items.map((v:{content:string})=>v.content),
+        item: updatedItems, 
         Tags: list.Tags
       }
     );
@@ -489,7 +547,6 @@ export async function updateList(list: any) {
 
     // Re-index the updated list in Typesense
     await indexList(updatedList as IList);
-
     return updatedList;
   } catch (error) {
     console.error('Error updating list:', error);
@@ -754,6 +811,29 @@ export async function createComment(comment: {
   }
 }
 
+export async function createReply(reply : any) {
+  try {
+    const newComment = await databases.createDocument(
+      appwriteConfig.databaseId,
+      "66b22bc7003828cf45ab",
+      ID.unique(),
+      {
+        userId: reply.userId,
+        Content: reply.Content,
+      }
+    );
+
+    if (!newComment) {
+      throw new Error('Failed to create reply');
+    }
+
+    return newComment;
+  } catch (error) {
+    console.error('Error creating reply:', error);
+    return null;
+  }
+}
+
 export async function getComments(listId: string) {
   try {
     const comments = await databases.listDocuments(
@@ -765,6 +845,47 @@ export async function getComments(listId: string) {
     if (!comments) throw new Error('No comments found');
 
     return comments.documents;
+  } catch (error) {
+    console.error('Error getting comments:', error);
+    return null;
+  }
+}
+
+
+export async function getCommentbyId(commentId: string) {
+  try {
+    const comment = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      commentId
+    );
+    
+    return comment;
+  } catch (error) {
+    console.error('Error getting comments:', error);
+    return null;
+  }
+}
+
+
+export async function UpdateCommentReply(comment:any) {
+  try {
+
+    let reply = await createReply(comment);
+    let oldcomment = await getCommentbyId(comment.commentId);
+    
+    let updatedReply = Array.isArray(oldcomment?.Reply) ? [...oldcomment.Reply, reply?.$id] : [reply?.$id];
+
+    const commentResp = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      comment.commentId,
+      {
+        Reply:updatedReply
+      }
+    );
+
+    return commentResp;
   } catch (error) {
     console.error('Error getting comments:', error);
     return null;

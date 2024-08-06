@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { IList } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
-import { useSignInWithGoogle } from "@/lib/react-query/queries";
+import { useGetComments, useSignInWithGoogle } from "@/lib/react-query/queries";
 import Comment from "./Comment";
 
 type ListCardProps = {
@@ -14,6 +14,7 @@ type ListCardProps = {
 const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const [isSharing, setIsSharing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { data: comments } = useGetComments(list.$id);
 
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -190,11 +191,11 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
 
         <div className="w-full mt-4 p-4 border-t border-gray-300">
           <h3 className="text-lg font-semibold">Comments</h3>
-          {list.comments && list.comments?.length > 0 ? (
+          {comments && comments?.length > 0 ? (
             <ul>
               <div className="mt-1 flex flex-col gap-2">
-              {list.comments?.slice(0, 2).map((comment: any, index: number) => (
-                <Comment comment={comment} key={index} />
+              {comments?.slice(0, 2).map((comment: any, index: number) => (
+               <Comment comment={comment} key={index} />
               ))}
               </div>
             </ul>

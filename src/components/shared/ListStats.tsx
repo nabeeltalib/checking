@@ -2,20 +2,24 @@ import { Models } from "appwrite";
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { createNotification } from "@/lib/appwrite/api";
+import { createNotification, createReply, UpdateCommentReply } from "@/lib/appwrite/api";
+import { useQueryClient } from '@tanstack/react-query';
+
+
 
 import { checkIsLiked } from "@/lib/utils";
 import {
   useLikeList,
   useSaveList,
   useDeleteSavedList,
-  useGetComments, // Assuming you have a hook to fetch comments
+  useGetComments,
   useGetUserById,
   useCreateComment,
 } from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
 import { toast } from "../ui";
 import Comment from "./Comment";
+import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 
 
 const ListStats = ({ list, userId }: any) => {
@@ -38,6 +42,7 @@ const ListStats = ({ list, userId }: any) => {
   const { data: comments } = useGetComments(list.$id);
   const [isExpanded, setIsExpanded] = useState(false);
   const [visibleComments, setVisibleComments] = useState<any>([]);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setVisibleComments(() => (isExpanded ? comments : comments?.slice(0, 4)));
@@ -102,8 +107,18 @@ const ListStats = ({ list, userId }: any) => {
         userId: id,
         Content: newComment,
       });
-
-      const respones = await createNotification({
+      
+      if(list.Likes){
+        for(let i of list.Likes)
+          {
+           await createNotification({
+              userId: i,
+              type: "list_comment",
+              message: `${user.name} commented on list "${list.Title}"`,
+            });
+          }
+      }
+      await createNotification({
         userId: list.userId,
         type: "list_comment",
         message: `${user.name} commented on your list "${list.Title}"`,
@@ -119,6 +134,51 @@ const ListStats = ({ list, userId }: any) => {
       });
     }
   };
+
+  const [Reply, setReply] = useState(false);
+  const [commentId, setCommentId] = useState("")
+
+  const handleReply = async (e:any)=>{
+    e.preventDefault();
+    if (newComment.trim() === "") return;
+
+    try {
+      await UpdateCommentReply({
+        userId: id,
+        Content: newComment,
+        commentId: commentId,
+      });
+
+      if(list.Likes){
+        for(let i of list.Likes)
+          {
+           await createNotification({
+              userId: i,
+              type: "list_comment",
+              message: `${user.name} replied on list "${list.Title}"`,
+            });
+          }
+      }
+      await createNotification({
+        userId: list.userId,
+        type: "list_comment",
+        message: `${user.name} replied on comments of list "${list.Title}"`,
+      });
+
+      setReply(false);
+      setNewComment("");
+
+      queryClient.invalidateQueries([QUERY_KEYS.GET_COMMENTS, list.$id]);
+
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reply.",
+        variant: "destructive",
+      });
+    }
+  }
+
 
   return (
     <div
@@ -189,7 +249,7 @@ const ListStats = ({ list, userId }: any) => {
             <ul>
               <div className="mt-1 flex flex-col gap-2">
               {visibleComments?.map((comment:any, index:number) => (
-                <Comment comment={comment} key={index} />
+                <Comment setReply={setReply} show={"show"} setCommentId={setCommentId} comment={comment} key={index} />
               ))}
               </div>
             </ul>
@@ -206,17 +266,17 @@ const ListStats = ({ list, userId }: any) => {
           )}
 
           {
-            <form onSubmit={handleCommentSubmit} className="mt-4 mb-2">
+            <form onSubmit={Reply ? handleReply  : handleCommentSubmit} className="mt-4 mb-2">
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Add a comment..."
+                placeholder={`${Reply ? "Add a Reply..." : "Add a comment"}`}
                 className="w-full p-2 border rounded-lg bg-zinc-900 :text-white"
               />
               <button
                 type="submit"
                 className="mt-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
-                Add a Comment
+                {`${Reply ? "Add a Reply..." : "Add a comment"}`}
               </button>
             </form>
           }

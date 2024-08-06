@@ -22,8 +22,6 @@ const EmbedSelector = () => {
     fetchData();
   }, [refresh]);
 
-  console.log("embedList: ", embedLists);
-
   const generateEmbedCode = () => {
     const baseUrl = "https://topfived.com/embed";
     const params = new URLSearchParams({

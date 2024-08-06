@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { createEmbedList, shareList } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
-import { useSaveList } from "@/lib/react-query/queries";
+import { useGetComments, useSaveList } from "@/lib/react-query/queries";
 import Comment from "./Comment";
 import { Button } from "../ui";
 import { useToast } from "@/components/ui/use-toast";
@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
   const [isSharing, setIsSharing] = useState(false);
 
+  const { data: comments } = useGetComments(list.$id);
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -230,15 +231,15 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
               alt="Comments"
               className="w-5 h-5 mr-2"
             />
-            {list.comments?.length || 0} Comments
+            {comments?.length || 0} Comments
           </span>
         </div>
         <div className="w-full mt-4 p-4 border-t border-gray-300">
           <h3 className="text-lg font-semibold">Comments</h3>
-          {list.comments && list.comments?.length > 0 ? (
+          {comments && comments?.length > 0 ? (
             <ul>
               <div className="mt-1 flex flex-col gap-2">
-              {list.comments?.slice(0, 2).map((comment: any, index: number) => (
+              {comments?.slice(0, 2).map((comment: any, index: number) => (
                <Comment comment={comment} key={index} />
               ))}
               </div>
