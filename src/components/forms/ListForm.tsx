@@ -30,7 +30,7 @@ import {
   useUpdateList,
 } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
-import { createNotification, getCategories } from "@/lib/appwrite/api";
+import { CollaborateOnList, createNotification, getCategories } from "@/lib/appwrite/api";
 import {
   DndContext,
   closestCenter,
@@ -122,6 +122,8 @@ const ListForm = ({ list, action, initialData }: any) => {
         z.object({
           content: z.string().min(1, "Item cannot be empty"),
           isVisible: z.boolean(),
+          creator: z.string(),
+          id: z.string(),
         })
       )
       .min(5, "At least 5 items are required")
@@ -139,19 +141,16 @@ const ListForm = ({ list, action, initialData }: any) => {
       Title: initialData?.Title || list?.Title || "",
       Description: initialData?.Description || list?.Description || "",
       items:
-        initialData?.item.map((item: string | any) => {
-          if (typeof item === "string") {
-            const [content, isVisible] = item.split("|");
-            return { content, isVisible: isVisible === "true" };
-          }
-          return {content:item.content, isVisible:true};
+        initialData?.item.map((item: any) => {
+       
+          return {content:item.content, isVisible:true,  creator: item.creator.$id, id: item.$id};
        }) ||
         list?.item?.map((item: any) => {
           if (typeof item === "string") {
             const [content, isVisible] = item.split("|");
             return { content, isVisible: isVisible === "true" };
           }
-          return {content:item.content, isVisible:true};
+          return {content:item.content, isVisible:true,  creator: item.creator.$id, id: item.$id};
        })||
        Array(5).fill({ content: "", isVisible: true }),
       Categories: initialData?.Categories || list?.Categories || [],
@@ -177,20 +176,29 @@ const ListForm = ({ list, action, initialData }: any) => {
       try {
 
         if (action === "Update") {
-
+      
           //Find each unique item created by any User
-        let item = list.item.map((item:any, index:number)=> {
-          if(value.items.some((i:any)=> i.content === item.content))
+          let item: any = value.items.map((item: any) => {
+            let currentListItem = list.item.find((listItem: any) => listItem.content !== item.content)
+            if(currentListItem) {
+              return {
+                ...item,
+                content:item.content,
+                creator: user.id,
+              }
+            }
+            return {
+              ...item,
+            }
+          })
+
+          if(list.userId !== user.id)
           {
-            return {content: item.content, creator: item.creator.$id, id: item.$id}
+              await CollaborateOnList(list.$id, user.id)
           }
-          else{
-            return {content: value.items[index].content, creator: user.id, id: item.$id}
-          }
-        })
 
           const updatedList = await updateList({
-            ...value,
+          ...value,
             item:item,
             listId: list.$id,
             UpdatedAt: new Date(),
@@ -201,7 +209,8 @@ const ListForm = ({ list, action, initialData }: any) => {
           } else {
             // Index the new list in Typesense
             await indexList(updatedList);
-          
+            navigate(`/lists/${list!.$id}`);
+            
             // Use for loop to handle asynchronous operations
             for (const friend of friendsLists) {
               await createNotification({
@@ -210,8 +219,16 @@ const ListForm = ({ list, action, initialData }: any) => {
                 message: `${user.name} Updated list: "${updatedList.Title}"`,
               });
             }
+            
+            // Send Notifications to all the collaborators
+            for (const person of list.users) {
+              await createNotification({
+                userId: person.$id,
+                type: "friend_list",
+                message: `${user.name} Updated list: "${updatedList.Title}"`,
+              });
+            }
 
-            navigate(`/lists/${list!.$id}`);
           }
         } else {
           

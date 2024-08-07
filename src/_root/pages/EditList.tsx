@@ -15,11 +15,11 @@ const EditList = () => {
   const { toast } = useToast();
   const { mutateAsync: updateList, isLoading: isUpdating } = useUpdateList();
 
-  useEffect(() => {
-    if (list && user && list.creator.$id !== user.id) {
-      navigate(`/lists/${id}`);
-    }
-  }, [list, user, id, navigate]);
+  // useEffect(() => {
+  //   if (list && user && list.creator.$id !== user.id) {
+  //     navigate(`/lists/${id}`);
+  //   }
+  // }, [list, user, id, navigate]);
 
   const handleUpdateList = async (updatedListData: IList) => {
     if (!id) return;

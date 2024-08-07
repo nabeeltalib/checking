@@ -535,7 +535,7 @@ export async function getUsers(limit?: number) {
   }
 }
 
-export async function getUserById(userId: string) {
+export async function getUserById(userId: any) {
   try {
     const user = await databases.getDocument(
       appwriteConfig.databaseId,

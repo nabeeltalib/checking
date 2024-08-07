@@ -1,12 +1,23 @@
 import { useParams } from 'react-router-dom';
-import { useGetUserLists } from "@/lib/react-query/queries";
 import ListCard2 from '@/components/shared/ListCard2';
+import { useEffect, useState } from 'react';
+import { getUserById } from '@/lib/appwrite/config';
+
 
 const ManageList = () => {
 
   const { id } = useParams();
-  const { data: userLists} = useGetUserLists(id || "");
+  const [userLists, setUserLists] = useState<any>([])
 
+  useEffect(()=>{
+      const fetchData = async()=>{
+        let resp = await getUserById(id);
+        console.log(resp)
+        setUserLists(resp.lists)
+      }
+
+      fetchData()
+  },[id])
 
   return (
     <div className='flex flex-col gap-3'>

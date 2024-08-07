@@ -118,11 +118,14 @@ const ListStats = ({ list, userId }: any) => {
             });
           }
       }
-      await createNotification({
-        userId: list.userId,
-        type: "list_comment",
-        message: `${user.name} commented on your list "${list.Title}"`,
-      });
+       // Send Notifications to all the collaborators
+       for (const person of list.users) {
+        await createNotification({
+          userId: person.$id,
+          type: "list_comment",
+          message: `${user.name} commented on your list "${list.Title}"`,
+        });
+      }
 
       setNewComment("");
     } catch (error) {
@@ -149,6 +152,7 @@ const ListStats = ({ list, userId }: any) => {
         commentId: commentId,
       });
 
+      //Send Notifications to People who liked the list
       if(list.Likes){
         for(let i of list.Likes)
           {
@@ -159,11 +163,15 @@ const ListStats = ({ list, userId }: any) => {
             });
           }
       }
-      await createNotification({
-        userId: list.userId,
-        type: "list_comment",
-        message: `${user.name} replied on comments of list "${list.Title}"`,
-      });
+
+      // Send Notifications to all the collaborators
+      for (const person of list.users) {
+        await createNotification({
+          userId: person.$id,
+          type: "list_comment",
+          message: `${user.name} replied on comments of list "${list.Title}"`,
+        });
+      }
 
       setReply(false);
       setNewComment("");
@@ -231,7 +239,7 @@ const ListStats = ({ list, userId }: any) => {
         <img src="/assets/icons/remix.svg" alt="remix" width={20} height={20} />
         <p className="small-medium lg:base-medium">Create Alternative</p>
       </Button>
-      <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+      <Button onClick={() => navigate(`/update-list/${list?.$id}`)} className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
         <img
           src="/assets/icons/people.svg"
           alt="collaborate"

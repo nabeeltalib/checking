@@ -412,7 +412,8 @@ export async function createList(list:any,userId:string): Promise<IList> {
         aiScore: list.aiScore || 0,
         CreatedAt: list.CreatedAt,
         UpdatedAt: list.UpdatedAt,
-        creator:userId
+        creator:userId,
+        users:[userId],
       }
     );
     console.log({ newList });
@@ -473,7 +474,6 @@ export async function getListById(listId: any): Promise<IList> {
       appwriteConfig.listCollectionId,
       listId
     );
-
     return list as IList;
   } catch (error) {
     console.error('Error fetching list:', error);
@@ -513,41 +513,71 @@ export async function updateItem(item: any){
   }
 }
 
+export async function CollaborateOnList(listId: string, userId:string) {
+  try {
+    let user = await getUserById(userId);
+    let updatedLists = Array.isArray(user?.lists) ? [...user.lists, listId] : [listId];
+
+    const updatedUser = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId,
+      {
+        lists: updatedLists,
+      }
+    )
+    
+    return updatedUser;
+  } catch (error) {
+    console.error('Error updating list:', error);
+    return null;
+  }
+}
+
 export async function updateList(list: any) {
   try {
+    // let updatedItems = []
+    // for(let i of list.item)
+    // {
+    //   const resp = await updateItem(i);
+    //   updatedItems.push(resp.$id)
+    // }
 
-    let updatedItems = []
-    for(let i of list.item)
-    {
-      const resp = await updateItem(i);
-      updatedItems.push(resp.$id)
-    }
 
+    // //Remove item first so that sorting is done correctly
+    // const resp = await databases.updateDocument(
+    //   appwriteConfig.databaseId,
+    //   appwriteConfig.listCollectionId,
+    //   list.listId,
+    //   {
+    //     item: [], 
+    //   }
+    // );
 
-    const updatedList = await databases.updateDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.listCollectionId,
-      list.listId,
-      {
-        Title: list.Title,
-        Description: list.Description,
-        Categories: list?.Categories || [],
-        timespans: list?.timespans || [],
-        locations: list?.locations || [],
-        Public: list.Public,
-        items: list.items.map((v:{content:string})=>v.content),
-        item: updatedItems, 
-        Tags: list.Tags
-      }
-    );
+    // const updatedList = await databases.updateDocument(
+    //   appwriteConfig.databaseId,
+    //   appwriteConfig.listCollectionId,
+    //   list.listId,
+    //   {
+    //     Title: list.Title,
+    //     Description: list.Description,
+    //     Categories: list?.Categories || [],
+    //     timespans: list?.timespans || [],
+    //     locations: list?.locations || [],
+    //     Public: list.Public,
+    //     items: list.items.map((v:{content:string})=>v.content),
+    //     item: updatedItems.map((item) => item), 
+    //     Tags: list.Tags
+    //   }
+    // );
 
-    if (!updatedList) {
-      throw new Error('Failed to update list');
-    }
+    // if (!updatedList) {
+    //   throw new Error('Failed to update list');
+    // }
 
-    // Re-index the updated list in Typesense
-    await indexList(updatedList as IList);
-    return updatedList;
+    // // Re-index the updated list in Typesense
+    // await indexList(updatedList as IList);
+    // return updatedList;
   } catch (error) {
     console.error('Error updating list:', error);
     return null;
@@ -644,7 +674,7 @@ export async function getUserLists(userId?: string) {
     const lists = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      [Query.equal('creator', userId), Query.orderDesc('$createdAt')]
+      [Query.equal('creator',userId), Query.orderDesc('$createdAt')]
     );
 
     if (!lists) throw new Error('No lists found for user');
@@ -710,7 +740,7 @@ export async function getUsers(limit?: number) {
   }
 }
 
-export async function getUserById(userId: string) {
+export async function getUserById(userId: any) {
   try {
     const user = await databases.getDocument(
       appwriteConfig.databaseId,
