@@ -1,7 +1,5 @@
 import { Loader } from "@/components/shared";
 import { useGetCurrentUser } from "@/lib/react-query/queries";
-import GridListList from "@/components/shared/GridListList";
-import { IList, IUser } from "@/types";
 import ListCard2 from "@/components/shared/ListCard2";
 
 const Saved = () => {
@@ -15,13 +13,14 @@ const Saved = () => {
     return <div className="text-light-4 text-center">User not found</div>;
   }
 
- const savedLists: IList[] = currentUser?.save
+ const savedLists:any = currentUser?.save
   ? currentUser.save.map((savedItem: any) => ({
       ...savedItem.list,
       creator: {
         $id: currentUser.$id,
-        name: currentUser.name,
-        imageUrl: currentUser.imageUrl || "/assets/icons/profile-placeholder.svg",
+        Name: currentUser.Name,
+        Username: currentUser.Name,
+        ImageUrl: currentUser.ImageUrl || "/assets/icons/profile-placeholder.svg",
       },
     }))
   : [];
@@ -43,8 +42,8 @@ const Saved = () => {
         {savedLists.length === 0 ? (
           <p className="text-light-4">No saved lists</p>
         ) : (
-          savedLists.map((list, index)=>(
-            <ListCard2 list={list} key={index} />
+          savedLists.map((list:any)=>(
+            <ListCard2 list={list} key={list.$id} />
           ))
         )}
       </div>

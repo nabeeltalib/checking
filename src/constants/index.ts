@@ -29,12 +29,12 @@ export const sidebarLinks = [
     label: "Saved",
     icon:"/assets/icons/bookmark.svg"
   },   
-  {
-    imgURL: "/assets/icons/collabrative.svg",
-    route: "/collaborations",
-    label: "collaborative",
-    icon:"/assets/icons/collabrative.svg"
-  },  
+  // {
+  //   imgURL: "/assets/icons/collabrative.svg",
+  //   route: "/collaborations",
+  //   label: "collaborative",
+  //   icon:"/assets/icons/collabrative.svg"
+  // },  
   {
     imgURL: "/assets/icons/list.svg",
     route: "/listfromfriends",
@@ -52,19 +52,19 @@ export const sidebarLinks = [
 export const sidebarLinks2 = [
   {
     imgURL: "/assets/icons/home.svg",
-    route: "#",
+    route: "/home",
     label: "Home",
     icon:"/assets/icons/home.svg"
   },
   {
     imgURL: "/assets/icons/people.svg",
-    route: "#",
+    route: "/discover",
     label: "Discover",
     icon:"/assets/icons/people.svg"
   },
   {
     imgURL: "/assets/icons/wallpaper.svg",
-    route: "#",
+    route: "/explore",
     label: "Explore",
     icon:"/assets/icons/wallpaper.svg"
   },
@@ -112,17 +112,17 @@ export const bottombarLinks = [
 export const bottombarLinks2 = [
   {
     imgURL: "/assets/icons/home.svg",
-    route: "#",
+    route: "/home",
     label: "Home",
   },
   {
     imgURL: "/assets/icons/wallpaper.svg",
-    route: "#",
+    route: "/explore",
     label: "Explore",
   },
   {
     imgURL: "/assets/icons/people.svg",
-    route: "#",
+    route: "/discover",
     label: "Discover",
     icon:"/assets/icons/people.svg"
   },
@@ -160,22 +160,12 @@ export const rightSidebarLinks = [
 export const rightSidebarLinks2 = [
   {
     imgURL: "/assets/icons/trending.svg",
-    route: "#",
+    route: "/trending",
     label: "Trending",
   },
   {
     imgURL: "/assets/icons/recommended.svg",
-    route: "#",
+    route: "/recomended",
     label: "Recommended",
-  },
-  {
-    imgURL: "/assets/icons/people.svg",
-    route: "#",
-    label: "User Activity",
-  },
-  {
-    imgURL: "/assets/icons/user-profile.svg",
-    route: "#",
-    label: "User Profile",
   },
 ];

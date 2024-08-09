@@ -8,6 +8,7 @@ import { toast } from '@/components/ui';
 import { IList } from '@/types';
 import { Models } from 'appwrite';
 import { motion } from "framer-motion";
+import ListCard from '@/components/shared/ListCard';
 
 const Home: React.FC = () => {
   const { user } = useUserContext();
@@ -123,7 +124,11 @@ const Home: React.FC = () => {
               <React.Fragment key={pageIndex}>
                 {sortLists(page.documents).map((document: Models.Document) => {
                   const list = document as unknown as IList;
-                  return <ListCard2 key={list.$id} list={list} />;
+                  return user.id ? (
+                    <ListCard2 key={list.$id} list={list} />
+                  ) : (
+                    <ListCard key={list.$id} list={list} />
+                  );
                 })}
               </React.Fragment>
             ))}

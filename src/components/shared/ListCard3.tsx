@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { IList } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
-import { useGetComments, useSaveList } from "@/lib/react-query/queries";
+import { useDeleteSavedList, useGetComments, useGetCurrentUser, useGetUserById, useLikeList, useSaveList } from "@/lib/react-query/queries";
 import Comment from "./Comment";
+import { Models } from "appwrite";
+import { useUserContext } from "@/context/AuthContext";
+import { checkIsLiked } from "@/lib/utils";
 
 const ListCard3: React.FC<any> = ({ list }) => {
   const [isSharing, setIsSharing] = useState(false);
@@ -57,25 +59,46 @@ const ListCard3: React.FC<any> = ({ list }) => {
     ));
   };
 
-  const [isSaved, setIsSaved] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useUserContext();
+  const { id } = user;
+  const { data: currentUser} = useGetCurrentUser();
+  const { mutate: deleteSaveList } = useDeleteSavedList();
+
+  const checkIsSaved = currentUser?.save?.some((saved:any)=> saved.list.$id === list.$id)
+  const [isSaved, setIsSaved] = useState(checkIsSaved);
   const { mutate: saveList } = useSaveList();
 
-  const handleSaveList = (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-  ) => {
+  const handleSaveList = (e: any) => {
     e.stopPropagation();
-    // if (isSaved) {
-    //   const savedListRecord = currentUser?.save?.find(
-    //     (record: Models.Document) => record.list.$id === list.$id
-    //   );
-    //   if (savedListRecord) {
-    //     deleteSaveList(savedListRecord.$id);
-    //   }
-    // } else {
-    //   saveList({ userId: userId, listId: list.$id });
-    // }
-    // setIsSaved(!isSaved);
+    if (isSaved) {
+      const savedListRecord = currentUser?.save?.find(
+        (record: Models.Document) => record.list.$id === list.$id
+      );
+      if (savedListRecord) {
+        deleteSaveList(savedListRecord.$id);
+      }
+    } else {
+      saveList({ userId: id, listId: list.$id });
+    }
+    setIsSaved(!isSaved);
   };
+
+  const likesList = list?.Likes || [];
+  const [likes, setLikes] = useState<any[]>(likesList);
+  const { mutate: likeList } = useLikeList();
+
+  const handleLikeList = (
+    e: React.MouseEvent<HTMLImageElement, MouseEvent>
+  ) => {  
+    e.stopPropagation();
+    let newLikes = likes.includes(id)
+      ? likes.filter((Id) => Id !== id)
+      : [...likes, id];
+    setLikes(newLikes);
+    likeList({ listId: list.$id, likesArray: newLikes });
+  };
+
 
   return (
     <>
@@ -159,15 +182,23 @@ const ListCard3: React.FC<any> = ({ list }) => {
         </div>
 
         <div className="bg-dark-3 px-6 py-3 flex justify-between text-light-2 text-sm">
-          <span className="flex items-center">
-            <img
-              src="/assets/icons/like.svg"
-              alt="Likes"
-              className="w-5 h-5 mr-2"
-            />
-            {list.likes?.length || 0} Likes
-          </span>
-          <span className="flex items-center gap-2" onClick={handleSaveList}>
+        <span className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+        <img
+          src={
+            checkIsLiked(likes, id)
+              ? "/assets/icons/liked.svg"
+              : "/assets/icons/like.svg"
+          }
+          alt="like"
+          width={20}
+          height={20}
+          onClick={handleLikeList}
+          className="cursor-pointer"
+        />
+        <p className="small-medium lg:base-medium">{likes.length} Likes</p>
+        </span>
+
+          <span className="flex items-center gap-2 cursor-pointer" onClick={handleSaveList}>
             <img
               src={
                 isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"
@@ -180,13 +211,14 @@ const ListCard3: React.FC<any> = ({ list }) => {
               {isSaved ? "Saved" : "Save"}
             </p>
           </span>
-          <span className="flex items-center">
+          
+          <span onClick={()=> navigate(`/lists/${list.$id}`)} className="flex items-center cursor-pointer">
             <img
               src="/assets/icons/comment.svg"
               alt="Comments"
               className="w-5 h-5 mr-2"
             />
-            {list.comments?.length || 0} Comments
+            {comments?.length || 0} Comments
           </span>
         </div>
 

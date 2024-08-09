@@ -122,8 +122,8 @@ const ListForm = ({ list, action, initialData }: any) => {
         z.object({
           content: z.string().min(1, "Item cannot be empty"),
           isVisible: z.boolean(),
-          creator: z.string(),
-          id: z.string(),
+          creator: z.string().nullable().default(null),
+          id: z.string().nullable().default(null),
         })
       )
       .min(5, "At least 5 items are required")
@@ -141,23 +141,22 @@ const ListForm = ({ list, action, initialData }: any) => {
       Title: initialData?.Title || list?.Title || "",
       Description: initialData?.Description || list?.Description || "",
       items:
-        initialData?.item.map((item: any) => {
-       
-          return {content:item.content, isVisible:true,  creator: item.creator.$id, id: item.$id};
+        initialData?.item.map((item: any) => { 
+          return {content:item.content, isVisible:true,  creator: item?.creator.$id, id: item?.$id};
        }) ||
         list?.item?.map((item: any) => {
           if (typeof item === "string") {
             const [content, isVisible] = item.split("|");
             return { content, isVisible: isVisible === "true" };
           }
-          return {content:item.content, isVisible:true,  creator: item.creator.$id, id: item.$id};
+          return {content:item.content, isVisible:true,  creator: item?.creator?.$id, id: item?.$id};
        })||
        Array(5).fill({ content: "", isVisible: true }),
       Categories: initialData?.Categories || list?.Categories || [],
       Tags: initialData?.Tags || list?.Tags || [],
       timespans: initialData?.timespans || list?.timespans || [],
       locations: initialData?.locations || list?.locations || [],
-      Public: initialData?.Public || list?.Public || false,
+      Public: initialData?.Public || list?.Public || true,
     },
   });
 
@@ -176,7 +175,7 @@ const ListForm = ({ list, action, initialData }: any) => {
       try {
 
         if (action === "Update") {
-      
+          console.log("working!")
           //Find each unique item created by any User
           let item: any = value.items.map((item: any) => {
             let currentListItem = list.item.find((listItem: any) => listItem.content !== item.content)
@@ -199,6 +198,7 @@ const ListForm = ({ list, action, initialData }: any) => {
 
           const updatedList = await updateList({
           ...value,
+            userId:user.id,
             item:item,
             listId: list.$id,
             UpdatedAt: new Date(),
@@ -312,7 +312,7 @@ const ListForm = ({ list, action, initialData }: any) => {
     setPreviousItems(form.getValues("items"));
     form.setValue(
       "items",
-      items.map((item) => ({ content: item, isVisible: true }))
+      items.map((item) => ({ content: item, isVisible: true, id:"", creator:"" }))
     );
     setShowUndoButton(true);
     setTimeout(() => setShowUndoButton(false), 10000); 
@@ -603,7 +603,7 @@ const ListForm = ({ list, action, initialData }: any) => {
           {fields.length < 10 && (
             <Button
               type="button"
-              onClick={() => append({ content: "", isVisible: true })}
+              onClick={() => append({ content: "", isVisible: true, id:"", creator:"" })}
               aria-label="Add new item"
               className="px-4 py-2 rounded-md mb-4">
               Add Row
@@ -720,7 +720,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                 />
               </FormControl>
               <FormDescription>
-                Check if you want to publish this list.
+                Uncheck this if you want to make your list private
               </FormDescription>
             </FormItem>
           )}

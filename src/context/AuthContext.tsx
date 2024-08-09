@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return false;
     } catch (error) {
-      console.error("Error checking auth user:", error);
+      console.log("Error checking auth user:", error);
       return false;
     } finally {
       setIsLoading(false);
@@ -96,9 +96,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } catch (error) {
-        console.error("Error initializing auth:", error);
+        console.log("Error initializing auth:", error);
       } finally {
-        setIsLoading(false);
+        setIsLoading(false);  
       }
     };
 

@@ -177,7 +177,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               alt="Likes"
               className="w-5 h-5 mr-2"
             />
-            {list.likes?.length || 0} Likes
+            {list.Likes?.length || 0} Likes
           </span>
           <span className="flex items-center">
             <img

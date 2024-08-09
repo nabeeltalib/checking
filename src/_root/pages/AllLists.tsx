@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader } from "@/components/shared";
+import { ListCard, Loader } from "@/components/shared";
 import { useGetInfiniteLists, useGetAISuggestions } from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
 import { IList } from "@/types";
@@ -78,7 +78,11 @@ const AllLists: React.FC = () => {
             <React.Fragment key={pageIndex}>
               {page?.documents.map((document: Models.Document) => {
                 const list = document as unknown as IList;
-                return <ListCard2 key={list.$id} list={list} />;
+                return  user.id ? (
+                  <ListCard2 key={list.$id} list={list} />
+                ) : (
+                  <ListCard key={list.$id} list={list} />
+                );;
               })}
             </React.Fragment>
           ))}

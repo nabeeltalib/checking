@@ -29,7 +29,7 @@ const RootLayout2 = () => {
   return (
     <div className="flex flex-col md:flex-row w-full pt-16">
       <Topbar2 />
-      <div onClick={handleDialogOpen} className="flex flex-1 pt-16">
+      <div className="flex flex-1 pt-16">
         <div className="hidden md:flex lg:w-[25%] md:w-[15%]">
           <LeftSidebar2 />
         </div>

@@ -24,11 +24,11 @@ export const useListContext = (): ListContextProps => {
 };
 
 export const ListProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { data, isLoading, refetch } = useQuery<{ documents: IList[] }>([QUERY_KEYS.GET_RECENT_LISTS], getRecentLists, {
+  const { data, isLoading, refetch } = useQuery<{ documents: any[] }>([QUERY_KEYS.GET_RECENT_LISTS], getRecentLists, {
     refetchOnWindowFocus: false,
   });
 
-  const [localLists, setLocalLists] = useState<IList[]>([]);
+  const [localLists, setLocalLists] = useState<any[]>([]);
 
   const lists = useMemo(() => {
     const apiLists = data?.documents?.map(list => ({
@@ -44,11 +44,11 @@ export const ListProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return [...apiLists, ...localLists];
   }, [data, localLists]);
 
-  const addList = useCallback((list: IList) => {
+  const addList = useCallback((list: any) => {
     setLocalLists(prev => [...prev, list]);
   }, []);
 
-  const updateList = useCallback((id: string, updatedList: Partial<IList>) => {
+  const updateList = useCallback((id: string, updatedList: Partial<any>) => {
     setLocalLists(prev => prev.map(list => list.id === id ? { ...list, ...updatedList } : list));
   }, []);
 

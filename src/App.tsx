@@ -108,6 +108,11 @@ const App = () => {
     <Routes>
     <Route element={<RootLayout2 />}>
     <Route path="/" element={<PreviewMode />} />
+    <Route path="/home" element={<Home />} />
+    <Route path="/explore" element={<Explore />} />
+    <Route path="/discover" element={<AllLists />} />
+    <Route path="/trending" element={<Trending />} />
+    <Route path="/recomended" element={<Recomended />} />
     </Route>
     </Routes>
     </div>}

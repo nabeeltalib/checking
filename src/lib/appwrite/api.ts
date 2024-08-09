@@ -310,7 +310,6 @@ export async function getPopularCategories() {
 }
 
 export async function getRecentLists() {
-
   try {
     const lists = await databases.listDocuments(
       appwriteConfig.databaseId,
@@ -536,48 +535,54 @@ export async function CollaborateOnList(listId: string, userId:string) {
 
 export async function updateList(list: any) {
   try {
-    // let updatedItems = []
-    // for(let i of list.item)
-    // {
-    //   const resp = await updateItem(i);
-    //   updatedItems.push(resp.$id)
-    // }
+    let updatedItems = []
+    for(let i of list.item)
+    {
+      if(!i.id)
+      {
+        let resp = await createItem(i.content, list.userId)
+        updatedItems.push(resp.$id)
+        continue
+      }
+      const resp = await updateItem(i);
+      updatedItems.push(resp.$id)
+    }
 
 
-    // //Remove item first so that sorting is done correctly
-    // const resp = await databases.updateDocument(
-    //   appwriteConfig.databaseId,
-    //   appwriteConfig.listCollectionId,
-    //   list.listId,
-    //   {
-    //     item: [], 
-    //   }
-    // );
+    //Remove item first so that sorting is done correctly
+    const resp = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      list.listId,
+      {
+        item: [], 
+      }
+    );
 
-    // const updatedList = await databases.updateDocument(
-    //   appwriteConfig.databaseId,
-    //   appwriteConfig.listCollectionId,
-    //   list.listId,
-    //   {
-    //     Title: list.Title,
-    //     Description: list.Description,
-    //     Categories: list?.Categories || [],
-    //     timespans: list?.timespans || [],
-    //     locations: list?.locations || [],
-    //     Public: list.Public,
-    //     items: list.items.map((v:{content:string})=>v.content),
-    //     item: updatedItems.map((item) => item), 
-    //     Tags: list.Tags
-    //   }
-    // );
+    const updatedList = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      list.listId,
+      {
+        Title: list.Title,
+        Description: list.Description,
+        Categories: list?.Categories || [],
+        timespans: list?.timespans || [],
+        locations: list?.locations || [],
+        Public: list.Public,
+        items: list.items.map((v:{content:string})=>v.content),
+        item: updatedItems.map((item) => item), 
+        Tags: list.Tags
+      }
+    );
 
-    // if (!updatedList) {
-    //   throw new Error('Failed to update list');
-    // }
+    if (!updatedList) {
+      throw new Error('Failed to update list');
+    }
 
-    // // Re-index the updated list in Typesense
-    // await indexList(updatedList as IList);
-    // return updatedList;
+    // Re-index the updated list in Typesense
+    await indexList(updatedList as IList);
+    return updatedList;
   } catch (error) {
     console.error('Error updating list:', error);
     return null;
@@ -1169,7 +1174,6 @@ export const getUserFriends = async (userId: string) => {
         Query.equal('status', 'accepted') 
       ]
     );
-
     return response.documents;
   } catch (error) {
     console.error('Error fetching user friends:', error);
@@ -1363,7 +1367,7 @@ export async function getPublicLists() {
     const result = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      [Query.equal('Public', true), Query.orderDesc('$createdAt')]
+      
     );
     return result.documents;
   } catch (error) {

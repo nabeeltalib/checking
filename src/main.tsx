@@ -16,8 +16,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
       <QueryProvider>
-        <AuthProvider>
-          <ListProvider>
+        <ListProvider>
+          <AuthProvider>
             <CommentProvider>
               <SuggestionProvider>
                 <CollaborationProvider>
@@ -25,8 +25,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                 </CollaborationProvider>
               </SuggestionProvider>
             </CommentProvider>
-          </ListProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ListProvider>
       </QueryProvider>
     </BrowserRouter>
   </React.StrictMode>

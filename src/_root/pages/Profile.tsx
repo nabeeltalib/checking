@@ -67,8 +67,7 @@ const Profile: React.FC = () => {
       }))
     : [];
 
-    console.log(savedLists)
-
+  let isRequestSent = sentRequest.some((data:any) => data.friendId.$id === id);
   const isOwnProfile = currentUser.$id === user?.id;
   return (
     <div className="flex flex-col gap-6 w-full p-6 mx-auto max-w-7xl">
@@ -91,9 +90,9 @@ const Profile: React.FC = () => {
           {!isOwnProfile && !isAccepted ? (
             <Button className="mt-4 bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
             onClick={handleFriendRequest}
-            disabled={sentRequest.some((data:any) => data.friendId.$id === id)}
+            disabled={isRequestSent}
             >
-              Send Friend Request
+             {isRequestSent ? "Request Sent" : "Send Friend Request"}
             </Button>
           ) : <h3>Friend</h3>} 
         </div>
@@ -158,7 +157,7 @@ const Profile: React.FC = () => {
             >
               Curated Lists
             </h2>
-            {isCuratedExpanded && <GridListList lists={userLists || []} showUser={false} />}
+            {<GridListList lists={userLists || []} showUser={false} />}
           </div>
           <div>
             <h2

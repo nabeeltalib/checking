@@ -31,7 +31,7 @@ export const generateListItems = async (Title: object): Promise<any[]> => {
       JSON.stringify({ Title }),
       false
     );
-    console.log(JSON.parse(execution.responseBody), 'aaaaaaadsadasdasd')
+   
     return JSON.parse(execution.responseBody).items;
   } catch (error) {
     console.error("Error generating list items:", error);

@@ -28,7 +28,7 @@ const GridListList: React.FC<GridListListProps> = ({ lists, showUser = true, sho
             </div>
           </Link>
           {showUser && list.creator && (
-            <Link to={`/profile/${list.creator.$id}`} className="px-4 py-2 bg-dark-3 flex items-center fixed bottom-0 left-0 w-full z-50">
+            <Link to={`/profile/${list.creator.$id}`} className="px-4 py-2 bg-dark-3 flex items-center z-50">
             <img
               src={list.creator.ImageUrl || "/assets/icons/profile-placeholder.svg"}
               alt={`${list.creator.Name}'s profile`}
@@ -38,15 +38,15 @@ const GridListList: React.FC<GridListListProps> = ({ lists, showUser = true, sho
           </Link>
           )}
           {showStats && (
-           <div className="px-4 py-2 bg-dark-3 flex justify-between items-center fixed bottom-0 left-0 w-full z-50">
-           <Link to={`/lists/${list.$id}/likes`} className="flex items-center">
+           <div className="px-4 py-2 bg-dark-3 flex justify-between items-center z-50">
+           <span className="flex items-center">
              <img src="/assets/icons/like.svg" alt="Likes" className="w-4 h-4 mr-1" />
              <p className="text-light-1">{list.Likes?.length || 0}</p>
-           </Link>
-           <Link to={`/lists/${list.$id}/comments`} className="flex items-center">
+           </span>
+           <span className="flex items-center">
              <img src="/assets/icons/comment.svg" alt="Comments" className="w-4 h-4 mr-1" />
              <p className="text-light-1">{list.comments?.length || 0}</p>
-           </Link>
+           </span>
          </div>
           )}
         </div>
