@@ -137,7 +137,7 @@ export const rightSidebarLinks = [
   },
   {
     imgURL: "/assets/icons/recommended.svg",
-    route: "/recomended",
+    route: "/recommended",
     label: "Recommended",
   },
   {
@@ -165,7 +165,7 @@ export const rightSidebarLinks2 = [
   },
   {
     imgURL: "/assets/icons/recommended.svg",
-    route: "/recomended",
+    route: "/recommended",
     label: "Recommended",
   },
 ];

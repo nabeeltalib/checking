@@ -84,7 +84,7 @@ const App = () => {
           <Route path="/listfromfriends" element={<ListFromFriends />} />
           <Route path="/userlists" element={<Userlist />} />
           <Route path="/trending" element={<Trending />} />
-          <Route path="/recomended" element={<Recomended />} />
+          <Route path="/recommended" element={<Recomended />} />
           <Route path="/userActivity" element={<UserActivity />} />
           <Route path="/saved" element={<Saved />} />
           <Route path="/all-lists" element={<AllLists />} />
@@ -112,7 +112,7 @@ const App = () => {
     <Route path="/explore" element={<Explore />} />
     <Route path="/discover" element={<AllLists />} />
     <Route path="/trending" element={<Trending />} />
-    <Route path="/recomended" element={<Recomended />} />
+    <Route path="/recommended" element={<Recomended />} />
     </Route>
     </Routes>
     </div>}
