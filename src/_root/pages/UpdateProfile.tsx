@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -40,6 +41,7 @@ const formSchema = z.object({
     .string()
     .max(100, "accountId must be less than 100 characters"),
     file: z.instanceof(File).optional(),
+    Public: z.boolean()
 });
 
 const UpdateProfile = () => {
@@ -58,6 +60,7 @@ const UpdateProfile = () => {
       Bio: user.Bio || "",
       ImageUrl: user.imageUrl || "",
       accountId: user.id || "",
+      Public:user.Public || true,
     },
   });
 
@@ -74,19 +77,36 @@ const UpdateProfile = () => {
         Bio: currentUser.Bio || "",
         ImageUrl: currentUser.ImageUrl || "",
         accountId: currentUser.accountId || "",
+        Public:currentUser.Public,
       });
     }
   }, [currentUser, form]);
 
   const handleUpdate = async (data: z.infer<typeof formSchema>) => {
     try {
-      const updatedUser = await updateUser({
+
+      let updatedUser;
+      if(data.file)
+      {
+       updatedUser = await updateUser({
         userId: user.id,
         Name: data.Name,
         Bio: data.Bio,
         file: [data.file], 
         ImageUrl: data.ImageUrl,
+        Public: data.Public,
       });
+    }
+    else{
+      updatedUser = await updateUser({
+        userId: user.id,
+        Name: data.Name,
+        Bio: data.Bio,
+        file:[],
+        ImageUrl: data.ImageUrl,
+        Public: data.Public,
+      });
+    }
 
       if (!updatedUser) {
         throw new Error('Update user failed. Please try again.');
@@ -231,6 +251,26 @@ const UpdateProfile = () => {
                     />
                   </FormControl>
                   <FormMessage className="shad-form_message" />
+                </FormItem>
+              )}
+            />
+
+          <FormField
+              control={form.control}
+              name="Public"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Public &nbsp;</FormLabel>
+                  <FormControl>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={(e) => field.onChange(e.target.checked)}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                     Uncheck this if you want to make your Account private
+                  </FormDescription>
                 </FormItem>
               )}
             />

@@ -553,7 +553,6 @@ export async function getUserById(userId: any) {
 }
 
 export async function updateUser(user: any) {
-  console.log("sdsfsfdsfdsfsd",user)
   const hasFileToUpdate = user.file.length > 0;
   try {
     let image = {
@@ -583,6 +582,7 @@ export async function updateUser(user: any) {
         Bio: user.Bio,
         ImageUrl: image.ImageUrl,
         ImageId: image.ImageId,
+        Public: user.Public
       }
     );
 

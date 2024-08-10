@@ -190,6 +190,9 @@ export async function getCurrentUser() {
 
     return currentUser.documents[0];
   } catch (error) {
+    if (error.code === 401) {
+      return null;
+    }
     console.error("Error getting current user:", error);
     return null;
   }
@@ -1361,6 +1364,103 @@ export async function getFriends(userId: string) {
   }
 }
 
+export async function getConnection(userId: string) {
+  try {
+    const result = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      "66b66f4e00254daf8870",
+      [Query.equal("userId",userId)]
+    );
+    return result.documents;
+  } catch (error) {
+    console.error('Error getting friends:', error);
+    throw error;
+  }
+}
+
+export async function createConnection(userId: string) {
+  try {
+    const result = await databases.createDocument(
+      appwriteConfig.databaseId,
+      "66b66f4e00254daf8870",
+      ID.unique(),
+      {
+        userId:userId,
+      }
+    );
+    return result;
+  } catch (error) {
+    console.error('Error getting friends:', error);
+    throw error;
+  }
+}
+
+export async function updateConnection(connectionId: string, follower:string[], following:string[]) {
+  try {
+    const result = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      "66b66f4e00254daf8870",
+        connectionId,
+      {
+        follower:follower,
+        following:following
+      }
+    );
+    return result;
+  } catch (error) {
+    console.error('Error getting friends:', error);
+    throw error;
+  }
+}
+
+export async function followUser(userId: string, followingId:string) {
+  try {
+      let findUser = await getConnection(userId);
+      if(findUser.length > 0)
+      {
+        let updatedFollowing = Array.isArray(findUser[0].following) ? [...findUser[0].following, followingId] : [followingId];
+        await updateConnection(findUser[0].$id, findUser[0].follower, updatedFollowing);
+        let followingUser = await getConnection(followingId)
+        if(followingUser.length > 0)
+        {
+          let updatedFollower = Array.isArray(followingUser[0].follower) ? [...followingUser[0].follower, userId] : [userId];
+          await updateConnection(followingUser[0].$id,updatedFollower,followingUser[0].following);
+        }
+        else{
+          let followingUser = await createConnection(followingId);
+          await updateConnection(followingUser.$id,[userId],[]);
+        }
+
+      }
+      else{
+          let userFollow = await createConnection(userId);
+          await updateConnection(userFollow.$id,[],[followingId]);
+          
+          let followingUser = await getConnection(followingId)
+          if(followingUser.length > 0)
+          {
+            let updatedFollower = Array.isArray(followingUser[0].follower) ? [...followingUser[0].follower, userId] : [userId];
+            await updateConnection(followingUser[0].$id,updatedFollower,followingUser[0].following);
+          }
+          else{
+            let followingUser = await createConnection(followingId);
+            await updateConnection(followingUser.$id,[userId],[]);
+          }
+    }
+
+  } catch (error) {
+    console.error('Error getting friends:', error);
+    throw error;
+  }
+}
+
+
+
+
+
+
+
+
 // New functions for public lists
 export async function getPublicLists() {
   try {
@@ -1382,6 +1482,20 @@ export async function getPopularLists() {
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
       [Query.greaterThan('Views', 0),Query.orderDesc('Views'), Query.limit(10)]
+    );
+    return result.documents;
+  } catch (error) {
+    console.error('Error getting popular lists:', error);
+    throw error;
+  }
+}
+
+export async function getMostLikedLists() {
+  try {
+    const result = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      [Query.orderDesc('Likes'), Query.limit(10)]
     );
     return result.documents;
   } catch (error) {

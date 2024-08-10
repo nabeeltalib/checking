@@ -5,7 +5,8 @@ import { useUserContext } from "@/context/AuthContext";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { Input } from "@/components/ui/input";
 import { useSearchLists } from "@/lib/react-query/queries";
-import { NotificationBell } from "./notifications/NotificationBell";
+import { signInWithGoogle } from "@/lib/appwrite/api";
+
 
 const Topbar2 = () => {
   const navigate = useNavigate();
@@ -19,7 +20,15 @@ const Topbar2 = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const handleDialogOpen = () => {
+    setIsDialogOpen(true);
+  };
 
+  const handleGoogleSignIn = () => {
+    signInWithGoogle();
+    // Note: This will redirect the user, so no need for further handling here
+  };
 
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
@@ -87,7 +96,7 @@ const Topbar2 = () => {
            searchResults?.pages.map((item:any)=>(
             item.map((list:any, index:number)=>(
               <div key={index} className="flex flex-col ml-1">
-              <Link className="mt-2" to={`${import.meta.env.VITE_APP_DOMAIN}/lists/${list.id}`} >Query Matches with list: "{list.Title}"</Link>
+              <span className="mt-2 cursor-pointer" onClick={handleDialogOpen} >Query Matches with list: "{list.Title}"</span>
               <hr style={{width:"26vw"}}/>
               </div>
             ))
@@ -154,6 +163,30 @@ const Topbar2 = () => {
           </div>
         </div>
       </div>
+
+      {isDialogOpen && (
+        <div className="fixed top-4 right-4 bg-white p-4 rounded shadow-lg z-50">
+          <h4 onClick={()=>setIsDialogOpen(false)} style={{cursor:"pointer", fontWeight:"bolder"}} className="text-black flex justify-end">X</h4>
+          <h3 className="text-xl font-bold mb-4 text-black">Please Sign In to perform further operations</h3>
+          <div className="flex flex-col gap-4">
+            <form>
+            <button    
+               className="bg-slate-800 flex w-full justify-center text-white px-4 py-2 rounded"
+               onClick={handleGoogleSignIn}
+            >
+              <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
+              Sign in with Google
+            </button>
+            </form>
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+              onClick={()=> navigate("/sign-in")}
+            >
+              Sign in / Sign up
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

@@ -9,6 +9,7 @@ import { IList } from '@/types';
 import { Models } from 'appwrite';
 import { motion } from "framer-motion";
 import ListCard from '@/components/shared/ListCard';
+import { getConnection } from '@/lib/appwrite/api';
 
 const Home: React.FC = () => {
   const { user } = useUserContext();
@@ -32,6 +33,16 @@ const Home: React.FC = () => {
       onSuccess: (idea) => setListIdea(idea),
     });
   };
+
+  const [connection, setConnection] = useState<any>(undefined)
+  useEffect(()=>{
+    const fetchData =async ()=>{
+      let resp = await getConnection(user.id)
+      resp.length > 0 ? setConnection(resp[0]) : setConnection(resp) 
+    }
+
+    fetchData()
+  },[])
 
   useEffect(() => {
     if (inView && hasNextPage) {
@@ -75,9 +86,9 @@ const Home: React.FC = () => {
         <p>Welcome, {user.name || "Guest"}</p>
         {user && (
           <div className="text-sm text-light-3">
-            <span>{user.followersCount || 0} followers</span>
+            <span>{connection?.follower?.length || 0} followers</span>
             <span className="mx-2">•</span>
-            <span>{user.followingCount || 0} following</span>
+            <span>{connection?.following?.length || 0} following</span>
           </div>
         )}
       </div>

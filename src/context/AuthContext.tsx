@@ -96,6 +96,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } catch (error) {
+      // to not through errors on guest users
+        if (error.code === 401) {
+          return null;
+        }
         console.log("Error initializing auth:", error);
       } finally {
         setIsLoading(false);  
