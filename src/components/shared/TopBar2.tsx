@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { useUserContext } from "@/context/AuthContext";
-import { useSignOutAccount } from "@/lib/react-query/queries";
+import { useSignInWithGoogle, useSignOutAccount } from "@/lib/react-query/queries";
 import { Input } from "@/components/ui/input";
 import { useSearchLists } from "@/lib/react-query/queries";
-import { signInWithGoogle } from "@/lib/appwrite/api";
+import { Loader } from "lucide-react";
 
 
 const Topbar2 = () => {
@@ -24,6 +24,7 @@ const Topbar2 = () => {
   const handleDialogOpen = () => {
     setIsDialogOpen(true);
   };
+  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
 
   const handleGoogleSignIn = () => {
     signInWithGoogle();
@@ -133,30 +134,14 @@ const Topbar2 = () => {
               </svg>
             </button>
 
-            <Button className="shad-button_primary w-full mb-4" onClick={handleCreateList}>
-              Create List
-            </Button>
-
-            <Button
-              variant="ghost"
-              className="shad-button_ghost p-2 w-full mb-4"
-              onClick={() => signOut()}
-              aria-label="Sign out"
-            >
-              <img src="/assets/icons/logout.svg" alt="Sign out" className="h-8 w-8 mx-auto" />
-            </Button>
-
-            <Link to="/notifications" className="block mb-4">
-              <img src="/assets/icons/notification.svg" alt="notifications" width={27} height={22} className="mx-auto" />
-            </Link>
-
             <div className="relative">
               <div className="flex items-center cursor-pointer" onClick={toggleDropdown}>
                 <img
-                  className="w-8 h-8 rounded-full object-cover mx-auto"
-                  src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
+                  className="w-8 h-8 rounded-full object-cover mx-2"
+                  src={"/assets/icons/profile-placeholder.svg"}
                   alt="Profile"
                 />
+                <span>Guest User</span>
                 </div>
 
             </div>
@@ -170,13 +155,23 @@ const Topbar2 = () => {
           <h3 className="text-xl font-bold mb-4 text-black">Please Sign In to perform further operations</h3>
           <div className="flex flex-col gap-4">
             <form>
-            <button    
-               className="bg-slate-800 flex w-full justify-center text-white px-4 py-2 rounded"
-               onClick={handleGoogleSignIn}
-            >
-              <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
-              Sign in with Google
-            </button>
+            <Button 
+            type="button" 
+            className="shad-button_google w-full"
+            onClick={handleGoogleSignIn}
+            disabled={isGoogleLoading}
+          >
+            {isGoogleLoading ? (
+              <div className="flex-center gap-2">
+                <Loader /> Loading...
+              </div>
+            ) : (
+              <>
+                <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
+                Sign in with Google
+              </>
+            )}
+          </Button>
             </form>
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded"

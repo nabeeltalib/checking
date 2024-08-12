@@ -3,9 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { IList } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
-import { Share2 } from "lucide-react";
+import { Loader, Share2 } from "lucide-react";
 import { useGetComments, useSignInWithGoogle } from "@/lib/react-query/queries";
 import Comment from "./Comment";
+import { Button } from "../ui";
 
 type ListCardProps = {
   list: IList;
@@ -48,7 +49,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     setIsDialogOpen(false);
   };
 
-  const { mutateAsync: signInWithGoogle } = useSignInWithGoogle();
+  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
 
   const handleGoogleSignIn = () => {
     signInWithGoogle();
@@ -218,16 +219,23 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           </h3>
           <div className="flex flex-col gap-4">
             <form>
-              <button
-                className="bg-slate-800 flex w-full justify-center text-white px-4 py-2 rounded"
-                onClick={handleGoogleSignIn}>
-                <img
-                  src="/assets/icons/google.svg"
-                  alt="Google"
-                  className="mr-2 h-5 w-5"
-                />
+            <Button 
+            type="button" 
+            className="shad-button_google w-full"
+            onClick={handleGoogleSignIn}
+            disabled={isGoogleLoading}
+          >
+            {isGoogleLoading ? (
+              <div className="flex-center gap-2">
+                <Loader /> Loading...
+              </div>
+            ) : (
+              <>
+                <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
                 Sign in with Google
-              </button>
+              </>
+            )}
+          </Button>
             </form>
             <button
               className="bg-blue-500 text-white px-4 py-2 rounded"

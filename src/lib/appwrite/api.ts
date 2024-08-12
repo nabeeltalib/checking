@@ -151,6 +151,7 @@ export async function saveUserToDB(user: {
     return error;
   }
 }
+
 export async function signInWithGoogle() {
   try {
     const session = await account.createOAuth2Session('google');

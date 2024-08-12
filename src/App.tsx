@@ -38,6 +38,8 @@ import ListFromFriends from "./_root/pages/listFromFriends";
 import RootLayout2 from "./_root/pages/RootLayout2";
 import EmbedSelector from "./components/shared/EmbedSelector";
 import EmbedPreview from "./components/shared/EmbedPreview";
+import SegmentedLeaderboardPage from "./_root/pages/SegmentedLeaderboardPage";
+import ProfileScreen from "./_root/pages/ProfileScreen";
 
 
 const App = () => {
@@ -98,6 +100,8 @@ const App = () => {
           <Route path="/shared/:sharedId" element={<SharedListView />} />
           <Route path="/remix/:id" element={<RemixList />} /> {/* New route */}
           <Route path="/manage-list/:id" element={<ManageList />} /> {/* New route */}
+          <Route path="/segment-leaderboard" element={<SegmentedLeaderboardPage />} /> {/* New route */}
+          <Route path="/profile-screen" element={<ProfileScreen />} /> {/* New route */}
         </Route>
       </Routes>
       <FAB />
