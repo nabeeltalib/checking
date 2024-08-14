@@ -47,6 +47,12 @@ export const sidebarLinks = [
     label: "Users list",
     icon:"/assets/icons/list.svg"
   },  
+  {
+    imgURL: "/assets/icons/list.svg",
+    route: "/comprehensive-leaderboard",
+    label: "LeaderBoard",
+    icon:"/assets/icons/list.svg"
+  },  
 ];
 
 export const sidebarLinks2 = [
