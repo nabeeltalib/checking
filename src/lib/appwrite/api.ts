@@ -1468,7 +1468,6 @@ export async function getPublicLists() {
     const result = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
-      
     );
     return result.documents;
   } catch (error) {

@@ -513,27 +513,37 @@ export async function getCuratedList(userId: string): Promise<IListItem[]> {
 // ============================================================
 
 export async function getUsers(limit?: number) {
-  const queries: any[] = [Query.orderDesc("$createdAt")];
-
-  if (limit) {
-    queries.push(Query.limit(limit));
-  }
-
   try {
+    // Step 1: Fetch all users and their associated lists
     const users = await databases.listDocuments(
       appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      queries
+      appwriteConfig.userCollectionId
     );
 
     if (!users) throw new Error("No users found");
 
-    return users.documents;
+    // Step 2: Aggregate the sum of likes for each user
+    const usersWithLikes = users.documents.map(user => {
+      const totalLikes = user.lists.reduce((acc: any, list:any) => acc + list.Likes.length, 0);
+      return {
+        ...user,
+        totalLikes,
+      };
+    });
+
+    // Step 3: Sort users by total likes in descending order
+    usersWithLikes.sort((a, b) => b.totalLikes - a.totalLikes);
+
+    // Step 4: Apply limit if provided
+    const limitedUsers = limit ? usersWithLikes.slice(0, limit) : usersWithLikes;
+
+    return limitedUsers;
   } catch (error) {
     console.error("Error getting users:", error);
     return null;
   }
 }
+
 
 export async function getUserById(userId: any) {
   try {

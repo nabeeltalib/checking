@@ -15,7 +15,7 @@ const Userlist = () => {
 
     getUserData();
   }, []);
-
+    console.log(users)
   return (
     <div>
       {users === undefined ? (
