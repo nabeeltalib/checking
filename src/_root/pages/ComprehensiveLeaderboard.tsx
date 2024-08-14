@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Trophy,TrendingUp, List, ThumbsUp, MessageCircle, Eye } from 'lucide-react';
 import { getUsers } from '@/lib/appwrite/config';
 import { getMostLikedLists } from '@/lib/appwrite/api';
+import { Link } from 'react-router-dom';
 
 const ComprehensiveLeaderboard = () => {
   const [timeFrame, setTimeFrame] = useState('week');
@@ -20,11 +21,11 @@ const ComprehensiveLeaderboard = () => {
   },[])
   
   let topUser = users.map((user:any,index:number)=> {
-    return {rank: index+1, name:user.Name, avatar:user.ImageUrl || "/assets/icons/profile-placeholder.svg", listsCreated: user.lists.length, totalLikes: user.totalLikes, totalViews: 100}
+    return {rank: index+1,path:`/profile/${user.$id}` ,  name:user.Name, avatar:user.ImageUrl || "/assets/icons/profile-placeholder.svg", listsCreated: user.lists.length, totalLikes: user.totalLikes, totalViews: 100}
   })
 
   let topList = lists.map((list:any, index:number) => {
-    return {rank:index+1, title:list.Title, creator:list.creator.Name, likes: list.Likes.length, comments:list.comments.length, views:100}
+    return {rank:index+1,path:`/lists/${list.$id}`, title:list.Title, creator:list.creator.Name, likes: list.Likes.length, comments:list.comments.length, views:100}
   })
 
   const categories = ['All', 'Technology', 'Travel', 'Food', 'Entertainment', 'Sports'];
@@ -108,7 +109,7 @@ const ComprehensiveLeaderboard = () => {
           { header: "User", key: "name", render: (item:any) => (
             <div className="flex items-center">
               <img src={item.avatar} alt={item.name} className="w-8 h-8 rounded-full mr-2" />
-              {item.name}
+              <Link to={item.path}>{item.name}</Link>
             </div>
           )},
           { header: <List size={24} className="inline mr-1" />, key: "listsCreated" },
@@ -122,7 +123,11 @@ const ComprehensiveLeaderboard = () => {
         title="Top Lists"
         data={topList}
         columns={[
-          { header: "List Title", key: "title" },
+          { header: "List Title", key: "title", render: (item:any) => (
+            <div className="flex items-center">
+              <Link to={item.path}>{item.title}</Link>
+            </div>
+          )},
           { header: "Creator", key: "creator" },
           { header: <ThumbsUp size={16} className="inline mr-1" />, key: "likes" },
           { header: <MessageCircle size={16} className="inline mr-1" />, key: "comments" },
