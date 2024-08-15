@@ -158,7 +158,7 @@ const ListCard3: React.FC<any> = ({ list }) => {
 
           <div className="flex flex-wrap gap-2 mb-4">
             {list?.Tags?.map((tag: string, index: number) => (
-              <span key={`${tag}${index}`} className="text-primary-500">
+              <span key={`${tag}${index}`} onClick={()=> navigate(`/categories/${tag}`)} className="text-primary-500 cursor-pointer">
                 #{tag}
               </span>
             ))}

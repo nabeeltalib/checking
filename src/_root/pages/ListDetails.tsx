@@ -185,13 +185,13 @@ const ListDetails: React.FC = () => {
           </button>
         )}
 
-        <div className="flex flex-wrap gap-2 mb-4">
-          {list?.Tags?.map((tag: string, index: number) => (
-            <span key={`${tag}${index}`} className="text-primary-500">
-              #{tag}
-            </span>
-          ))}
-        </div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {list?.Tags?.map((tag: string, index: number) => (
+              <span key={`${tag}${index}`} onClick={()=> navigate(`/categories/${tag}`)} className="text-primary-500 cursor-pointer">
+                #{tag}
+              </span>
+            ))}
+          </div>
 
         <p className="text-light-3 text-sm mb-4">
           {formatDistanceToNow(new Date(list.$createdAt), { addSuffix: true })}

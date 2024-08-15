@@ -1,11 +1,9 @@
 import { useState, useCallback, useRef } from "react";
 
-interface SearchBarProps {
-  onSearch: (query: string) => void;
-}
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+
+const SearchBar = ({ onSearch, query }:any) => {
+  const [searchQuery, setSearchQuery] = useState(query);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const debouncedSearch = useCallback(

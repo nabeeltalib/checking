@@ -82,7 +82,7 @@ const App = () => {
           <Route path="/embed" element={<EmbedSelector />} />
           <Route path="/embedpreview/:id" element={<EmbedPreview />} />
           <Route path="/notifications" element={<Notifications />} />
-          <Route path="/categories" element={<Categories />} />
+          <Route path="/categories/:value" element={<Categories />} />
           <Route path="/collaborations" element={<Collaborations />} />
           <Route path="/listfromfriends" element={<ListFromFriends />} />
           <Route path="/userlists" element={<Userlist />} />

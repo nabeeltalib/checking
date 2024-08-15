@@ -19,7 +19,7 @@ export const sidebarLinks = [
   },
   {
     imgURL: "/assets/icons/category.svg",
-    route: "/categories",
+    route: "/categories/no-value",
     label: "Categories",
     icon:"/assets/icons/category.svg"
   }, 

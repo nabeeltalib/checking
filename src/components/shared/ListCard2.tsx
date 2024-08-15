@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { createEmbedList, shareList } from "@/lib/appwrite/api";
+import { createEmbedList, followUser, getConnection, shareList } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
 import { useDeleteSavedList, useGetComments, useGetCurrentUser, useGetUserById, useLikeList, useSaveList } from "@/lib/react-query/queries";
 import Comment from "./Comment";
@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
 import { Models } from "appwrite";
 import { checkIsLiked } from "@/lib/utils";
+import { getListById } from "@/lib/appwrite/config";
 
 const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
   const [isSharing, setIsSharing] = useState(false);
@@ -19,6 +20,15 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
   const { data: currentUser} = useGetCurrentUser();
   const { mutate: deleteSaveList } = useDeleteSavedList();
 
+  const [connection, setConnection] = useState<any>(undefined)
+  useEffect(()=>{
+    const fetchData =async ()=>{
+      let resp = await getConnection(list.creator.$id)
+      resp.length > 0 ? setConnection(resp[0]) : setConnection(resp) 
+    }
+
+    fetchData()
+  },[])
 
   const { data: comments } = useGetComments(list.$id);
   const handleShare = async (e: React.MouseEvent) => {
@@ -122,6 +132,17 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
   };
 
 
+  let isOwnProfile = user.id === list.creator.$id;
+  let isFollowed = connection?.follower?.some((follow:any) => follow.$id === user.id);
+
+  const handleFollow = async () =>{
+    await followUser(user.id,list.creator.$id)
+    let resp = await getConnection(user.id)
+    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp)
+    isFollowed = connection?.following?.some((follow:any) => follow.$id === id)
+}
+
+
   return (
     <>
       <motion.div
@@ -166,6 +187,16 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
                 </p>
               </div>
             </Link>
+            {list.creator.Public && (!isFollowed && !isOwnProfile ? <Button
+                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
+                onClick={handleFollow}
+                disabled={isFollowed}>
+                Follow
+              </Button>: isOwnProfile? "" : <Button
+                className="text-white px-4 sm:px-6 py-2 rounded-full"
+                disabled={true}>
+                Followed
+              </Button>)}
             <button
               onClick={handleShare}
               className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
@@ -203,7 +234,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
 
           <div className="flex flex-wrap gap-2 mb-4">
             {list?.Tags?.map((tag: string, index: number) => (
-              <span key={`${tag}${index}`} className="text-primary-500">
+              <span key={`${tag}${index}`} onClick={()=> navigate(`/categories/${tag}`)} className="text-primary-500 cursor-pointer">
                 #{tag}
               </span>
             ))}
