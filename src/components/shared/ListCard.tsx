@@ -111,6 +111,10 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
                 <p className="text-light-3 text-sm">@{list.creator?.Name}</p>
               </div>
             </Link>
+            <Button
+                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full">
+                Follow
+              </Button>
             <button
               onClick={handleShare}
               className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
