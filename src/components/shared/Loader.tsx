@@ -11,3 +11,16 @@ const Loader = () => (
 );
 
 export default Loader;
+
+
+
+
+export const Loader2 = () => (
+    <img
+      src="/assets/icons/loader.svg"
+      alt="Loading..."
+      width={24}
+      height={24}
+      className="animate-spin"
+    />
+); 

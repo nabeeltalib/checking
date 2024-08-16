@@ -29,6 +29,7 @@ const ListDetails: React.FC = () => {
   const { data: listCreator, isLoading: isCreatorLoading } = useGetUserById(
     list?.creator.$id || ""
   );
+  const [isFollowLoading, setIsFollowLoading] = useState(false)
 
   const [connection, setConnection] = useState<any>(undefined)
   useEffect(()=>{
@@ -40,6 +41,8 @@ const ListDetails: React.FC = () => {
 
     fetchData()
   },[])
+
+
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -94,15 +97,21 @@ const ListDetails: React.FC = () => {
   let isFollowed = connection?.follower?.some((follow:any) => follow.$id === user.id);
 
   const handleFollow = async () =>{
+    setIsFollowLoading(true)
     await followUser(user.id,list.creator.$id)
-    let resp = await getConnection(user.id)
+    let resp = await getConnection(list.creator.$id)
     resp.length > 0 ? setConnection(resp[0]) : setConnection(resp)
     isFollowed = connection?.following?.some((follow:any) => follow.$id === id)
+    setIsFollowLoading(false)
 }
 
 const handleUnFollow = async ()=>{
+  setIsFollowLoading(true)
   await UnFollow(user.id, list.creator.$id)
-  isFollowed = false
+  let resp = await getConnection(list.creator.$id)
+    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp)
+    isFollowed = connection?.following?.some((follow:any) => follow.$id === id)
+    setIsFollowLoading(false)
 }
 
   return (
@@ -148,12 +157,16 @@ const handleUnFollow = async ()=>{
                 className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
                 onClick={handleFollow}
                 disabled={isFollowed}>
-                Follow
-              </Button>: isOwnProfile? "" : <Button
+                {isFollowLoading ? (<div>Follow <span><Loader /></span></div>) : (
+                  <span>Follow</span>
+                )}
+              </Button>: isOwnProfile ? "" : <Button
                 className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
                 onClick={handleUnFollow}
                 >
-                UnFollow
+                {isFollowLoading ? (<div>Unfollow <span><Loader /></span></div>) : (
+                  <span>Unfollow</span>
+                )}
               </Button>)}
           <button
             onClick={handleShare}

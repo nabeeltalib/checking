@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { createEmbedList, followUser, getConnection, shareList } from "@/lib/appwrite/api";
+import { createEmbedList, followUser, getConnection, shareList, UnFollow } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
 import { useDeleteSavedList, useGetComments, useGetCurrentUser, useGetUserById, useLikeList, useSaveList } from "@/lib/react-query/queries";
 import Comment from "./Comment";
@@ -11,6 +11,7 @@ import { useUserContext } from "@/context/AuthContext";
 import { Models } from "appwrite";
 import { checkIsLiked } from "@/lib/utils";
 import { getListById } from "@/lib/appwrite/config";
+import Loader from "./Loader";
 
 const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
   const [isSharing, setIsSharing] = useState(false);
@@ -19,7 +20,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
   const { id } = user;
   const { data: currentUser} = useGetCurrentUser();
   const { mutate: deleteSaveList } = useDeleteSavedList();
-
+  const [isFollowLoading, setIsFollowLoading] = useState(false)
   const [connection, setConnection] = useState<any>(undefined)
   useEffect(()=>{
     const fetchData =async ()=>{
@@ -136,10 +137,21 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
   let isFollowed = connection?.follower?.some((follow:any) => follow.$id === user.id);
 
   const handleFollow = async () =>{
+    setIsFollowLoading(true)
     await followUser(user.id,list.creator.$id)
-    let resp = await getConnection(user.id)
+    let resp = await getConnection(list.creator.$id)
     resp.length > 0 ? setConnection(resp[0]) : setConnection(resp)
     isFollowed = connection?.following?.some((follow:any) => follow.$id === id)
+    setIsFollowLoading(false)
+}
+
+const handleUnFollow = async ()=>{
+  setIsFollowLoading(true)
+  await UnFollow(user.id, list.creator.$id)
+  let resp = await getConnection(list.creator.$id)
+    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp)
+    isFollowed = connection?.following?.some((follow:any) => follow.$id === id)
+    setIsFollowLoading(false)
 }
 
 
@@ -191,11 +203,16 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
                 className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
                 onClick={handleFollow}
                 disabled={isFollowed}>
-                Follow
-              </Button>: isOwnProfile? "" : <Button
-                className="text-white px-4 sm:px-6 py-2 rounded-full"
-                disabled={true}>
-                Followed
+                {isFollowLoading ? (<div>Follow <span><Loader /></span></div>) : (
+                  <span>Follow</span>
+                )}
+              </Button>: isOwnProfile ? "" : <Button
+                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
+                onClick={handleUnFollow}
+                >
+                {isFollowLoading ? (<div>Unfollow <span><Loader /></span></div>) : (
+                  <span>Unfollow</span>
+                )}
               </Button>)}
             <button
               onClick={handleShare}
