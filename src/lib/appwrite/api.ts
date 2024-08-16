@@ -1455,6 +1455,22 @@ export async function followUser(userId: string, followingId:string) {
   }
 }
 
+export async function UnFollow(userId: string, followingId:string) {
+  try {
+      let User = await getConnection(userId);
+      let Other = await getConnection(followingId);
+      let updatedUser = await User[0].following.filter((follow:any) => follow !== followingId)
+      let updatedOther = await Other[0].follower.filter((follow:any) => follow !== userId)
+
+      await updateConnection(User[0].$id,User[0].follower,updatedUser);
+      await updateConnection(Other[0].$id,updatedOther,Other[0].following);
+
+  } catch (error) {
+    console.error('Error getting friends:', error);
+    throw error;
+  }
+}
+
 
 
 

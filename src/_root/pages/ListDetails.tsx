@@ -13,7 +13,7 @@ import GridListList from "@/components/shared/GridListList";
 import ListStats from "@/components/shared/ListStats";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
-import { followUser, getConnection, shareList } from "@/lib/appwrite/api";
+import { followUser, getConnection, shareList, UnFollow } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
 import { getListById } from "@/lib/appwrite/config";
 
@@ -100,6 +100,11 @@ const ListDetails: React.FC = () => {
     isFollowed = connection?.following?.some((follow:any) => follow.$id === id)
 }
 
+const handleUnFollow = async ()=>{
+  await UnFollow(user.id, list.creator.$id)
+  isFollowed = false
+}
+
   return (
     <div className="flex flex-col w-full max-w-2xl mx-auto">
       <div className="sticky top-0 z-10 bg-dark-1 p-4 border-b border-dark-4">
@@ -144,7 +149,12 @@ const ListDetails: React.FC = () => {
                 onClick={handleFollow}
                 disabled={isFollowed}>
                 Follow
-              </Button>: isOwnProfile? "" : "followed")}
+              </Button>: isOwnProfile? "" : <Button
+                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
+                onClick={handleUnFollow}
+                >
+                UnFollow
+              </Button>)}
           <button
             onClick={handleShare}
             className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"

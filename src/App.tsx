@@ -41,6 +41,7 @@ import EmbedPreview from "./components/shared/EmbedPreview";
 import SegmentedLeaderboardPage from "./_root/pages/SegmentedLeaderboardPage";
 import ProfileScreen from "./_root/pages/ProfileScreen";
 import ComprehensiveLeaderboard from "./_root/pages/ComprehensiveLeaderboard";
+import OnboardingScreens from "./_root/pages/OnBoardingScreens";
 
 
 const App = () => {
@@ -104,6 +105,7 @@ const App = () => {
           <Route path="/segment-leaderboard" element={<SegmentedLeaderboardPage />} /> {/* New route */}
           <Route path="/profile-screen" element={<ProfileScreen />} /> {/* New route */}
           <Route path="/comprehensive-leaderboard" element={<ComprehensiveLeaderboard />} /> {/* New route */}
+          <Route path="/onboarding" element={<OnboardingScreens />} /> {/* New route */}
         </Route>
       </Routes>
       <FAB />
