@@ -109,7 +109,7 @@ const Topbar = () => {
           <Button
             variant="ghost"
             className="shad-button_ghost p-2"
-            onClick={() => signOut()}
+            onClick={() => {signOut(); navigate("/")}}
             aria-label="Sign out"
           >
             <img src="/assets/icons/logout.svg" alt="Sign out" className="h-8 w-8" />
@@ -139,7 +139,7 @@ const Topbar = () => {
                 </Link>
                 <button
                   className="block px-4 py-2 text-sm text-gray-700 w-full text-left hover:bg-gray-100"
-                  onClick={() => signOut()}
+                  onClick={() => {signOut(); navigate("/")}}
                 >
                   Logout
                 </button>

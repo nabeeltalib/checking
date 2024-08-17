@@ -121,6 +121,7 @@ const App = () => {
     <Route path="/discover" element={<AllLists />} />
     <Route path="/trending" element={<Trending />} />
     <Route path="/recommended" element={<Recomended />} />
+    <Route path="/onboarding" element={<OnboardingScreens />} /> 
     </Route>
     </Routes>
     </div>}
