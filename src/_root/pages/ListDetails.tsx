@@ -156,15 +156,16 @@ const handleUnFollow = async ()=>{
           {listCreator.Public && (!isFollowed && !isOwnProfile ? <Button
                 className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
                 onClick={handleFollow}
-                disabled={isFollowed}>
-                {isFollowLoading ? (<div>Follow <span><Loader /></span></div>) : (
+                disabled={isFollowLoading}>
+                {isFollowLoading ? (<div><Loader /></div>) : (
                   <span>Follow</span>
                 )}
               </Button>: isOwnProfile ? "" : <Button
                 className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
                 onClick={handleUnFollow}
+                disabled={isFollowLoading}
                 >
-                {isFollowLoading ? (<div>Unfollow <span><Loader /></span></div>) : (
+                {isFollowLoading ? (<div><Loader /></div>) : (
                   <span>Unfollow</span>
                 )}
               </Button>)}

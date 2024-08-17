@@ -1420,11 +1420,12 @@ export async function followUser(userId: string, followingId:string) {
       if(findUser.length > 0)
       {
         let updatedFollowing = Array.isArray(findUser[0].following) ? [...findUser[0].following, followingId] : [followingId];
-        await updateConnection(findUser[0].$id, findUser[0].follower, updatedFollowing);
+        let updatedFollower = findUser[0].follower.length > 0 ? findUser[0].follower.map((user:any)=> user.$id) : []
+        await updateConnection(findUser[0].$id, updatedFollower, updatedFollowing);
         let followingUser = await getConnection(followingId)
         if(followingUser.length > 0)
         {
-          let updatedFollower = Array.isArray(followingUser[0].follower) ? [...followingUser[0].follower, userId] : [userId];
+          let updatedFollower = Array.isArray(followingUser[0].follower) ? [...followingUser[0].follower.map((item:any) => item.$id), userId] : [userId];
           await updateConnection(followingUser[0].$id,updatedFollower,followingUser[0].following);
         }
         else{
@@ -1440,7 +1441,7 @@ export async function followUser(userId: string, followingId:string) {
           let followingUser = await getConnection(followingId)
           if(followingUser.length > 0)
           {
-            let updatedFollower = Array.isArray(followingUser[0].follower) ? [...followingUser[0].follower, userId] : [userId];
+            let updatedFollower = Array.isArray(followingUser[0].follower) ? [...followingUser[0].follower.map((item:any)=> item.$id), userId] : [userId];
             await updateConnection(followingUser[0].$id,updatedFollower,followingUser[0].following);
           }
           else{
@@ -1460,10 +1461,14 @@ export async function UnFollow(userId: string, followingId:string) {
       let User = await getConnection(userId);
       let Other = await getConnection(followingId);
 
-      let updatedUser = await User[0].following.filter((follow:any) => follow !== followingId)
+      let UserFollowing = await User[0].following.filter((follow:any) => follow !== followingId)
       let updatedOther = await Other[0].follower.filter((follow:any) => follow.$id !== userId)
-      await updateConnection(User[0].$id,User[0].follower,updatedUser);
-      await updateConnection(Other[0].$id,updatedOther,Other[0].following);
+      
+      let UserFollower = User[0].follower.map((item:any)=> item.$id)
+      let OtherFollower = updatedOther.map((item:any)=> item.$id)
+
+      await updateConnection(User[0].$id,UserFollower,UserFollowing);
+      await updateConnection(Other[0].$id,OtherFollower,Other[0].following);
       
   } catch (error) {
     console.error('Error getting friends:', error);

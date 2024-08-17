@@ -17,6 +17,7 @@ import {
   getConnection,
   getSentRequests,
   sendFriendRequest,
+  UnFollow,
 } from "@/lib/appwrite/api";
 
 const Profile: React.FC = () => {
@@ -44,6 +45,7 @@ const Profile: React.FC = () => {
   const [isCollaborativeExpanded, setCollaborativeExpanded] = useState(false);
   const [sentRequest, setSentRequest] = useState<any>([]);
   const [connection, setConnection] = useState<any>(undefined);
+  const [isFollowLoading, setIsFollowLoading] = useState(false)
 
   const handleFriendRequest = async () => {
     await sendFriendRequest(user.id, id);
@@ -107,13 +109,24 @@ const Profile: React.FC = () => {
   );
   //Follower
   const handleFollow = async () => {
+    setIsFollowLoading(true)
     await followUser(user.id, id);
-    let resp = await getConnection(user.id);
+    let resp = await getConnection(id);
     resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
     isFollowed = connection?.following?.some(
       (follow: any) => follow.$id === id
     );
+    setIsFollowLoading(false)
   };
+
+const handleUnFollow = async ()=>{
+  setIsFollowLoading(true)
+  await UnFollow(user.id, id)
+  let resp = await getConnection(id)
+    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp)
+    isFollowed = connection?.following?.some((follow:any) => follow.$id === id)
+    setIsFollowLoading(false)
+}
   return (
     <div className="flex flex-col gap-6 w-full p-6 mx-auto max-w-7xl">
       {/* User Info */}
@@ -140,16 +153,23 @@ const Profile: React.FC = () => {
               {currentUser.Public &&
               (!isOwnProfile && !isFollowed ? (
                 <Button
-                  className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
-                  onClick={handleFollow}
-                  disabled={isFollowed}>
-                  Follow
-                </Button>
-              ) : isOwnProfile ? (
-                ""
-              ) : (
-                "followed"
-              ))
+                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
+                style={{marginTop: "-10px"}}
+                onClick={handleFollow}
+                disabled={isFollowLoading}>
+                {isFollowLoading ? (<div><Loader /></div>) : (
+                  <span>Follow</span>
+                )}
+              </Button>) : isOwnProfile ? "" : <Button
+                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
+                style={{marginTop: "-10px"}}
+                onClick={handleUnFollow}
+                disabled={isFollowLoading}
+                >
+                {isFollowLoading ? (<div><Loader /></div>) : (
+                  <span>Unfollow</span>
+                )}
+              </Button>)
             }
             </span>
             </div>
