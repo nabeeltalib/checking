@@ -42,6 +42,7 @@ import SegmentedLeaderboardPage from "./_root/pages/SegmentedLeaderboardPage";
 import ProfileScreen from "./_root/pages/ProfileScreen";
 import ComprehensiveLeaderboard from "./_root/pages/ComprehensiveLeaderboard";
 import OnboardingScreens from "./_root/pages/OnBoardingScreens";
+import OnboardingPage from "./components/shared/OnboardingPage";
 
 
 const App = () => {
@@ -66,7 +67,7 @@ const App = () => {
     <Routes>
        <Route element={<AuthLayout />}>
           <Route path="/sign-in" element={<SigninForm />} />
-          <Route path="/sign-up" element={<SignupForm />} />
+          <Route path="/sign-up" element={<OnboardingScreens />} />
         </Route>
     </Routes>
     </main>
@@ -106,6 +107,7 @@ const App = () => {
           <Route path="/profile-screen" element={<ProfileScreen />} /> {/* New route */}
           <Route path="/comprehensive-leaderboard" element={<ComprehensiveLeaderboard />} /> {/* New route */}
           <Route path="/onboarding" element={<OnboardingScreens />} /> {/* New route */}
+          
         </Route>
       </Routes>
       <FAB />
@@ -122,6 +124,7 @@ const App = () => {
     <Route path="/trending" element={<Trending />} />
     <Route path="/recommended" element={<Recomended />} />
     <Route path="/onboarding" element={<OnboardingScreens />} /> 
+    <Route path="/onboarding-page" element={<OnboardingPage />} /> {/* New route */}
     </Route>
     </Routes>
     </div>}

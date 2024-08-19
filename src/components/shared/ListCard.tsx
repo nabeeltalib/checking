@@ -42,7 +42,8 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   };
   const navigate = useNavigate();
   const handleDialogOpen = () => {
-    setIsDialogOpen(true);
+    //setIsDialogOpen(true);
+    navigate("/onboarding-page")
   };
 
   const handleDialogClose = () => {

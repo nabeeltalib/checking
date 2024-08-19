@@ -22,7 +22,8 @@ const Topbar2 = () => {
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const handleDialogOpen = () => {
-    setIsDialogOpen(true);
+    //setIsDialogOpen(true);
+    navigate("/onboarding-page")
   };
   const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
 
