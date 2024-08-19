@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { ChevronRight, Heart, Save, MessageCircle, Search, List } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const OnboardingPage = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const navigate = useNavigate()
 
   const features = [
     { icon: <Heart />, title: "Like", description: "Show appreciation for great lists" },
@@ -54,11 +56,11 @@ const OnboardingPage = () => {
       </div>
 
       <div className="text-center">
-        <button className="bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition-colors">
+        <button onClick={()=> navigate("/sign-up")} className="bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-semibold hover:bg-blue-600 transition-colors">
           Sign Up Now to Start Listing!
         </button>
         <p className="mt-4 text-gray-600">
-          Already have an account? <a href="#" className="text-blue-500 hover:underline">Log in</a>
+          Already have an account? <Link to={"/sign-in"} className="text-blue-500 hover:underline">Log in</Link>
         </p>
       </div>
     </div>

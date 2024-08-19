@@ -42,8 +42,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   };
   const navigate = useNavigate();
   const handleDialogOpen = () => {
-    //setIsDialogOpen(true);
-    navigate("/onboarding-page")
+    setIsDialogOpen(true);
   };
 
   const handleDialogClose = () => {
@@ -213,40 +212,24 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
 
       {isDialogOpen && (
         <div className="fixed top-4 right-4 bg-white p-4 rounded shadow-lg z-50">
-          <h4
-            onClick={handleDialogClose}
-            style={{ cursor: "pointer", fontWeight: "bolder" }}
-            className="text-black flex justify-end">
-            X
-          </h4>
-          <h3 className="text-xl font-bold mb-4 text-black">
-            Please Sign In to perform further operations
-          </h3>
+          <h4 onClick={()=>setIsDialogOpen(false)} style={{cursor:"pointer", fontWeight:"bolder"}} className="text-black flex justify-end">X</h4>
+          <h3 className="text-xl font-bold mb-4 text-black">Please Sign In to perform further operations</h3>
           <div className="flex flex-col gap-4">
             <form>
             <Button 
             type="button" 
-            className="shad-button_google w-full"
-            onClick={handleGoogleSignIn}
-            disabled={isGoogleLoading}
+            className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+            onClick={()=> navigate("/onboarding-page")}
           >
-            {isGoogleLoading ? (
-              <div className="flex-center gap-2">
-                <Loader /> Loading...
-              </div>
-            ) : (
-              <>
-                <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
-                Sign in with Google
-              </>
-            )}
+           Sign-Up
           </Button>
             </form>
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-              onClick={() => navigate("/sign-in")}>
-              Sign in / Sign up
-            </button>
+            <Button
+              className="shad-button_google w-full"
+              onClick={()=> navigate("/sign-in")}
+            >
+             Sign-In via email or Google &nbsp; <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
+            </Button>
           </div>
         </div>
       )}

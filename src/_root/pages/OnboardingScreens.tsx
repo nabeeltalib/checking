@@ -106,14 +106,8 @@ const SignUpScreen = () => {
         <input className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" id="password" placeholder='********' type="password" name='password' value={password} onChange={(e)=>setUser({...user, password:e.target.value})} />
       </div>
       <div className="flex flex-col space-y-2">
-        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit" onClick={(e)=>{e.preventDefault(); handleSignin(user)} }>
-        {isLoading || isUserLoading ? (
-              <div className="flex-center gap-2">
-                <Loader /> Loading...
-              </div>
-            ) : (
-              "Sign Up with Email"
-            )}
+        <button onClick={()=> navigate("/sign-in")} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" >
+          Sign In with Email
         </button>
         <Button 
             type="button" 
