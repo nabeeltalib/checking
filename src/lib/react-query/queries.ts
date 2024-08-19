@@ -65,7 +65,7 @@ import { updateUser } from '../appwrite/config';
 
 export const useCreateUserAccount = () => {
   return useMutation({
-    mutationFn: (user: INewUser) => createUserAccount(user)
+    mutationFn: (user: any) => createUserAccount(user)
   });
 };
 

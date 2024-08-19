@@ -96,15 +96,16 @@ export const functions = new Functions(client);
 // AUTH
 // ============================================================
 
-export async function createUserAccount(user: INewUser) {
+export async function createUserAccount(user: any) {
   try {
     const newAccount = await account.create(
       ID.unique(),
       user.email,
       user.password,
-      user.name
+      user.name,
     );
-    console.log({ newAccount });
+    
+
     if (!newAccount) throw new Error('Failed to create account');
 
     const avatarUrl = avatars.getInitials(user.name);
@@ -114,7 +115,9 @@ export async function createUserAccount(user: INewUser) {
       name: newAccount.name,
       email: newAccount.email,
       username: user.username,
-      imageUrl: avatarUrl
+      imageUrl: avatarUrl,
+      categories:user.categories,
+      bio:user.bio,
     });
 
     return newUser;
@@ -130,6 +133,8 @@ export async function saveUserToDB(user: {
   name: string;
   imageUrl: URL;
   username?: string;
+  bio?: string;
+  categories: string[];
 }) {
   try {
     const newUser = await databases.createDocument(
@@ -141,7 +146,9 @@ export async function saveUserToDB(user: {
         Email: user.email,
         Name: user.name,
         ImageUrl: user.imageUrl,
-        Username: user.username || user.name
+        Username: user.username || user.name,
+        Categories:user.categories || [],
+        Bio:user.bio || ""
       }
     );
 
