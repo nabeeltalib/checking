@@ -7,7 +7,7 @@ import {
 } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
 import { Button, toast } from "@/components/ui";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import { Loader2 } from "@/components/shared/Loader";
 
@@ -216,32 +216,8 @@ const SignUpScreen = ({ email, password, user, setUser }: any) => {
             onChange={(e) => setUser({ ...user, password: e.target.value })}
           />
         </div>
-        <div className="flex flex-col space-y-2">
-          <button
-            onClick={() => navigate("/sign-in")}
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-            Sign In with Email
-          </button>
-          <Button
-            type="button"
-            className="shad-button_google"
-            onClick={handleGoogleSignIn}
-            disabled={isGoogleLoading}>
-            {isGoogleLoading ? (
-              <div className="flex-center gap-2">
-                <Loader /> Loading...
-              </div>
-            ) : (
-              <>
-                <img
-                  src="/assets/icons/google.svg"
-                  alt="Google"
-                  className="mr-2 h-5 w-5"
-                />
-                Sign in with Google
-              </>
-            )}
-          </Button>
+        <div className="flex gap-2 text-black">
+         already have an account? <Link className="text-blue-600" to={"/sign-in"}>Login</Link> 
         </div>
       </form>
     </div>
