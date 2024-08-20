@@ -70,6 +70,7 @@ const App = () => {
           <Route path="/sign-up" element={<OnboardingScreens />} />
         </Route>
     </Routes>
+    <Toaster />
     </main>
     </>
 
