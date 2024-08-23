@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useGetComments, useCreateComment, useAnalyzeSentiment } from "@/lib/react-query/queries";
+import {
+  useGetComments,
+  useCreateComment,
+  useAnalyzeSentiment,
+} from "@/lib/react-query/queries";
 import { useUserContext } from "@/context/AuthContext";
 import { Loader } from "@/components/shared";
 import { useToast } from "@/components/ui/use-toast";
@@ -11,7 +15,8 @@ const Comments: React.FC = () => {
   const { data: comments, isLoading } = useGetComments(id!);
   const { mutate: createComment } = useCreateComment();
   const [newComment, setNewComment] = useState("");
-  const { mutate: analyzeSentiment, isLoading: isAnalyzingSentiment } = useAnalyzeSentiment();
+  const { mutate: analyzeSentiment, isLoading: isAnalyzingSentiment } =
+    useAnalyzeSentiment();
   const { toast } = useToast();
 
   const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -32,7 +37,12 @@ const Comments: React.FC = () => {
           toast({
             title: "Comment posted",
             description: `Your comment has been posted. Sentiment: ${sentiment}`,
-            variant: sentiment === 'positive' ? 'default' : sentiment === 'negative' ? 'destructive' : 'secondary',
+            variant:
+              sentiment === "positive"
+                ? "default"
+                : sentiment === "negative"
+                ? "destructive"
+                : "secondary",
           });
         },
         onError: (error) => {
@@ -99,7 +109,7 @@ const Comments: React.FC = () => {
                 type="submit"
                 className="mt-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
               >
-                Post Comment
+                {isAnalyzingSentiment ? <Loader /> : "Post Comment"}
               </button>
             </form>
             <div>
@@ -111,7 +121,10 @@ const Comments: React.FC = () => {
                   >
                     <div className="flex items-center space-x-4 mb-2">
                       <img
-                        src={comment.userImageUrl || "/assets/icons/profile-placeholder.svg"}
+                        src={
+                          comment.userImageUrl ||
+                          "/assets/icons/profile-placeholder.svg"
+                        }
                         alt={comment.userName}
                         className="w-8 h-8 rounded-full"
                       />
@@ -121,18 +134,24 @@ const Comments: React.FC = () => {
                     </div>
                     <p className="dark:text-gray-300">{comment.content}</p>
                     {comment.sentiment && (
-                      <p className={`text-sm mt-2 ${
-                        comment.sentiment === 'positive' ? 'text-green-500' :
-                        comment.sentiment === 'negative' ? 'text-red-500' :
-                        'text-yellow-500'
-                      }`}>
+                      <p
+                        className={`text-sm mt-2 ${
+                          comment.sentiment === "positive"
+                            ? "text-green-500"
+                            : comment.sentiment === "negative"
+                            ? "text-red-500"
+                            : "text-yellow-500"
+                        }`}
+                      >
                         Sentiment: {comment.sentiment}
                       </p>
-                      )}
+                    )}
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 dark:text-gray-400">No comments yet.</p>
+                <p className="text-gray-500 dark:text-gray-400">
+                  No comments yet.
+                </p>
               )}
             </div>
           </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useGetSuggestions, useUpdateSuggestion } from '@/lib/react-query/queries';
 import { Loader } from '@/components/shared';
+import { Button } from '@/components/ui/button';
 
 const Suggestions: React.FC = () => {
   const { id: listId } = useParams<{ id: string }>();
@@ -29,43 +30,47 @@ const Suggestions: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen p-4 bg-dark-1">
-      <header className="flex items-center justify-between p-4 bg-dark-2">
-        <h1 className="text-2xl font-bold text-light-1">Suggestions</h1>
+    <div className="flex flex-col min-h-screen p-4 bg-zinc-900 text-white">
+      <header className="flex items-center justify-between p-4 bg-zinc-800 rounded-lg mb-6 shadow-lg">
+        <h1 className="text-3xl font-bold">Suggestions</h1>
       </header>
 
-      <main className="flex-grow p-4">
+      <main className="flex-grow">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-dark-2 p-4 rounded-lg shadow-md">
-            <h2 className="text-xl font-bold mb-4 text-light-1">Received Suggestions</h2>
+          <div className="bg-zinc-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold mb-6">Received Suggestions</h2>
             {suggestions?.documents.length ? (
-              <ul className="space-y-4">
+              <ul className="space-y-6">
                 {suggestions.documents.map((suggestion) => (
-                  <li key={suggestion.$id} className="bg-dark-3 p-4 rounded-lg">
+                  <li key={suggestion.$id} className="bg-zinc-700 p-5 rounded-lg shadow-md">
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="font-semibold text-light-1">{suggestion.suggestedTitle}</p>
-                        <p className="text-sm text-light-2">{suggestion.suggestedDescription}</p>
+                        <h3 className="text-xl font-semibold">{suggestion.suggestedTitle}</h3>
+                        <p className="text-sm text-gray-400 mt-1">
+                          {suggestion.suggestedDescription}
+                        </p>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-light-3">
-                          Status: {suggestion.status}
+                      <div className="flex items-center space-x-4">
+                        <span className="text-sm text-gray-400">
+                          Status: <span className="font-medium capitalize">{suggestion.status}</span>
                         </span>
                         {suggestion.status === 'pending' && (
-                          <>
-                            <button
-                              className="px-2 py-1 text-light-1 bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="success"
+                              size="sm"
                               onClick={() => handleAcceptSuggestion(suggestion.$id)}
                             >
                               Accept
-                            </button>
-                            <button
-                              className="px-2 py-1 text-light-1 bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
                               onClick={() => handleRejectSuggestion(suggestion.$id)}
                             >
                               Reject
-                            </button>
-                          </>
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -73,13 +78,13 @@ const Suggestions: React.FC = () => {
                 ))}
               </ul>
             ) : (
-              <p className="text-light-2">No received suggestions</p>
+              <p className="text-gray-400">No received suggestions</p>
             )}
           </div>
         </div>
       </main>
 
-      <footer className="p-4 bg-dark-2 text-light-2 text-center">
+      <footer className="p-4 mt-6 bg-zinc-800 text-gray-400 text-center rounded-lg shadow-lg">
         © 2024 Topfived. All rights reserved.
       </footer>
     </div>

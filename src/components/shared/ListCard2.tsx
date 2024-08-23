@@ -3,35 +3,36 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { createEmbedList, followUser, getConnection, shareList, UnFollow } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
-import { useDeleteSavedList, useGetComments, useGetCurrentUser, useGetUserById, useLikeList, useSaveList } from "@/lib/react-query/queries";
+import { useDeleteSavedList, useGetComments, useGetCurrentUser, useLikeList, useSaveList } from "@/lib/react-query/queries";
 import Comment from "./Comment";
 import { Button } from "../ui";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
 import { Models } from "appwrite";
 import { checkIsLiked } from "@/lib/utils";
-import { getListById } from "@/lib/appwrite/config";
 import Loader from "./Loader";
 
-const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
+const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
   const [isSharing, setIsSharing] = useState(false);
   const navigate = useNavigate();
   const { user } = useUserContext();
   const { id } = user;
-  const { data: currentUser} = useGetCurrentUser();
+  const { data: currentUser } = useGetCurrentUser();
   const { mutate: deleteSaveList } = useDeleteSavedList();
-  const [isFollowLoading, setIsFollowLoading] = useState(false)
-  const [connection, setConnection] = useState<any>(undefined)
-  useEffect(()=>{
-    const fetchData =async ()=>{
-      let resp = await getConnection(list.creator.$id)
-      resp.length > 0 ? setConnection(resp[0]) : setConnection(resp) 
-    }
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [connection, setConnection] = useState<any>(undefined);
 
-    fetchData()
-  },[])
+  useEffect(() => {
+    const fetchData = async () => {
+      let resp = await getConnection(list.creator.$id);
+      resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+    };
+
+    fetchData();
+  }, []);
 
   const { data: comments } = useGetComments(list.$id);
+
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -69,17 +70,17 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
 
     return items.slice(0, 5).map((item, index) => (
       <li key={index} className="flex items-center mb-2">
-        <span className="flex-shrink-0 w-8 h-8 text-light-1 bg-gray-800 rounded-full flex items-center justify-center font-bold mr-3">
+        <span className="text-xs flex-shrink-0 w-8 h-8 text-light-1 bg-gray-900 rounded-full flex items-center justify-center font-bold mr-3">
           {index + 1}
         </span>
-        <span className="text-light-2 truncate">
+        <span className="text-sm text-light-2 truncate">
           {typeof item === "string" ? item : item.content || ""}
         </span>
       </li>
     ));
   };
 
-  let checkIsSaved = currentUser?.save?.some((saved:any)=> saved.list.$id === list.$id);
+  let checkIsSaved = currentUser?.save?.some((saved: any) => saved.list.$id === list.$id);
   const [isSaved, setIsSaved] = useState(checkIsSaved);
   const { mutate: saveList } = useSaveList();
 
@@ -100,14 +101,14 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
 
   const { toast } = useToast();
 
-  const handleEmbed = async () =>{
+  const handleEmbed = async () => {
     try {
-   await createEmbedList(list.$id, list.Categories[0] || "")
-          toast({
-            title: "Success!",
-            description: `${list.Title} has been embedded sucessfully..`,
-            variant: "default",
-          });
+      await createEmbedList(list.$id, list.Categories[0] || "");
+      toast({
+        title: "Success!",
+        description: `${list.Title} has been embedded successfully.`,
+        variant: "default",
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -115,15 +116,13 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
         variant: "destructive",
       });
     }
-  }
+  };
 
   const likesList = list?.Likes || [];
   const [likes, setLikes] = useState<any[]>(likesList);
   const { mutate: likeList } = useLikeList();
 
-  const handleLikeList = (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>
-  ) => {  
+  const handleLikeList = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
     e.stopPropagation();
     let newLikes = likes.includes(id)
       ? likes.filter((Id) => Id !== id)
@@ -132,28 +131,26 @@ const ListCard2: React.FC<any> = ({ list, manageList }:any) => {
     likeList({ listId: list.$id, likesArray: newLikes });
   };
 
-
   let isOwnProfile = user.id === list.creator.$id;
-  let isFollowed = connection?.follower?.some((follow:any) => follow.$id === user.id);
+  let isFollowed = connection?.follower?.some((follow: any) => follow.$id === user.id);
 
-  const handleFollow = async () =>{
-    setIsFollowLoading(true)
-    await followUser(user.id,list.creator.$id)
-    let resp = await getConnection(list.creator.$id)
-    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp)
-    isFollowed = connection?.following?.some((follow:any) => follow.$id === id)
-    setIsFollowLoading(false)
-}
+  const handleFollow = async () => {
+    setIsFollowLoading(true);
+    await followUser(user.id, list.creator.$id);
+    let resp = await getConnection(list.creator.$id);
+    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+    isFollowed = connection?.following?.some((follow: any) => follow.$id === id);
+    setIsFollowLoading(false);
+  };
 
-const handleUnFollow = async ()=>{
-  setIsFollowLoading(true)
-  await UnFollow(user.id, list.creator.$id)
-  let resp = await getConnection(list.creator.$id)
-    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp)
-    isFollowed = connection?.following?.some((follow:any) => follow.$id === id)
-    setIsFollowLoading(false)
-}
-
+  const handleUnFollow = async () => {
+    setIsFollowLoading(true);
+    await UnFollow(user.id, list.creator.$id);
+    let resp = await getConnection(list.creator.$id);
+    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+    isFollowed = connection?.following?.some((follow: any) => follow.$id === id);
+    setIsFollowLoading(false);
+  };
 
   return (
     <>
@@ -162,72 +159,87 @@ const handleUnFollow = async ()=>{
         whileHover={{ y: -5 }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}>
-        <div className="p-6">
-          <h2 className="text-3xl font-bold flex justify-between mb-6 text-primary-500">
-            <span>{list.Title}</span>
-            <span>
-                {manageList && <Button onClick={handleEmbed}>add to embed</Button>}
-            </span>
-          </h2>
-          {list.Description ? (
-            <h4 className="text-xl font-bold mb-6 text-primary-500">
-              <span>{list.Description}</span>
-            </h4>
-          ) : (
-            ""
-          )}
-
-          <div className="flex justify-between items-start mb-4">
+        transition={{ duration: 0.3 }}
+      >
+        <div className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
             <Link
               to={`/profile/${list.creator.$id}`}
-              className="flex items-center">
+              className="flex items-center"
+            >
               <img
                 src={
                   list.creator.ImageUrl ||
                   "/assets/icons/profile-placeholder.svg"
                 }
                 alt={`${list.creator.Name}'s profile`}
-                className="w-12 h-12 rounded-full mr-3 border-2 border-primary-500"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-1 border-primary-500"
               />
-              <div>
-                <p className="font-semibold text-light-1">
+              <div className="ml-2">
+                <p className="text-sm sm:text-base font-semibold text-light-1">
                   {list.creator?.Name}
                 </p>
-                <p className="text-light-3 text-sm">
+                <p className="text-light-3 text-xs sm:text-sm">
                   @{list.creator?.Username}
                 </p>
               </div>
             </Link>
-            {list.creator.Public && (!isFollowed && !isOwnProfile ? <Button
-                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
-                onClick={handleFollow}
-                disabled={isFollowLoading}>
-                {isFollowLoading ? (<div><Loader /></div>) : (
-                  <span>Follow</span>
-                )}
-              </Button>: isOwnProfile ? "" : <Button
-                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
-                onClick={handleUnFollow}
-                disabled={isFollowLoading}
-                >
-                {isFollowLoading ? (<div><Loader /></div>) : (
-                  <span>Unfollow</span>
-                )}
-              </Button>)}
-            <button
-              onClick={handleShare}
-              className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
-              disabled={isSharing}>
-              <Share2 size={24} />
-            </button>
+            <div className="flex items-center gap-2">
+              {list.creator.Public &&
+                (!isFollowed && !isOwnProfile ? (
+                  <Button
+                    className="text-xs sm:text-xs border-2 border-white text-white px-4 py-2 rounded-xl"
+                    onClick={handleFollow}
+                    disabled={isFollowLoading}
+                  >
+                    {isFollowLoading ? (
+                      <Loader />
+                    ) : (
+                      <span>Follow</span>
+                    )}
+                  </Button>
+                ) : isOwnProfile ? (
+                  ""
+                ) : (
+                  <Button
+                    className="text-xs sm:text-sm bg-dark-4 text-gray-400 px-3 py-2 rounded-full"
+                    onClick={handleUnFollow}
+                    disabled={isFollowLoading}
+                  >
+                    {isFollowLoading ? (
+                      <Loader />
+                    ) : (
+                      <span>Unfollow</span>
+                    )}
+                  </Button>
+                ))}
+              <button
+                onClick={handleShare}
+                className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
+                disabled={isSharing}
+              >
+                <Share2 size={24} />
+              </button>
+            </div>
           </div>
 
+          <h2 className="tracking-tighter	text-sm sm:text-base font-light text-gray-400 italic mb-2">
+            Ranking for
+            <span className="text-wrap text-xl sm:text-2xl font-semibold text-primary-500 ml-1">{list.Title}</span>
+          </h2>
+          {list.description && (
+            <h4 className="text-sm sm:text-base font-thin mb-6 text-gray-100">
+              {list.Description}
+            </h4>
+          )}
+
           <Link to={`/lists/${list.$id}`} className="block">
-            <ol className=  "list-none mb-6 space-y-3">{renderListItems()}</ol>
+            <ol className="list-none mb-6 space-y-3">
+              {renderListItems()}
+            </ol>
 
             {Array.isArray(list.items) && list.items.length > 5 && (
-              <p className="text-primary-500 font-semibold text-sm mb-4">
+              <p className="text-gray-500 font-semibold text-xs sm:text-sm mb-4">
                 + {list.items.length - 5} more items
               </p>
             )}
@@ -237,12 +249,13 @@ const handleUnFollow = async ()=>{
                 {list.tags.slice(0, 3).map((tag: string, index: number) => (
                   <span
                     key={index}
-                    className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs">
+                    className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs sm:text-sm"
+                  >
                     #{tag}
                   </span>
                 ))}
                 {list.tags.length > 3 && (
-                  <span className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs">
+                  <span className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs sm:text-sm">
                     +{list.tags.length - 3} more
                   </span>
                 )}
@@ -252,14 +265,18 @@ const handleUnFollow = async ()=>{
 
           <div className="flex flex-wrap gap-2 mb-4">
             {list?.Tags?.map((tag: string, index: number) => (
-              <span key={`${tag}${index}`} onClick={()=> navigate(`/categories/${tag}`)} className="text-primary-500 cursor-pointer">
+              <span
+                key={`${tag}${index}`}
+                onClick={() => navigate(`/categories/${tag}`)}
+                className="bg-gray-800 text-white px-2 py-1 rounded-full text-xs sm:text-sm cursor-pointer shadow-md"
+              >
                 #{tag}
               </span>
             ))}
           </div>
 
           {list.locations.length > 0 && (
-            <div className="text-blue-500">
+            <div className="text-xs sm:text-sm text-blue-200 mb-4">
               {list.locations.map((location: any, index: number) => (
                 <span key={index}>{location}</span>
               ))}
@@ -267,7 +284,7 @@ const handleUnFollow = async ()=>{
           )}
 
           {list.timespans.length > 0 && (
-            <div className="text-blue-500">
+            <div className="text-xs sm:text-sm text-blue-200">
               {list.timespans.map((timespan: any, index: number) => (
                 <span key={index}>{timespan}</span>
               ))}
@@ -275,24 +292,27 @@ const handleUnFollow = async ()=>{
           )}
         </div>
 
-        <div className="bg-dark-3 px-6 py-3 flex justify-between text-light-2 text-sm">
-        <span className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
-        <img
-          src={
-            checkIsLiked(likes, id)
-              ? "/assets/icons/liked.svg"
-              : "/assets/icons/like.svg"
-          }
-          alt="like"
-          width={20}
-          height={20}
-          onClick={handleLikeList}
-          className="cursor-pointer"
-        />
-        <p className="small-medium lg:base-medium">{likes.length} Likes</p>
-        </span>
+        <div className="bg-dark-3 px-4 sm:px-6 py-3 flex justify-between items-center text-light-2 text-xs sm:text-sm">
+          <span className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+            <img
+              src={
+                checkIsLiked(likes, id)
+                  ? "/assets/icons/liked.svg"
+                  : "/assets/icons/like.svg"
+              }
+              alt="like"
+              width={20}
+              height={20}
+              onClick={handleLikeList}
+              className="cursor-pointer"
+            />
+            <p className="text-xs sm:text-sm">{likes.length} Likes</p>
+          </span>
 
-          <span className="flex items-center gap-2 cursor-pointer" onClick={handleSaveList}>
+          <span
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={handleSaveList}
+          >
             <img
               src={
                 isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"
@@ -301,11 +321,14 @@ const handleUnFollow = async ()=>{
               width={20}
               height={20}
             />
-            <p className="small-medium lg:base-medium">
+            <p className="text-xs sm:text-sm">
               {isSaved ? "Saved" : "Save"}
             </p>
           </span>
-          <span onClick={()=> navigate(`/lists/${list.$id}`)} className="flex items-center cursor-pointer">
+          <span
+            onClick={() => navigate(`/lists/${list.$id}`)}
+            className="flex items-center cursor-pointer"
+          >
             <img
               src="/assets/icons/comment.svg"
               alt="Comments"
@@ -314,18 +337,18 @@ const handleUnFollow = async ()=>{
             {comments?.length || 0} Comments
           </span>
         </div>
-        <div className="w-full mt-4 p-4 border-t border-gray-300">
-          <h3 className="text-lg font-semibold">Comments</h3>
+        <div className="w-full mt-4 p-4 sm:p-6 border-t border-gray-300">
+          <h3 className="text-xs sm:text-sm font-semibold">Comments</h3>
           {comments && comments?.length > 0 ? (
             <ul>
               <div className="mt-1 flex flex-col gap-2">
-              {comments?.slice(0, 2).map((comment: any, index: number) => (
-               <Comment comment={comment} key={index} />
-              ))}
+                {comments?.slice(0, 2).map((comment: any, index: number) => (
+                  <Comment comment={comment} key={index} />
+                ))}
               </div>
             </ul>
           ) : (
-            <p className="text-sm text-gray-500">No comments yet.</p>
+            <p className="text-xs sm:text-sm text-gray-500">No comments yet.</p>
           )}
         </div>
       </motion.div>

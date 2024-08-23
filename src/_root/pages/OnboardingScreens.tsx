@@ -1,12 +1,7 @@
-import { useState } from "react";
-import { SkipForward, HelpCircle } from "lucide-react";
-import {
-  useCreateUserAccount,
-  useSignInAccount,
-  useSignInWithGoogle,
-} from "@/lib/react-query/queries";
-import { Loader } from "@/components/shared";
-import { Button, toast } from "@/components/ui";
+import React, { useState } from 'react';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import { useCreateUserAccount, useSignInAccount, useSignInWithGoogle } from "@/lib/react-query/queries";
+import { useToast } from "@/components/ui/use-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import { Loader2 } from "@/components/shared/Loader";
@@ -21,18 +16,18 @@ const initialData = {
 };
 
 const OnboardingScreens = () => {
-  const [currentScreen, setCurrentScreen] = useState(0);
-  const [showTooltip, setShowTooltip] = useState(false);
+  const [step, setStep] = useState(1);
   const [user, setUser] = useState(initialData);
-  const { name, username, email, password, bio, categories } = user;
-  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
-  const { mutateAsync: createUserAccount, isLoading: isCreatingAccount } =
-    useCreateUserAccount();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { mutateAsync: createUserAccount, isLoading: isCreatingAccount } = useCreateUserAccount();
   const { mutateAsync: signInAccount, isLoading: isSigningInUser } = useSignInAccount();
+  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
   const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
 
-  const handleSignup = async (user: any) => {
+  const handleSignup = async () => {
     try {
       const newUser = await createUserAccount(user);
 
@@ -62,380 +57,196 @@ const OnboardingScreens = () => {
       }
     } catch (error) {
       console.log({ error });
+      toast({ title: "An error occurred during sign up." });
     }
   };
 
-  const screens = [
-    {
-      title: "Sign Up",
-      component: (
-        <SignUpScreen
-          email={email}
-          password={password}
-          setUser={setUser}
-          user={user}
-        />
-      ),
-    },
-    {
-      title: "Quick Interests",
-      component: (
-        <QuickInterestsScreen
-          setShowTooltip={setShowTooltip}
-          showTooltip={showTooltip}
-          currentScreen={currentScreen}
-          setCurrentScreen={setCurrentScreen}
-          categories={categories}
-          setUser={setUser}
-          user={user}
-        />
-      ),
-    },
-    {
-      title: "Profile Basics",
-      component: (
-        <ProfileBasicsScreen
-          name={name}
-          username={username}
-          bio={bio}
-          setUser={setUser}
-          user={user}
-        />
-      ),
-    },
-    {
-      title: "Welcome",
-      component: (
-        <WelcomeScreen
-          handleSignup={handleSignup}
-          isUserLoading={isUserLoading}
-          isSigningInUser={isSigningInUser}
-          isCreatingAccount={isCreatingAccount}
-          user={user}
-        />
-      ),
-    },
-    {
-      title: "First-Time Homepage",
-      component: (
-        <FirstTimeHomepage
-          setShowTooltip={setShowTooltip}
-          showTooltip={showTooltip}
-        />
-      ),
-    },
-  ];
-
-  return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
-      <div className="flex justify-between mb-6">
-        {screens.map((screen, index) => (
-          <div
-            key={index}
-            className={`flex flex-col items-center ${index <= currentScreen ? "text-blue-500" : "text-gray-400"}`}>
-            <div
-              className={`w-10 h-10 flex text-white items-center justify-center rounded-full ${index <= currentScreen ? "bg-blue-500" : "bg-gray-500"}`}>
-              {index + 1}
-            </div>
-            <span className="text-xs mt-1">{screen.title}</span>
-          </div>
-        ))}
-      </div>
-      {screens[currentScreen].component}
-      <div className="mt-4 flex justify-between">
-        <button
-          onClick={() => setCurrentScreen(Math.max(0, currentScreen - 1))}
-          className="text-blue-500 hover:text-blue-700"
-          disabled={currentScreen === 0}>
-          Back
-        </button>
-        <button
-          onClick={() =>{
-            currentScreen === screens.length -1 ? handleSignup(user)  : setCurrentScreen(Math.min(screens.length - 1, currentScreen + 1))
-          }
-          }
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-          {currentScreen === screens.length - 1 ?
-          (isCreatingAccount || isSigningInUser || isUserLoading ? (
-            <div className="flex-center gap-2">
-              <Loader2 />
-            </div>
-          ) : (
-            "Finish"
-          ))
-           : "Next"}
-        </button>
-      </div>
-    </div>
-  );
-};
-
-const SignUpScreen = ({ email, password, user, setUser }: any) => {
-  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } =
-    useSignInWithGoogle();
-
-  const navigate = useNavigate();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (step < 3) {
+      setStep(step + 1);
+    } else {
+      handleSignup();
+    }
+  };
 
   const handleGoogleSignIn = () => {
     signInWithGoogle();
+    // Note: This will redirect the user, so no need for further handling here
+  };
+
+  const inputClassName = "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900";
+  const readOnlyInputClassName = "w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600";
+
+  const renderStep = () => {
+    switch (step) {
+      case 1:
+        return (
+          <>        
+            <img src="/assets/images/logo.svg" alt="logo" />
+
+            <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12 mb-4">New to Topfived? </h2>
+            
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-400 mb-1" htmlFor="email">
+                Enter email address*
+              </label>
+              <input
+                type="email"
+                id="email"
+                className={inputClassName}
+                value={user.email}
+                onChange={(e) => setUser({ ...user, email: e.target.value })}
+                required
+              />
+            </div>
+          </>
+        );
+      case 2:
+        return (
+          <>
+            <h2 className="text-3xl font-bold mb-6 text-center">Now, let's create a password.</h2>
+            <div className="mb-4">
+              <div className="flex items-center justify-between">
+                <input
+                  type="email"
+                  id="email"
+                  className={readOnlyInputClassName}
+                  value={user.email}
+                  readOnly
+                />
+                <button
+                  type="button"
+                  className="text-green-500 font-medium"
+                  onClick={() => setStep(1)}
+                >
+                  Edit
+                </button>
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="password">
+                Password*
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  className={inputClassName}
+                  value={user.password}
+                  onChange={(e) => setUser({ ...user, password: e.target.value })}
+                  required
+                />
+                <button
+                  type="button"
+                  className="absolute right-2 top-2 text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
+                </button>
+              </div>
+            </div>
+            <div className="mb-4">
+              <a href="#" className="text-green-500 hover:underline text-sm">
+                Forgot password?
+              </a>
+            </div>
+          </>
+        );
+      case 3:
+        return (
+          <>
+            <h2 className="text-3xl font-bold mb-6 text-center">Lastly, create your unique username.</h2>
+            <div className="mb-4">
+              <input
+                type="email"
+                className={readOnlyInputClassName}
+                value={user.email}
+                readOnly
+              />
+            </div>
+            <div className="mb-4">
+              <input
+                type="password"
+                className={readOnlyInputClassName}
+                value="••••••••"
+                readOnly
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-300 mb-1" htmlFor="username">
+                Username*
+              </label>
+              <input
+                type="text"
+                id="username"
+                className={inputClassName}
+                value={user.username}
+                onChange={(e) => setUser({ ...user, username: e.target.value })}
+                required
+              />
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-4">Join Topfived</h2>
-      <form>
-        <div className="mb-4">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="email">
-            Email
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="email"
-            type="email"
-            placeholder="Email"
-            name="email"
-            value={email}
-            onChange={(e) => setUser({ ...user, email: e.target.value })}
-          />
-        </div>
-        <div className="mb-6">
-          <label
-            className="block text-gray-700 text-sm font-bold mb-2"
-            htmlFor="password">
-            Password
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-            id="password"
-            placeholder="********"
-            type="password"
-            name="password"
-            value={password}
-            onChange={(e) => setUser({ ...user, password: e.target.value })}
-          />
-        </div>
-        <div className="flex gap-2 text-black">
-         already have an account? <Link className="text-blue-600" to={"/sign-in"}>Login</Link> 
-        </div>
-      </form>
-    </div>
-  );
-};
-
-const QuickInterestsScreen = ({
-  showTooltip,
-  setShowTooltip,
-  currentScreen,
-  setCurrentScreen,
-  user,
-  setUser,
-  categories,
-}: any) => (
-  <div className="text-black">
-    <h2 className="text-2xl font-bold mb-4">What are you into?</h2>
-    <p className="mb-4">Select a few topics you're interested in:</p>
-    <div className="grid grid-cols-2 gap-4 mb-6">
-      {[
-        "Movies",
-        "Technology",
-        "Food",
-        "Travel",
-        "Books",
-        "Music",
-        "Sports",
-        "Art",
-      ].map((topic) => (
+    <div className="max-w-md mx-auto mt-10 p-6 bg-black rounded-lg shadow-lg">
+      <form onSubmit={handleSubmit}>
+        {renderStep()}
         <button
-          key={topic}
-          onClick={() =>
-            setUser({ ...user, categories: [...categories, topic] })
-          }
-          className="bg-gray-200 hover:bg-blue-500 hover:text-white text-gray-800 font-bold py-2 px-4 rounded">
-          {topic}
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+        >
+          {step === 3 ? (
+            isCreatingAccount || isSigningInUser || isUserLoading ? (
+              <div className="flex justify-center items-center gap-2">
+                <Loader2 /> Loading...
+              </div>
+            ) : (
+              "Sign Up"
+            )
+          ) : (
+            "Continue"
+          )}
         </button>
-      ))}
-    </div>
-    <div className="flex justify-between items-center">
-      <button
-        className="text-blue-500 hover:text-blue-700 flex items-center"
-        onClick={() => setCurrentScreen(currentScreen + 1)}>
-        <SkipForward size={16} className="mr-1" /> Skip for now
-      </button>
-      <div className="relative">
-        <HelpCircle
-          size={20}
-          className="text-gray-500 cursor-pointer"
-          onMouseEnter={() => setShowTooltip(true)}
-          onMouseLeave={() => setShowTooltip(false)}
-        />
-        {showTooltip && (
-          <div className="absolute right-0 w-48 p-2 mt-1 text-sm bg-gray-800 text-white rounded shadow-lg">
-            Selecting interests helps us personalize your experience!
+      </form>
+      <div className="mt-4 text-center text-sm">
+        <span className="text-gray-300">
+          {step === 1 ? "Already have an account? " : "Already have an account? "}
+        </span>
+        <Link
+          to={step === 1 ? "/sign-in" : "/sign-in"}
+          className="text-green-500 hover:underline font-medium"
+        >
+          {step === 1 ? "Sign in" : "Log in"}
+        </Link>
+      </div>
+      <div className="mt-4 flex items-center">
+        <div className="flex-grow border-t border-gray-300"></div>
+        <span className="flex-shrink mx-4 text-gray-600">OR</span>
+        <div className="flex-grow border-t border-gray-300"></div>
+      </div>
+      <button 
+        type="button" 
+        className="w-full mt-4 flex items-center justify-center bg-blue-950 border border-gray-700 rounded-md py-2 px-4 text-sm font-medium text-white hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        onClick={handleGoogleSignIn}
+        disabled={isGoogleLoading}
+      >
+        {isGoogleLoading ? (
+          <div className="flex-center gap-2">
+            <Loader2 /> Loading...
           </div>
+        ) : (
+          <>
+            <img src="/assets/icons/google.svg" alt="Google logo" className="w-5 h-5 mr-2" />
+            Continue with Google
+          </>
         )}
-      </div>
-    </div>
-  </div>
-);
-
-const ProfileBasicsScreen = ({ name, username, bio, user, setUser }: any) => (
-  <div>
-    <h2 className="text-2xl font-bold mb-4">Create Your Profile</h2>
-    <form>
-      <div className="mb-4">
-        <label
-          className="block text-gray-700 text-sm font-bold mb-2"
-          htmlFor="username">
-          Name
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="username"
-          type="text"
-          placeholder="Name"
-          name="name"
-          value={name}
-          onChange={(e) => setUser({ ...user, name: e.target.value })}
-        />
-      </div>
-      <div className="mb-4">
-        <label
-          className="block text-gray-700 text-sm font-bold mb-2"
-          htmlFor="username">
-          Username
-        </label>
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="username"
-          type="text"
-          placeholder="Username"
-          name="username"
-          value={username}
-          onChange={(e) => setUser({ ...user, username: e.target.value })}
-        />
-      </div>
-      <div className="mb-4">
-        <label
-          className="block text-gray-700 text-sm font-bold mb-2"
-          htmlFor="bio">
-          Bio (optional)
-        </label>
-        <textarea
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="bio"
-          placeholder="Tell us a bit about yourself"
-          name="bio"
-          value={bio}
-          onChange={(e) =>
-            setUser({ ...user, bio: e.target.value })
-          }></textarea>
-      </div>
-      <div className="flex justify-between items-center">
-        {/* <button className="text-blue-500 hover:text-blue-700 flex items-center">
-          <SkipForward size={16} className="mr-1" /> Complete later
-        </button> */}
-        <div className="text-sm text-gray-500">Profile completion: 2/3</div>
-      </div>
-    </form>
-  </div>
-);
-
-const WelcomeScreen = ({
-  handleSignup,
-  isUserLoading,
-  isSigningInUser,
-  isCreatingAccount,
-  user
-}: any) => (
-  <div className="text-black">
-    <h2 className="text-2xl font-bold mb-4">Welcome to Topfived!</h2>
-    <p className="mb-4">You're all set! Here's what you can do now:</p>
-    <ul className="list-disc list-inside mb-6">
-      <li>Browse popular lists</li>
-      <li>Create your first list</li>
-      <li>Follow other list makers</li>
-    </ul>
-    <div
-      className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-4"
-      role="alert">
-      <p className="font-bold">Tip:</p>
-      <p>Creating your first list unlocks the "Newcomer" badge!</p>
-    </div>
-    <button
-      onClick={() => handleSignup(user)}
-      className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
-      {isCreatingAccount || isSigningInUser || isUserLoading ? (
-        <div className="flex justify-center items-center gap-2">
-          <Loader2 /> Loading...
-        </div>
-      ) : (
-        "Start Exploring"
-      )}
-    </button>
-  </div>
-);
-
-const FirstTimeHomepage = ({ showTooltip, setShowTooltip }: any) => {
-  const navigate = useNavigate();
-
-  return (
-    <div className="text-black">
-      <h2 className="text-2xl font-bold mb-4">Discover Top 5 Lists</h2>
-      <div className="mb-4">
-        <input
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          type="text"
-          placeholder="Search for lists..."
-        />
-      </div>
-      <div className="mb-4">
-        <h3 className="font-bold text-lg mb-2">Recommended for You</h3>
-        <div className="bg-gray-100 p-3 rounded">
-          <p className="font-semibold">Top 5 Sci-Fi Movies of 2024</p>
-          <p className="text-sm text-gray-600">By MovieBuff123</p>
-        </div>
-      </div>
-      <div className="mb-4">
-        <h3 className="font-bold text-lg mb-2">Popular Categories</h3>
-        <div className="flex flex-wrap gap-2">
-          <span
-            onClick={() => navigate(`/categories/Movie`)}
-            className="bg-blue-200 text-blue-800 px-2 py-1 rounded cursor-pointer">
-            Movies
-          </span>
-          <span
-            onClick={() => navigate(`/categories/Technology`)}
-            className="bg-green-200 text-green-800 px-2 py-1 rounded cursor-pointer">
-            Technology
-          </span>
-          <span
-            onClick={() => navigate(`/categories/Food`)}
-            className="bg-yellow-200 text-yellow-800 px-2 py-1 rounded cursor-pointer">
-            Food
-          </span>
-        </div>
-      </div>
-
-      <button
-        onClick={() => navigate("/create-list")}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
-        Create Your First List
       </button>
-      <div className="relative mt-3 flex justify-end">
-        <HelpCircle
-          size={20}
-          className="text-gray-500 cursor-pointer"
-          onMouseEnter={() => setShowTooltip(true)}
-          onMouseLeave={() => setShowTooltip(false)}
-        />
-        {showTooltip && (
-          <div className="absolute right-0 mt-5 w-48 p-2 text-sm bg-gray-800 text-white rounded shadow-lg">
-            Selecting interests helps us personalize your experience!
-          </div>
-        )}
-      </div>
     </div>
   );
 };

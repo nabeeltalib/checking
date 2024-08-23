@@ -4,13 +4,14 @@ const FAB = () => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate("/create-list"); 
+    navigate("/create-list");
   };
 
   return (
     <button
-      className="fixed bottom-4 right-4 bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 flex items-center justify-center"
+      className="fixed bottom-6 right-6 bg-primary-500 text-white rounded-full p-4 shadow-lg hover:bg-primary-600 transition-transform transform hover:scale-110 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-primary-300"
       onClick={handleClick}
+      aria-label="Create New List"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

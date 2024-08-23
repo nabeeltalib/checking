@@ -18,14 +18,14 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-lg max-w-sm w-full">
-        <h2 className="text-xl font-bold mb-4 text-black">{title}</h2>
-        <p className="mb-6 text-black">{description}</p>
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+      <div className="bg-dark-2 p-8 rounded-lg max-w-md w-full shadow-lg">
+        <h2 className="text-2xl font-bold mb-4 text-light-1">{title}</h2>
+        <p className="mb-6 text-light-3">{description}</p>
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}
-            className="px-4 py-2 border text-black border-gray-300 rounded-md hover:bg-gray-100"
+            className="px-4 py-2 border text-light-3 border-gray-500 rounded-md hover:bg-gray-700 transition-colors duration-200"
           >
             Cancel
           </button>
@@ -34,7 +34,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
               onConfirm();
               onClose();
             }}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors duration-200"
           >
             Confirm
           </button>

@@ -15,13 +15,11 @@ const CreateList: React.FC = () => {
   const navigate = useNavigate();
   
   const { mutateAsync: createList, isLoading } = useCreateList(user.id);
-  const { mutate: generateListIdea, isLoading: isGeneratingIdea } =
-    useGenerateListIdea(user.id);
+  const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user.id);
   const [listIdea, setListIdea] = useState<string | null>(null);
 
   const handleCreateList = async (listData: IList) => {
     try {
-      // Ensure listData.items is an array of IListItem
       const transformedListData = {
         ...listData,
         items: listData.items.map((item: string | IListItem) => {
@@ -34,13 +32,12 @@ const CreateList: React.FC = () => {
 
       const newList = await createList(transformedListData);
 
-      // Index the new list in Typesense
       await indexList(newList);
 
       toast({
         title: 'List created successfully!',
         description: 'Your new list has been created and indexed.',
-        variant: 'success'
+        variant: 'success',
       });
 
       navigate(`/lists/${newList.$id}`);
@@ -48,42 +45,45 @@ const CreateList: React.FC = () => {
       console.error('Error creating list:', error);
       toast({
         title: 'Error creating list',
-        description:
-          'An error occurred while creating the list. Please try again.',
-        variant: 'destructive'
+        description: 'An error occurred while creating the list. Please try again.',
+        variant: 'destructive',
       });
     }
   };
 
   const handleGenerateIdea = () => {
     generateListIdea('Generate a list idea', {
-      onSuccess: idea => setListIdea(idea)
+      onSuccess: (idea) => setListIdea(idea),
     });
   };
 
   if (isLoading) return <Loader />;
 
   return (
-    <div className="flex flex-1 items-center justify-center py-10 px-6 min-h-screen bg-dark-1">
-      <div className="max-w-5xl w-full bg-dark-2 rounded-xl p-8 shadow-md">
-        <div className="flex items-center gap-3 mb-8">
+    <div className="flex flex-1 items-center justify-center py-10 px-6 min-h-screen bg-zinc-900">
+      <div className="max-w-4xl w-full bg-zinc-800 rounded-xl p-8 shadow-lg">
+        <div className="flex items-center gap-4 mb-8">
           
-          <h2 className="h2-bold md:h3-bold text-light-1">What's Your Top 5 ? </h2>
-          <img
-            src="/assets/icons/add-list.svg"
-            width={36}
-            height={36}
-            alt="Add List"
-            className="invert-white"
-          />
+          <h2 className="font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+          What's in your top 3, 4, 5... for anything!
+        </h2>
         </div>
-      
 
         {listIdea && (
-          <div className="mb-4 p-4 bg-dark-3 rounded-lg">
+          <div className="mb-4 p-4 bg-zinc-700 rounded-lg shadow-md">
             <p className="text-light-1">{listIdea}</p>
           </div>
         )}
+
+        <div className="flex justify-end mb-4">
+          <button
+            className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors"
+            onClick={handleGenerateIdea}
+            disabled={isGeneratingIdea}
+          >
+            {isGeneratingIdea ? 'Generating Idea...' : 'Generate List Idea'}
+          </button>
+        </div>
 
         <ListForm
           ontSubmit={handleCreateList}

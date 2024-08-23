@@ -48,13 +48,10 @@ import { SortableItem } from "./SortableItem";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { getUserFriends, indexList } from "@/lib/appwrite/config";
 
-
 const ListForm = ({ list, action, initialData }: any) => {
   const { user } = useUserContext();
   const { toast } = useToast();
   const navigate = useNavigate();
-
- 
 
   const [categories, setCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
@@ -75,8 +72,7 @@ const ListForm = ({ list, action, initialData }: any) => {
   const [showUndoButton, setShowUndoButton] = useState(false);
   const [friendsLists, setFriendsLists] = useState<any>([]);
 
-  const { mutate: generateListItems, isLoading: isGeneratingItems } =
-    useGenerateListItems();
+  const { mutate: generateListItems, isLoading: isGeneratingItems } = useGenerateListItems();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -141,17 +137,19 @@ const ListForm = ({ list, action, initialData }: any) => {
       Title: initialData?.Title || list?.Title || "",
       Description: initialData?.Description || list?.Description || "",
       items:
-        initialData?.item.map((item: any) => { 
-          return {content:item.content, isVisible:true,  creator: item?.creator.$id, id: item?.$id};
-       }) ||
-        list?.item?.map((item: any) => {
-          if (typeof item === "string") {
-            const [content, isVisible] = item.split("|");
-            return { content, isVisible: isVisible === "true" };
-          }
-          return {content:item.content, isVisible:true,  creator: item?.creator?.$id, id: item?.$id};
-       })||
-       Array(5).fill({ content: "", isVisible: true }),
+        initialData?.item.map((item: any) => ({
+          content: item.content,
+          isVisible: true,
+          creator: item?.creator.$id,
+          id: item?.$id,
+        })) ||
+        list?.item?.map((item: any) => ({
+          content: item.content,
+          isVisible: true,
+          creator: item?.creator?.$id,
+          id: item?.$id,
+        })) ||
+        Array(5).fill({ content: "", isVisible: true }),
       Categories: initialData?.Categories || list?.Categories || [],
       Tags: initialData?.Tags || list?.Tags || [],
       timespans: initialData?.timespans || list?.timespans || [],
@@ -165,111 +163,93 @@ const ListForm = ({ list, action, initialData }: any) => {
     name: "items",
   });
 
-  const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList(
-    user.id
-  );
-  const { mutateAsync: updateList, isLoading: isLoadingUpdate } =
-    useUpdateList();
+  const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList(user.id);
+  const { mutateAsync: updateList, isLoading: isLoadingUpdate } = useUpdateList();
 
-    const handleSubmit = async (value: z.infer<typeof formSchema>) => {
-      try {
-
-        if (action === "Update") {
-          console.log("working!")
-          //Find each unique item created by any User
-          let item: any = value.items.map((item: any) => {
-            let currentListItem = list.item.find((listItem: any) => listItem.content !== item.content)
-            if(currentListItem) {
-              return {
-                ...item,
-                content:item.content,
-                creator: user.id,
-              }
-            }
+  const handleSubmit = async (value: z.infer<typeof formSchema>) => {
+    try {
+      if (action === "Update") {
+        let item: any = value.items.map((item: any) => {
+          let currentListItem = list.item.find((listItem: any) => listItem.content !== item.content);
+          if (currentListItem) {
             return {
               ...item,
-            }
-          })
-
-          if(list.userId !== user.id)
-          {
-              await CollaborateOnList(list.$id, user.id)
+              content: item.content,
+              creator: user.id,
+            };
           }
+          return {
+            ...item,
+          };
+        });
 
-          const updatedList = await updateList({
+        if (list.userId !== user.id) {
+          await CollaborateOnList(list.$id, user.id);
+        }
+
+        const updatedList = await updateList({
           ...value,
-            userId:user.id,
-            item:item,
-            listId: list.$id,
-            UpdatedAt: new Date(),
-          });
-    
-          if (!updatedList) {
-            toast({ title: `${action} list failed. Please try again.` });
-          } else {
-            // Index the new list in Typesense
-            await indexList(updatedList);
-            navigate(`/lists/${list!.$id}`);
-            
-            // Use for loop to handle asynchronous operations
-            for (const friend of friendsLists) {
-              await createNotification({
-                userId: friend.$id,
-                type: "friend_list",
-                message: `${user.name} Updated list: "${updatedList.Title}"`,
-              });
-            }
-            
-            // Send Notifications to all the collaborators
-            for (const person of list.users) {
-              await createNotification({
-                userId: person.$id,
-                type: "friend_list",
-                message: `${user.name} Updated list: "${updatedList.Title}"`,
-              });
-            }
+          userId: user.id,
+          item: item,
+          listId: list.$id,
+          UpdatedAt: new Date(),
+        });
 
-          }
+        if (!updatedList) {
+          toast({ title: `${action} list failed. Please try again.` });
         } else {
-          
-          // For both "Create" and "Remix" actions
-          const newList = await createList({
-            ...value,
-            userId: user.id,
-            CreatedAt: new Date(),
-            UpdatedAt: new Date(),
-            // For remix, we might want to add a reference to the original list
-            originalListId: action === "Remix" ? list?.$id : undefined,
-          });
-    
-          if (!newList) {
-            toast({ title: `${action} list failed. Please try again.` });
-          } else {
+          await indexList(updatedList);
+          navigate(`/lists/${list!.$id}`);
 
-            // Index the new list in Typesense
-            await indexList(newList);
+          for (const friend of friendsLists) {
+            await createNotification({
+              userId: friend.$id,
+              type: "friend_list",
+              message: `${user.name} Updated list: "${updatedList.Title}"`,
+            });
+          }
 
-            // Use for loop to handle asynchronous operations
-            for (const friend of friendsLists) {
-              await createNotification({
-                userId: friend.$id,
-                type: "friend_list",
-                message: `${user.name} Created list: "${newList.Title}"`,
-              });
-            }
-
-            navigate(`/lists/${newList.$id}`);
+          for (const person of list.users) {
+            await createNotification({
+              userId: person.$id,
+              type: "friend_list",
+              message: `${user.name} Updated list: "${updatedList.Title}"`,
+            });
           }
         }
-      } catch (error) {
-        console.error(`Error ${action.toLowerCase()}ing list:`, error);
-        toast({
-          title: `${action} list failed. Please try again.`,
-          variant: "destructive",
+      } else {
+        const newList = await createList({
+          ...value,
+          userId: user.id,
+          CreatedAt: new Date(),
+          UpdatedAt: new Date(),
+          originalListId: action === "Remix" ? list?.$id : undefined,
         });
+
+        if (!newList) {
+          toast({ title: `${action} list failed. Please try again.` });
+        } else {
+          await indexList(newList);
+
+          for (const friend of friendsLists) {
+            await createNotification({
+              userId: friend.$id,
+              type: "friend_list",
+              message: `${user.name} Created list: "${newList.Title}"`,
+            });
+          }
+
+          navigate(`/lists/${newList.$id}`);
+        }
       }
-    };
-    
+    } catch (error) {
+      console.error(`Error ${action.toLowerCase()}ing list:`, error);
+      toast({
+        title: `${action} list failed. Please try again.`,
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleGenerateListItems = () => {
     const title = form.getValues("Title");
@@ -277,10 +257,10 @@ const ListForm = ({ list, action, initialData }: any) => {
     const timespans = form.getValues("timespans");
 
     let obj = {
-      Title:title,
+      Title: title,
       location: location,
-      timespans: timespans
-    }
+      timespans: timespans,
+    };
     if (title) {
       generateListItems(obj, {
         onSuccess: (items) => {
@@ -312,10 +292,10 @@ const ListForm = ({ list, action, initialData }: any) => {
     setPreviousItems(form.getValues("items"));
     form.setValue(
       "items",
-      items.map((item) => ({ content: item, isVisible: true, id:"", creator:"" }))
+      items.map((item) => ({ content: item, isVisible: true, id: "", creator: "" }))
     );
     setShowUndoButton(true);
-    setTimeout(() => setShowUndoButton(false), 10000); 
+    setTimeout(() => setShowUndoButton(false), 10000);
     toast({
       title: "List items generated",
       description: "5 items have been generated based on your title.",
@@ -345,10 +325,7 @@ const ListForm = ({ list, action, initialData }: any) => {
   const handleAddCategory = () => {
     if (newCategory && !categories.includes(newCategory)) {
       setCategories([...categories, newCategory]);
-      form.setValue("Categories", [
-        ...form.getValues("Categories"),
-        newCategory,
-      ]);
+      form.setValue("Categories", [...form.getValues("Categories"), newCategory]);
       setNewCategory("");
     }
   };
@@ -559,7 +536,7 @@ const ListForm = ({ list, action, initialData }: any) => {
               items={fields.map((field) => field.id)}
               strategy={verticalListSortingStrategy}>
               {fields.map((field, index) => (
-              <SortableItem key={field.id} id={field.id}>
+                <SortableItem key={field.id} id={field.id}>
                   <div className="flex items-center mb-2">
                     <div className="mr-2">⋮⋮</div>
                     <FormField
@@ -577,23 +554,23 @@ const ListForm = ({ list, action, initialData }: any) => {
                         </FormItem>
                       )}
                     />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.isVisible`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <input
-                                type="checkbox"
-                                {...field}
-                                checked={field.value}
-                                className="mr-2"
-                                aria-label={`Make item ${index + 1} visible`}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
+                    <FormField
+                      control={form.control}
+                      name={`items.${index}.isVisible`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <input
+                              type="checkbox"
+                              {...field}
+                              checked={field.value}
+                              className="mr-2"
+                              aria-label={`Make item ${index + 1} visible`}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </SortableItem>
               ))}
@@ -603,7 +580,7 @@ const ListForm = ({ list, action, initialData }: any) => {
           {fields.length < 10 && (
             <Button
               type="button"
-              onClick={() => append({ content: "", isVisible: true, id:"", creator:"" })}
+              onClick={() => append({ content: "", isVisible: true, id: "", creator: "" })}
               aria-label="Add new item"
               className="px-4 py-2 rounded-md mb-4">
               Add Row
@@ -764,24 +741,6 @@ const ListForm = ({ list, action, initialData }: any) => {
             onClick={() => navigate(-1)}>
             Cancel
           </Button>
-          {/* <Button
-            type="button"
-            className="shad-button_dark_4"
-            onClick={() => navigate(-1)}>
-            Save as Draft
-          </Button>
-          <Button
-            type="button"
-            className="shad-button_dark_4"
-            onClick={() => navigate(-1)}>
-            Preview List
-          </Button>
-          <Button
-            type="button"
-            className="shad-button_dark_4"
-            onClick={() => navigate(-1)}>
-            Publish List
-          </Button> */}
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"

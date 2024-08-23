@@ -3,10 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { IList } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
-import { Loader, Share2 } from "lucide-react";
+import { Share2 } from "lucide-react";
 import { useGetComments, useSignInWithGoogle } from "@/lib/react-query/queries";
 import Comment from "./Comment";
 import { Button } from "../ui";
+import Loader from "@/components/shared/Loader";
 
 type ListCardProps = {
   list: IList;
@@ -16,6 +17,9 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const [isSharing, setIsSharing] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { data: comments } = useGetComments(list.$id);
+  const navigate = useNavigate();
+
+  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
 
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -40,7 +44,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
       setIsSharing(false);
     }
   };
-  const navigate = useNavigate();
+
   const handleDialogOpen = () => {
     setIsDialogOpen(true);
   };
@@ -49,187 +53,210 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     setIsDialogOpen(false);
   };
 
-  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
-
   const handleGoogleSignIn = () => {
     signInWithGoogle();
-    // Note: This will redirect the user, so no need for further handling here
   };
 
   const renderListItems = () => {
-    let items: Array<any> = [];
-
-    if (Array.isArray(list.items)) {
-      items = list.items;
-    } else if (typeof list.items === "string") {
-      items = list.split("\n");
-    } else if (typeof list === "object" && list !== null) {
-      items = Object.values(list);
-    }
+    const items: any[] =
+      Array.isArray(list.items) ? list.items : typeof list.items === "string"
+        ? list.items.split("\n")
+        : list.items ? Object.values(list.items) : [];
 
     return items.slice(0, 5).map((item, index) => (
-      <li key={index} className="flex items-center mb-2">
-        <span className="flex-shrink-0 w-8 h-8 text-light-1 bg-gray-800 rounded-full flex items-center justify-center font-bold mr-3">
+      <li
+        key={index}
+        className="flex items-center mb-2 cursor-pointer"
+        onClick={handleDialogOpen} // Open dialog when clicking on an item
+      >
+        <span className="text-sm flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-gray-900 text-white rounded-full flex items-center justify-center font-light mr-3">
           {index + 1}
         </span>
-        <span className="text-light-2 truncate">
+        <span className="text-sm sm:text-base text-light-1 truncate">
           {typeof item === "string" ? item : item.content || ""}
         </span>
       </li>
     ));
   };
 
+  const renderComments = () => {
+    if (!comments || comments.length === 0) return null;
+
+    return (
+      <div className="mt-4">
+        <h4 className="text-xs sm:text-sm font-semibold text-gray-500 mb-2 ">Comments:</h4>
+        <ul>
+          {comments.slice(0, 2).map((comment, index) => (
+            <li key={index} className="mb-2">
+              <Comment comment={comment} />
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   return (
     <>
       <motion.div
-        className="bg-dark-2 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+        className="bg-dark-2 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer"
         whileHover={{ y: -5 }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        onClick={handleDialogOpen}
-        style={{ cursor: "pointer" }}>
-        <div className="p-6">
-          <h2 className="text-3xl font-bold mb-6 text-primary-500">
-            {list.Title}
-          </h2>
-
-          <div className="flex justify-between items-start mb-4">
-            <Link to={``} className="flex items-center">
+        onClick={handleDialogOpen} // Open the dialog on click
+      >
+        <div className="p-4 sm:p-6">
+          <div
+            className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 cursor-pointer"
+            onClick={handleDialogOpen} // Open dialog when clicking on profile area
+          >
+            <div className="flex items-center">
               <img
-                src={
-                  list.creator?.ImageUrl ||
-                  "/assets/icons/profile-placeholder.svg"
-                }
+                src={list.creator?.ImageUrl || "/assets/icons/profile-placeholder.svg"}
                 alt={`${list.creator?.Name}'s profile`}
-                className="w-12 h-12 rounded-full mr-3 border-2 border-primary-500"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-1 border-primary-500 shadow-lg"
               />
-              <div>
-                <p className="font-semibold text-light-1">
-                  {list.creator?.Name}
-                </p>
-                <p className="text-light-3 text-sm">@{list.creator?.Name}</p>
+              <div className="ml-3">
+                <p className="text-sm sm:text-base font-semibold text-light-1">{list.creator?.Name}</p>
+                <p className="text-light-3 text-xs sm:text-sm">@{list.creator?.Username}</p>
               </div>
-            </Link>
-            <Button
-                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full">
-                Follow
-              </Button>
+            </div>
             <button
               onClick={handleShare}
-              className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
-              disabled={isSharing}>
+              className={`text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3 ${
+                isSharing ? "cursor-not-allowed" : ""
+              }`}
+              disabled={isSharing}
+              aria-label="Share this list"
+            >
               <Share2 size={24} />
             </button>
           </div>
-
-          <Link to={``} className="block">
+          <div
+            className="cursor-pointer"
+            onClick={handleDialogOpen} // Open dialog when clicking on title
+          >
+            <h2 className="tracking-tighter	text-xs sm:text-sm font-light text-gray-400 italic mb-2">
+              Ranking for
+              <span className="text-wrap text-sm sm:text-lg font-semibold text-primary-500 ml-1">{list.Title}</span>
+            </h2>
+          </div>
+          <div className="block" aria-label={`View details of list titled ${list.Title}`}>
             <ol className="list-none mb-6 space-y-3">{renderListItems()}</ol>
 
             {Array.isArray(list.items) && list.items.length > 5 && (
-              <p className="text-primary-500 font-semibold text-sm mb-4">
+              <p className="text-gray-500 font-semibold text-xs sm:text-sm mb-4">
                 + {list.items.length - 5} more items
               </p>
             )}
 
             {list.tags && list.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
-                {list.tags.slice(0, 3).map((tag: string, index: number) => (
+                {list.tags.map((tag: string, index: number) => (
                   <span
                     key={index}
-                    className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs">
+                    onClick={handleDialogOpen} // Open dialog when clicking on a tag
+                    className="cursor-pointer bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm"
+                  >
                     #{tag}
                   </span>
                 ))}
-                {list.tags.length > 3 && (
-                  <span className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs">
-                    +{list.tags.length - 3} more
-                  </span>
-                )}
               </div>
             )}
-          </Link>
 
-          <div className="flex flex-wrap gap-2 mb-4">
-            {list?.Tags?.map((tag: string, index: number) => (
-              <span key={`${tag}${index}`} className="text-primary-500">
-                #{tag}
-              </span>
-            ))}
-          </div>
-
-          {list.locations.length > 0 && (
-            <div className="text-blue-500">
-              {list.locations.map((location: any, index: number) => (
-                <span key={index}>{location}</span>
-              ))}
-            </div>
-          )}
-
-          {list.timespans.length > 0 && (
-            <div className="text-blue-500">
-              {list.timespans.map((timespan: any, index: number) => (
-                <span key={index}>{timespan}</span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="bg-dark-3 px-6 py-3 flex justify-between text-light-2 text-sm">
-          <span className="flex items-center">
-            <img
-              src="/assets/icons/like.svg"
-              alt="Likes"
-              className="w-5 h-5 mr-2"
-            />
-            {list.Likes?.length || 0} Likes
-          </span>
-          <span className="flex items-center">
-            <img
-              src="/assets/icons/comment.svg"
-              alt="Comments"
-              className="w-5 h-5 mr-2"
-            />
-            {list.comments?.length || 0} Comments
-          </span>
-        </div>
-
-        <div className="w-full mt-4 p-4 border-t border-gray-300">
-          <h3 className="text-lg font-semibold">Comments</h3>
-          {comments && comments?.length > 0 ? (
-            <ul>
-              <div className="mt-1 flex flex-col gap-2">
-              {comments?.slice(0, 2).map((comment: any, index: number) => (
-               <Comment comment={comment} key={index} />
-              ))}
+            {list.locations && list.locations.length > 0 && (
+              <div className="text-xs sm:text-sm text-blue-200 mb-4">
+                <strong>Locations: </strong>
+                {list.locations.map((location: string, index: number) => (
+                  <span key={index} className="mr-2">
+                    {location}
+                  </span>
+                ))}
               </div>
-            </ul>
-          ) : (
-            <p className="text-sm text-gray-500">No comments yet.</p>
-          )}
+            )}
+
+            {list.timespans && list.timespans.length > 0 && (
+              <div className="text-xs sm:text-sm text-blue-200 mb-4">
+                <strong>Timespans: </strong>
+                {list.timespans.map((timespan: string, index: number) => (
+                  <span key={index} className="mr-2">
+                    {timespan}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="bg-dark-3 px-4 sm:px-6 py-3 flex justify-between items-center text-light-2 text-xs">
+            <span className="flex items-center gap-2 py-2 px-2 rounded-lg">
+              <img src="/assets/icons/like.svg" alt="Likes" className="w-5 h-5" />
+              {list.Likes?.length || 0} Likes
+            </span>
+            <span className="flex items-center gap-2 py-2 px-2 rounded-lg">
+              <img src="/assets/icons/comment.svg" alt="Comments" className="w-5 h-5" />
+              {comments?.length || 0} Comments
+            </span>
+          </div>
+          {renderComments()}
+
         </div>
+
+        
       </motion.div>
 
       {isDialogOpen && (
-        <div className="fixed top-4 right-4 bg-white p-4 rounded shadow-lg z-50">
-          <h4 onClick={()=>setIsDialogOpen(false)} style={{cursor:"pointer", fontWeight:"bolder"}} className="text-black flex justify-end">X</h4>
-          <h3 className="text-xl font-bold mb-4 text-black">Please Sign In to perform further operations</h3>
-          <div className="flex flex-col gap-4">
-            <form>
-            <Button 
-            type="button" 
-            className="bg-blue-500 text-white px-4 py-2 rounded w-full"
-            onClick={()=> navigate("/onboarding-page")}
-          >
-           Sign-Up
-          </Button>
-            </form>
-            <Button
-              className="shad-button_google w-full"
-              onClick={()=> navigate("/sign-in")}
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 sm:p-8">
+          <div className="relative bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg">
+            <button
+              onClick={handleDialogClose}
+              className="text-gray-500 hover:text-gray-700 absolute top-4 right-4"
+              aria-label="Close"
             >
-             Sign-In via email or Google &nbsp; <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
-            </Button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="2"
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="text-center">
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
+                Welcome Back!
+              </h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-6">
+                Sign in to continue and access all features.
+              </p>
+            </div>
+            <div className="flex flex-col gap-4">
+              <Button
+                type="button"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 sm:px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out"
+                onClick={() => navigate("/sign-up")}
+              >
+                Sign Up
+              </Button>
+              <Button
+                className="flex items-center justify-center bg-white text-gray-700 border border-gray-300 px-4 sm:px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out hover:bg-gray-100"
+                onClick={handleGoogleSignIn}
+              >
+                {isGoogleLoading ? <Loader /> : (
+                  <>
+                    <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
+                    Sign In with Google
+                  </>
+                )}
+              </Button>
+              <Button
+                className="text-indigo-600 hover:text-indigo-800 font-semibold"
+                onClick={() => navigate("/sign-in")}
+              >
+                Sign In with Email
+              </Button>
+            </div>
           </div>
         </div>
       )}

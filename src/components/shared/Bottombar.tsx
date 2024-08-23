@@ -21,7 +21,7 @@ const Bottombar = () => {
               alt={link.label}
               width={20}
               height={20}
-              className={`${isActive ? "invert brightness-0" : ""}`}
+              className={`w-6 h-6 ${pathname === link.route ? 'invert' : ''} filter brightness-0 invert`}
             />
             <p className={`tiny-medium ${isActive ? "text-light-1" : "text-light-2"}`}>
               {link.label}

@@ -7,18 +7,22 @@ import { useParams } from "react-router-dom";
 const Categories = () => {
   const [allLists, setAllLists] = useState<any>([]);
   const [filteredLists, setFilteredLists] = useState<any>([]);
-  const [isLoadding, setIsLoadding] = useState(true)
+  const [isLoading, setIsLoading] = useState(true);
   const { value } = useParams();
 
   const isValue = value === "no-value" ? "" : value;
-  console.log(isLoadding);
 
   useEffect(() => {
     const fetchData = async () => {
-      const lists = await getAllLists();
-      setAllLists(lists);
-      setFilteredLists(lists);
-      setIsLoadding(false); 
+      try {
+        const lists = await getAllLists();
+        setAllLists(lists);
+        setFilteredLists(lists);
+      } catch (error) {
+        console.error("Error fetching lists:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchData();
@@ -36,11 +40,11 @@ const Categories = () => {
     if (query) {
       const lowercasedQuery = query.toLowerCase().trim();
       const filtered = allLists.filter(
-        (i: any) =>
-          i.Categories.some((category: string) =>
+        (list: any) =>
+          list.Categories.some((category: string) =>
             category.toLowerCase().includes(lowercasedQuery)
           ) ||
-          i.Tags.some((tag: string) =>
+          list.Tags.some((tag: string) =>
             tag.toLowerCase().includes(lowercasedQuery)
           )
       );
@@ -51,15 +55,22 @@ const Categories = () => {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <h1 className="text-lg">Search lists Using Categories or Tags</h1>
+    <div className="flex flex-col gap-4 p-4 w-full max-w-5xl mx-auto">
+      <h1 className="font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+        Explore Lists by Categories or Tags
+      </h1>
       <SearchBar onSearch={handleSearch} query={isValue || ""} />
 
-      <div className="flex flex-col w-full gap-5 mt-5">
-        {isLoadding ? <Loader /> :
+      <div className="flex flex-col w-full gap-6 mt-5">
+        {isLoading ? (
+          <Loader />
+        ) : filteredLists.length > 0 ? (
           filteredLists.map((list: any, index: number) => (
             <ListCard2 list={list} key={index} />
-          ))}
+          ))
+        ) : (
+          <p className="text-light-2">No lists found matching your criteria.</p>
+        )}
       </div>
     </div>
   );

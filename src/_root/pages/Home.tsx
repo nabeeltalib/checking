@@ -28,21 +28,21 @@ const Home: React.FC = () => {
   const [sortOption, setSortOption] = useState<string>("");
 
   const handleGenerateIdea = () => {
-    setListIdea(null); 
+    setListIdea(null);
     generateListIdea("Generate a random list idea", {
       onSuccess: (idea) => setListIdea(idea),
     });
   };
 
-  const [connection, setConnection] = useState<any>(undefined)
-  useEffect(()=>{
-    const fetchData =async ()=>{
-      let resp = await getConnection(user.id)
-      resp.length > 0 ? setConnection(resp[0]) : setConnection(resp) 
-    }
+  const [connection, setConnection] = useState<any>(undefined);
+  useEffect(() => {
+    const fetchData = async () => {
+      let resp = await getConnection(user.id);
+      resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+    };
 
-    fetchData()
-  },[])
+    fetchData();
+  }, []);
 
   useEffect(() => {
     if (inView && hasNextPage) {
@@ -58,7 +58,7 @@ const Home: React.FC = () => {
     return [...lists].sort((a, b) => {
       if (sortOption === "category") {
         const categoryA = a.Categories && a.Categories.length > 0 ? a.Categories[0] : '';
-        const categoryB = b.categories && b.Categories.length > 0 ? b.Categories[0] : '';
+        const categoryB = b.Categories && b.Categories.length > 0 ? b.Categories[0] : '';
         if (!categoryA && !categoryB) return 0;
         if (!categoryA) return 1;
         if (!categoryB) return -1;
@@ -81,9 +81,10 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4 w-full items-center common-container">
-      <div className="flex items-center gap-4 mb-4">
-        <p>Welcome, {user.name || "Guest"}</p>
+    <div className="flex flex-col gap-6 p-4 w-full items-center common-container">
+
+        <div className="text-2xl md:text-3xl text-orange-400 flex items-center gap-4 mb-6 font-base" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+        See what's in others' top five {user.name || ""}        
         {user && (
           <div className="text-sm text-light-3">
             <span>{connection?.follower?.length || 0} followers</span>
@@ -92,8 +93,11 @@ const Home: React.FC = () => {
           </div>
         )}
       </div>
-      <div className="w-full max-w-5xl">
-        <h2 className="h3-bold md:h2-bold text-left w-full mt-8">Need Inspiration?</h2>
+      
+      {/*<div className="w-full max-w-5xl bg-dark-3 rounded-lg p-6 shadow-lg">
+        <h2 className="font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+          Share Your Best
+        </h2>
         <button
           onClick={handleGenerateIdea}
           className="bg-primary-500 text-light-1 px-4 py-2 rounded-md mt-2"
@@ -102,21 +106,22 @@ const Home: React.FC = () => {
           {isGeneratingIdea ? "Generating..." : "Generate List Idea"}
         </button>
         {isGeneratingIdea ? (
-          <div className="mt-4 p-4 bg-dark-3 rounded-lg">
+          <div className="mt-4 p-4 bg-dark-4 rounded-lg">
             <Loader />
           </div>
         ) : listIdea && (
-          <div className="mt-4 p-4 bg-dark-3 rounded-lg">
+          <div className="mt-4 p-4 bg-dark-4 rounded-lg">
             <p className="text-light-1">{listIdea.map((list: any, index: number) => (
               <p className='m' key={index}>{list}</p>
             ))}</p>
           </div>
         )}
-      </div>
+      </div>*/}
+      
       <div className="flex flex-col gap-4 max-w-5xl w-full">
-        <h1 className="h3-bold md:h2-bold text-left w-full">Trending Lists</h1>
-        <div className='mb-2'>
-          <select className='bg-zinc-950 w-24 p-1' onChange={handleSortChange} value={sortOption}>
+        <h1 className="h3-light md:h2-light text-left w-full">Have something better?</h1>
+        <div className="mb-2 flex justify-between">
+          <select className="bg-zinc-950 w-32 p-2 rounded-md" onChange={handleSortChange} value={sortOption}>
             <option value="">All</option>
             <option value="category">Category</option>
             <option value="tags">Tags</option>
@@ -126,7 +131,7 @@ const Home: React.FC = () => {
           <Loader />
         ) : (
           <motion.div
-            className="space-y-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}

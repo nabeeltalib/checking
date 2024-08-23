@@ -37,7 +37,9 @@ const AllLists: React.FC = () => {
 
   return (
     <div className="flex-1 max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6 text-light-1">Top 5 Lists</h1>
+      <h1 className="font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+        Discover Your Peers' Recommendations
+      </h1>
       
       {isLoadingAISuggestions ? (
         <Loader />
@@ -69,7 +71,7 @@ const AllLists: React.FC = () => {
         <Loader />
       ) : (
         <motion.div 
-          className="space-y-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -78,11 +80,11 @@ const AllLists: React.FC = () => {
             <React.Fragment key={pageIndex}>
               {page?.documents.map((document: Models.Document) => {
                 const list = document as unknown as IList;
-                return  user.id ? (
+                return user.id ? (
                   <ListCard2 key={list.$id} list={list} />
                 ) : (
                   <ListCard key={list.$id} list={list} />
-                );;
+                );
               })}
             </React.Fragment>
           ))}

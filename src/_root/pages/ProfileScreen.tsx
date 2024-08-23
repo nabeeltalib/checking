@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Edit, List, Heart, Star, MessageCircle, Settings, Plus } from 'lucide-react';
 
-const ProfileScreen = ({ user }:any) => {
+const ProfileScreen = ({ user }: any) => {
   const [activeTab, setActiveTab] = useState('myLists');
 
   // Placeholder data - replace with actual data fetching logic

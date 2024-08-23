@@ -1,13 +1,9 @@
 import { Models } from "appwrite";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { createNotification, createReply, UpdateCommentReply } from "@/lib/appwrite/api";
-import { useQueryClient } from '@tanstack/react-query';
-
-
-
-import { checkIsLiked } from "@/lib/utils";
+import { createNotification, UpdateCommentReply } from "@/lib/appwrite/api";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useLikeList,
   useSaveList,
@@ -20,23 +16,24 @@ import { useUserContext } from "@/context/AuthContext";
 import { toast } from "../ui";
 import Comment from "./Comment";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
+import { checkIsLiked } from "@/lib/utils";
 
-
-const ListStats = ({ list, userId }: any) => {
+const ListStats = ({ 
+  list, 
+  userId, 
+  textSize = "text-base", 
+  backgroundColor = "bg-dark-3" 
+}: any) => {
   const location = useLocation();
   const navigate = useNavigate();
   const likesList = list?.Likes || [];
-
   const [likes, setLikes] = useState<any[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
-
   const { mutate: likeList } = useLikeList();
   const { mutate: saveList } = useSaveList();
-
   const { user } = useUserContext();
   const { id } = user;
-
   const { mutate: deleteSaveList } = useDeleteSavedList();
   const { data: currentUser } = useGetUserById(id);
   const { data: comments } = useGetComments(list.$id);
@@ -57,11 +54,9 @@ const ListStats = ({ list, userId }: any) => {
     }
   }, [currentUser, list.$id]);
 
-  const handleLikeList = (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>
-  ) => {
+  const handleLikeList = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
     e.stopPropagation();
-    let newLikes = likes.includes(userId)
+    const newLikes = likes.includes(userId)
       ? likes.filter((Id) => Id !== userId)
       : [...likes, userId];
     setLikes(newLikes);
@@ -97,6 +92,9 @@ const ListStats = ({ list, userId }: any) => {
 
   const [newComment, setNewComment] = useState("");
   const { mutate: createComment } = useCreateComment();
+  const [Reply, setReply] = useState(false);
+  const [commentId, setCommentId] = useState("");
+
   const handleCommentSubmit = async (e: any) => {
     e.preventDefault();
     if (newComment.trim() === "") return;
@@ -107,19 +105,18 @@ const ListStats = ({ list, userId }: any) => {
         userId: id,
         Content: newComment,
       });
-      
-      if(list.Likes){
-        for(let i of list.Likes)
-          {
-           await createNotification({
-              userId: i,
-              type: "list_comment",
-              message: `${user.name} commented on list "${list.Title}"`,
-            });
-          }
+
+      if (list.Likes) {
+        for (let i of list.Likes) {
+          await createNotification({
+            userId: i,
+            type: "list_comment",
+            message: `${user.name} commented on list "${list.Title}"`,
+          });
+        }
       }
-       // Send Notifications to all the collaborators
-       for (const person of list.users) {
+
+      for (const person of list.users) {
         await createNotification({
           userId: person.$id,
           type: "list_comment",
@@ -138,10 +135,7 @@ const ListStats = ({ list, userId }: any) => {
     }
   };
 
-  const [Reply, setReply] = useState(false);
-  const [commentId, setCommentId] = useState("")
-
-  const handleReply = async (e:any)=>{
+  const handleReply = async (e: any) => {
     e.preventDefault();
     if (newComment.trim() === "") return;
 
@@ -152,19 +146,16 @@ const ListStats = ({ list, userId }: any) => {
         commentId: commentId,
       });
 
-      //Send Notifications to People who liked the list
-      if(list.Likes){
-        for(let i of list.Likes)
-          {
-           await createNotification({
-              userId: i,
-              type: "list_comment",
-              message: `${user.name} replied on list "${list.Title}"`,
-            });
-          }
+      if (list.Likes) {
+        for (let i of list.Likes) {
+          await createNotification({
+            userId: i,
+            type: "list_comment",
+            message: `${user.name} replied on list "${list.Title}"`,
+          });
+        }
       }
 
-      // Send Notifications to all the collaborators
       for (const person of list.users) {
         await createNotification({
           userId: person.$id,
@@ -177,7 +168,6 @@ const ListStats = ({ list, userId }: any) => {
       setNewComment("");
 
       queryClient.invalidateQueries([QUERY_KEYS.GET_COMMENTS, list.$id]);
-
     } catch (error) {
       toast({
         title: "Error",
@@ -185,12 +175,11 @@ const ListStats = ({ list, userId }: any) => {
         variant: "destructive",
       });
     }
-  }
-
+  };
 
   return (
     <div
-      className={`flex flex-row flex-wrap w-full items-center z-20 gap-3 ${containerStyles}`}>
+      className={`flex flex-row flex-wrap w-full items-center z-20 gap-3 ${containerStyles} ${backgroundColor} p-4 rounded-lg shadow-md`}>
       <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
         <img
           src={
@@ -204,7 +193,7 @@ const ListStats = ({ list, userId }: any) => {
           onClick={handleLikeList}
           className="cursor-pointer"
         />
-        <p className="small-medium lg:base-medium">{likes.length} Likes</p>
+        <p className={`${textSize} text-white`}>{likes.length} Likes</p>
       </Button>
       <Button
         className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg"
@@ -216,7 +205,7 @@ const ListStats = ({ list, userId }: any) => {
           height={20}
           className="cursor-pointer"
         />
-        <p className="small-medium lg:base-medium">
+        <p className={`${textSize} text-white`}>
           {isSaved ? "Saved" : "Save"}
         </p>
       </Button>
@@ -229,40 +218,48 @@ const ListStats = ({ list, userId }: any) => {
           width={20}
           height={20}
         />
-        <p className="small-medium lg:base-medium">
+        <p className={`${textSize} text-white`}>
           {comments?.length} Comment
         </p>
       </Button>
       <Button
         className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg"
         onClick={handleRemix}>
-        <img src="/assets/icons/remix.svg" alt="remix" width={20} height={20} />
-        <p className="small-medium lg:base-medium">Create Alternative</p>
+        <img src="/assets/icons/remix2.svg" alt="remix" width={20} height={20} />
+        <p className={`${textSize} text-white`}>Remix</p>
       </Button>
-      <Button onClick={() => navigate(`/update-list/${list?.$id}`)} className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+      <Button
+        onClick={() => navigate(`/update-list/${list?.$id}`)}
+        className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
         <img
-          src="/assets/icons/people.svg"
+          src="/assets/icons/remix.svg"
           alt="collaborate"
           width={20}
           height={20}
         />
-        <p className="small-medium lg:base-medium">Collaborate</p>
+        <p className={`${textSize} text-white`}>Collaborate</p>
       </Button>
 
       {/* Collapsible Comments Section */}
       {isCommentsExpanded && (
         <div className="w-full mt-4 p-4">
-          <h3 className="text-lg font-semibold">Comments</h3>
+          <h3 className={`${textSize} font-semibold`}>Comments</h3>
           {comments?.length > 0 ? (
             <ul>
               <div className="mt-1 flex flex-col gap-2">
-              {visibleComments?.map((comment:any, index:number) => (
-                <Comment setReply={setReply} show={"show"} setCommentId={setCommentId} comment={comment} key={index} />
-              ))}
+                {visibleComments?.map((comment: any, index: number) => (
+                  <Comment
+                    setReply={setReply}
+                    show={"show"}
+                    setCommentId={setCommentId}
+                    comment={comment}
+                    key={index}
+                  />
+                ))}
               </div>
             </ul>
           ) : (
-            <p className="text-sm text-gray-500">No comments yet.</p>
+            <p className={`${textSize} text-gray-500`}>No comments yet.</p>
           )}
 
           {comments?.length > 4 && (
@@ -273,21 +270,23 @@ const ListStats = ({ list, userId }: any) => {
             </button>
           )}
 
-          {
-            <form onSubmit={Reply ? handleReply  : handleCommentSubmit} className="mt-4 mb-2">
-              <textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder={`${Reply ? "Add a Reply..." : "Add a comment"}`}
-                className="w-full p-2 border rounded-lg bg-zinc-900 :text-white"
-              />
-              <button
-                type="submit"
-                className="mt-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
-                {`${Reply ? "Add a Reply..." : "Add a comment"}`}
-              </button>
-            </form>
-          }
+          <form
+            onSubmit={Reply ? handleReply : handleCommentSubmit}
+            className="mt-4 mb-2">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder={`${
+                Reply ? "Add a Reply..." : "Add a comment..."
+              }`}
+              className="w-full p-2 border rounded-lg bg-zinc-900 :text-white"
+            />
+            <button
+              type="submit"
+              className="mt-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
+              {`${Reply ? "Add a Reply" : "Add a Comment"}`}
+            </button>
+          </form>
         </div>
       )}
     </div>

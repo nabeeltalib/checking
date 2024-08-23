@@ -45,20 +45,20 @@ const Profile: React.FC = () => {
   const [isCollaborativeExpanded, setCollaborativeExpanded] = useState(false);
   const [sentRequest, setSentRequest] = useState<any>([]);
   const [connection, setConnection] = useState<any>(undefined);
-  const [isFollowLoading, setIsFollowLoading] = useState(false)
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
 
   const handleFriendRequest = async () => {
     await sendFriendRequest(user.id, id);
   };
 
-  useEffect(()=>{
-    const fetch = async ()=>{
+  useEffect(() => {
+    const fetch = async () => {
       let resp = await getConnection(id);
       resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
-    }
-    
+    };
+
     fetch();
-  },[id])
+  }, [id]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,8 +76,7 @@ const Profile: React.FC = () => {
     (data: any) => data.friendId.$id === id && data.status === "accepted"
   );
 
-  if (!id)
-    return <div className="text-center text-light-1">User ID not found</div>;
+  if (!id) return <div className="text-center text-light-1">User ID not found</div>;
 
   if (isLoadingCurrentUser || isLoadingLists) {
     return <Loader />;
@@ -89,15 +88,11 @@ const Profile: React.FC = () => {
 
   const collaborativeList: any = [];
 
+  // Correctly map saved lists with their respective creators
   const savedLists = currentUser?.save
     ? currentUser.save.map((savedItem: any) => ({
         ...savedItem.list,
-        creator: {
-          $id: currentUser.$id,
-          Name: currentUser.Name,
-          ImageUrl:
-            currentUser.ImageUrl || "/assets/icons/profile-placeholder.svg",
-        },
+        creator: savedItem.list.creator, // Correctly assign the creator from the saved item
       }))
     : [];
 
@@ -107,26 +102,30 @@ const Profile: React.FC = () => {
   let isFollowed = connection?.follower?.some(
     (follow: any) => follow.$id === user.id
   );
-  //Follower
+
+  // Follower
   const handleFollow = async () => {
-    setIsFollowLoading(true)
+    setIsFollowLoading(true);
     await followUser(user.id, id);
     let resp = await getConnection(id);
     resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
     isFollowed = connection?.following?.some(
       (follow: any) => follow.$id === id
     );
-    setIsFollowLoading(false)
+    setIsFollowLoading(false);
   };
 
-const handleUnFollow = async ()=>{
-  setIsFollowLoading(true)
-  await UnFollow(user.id, id)
-  let resp = await getConnection(id)
-    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp)
-    isFollowed = connection?.following?.some((follow:any) => follow.$id === id)
-    setIsFollowLoading(false)
-}
+  const handleUnFollow = async () => {
+    setIsFollowLoading(true);
+    await UnFollow(user.id, id);
+    let resp = await getConnection(id);
+    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+    isFollowed = connection?.following?.some(
+      (follow: any) => follow.$id === id
+    );
+    setIsFollowLoading(false);
+  };
+
   return (
     <div className="flex flex-col gap-6 w-full p-6 mx-auto max-w-7xl">
       {/* User Info */}
@@ -150,61 +149,77 @@ const handleUnFollow = async ()=>{
               <span>{connection?.following?.length || 0} following</span>
               <span>{userLists?.length || 0} lists</span>
               <span>
-              {currentUser.Public &&
-              (!isOwnProfile && !isFollowed ? (
-                <Button
-                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
-                style={{marginTop: "-10px"}}
-                onClick={handleFollow}
-                disabled={isFollowLoading}>
-                {isFollowLoading ? (<div><Loader /></div>) : (
-                  <span>Follow</span>
-                )}
-              </Button>) : isOwnProfile ? "" : <Button
-                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
-                style={{marginTop: "-10px"}}
-                onClick={handleUnFollow}
-                disabled={isFollowLoading}
-                >
-                {isFollowLoading ? (<div><Loader /></div>) : (
-                  <span>Unfollow</span>
-                )}
-              </Button>)
-            }
-            </span>
+                {currentUser.Public &&
+                  (!isOwnProfile && !isFollowed ? (
+                    <Button
+                      className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
+                      style={{ marginTop: "-10px" }}
+                      onClick={handleFollow}
+                      disabled={isFollowLoading}
+                    >
+                      {isFollowLoading ? (
+                        <div>
+                          <Loader />
+                        </div>
+                      ) : (
+                        <span>Follow</span>
+                      )}
+                    </Button>
+                  ) : isOwnProfile ? (
+                    ""
+                  ) : (
+                    <Button
+                      className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
+                      style={{ marginTop: "-10px" }}
+                      onClick={handleUnFollow}
+                      disabled={isFollowLoading}
+                    >
+                      {isFollowLoading ? (
+                        <div>
+                          <Loader />
+                        </div>
+                      ) : (
+                        <span>Unfollow</span>
+                      )}
+                    </Button>
+                  ))}
+              </span>
             </div>
             <div>
               {connection?.follower?.length > 2 ? (
                 <span>
-                  followed by {" "}
+                  followed by{" "}
                   {connection?.follower
                     ?.slice(0, 2)
                     .map((user: any) => (
-                      <Link className="mr-2" to={`/profile/${user.$id}`}>{user.Name}</Link>
+                      <Link
+                        className="mr-2"
+                        to={`/profile/${user.$id}`}
+                        key={user.$id}
+                      >
+                        {user.Name}
+                      </Link>
                     ))}{" "}
-                  +{connection.follower.length - 2}{" "} more
+                  +{connection.follower.length - 2} more
                 </span>
               ) : (
                 ""
               )}
             </div>
-            {
-            !currentUser.Public &&
-            (!isOwnProfile && !isAccepted ? (
-              <Button
-                className="mt-4 bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
-                onClick={handleFriendRequest}
-                disabled={isRequestSent}>
-                {isRequestSent ? "Request Sent" : "Send Friend Request"}
-              </Button>
-            ) : isOwnProfile ? (
-              ""
-            ) : (
-              <h3>Friend</h3>
-            )
-          )
-          
-          }
+            {!currentUser.Public &&
+              (!isOwnProfile && !isAccepted ? (
+                <Button
+                  className="mt-4 bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
+                  onClick={handleFriendRequest}
+                  disabled={isRequestSent}
+                >
+                  {isRequestSent ? "Request Sent" : "Send Friend Request"}
+                </Button>
+              ) : isOwnProfile ? (
+                ""
+              ) : (
+                <h3>Friend</h3>
+              ))}
           </div>
         </div>
       </div>
@@ -213,7 +228,10 @@ const handleUnFollow = async ()=>{
       <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-2">
         <Button
           onClick={() => setActiveTab("lists")}
-          className={`tab-button ${activeTab === "lists" ? "active" : ""} flex gap-2`}>
+          className={`tab-button ${
+            activeTab === "lists" ? "active" : ""
+          } flex gap-2`}
+        >
           <img
             src="/assets/icons/list.svg"
             alt="lists"
@@ -224,13 +242,24 @@ const handleUnFollow = async ()=>{
         </Button>
         <Button
           onClick={() => setActiveTab("liked")}
-          className={`tab-button ${activeTab === "liked" ? "active" : ""} flex gap-2`}>
-          <img src="/assets/icons/like.svg" alt="like" width={20} height={20} />
+          className={`tab-button ${
+            activeTab === "liked" ? "active" : ""
+          } flex gap-2`}
+        >
+          <img
+            src="/assets/icons/like.svg"
+            alt="like"
+            width={20}
+            height={20}
+          />
           Liked Lists
         </Button>
         <Button
           onClick={() => setActiveTab("friends")}
-          className={`tab-button ${activeTab === "friends" ? "active" : ""} flex gap-2`}>
+          className={`tab-button ${
+            activeTab === "friends" ? "active" : ""
+          } flex gap-2`}
+        >
           <img
             src="/assets/icons/people.svg"
             alt="friends"
@@ -246,17 +275,20 @@ const handleUnFollow = async ()=>{
         <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-8">
           <Button
             className={`tab-button flex gap-2`}
-            onClick={() => navigate(`/update-profile/${id}`)}>
+            onClick={() => navigate(`/update-profile/${id}`)}
+          >
             Edit Profile
           </Button>
           <Button
             className={`tab-button flex gap-2`}
-            onClick={() => navigate(`/manage-list/${id}`)}>
+            onClick={() => navigate(`/manage-list/${id}`)}
+          >
             Manage List
           </Button>
           <Button
             className={`tab-button flex gap-2`}
-            onClick={() => navigate("/userActivity")}>
+            onClick={() => navigate("/userActivity")}
+          >
             View Activity
           </Button>
         </div>
@@ -268,15 +300,17 @@ const handleUnFollow = async ()=>{
           <div>
             <h2
               className="text-2xl font-bold text-light-1 mb-4 cursor-pointer"
-              onClick={() => setCuratedExpanded(!isCuratedExpanded)}>
+              onClick={() => setCuratedExpanded(!isCuratedExpanded)}
+            >
               Curated Lists
             </h2>
-            {<GridListList lists={userLists || []} showUser={false} />}
+            <GridListList lists={userLists || []} showUser={false} />
           </div>
           <div>
             <h2
               className="text-2xl font-bold text-light-1 mb-4 cursor-pointer"
-              onClick={() => setSavedExpanded(!isSavedExpanded)}>
+              onClick={() => setSavedExpanded(!isSavedExpanded)}
+            >
               Saved Lists
             </h2>
             {isSavedExpanded &&
@@ -291,7 +325,8 @@ const handleUnFollow = async ()=>{
               className="text-2xl font-bold text-light-1 mb-4 cursor-pointer"
               onClick={() =>
                 setCollaborativeExpanded(!isCollaborativeExpanded)
-              }>
+              }
+            >
               Collaborative Lists
             </h2>
             {isCollaborativeExpanded &&

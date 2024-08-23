@@ -10,8 +10,10 @@ const EmbedSelector = () => {
   const [embedType, setEmbedType] = useState("top5");
   const [customTitle, setCustomTitle] = useState("My Top 5 List");
   const [embedLists, setEmbedLists] = useState<any>([]);
-  const [refresh, setRefresh] = useState(false)
+  const [refresh, setRefresh] = useState(false);
 
+  const { user } = useUserContext();
+  const userId = user.id;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,72 +31,82 @@ const EmbedSelector = () => {
       title: customTitle,
       listId: "12345", // This would be dynamically set based on the user's actual list
     });
-    return `<iframe src="${baseUrl}?${params}" width="100%" height="${embedType === "top5" ? "300" : "400"}" frameborder="0"></iframe>`;
+    return `<iframe src="${baseUrl}?${params}" width="100%" height="${
+      embedType === "top5" ? "300" : "400"
+    }" frameborder="0"></iframe>`;
   };
 
-  const { user } = useUserContext();
-  const userId = user.id;
-
   const handleLikeList = async (list: any) => {
-	let likes = list.Likes;
+    let likes = list.Likes;
     let newLikes = likes.includes(userId)
-      ? likes.filter((Id:any) => Id !== userId)
+      ? likes.filter((Id: any) => Id !== userId)
       : [...likes, userId];
     await likeList(list.$id, newLikes);
-	setRefresh((prevState) => !prevState)
+    setRefresh((prevState) => !prevState);
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 text-black bg-white rounded-lg shadow-md">
+    <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-zinc-900 text-black dark:text-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-4">Choose Your Embed Type</h2>
 
       <div className="flex space-x-4 mb-6">
         <button
           onClick={() => setEmbedType("top5")}
-          className={`flex-1 py-2 px-4 rounded-md ${embedType === "top5" ? "bg-blue-500 text-white" : "bg-gray-200"}`}>
+          className={`flex-1 py-2 px-4 rounded-md transition-colors ${
+            embedType === "top5"
+              ? "bg-primary-500 text-white"
+              : "bg-zinc-200 dark:bg-zinc-800 text-black dark:text-white"
+          }`}
+        >
           <List className="inline-block mr-2" /> Top 5 List
         </button>
         <button
           onClick={() => setEmbedType("leaderboard")}
-          className={`flex-1 py-2 px-4 rounded-md ${embedType === "leaderboard" ? "bg-blue-500 text-white" : "bg-gray-200"}`}>
+          className={`flex-1 py-2 px-4 rounded-md transition-colors ${
+            embedType === "leaderboard"
+              ? "bg-primary-500 text-white"
+              : "bg-zinc-200 dark:bg-zinc-800 text-black dark:text-white"
+          }`}
+        >
           <BarChart className="inline-block mr-2" /> Live Leaderboard
         </button>
       </div>
 
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium mb-1">
           Custom Title
         </label>
         <input
           type="text"
           value={customTitle}
           onChange={(e) => setCustomTitle(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+          className="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-700 rounded-md bg-zinc-100 dark:bg-zinc-800 text-black dark:text-white"
         />
       </div>
 
-      <div className="bg-gray-100 p-4 rounded-md mb-6">
+      <div className="bg-zinc-100 dark:bg-zinc-800 p-4 rounded-md mb-6">
         <h3 className="font-semibold mb-2">Embed Preview</h3>
         {embedType === "top5" ? (
-          <div className="bg-white p-4 rounded border">
+          <div className="bg-white dark:bg-zinc-900 p-4 rounded border dark:border-zinc-700">
             <h4 className="font-bold mb-2">{customTitle}</h4>
             <ol className="list-decimal list-inside">
               {embedLists.map((embedlist: any, index: number) => (
                 <Link
-                  className="block mb-3"
+                  className="block mb-3 text-primary-500"
                   to={`/embedpreview/${embedlist.list.$id}`}
-                  key={index}>
+                  key={embedlist.list.$id}
+                >
                   {index + 1}. {embedlist.list.Title}
                 </Link>
               ))}
             </ol>
           </div>
         ) : (
-          <div className="bg-white p-4 rounded border">
+          <div className="bg-white dark:bg-zinc-900 p-4 rounded border dark:border-zinc-700">
             <h4 className="font-bold mb-2">{customTitle}</h4>
             <div className="space-y-2">
               {embedLists.map((embedlist: any, index: number) => (
-                <div key={index} className="flex justify-between">
+                <div key={embedlist.list.$id} className="flex justify-between">
                   <span>
                     {index + 1}. {embedlist.list.Title}
                   </span>
@@ -129,12 +141,12 @@ const EmbedSelector = () => {
         <textarea
           readOnly
           value={generateEmbedCode()}
-          className="w-full h-24 px-3 py-2 text-sm font-mono bg-gray-100 border border-gray-300 rounded-md"
+          className="w-full h-24 px-3 py-2 text-sm font-mono bg-zinc-100 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-md text-black dark:text-white"
         />
       </div>
 
-      <div className="bg-yellow-100 border-l-4 border-yellow-500 p-4">
-        <h3 className="font-bold text-yellow-700">
+      <div className="bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 dark:border-yellow-700 p-4 rounded-md">
+        <h3 className="font-bold text-yellow-700 dark:text-yellow-300">
           Understanding the Difference
         </h3>
         <p className="mt-2">

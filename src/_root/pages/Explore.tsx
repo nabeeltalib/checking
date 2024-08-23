@@ -4,7 +4,6 @@ import { useGetRecentLists, useGetAISuggestions } from '@/lib/react-query/querie
 import { ListCard, Loader } from '@/components/shared';
 import { getTrendingTags, getPopularCategories } from '@/lib/appwrite/api';
 import { useUserContext } from '@/context/AuthContext';
-import { IList } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 import ListCard2 from '@/components/shared/ListCard2';
 

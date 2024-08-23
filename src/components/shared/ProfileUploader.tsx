@@ -28,7 +28,11 @@ const ProfileUploader = ({ fieldChange, mediaUrl }: ProfileUploaderProps) => {
   });
 
   return (
-    <div {...getRootProps()} className="cursor-pointer flex-center gap-4" aria-label="Upload profile picture">
+    <div
+      {...getRootProps()}
+      className="cursor-pointer flex-center gap-4"
+      aria-label="Upload profile picture"
+    >
       <input {...getInputProps()} className="hidden" />
 
       <div className="flex-center gap-4">

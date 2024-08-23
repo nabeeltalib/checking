@@ -1,31 +1,40 @@
-import { UserCard } from '@/components/shared';
-import { getUsers } from '@/lib/appwrite/config';
-import { useEffect, useState } from 'react';
+import { UserCard } from "@/components/shared";
+import { getUsers } from "@/lib/appwrite/config";
+import { useEffect, useState } from "react";
+import { Loader } from "@/components/shared"; // Assuming you have a Loader component
 
 const Userlist = () => {
-
   const [users, setUsers] = useState<any>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const getUserData = async () => {
-      const usersData = await getUsers();
-      setUsers(usersData);
-      console.log(users)
+      try {
+        const usersData = await getUsers();
+        setUsers(usersData);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setUsers(null);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     getUserData();
   }, []);
-    console.log(users)
+
   return (
-    <div>
-      {users === undefined ? (
-        <p>Loading...</p>
+    <div className="flex flex-col items-center p-6">
+      {isLoading ? (
+        <Loader />
       ) : users === null ? (
-        <p>No users found.</p>
+        <p className="text-red-500">Failed to load users. Please try again later.</p>
+      ) : users.length === 0 ? (
+        <p className="text-gray-500">No users found.</p>
       ) : (
-        <div className='flex gap-5 flex-col'>
-          {users.map((user:any, index:number) => (
-            <UserCard user={user} key={index} listId=''/>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+          {users.map((user: any, index: number) => (
+            <UserCard user={user} key={index} listId="" />
           ))}
         </div>
       )}

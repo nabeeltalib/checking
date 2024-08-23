@@ -14,6 +14,11 @@ import {
   Comments,
   Suggestions,
   Collaborations,
+  HelpFAQPage,
+  ContactPage,
+  PrivacyPolicy,
+  TermsAndConditions,
+  CookiePolicy,
   SharedListView,
 } from "@/_root/pages";
 import RemixList from "@/components/shared/list/RemixList"; // New import
@@ -44,7 +49,6 @@ import ComprehensiveLeaderboard from "./_root/pages/ComprehensiveLeaderboard";
 import OnboardingScreens from "./_root/pages/OnBoardingScreens";
 import OnboardingPage from "./components/shared/OnboardingPage";
 
-
 const App = () => {
 
   const { user } = useUserContext();
@@ -67,9 +71,10 @@ const App = () => {
     <Routes>
        <Route element={<AuthLayout />}>
           <Route path="/sign-in" element={<SigninForm />} />
-          <Route path="/sign-up" element={<OnboardingScreens />} />
+          <Route path="/sign-up" element={<OnboardingScreens />} />        
         </Route>
     </Routes>
+    <Toaster />
     </main>
     </>
 
@@ -105,8 +110,12 @@ const App = () => {
           <Route path="/manage-list/:id" element={<ManageList />} /> {/* New route */}
           <Route path="/segment-leaderboard" element={<SegmentedLeaderboardPage />} /> {/* New route */}
           <Route path="/profile-screen" element={<ProfileScreen />} /> {/* New route */}
+          <Route path="/helpfaqpage" element={<HelpFAQPage />} />
+          <Route path="/contactpage" element={<ContactPage />} />          
           <Route path="/comprehensive-leaderboard" element={<ComprehensiveLeaderboard />} /> {/* New route */}
-          <Route path="/onboarding" element={<OnboardingScreens />} /> {/* New route */}
+          <Route path="/privacypolicy" element={<PrivacyPolicy />} />
+          <Route path="/termsandconditions" element={<TermsAndConditions />} />
+          <Route path="/cookiepolicy" element={<CookiePolicy />} />
           
         </Route>
       </Routes>
@@ -125,6 +134,13 @@ const App = () => {
     <Route path="/recommended" element={<Recomended />} />
     <Route path="/onboarding" element={<OnboardingScreens />} /> 
     <Route path="/onboarding-page" element={<OnboardingPage />} /> {/* New route */}
+    <Route path="/helpfaqpage" element={<HelpFAQPage />} />
+    <Route path="/contactpage" element={<ContactPage />} />          
+    <Route path="/comprehensive-leaderboard" element={<ComprehensiveLeaderboard />} /> {/* New route */}
+    <Route path="/privacypolicy" element={<PrivacyPolicy />} />
+    <Route path="/termsandconditions" element={<TermsAndConditions />} />
+    <Route path="/cookiepolicy" element={<CookiePolicy />} />
+    
     </Route>
     </Routes>
     </div>}
