@@ -83,16 +83,17 @@ const Home: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 p-4 w-full items-center common-container">
 
-        <div className="text-xl md:text-2xl text-orange-400 flex items-center gap-4 mb-2 font-base" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-        See Recommendations From Your World {user.name || ""}        
-        {user && (
-          <div className="text-sm text-light-3">
-            <span>{connection?.follower?.length || 0} followers</span>
-            <span className="mx-2">•</span>
-            <span>{connection?.following?.length || 0} following</span>
-          </div>
-        )}
-      </div>
+        <div className="text-wrap text-lg md:text-3xl text-gray-300 flex flex-col md:flex-row items-center gap-2 md:gap-4 mb-2 font-base" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+          See Recommendations From Your World {user.name || ""}        
+          {user && (
+            <div className="text-xs text-light-3 flex flex-col md:flex-row items-center">
+              <span>{connection?.follower?.length || 0} followers</span>
+              <span className="hidden md:inline mx-2">•</span>
+              <span>{connection?.following?.length || 0} following</span>
+            </div>
+          )}
+        </div>
+
       
       {/*<div className="w-full max-w-5xl bg-dark-3 rounded-lg p-6 shadow-lg">
         <h2 className="font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
