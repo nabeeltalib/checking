@@ -3,10 +3,8 @@ import { SkipForward, HelpCircle } from "lucide-react";
 import {
   useCreateUserAccount,
   useSignInAccount,
-  useSignInWithGoogle,
 } from "@/lib/react-query/queries";
-import { Loader } from "@/components/shared";
-import { Button, toast } from "@/components/ui";
+import { useToast } from "@/components/ui/use-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import { Loader2 } from "@/components/shared/Loader";
@@ -21,19 +19,19 @@ const initialData = {
 };
 
 const OnboardingScreens = () => {
-  const [step, setStep] = useState(1);
+  const [currentScreen, setCurrentScreen] = useState(0);
+  const [showTooltip, setShowTooltip] = useState(false);
   const [user, setUser] = useState(initialData);
-  const [showPassword, setShowPassword] = useState(false);
-
+  const { name, username, email, password, bio, categories } = user;
   const navigate = useNavigate();
-
+  const { toast } = useToast();
   const { mutateAsync: createUserAccount, isLoading: isCreatingAccount } =
     useCreateUserAccount();
   const { mutateAsync: signInAccount, isLoading: isSigningInUser } = useSignInAccount();
-  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
   const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
 
-  const handleSignup = async (user: any) => {
+
+  const handleSignup = async (user: any, createList?:boolean) => {
     try {
       const newUser = await createUserAccount(user);
 
@@ -128,10 +126,104 @@ const OnboardingScreens = () => {
         <FirstTimeHomepage
           setShowTooltip={setShowTooltip}
           showTooltip={showTooltip}
+          user={user}
+          handleSignup={handleSignup}
+          isUserLoading={isUserLoading}
+          isSigningInUser={isSigningInUser}
+          isCreatingAccount={isCreatingAccount}
         />
       ),
     },
   ];
+
+  const InfoCheck = () =>{
+    if(currentScreen === 0)
+    {
+      if(user.email !== "" || user.password !== "")
+      {
+        if(user.email === "")
+        {
+          toast({ title: "Please Enter your email." ,variant:"default"});
+          return;
+        }
+
+       else if(user.password === "")
+        {
+          toast({ title: "Please Enter your password.",variant:"default" });
+          return;
+        }
+        else if(user.password.length < 8)
+        {
+          toast({ title: "Password must contains atleast 8 characters", variant:"default" });
+          return;
+        }
+        else{
+          return true;
+        }
+      }
+      else{
+       toast({
+           title: "Please fill All Feilds", variant:"default"
+          });
+          return;
+      }
+    }
+
+    if(currentScreen === 1)
+    {
+      if(user.categories.length > 0)
+      {
+        return true
+      }
+      else{
+       toast({
+           title: "Please Select some Categories", variant:"default"
+          });
+          return;
+      }
+    }
+
+    if(currentScreen === 2)
+      {
+        if(user.name !== "" || user.username !== "")
+        {
+          if(user.name === "")
+          {
+            toast({ title: "Please Enter your Name." ,variant:"default"});
+            return;
+          }
+         else if(user.username === "")
+          {
+            toast({ title: "Please Enter your Username.",variant:"default" });
+            return;
+          }
+          else{
+            return true;
+          }
+        }
+        else{
+         toast({
+             title: "Please fill Name and Username", variant:"default"
+            });
+            return;
+        }
+      }
+
+      if(currentScreen > 2)
+      {
+        return true
+      }
+
+  }
+
+
+  const handleClick = ()=>{
+    let isValid = InfoCheck() 
+    if(isValid)
+      {
+        (currentScreen === screens.length -1 ? handleSignup(user)  : setCurrentScreen(Math.min(screens.length - 1, currentScreen + 1)))
+      }
+  }
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg">
@@ -157,10 +249,7 @@ const OnboardingScreens = () => {
           Back
         </button>
         <button
-          onClick={() =>{
-            currentScreen === screens.length -1 ? handleSignup(user)  : setCurrentScreen(Math.min(screens.length - 1, currentScreen + 1))
-          }
-          }
+          onClick={handleClick}
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
           {currentScreen === screens.length - 1 ?
           (isCreatingAccount || isSigningInUser || isUserLoading ? (
@@ -178,15 +267,6 @@ const OnboardingScreens = () => {
 };
 
 const SignUpScreen = ({ email, password, user, setUser }: any) => {
-  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } =
-    useSignInWithGoogle();
-
-  const navigate = useNavigate();
-
-  const handleGoogleSignIn = () => {
-    signInWithGoogle();
-  };
-
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Join Topfived</h2>
@@ -239,7 +319,8 @@ const QuickInterestsScreen = ({
   user,
   setUser,
   categories,
-}: any) => (
+}: any) =>{
+  return(
   <div className="text-black">
     <h2 className="text-2xl font-bold mb-4">What are you into?</h2>
     <p className="mb-4">Select a few topics you're interested in:</p>
@@ -286,8 +367,12 @@ const QuickInterestsScreen = ({
     </div>
   </div>
 );
+}
 
-const ProfileBasicsScreen = ({ name, username, bio, user, setUser }: any) => (
+
+const ProfileBasicsScreen = ({ name, username, bio, user, setUser }: any) => 
+{
+  return(
   <div>
     <h2 className="text-2xl font-bold mb-4">Create Your Profile</h2>
     <form>
@@ -348,6 +433,7 @@ const ProfileBasicsScreen = ({ name, username, bio, user, setUser }: any) => (
     </form>
   </div>
 );
+}
 
 const WelcomeScreen = ({
   handleSignup,
@@ -384,7 +470,9 @@ const WelcomeScreen = ({
   </div>
 );
 
-const FirstTimeHomepage = ({ showTooltip, setShowTooltip }: any) => {
+const FirstTimeHomepage = ({ showTooltip, setShowTooltip, user, handleSignup, isUserLoading,
+  isSigningInUser,
+  isCreatingAccount, }: any) => {
   const navigate = useNavigate();
 
   return (
@@ -397,16 +485,44 @@ const FirstTimeHomepage = ({ showTooltip, setShowTooltip }: any) => {
           placeholder="Search for lists..."
         />
       </div>
-      <div className="mt-4 flex items-center">
-        <div className="flex-grow border-t border-gray-300"></div>
-        <span className="flex-shrink mx-4 text-gray-600">OR</span>
-        <div className="flex-grow border-t border-gray-300"></div>
+      <div className="mb-4">
+        <h3 className="font-bold text-lg mb-2">Recommended for You</h3>
+        <div className="bg-gray-100 p-3 rounded">
+          <p className="font-semibold">Top 5 Sci-Fi Movies of 2024</p>
+          <p className="text-sm text-gray-600">By MovieBuff123</p>
+        </div>
+      </div>
+      <div className="mb-4">
+        <h3 className="font-bold text-lg mb-2">Popular Categories</h3>
+        <div className="flex flex-wrap gap-2">
+          <span
+            onClick={() => navigate(`/categories/Movie`)}
+            className="bg-blue-200 text-blue-800 px-2 py-1 rounded cursor-pointer">
+            Movies
+          </span>
+          <span
+            onClick={() => navigate(`/categories/Technology`)}
+            className="bg-green-200 text-green-800 px-2 py-1 rounded cursor-pointer">
+            Technology
+          </span>
+          <span
+            onClick={() => navigate(`/categories/Food`)}
+            className="bg-yellow-200 text-yellow-800 px-2 py-1 rounded cursor-pointer">
+            Food
+          </span>
+        </div>
       </div>
 
       <button
-        onClick={() => navigate("/create-list")}
+        onClick={() => handleSignup(user,true)}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">
-        Create Your First List
+        {isCreatingAccount || isSigningInUser || isUserLoading ? (
+        <div className="flex justify-center items-center gap-2">
+          <Loader2 /> 
+        </div>
+      ) : (
+        "Create Your First List"
+      )}
       </button>
       <div className="relative mt-3 flex justify-end">
         <HelpCircle
@@ -419,13 +535,8 @@ const FirstTimeHomepage = ({ showTooltip, setShowTooltip }: any) => {
           <div className="absolute right-0 mt-5 w-48 p-2 text-sm bg-gray-800 text-white rounded shadow-lg">
             Selecting interests helps us personalize your experience!
           </div>
-        ) : (
-          <>
-            <img src="/assets/icons/google.svg" alt="Google logo" className="w-5 h-5 mr-2" />
-            Continue with Google
-          </>
         )}
-      </button>
+      </div>
     </div>
   );
 };
