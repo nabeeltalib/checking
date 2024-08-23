@@ -187,16 +187,18 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               </div>
             )}
           </div>
-          <div className="bg-dark-3 px-4 sm:px-6 py-3 flex justify-between items-center text-light-2 text-xs">
-            <span className="flex items-center gap-2 py-2 px-2 rounded-lg">
-              <img src="/assets/icons/like.svg" alt="Likes" className="w-5 h-5" />
-              {list.Likes?.length || 0} Likes
+          <div className="bg-dark-3 px-4 sm:px-6 py-1 flex justify-between items-center text-light-2 text-xs">
+            <span className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg">
+              <img src="/assets/icons/like.svg" alt="Likes" className="w-4 h-4" />
+              <p>{list.Likes?.length || 0} Likes</p>
             </span>
-            <span className="flex items-center gap-2 py-2 px-2 rounded-lg">
-              <img src="/assets/icons/comment.svg" alt="Comments" className="w-5 h-5" />
-              {comments?.length || 0} Comments
+            
+            <span className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg">
+              <img src="/assets/icons/comment.svg" alt="Comments" className="w-4 h-4" />
+              <p>{comments?.length || 0} Comments</p>
             </span>
           </div>
+
           {renderComments()}
 
         </div>

@@ -83,8 +83,8 @@ const Home: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 p-4 w-full items-center common-container">
 
-        <div className="text-2xl md:text-3xl text-orange-400 flex items-center gap-4 mb-6 font-base" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-        See what's in others' top five {user.name || ""}        
+        <div className="text-xl md:text-2xl text-orange-400 flex items-center gap-4 mb-2 font-base" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+        See Recommendations From Your World {user.name || ""}        
         {user && (
           <div className="text-sm text-light-3">
             <span>{connection?.follower?.length || 0} followers</span>
@@ -119,7 +119,7 @@ const Home: React.FC = () => {
       </div>*/}
       
       <div className="flex flex-col gap-4 max-w-5xl w-full">
-        <h1 className="h3-light md:h2-light text-left w-full">Have something better?</h1>
+        <h1 className="h3-light md:h2-light text-center w-full">What's in your top 3, 4, 5...?</h1>
         <div className="mb-2 flex justify-between">
           <select className="bg-zinc-950 w-32 p-2 rounded-md" onChange={handleSortChange} value={sortOption}>
             <option value="">All</option>

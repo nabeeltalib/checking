@@ -293,7 +293,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
         </div>
 
         <div className="bg-dark-3 px-4 sm:px-6 py-3 flex justify-between items-center text-light-2 text-xs sm:text-sm">
-          <span className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+          <span className="bg-dark-3 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg">
             <img
               src={
                 checkIsLiked(likes, id)
@@ -306,11 +306,11 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
               onClick={handleLikeList}
               className="cursor-pointer"
             />
-            <p className="text-xs sm:text-sm">{likes.length} Likes</p>
+            <p className="text-xs sm:text-sm text-center">{likes.length} Likes</p>
           </span>
 
           <span
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex flex-col items-center gap-1 cursor-pointer"
             onClick={handleSaveList}
           >
             <img
@@ -321,22 +321,27 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
               width={20}
               height={20}
             />
-            <p className="text-xs sm:text-sm">
+            <p className="text-xs sm:text-sm text-center">
               {isSaved ? "Saved" : "Save"}
             </p>
           </span>
+
           <span
             onClick={() => navigate(`/lists/${list.$id}`)}
-            className="flex items-center cursor-pointer"
+            className="flex flex-col items-center cursor-pointer"
           >
             <img
               src="/assets/icons/comment.svg"
               alt="Comments"
-              className="w-5 h-5 mr-2"
+              className="w-5 h-5"
             />
-            {comments?.length || 0} Comments
+            <p className="text-xs sm:text-sm text-center">
+              {comments?.length || 0} Comments
+            </p>
           </span>
         </div>
+
+
         <div className="w-full mt-4 p-4 sm:p-6 border-t border-gray-300">
           <h3 className="text-xs sm:text-sm font-semibold">Comments</h3>
           {comments && comments?.length > 0 ? (
