@@ -18,7 +18,7 @@ const Comment = ({ comment, setReply, show, setCommentId }: any) => {
           height={20}
         />
         <div>
-          <p className="text-blue-600 text-xs">@{comment.user.Username}</p>
+          <p className="text-gray-400 text-xs">@{comment.user.Username}</p>
           <p className="text-sm">{comment.Content}</p>
         </div>
         {show && (
@@ -40,7 +40,7 @@ const Comment = ({ comment, setReply, show, setCommentId }: any) => {
                 height={20}
               />
               <div>
-                <p className="text-blue-600 text-xs">@{reply.userId.Username}</p>
+                <p className="text-gray-400 text-xs">@{reply.userId.Username}</p>
                 <p className="text-sm">{reply.Content}</p>
               </div>
             </div>

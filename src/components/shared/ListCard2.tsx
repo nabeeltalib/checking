@@ -179,7 +179,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
                 <p className="text-sm sm:text-base font-semibold text-light-1">
                   {list.creator?.Name}
                 </p>
-                <p className="text-light-3 text-xs sm:text-sm">
+                <p className="text-blue-300 text-xs sm:text-sm">
                   @{list.creator?.Username}
                 </p>
               </div>

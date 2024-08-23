@@ -119,7 +119,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               />
               <div className="ml-3">
                 <p className="text-sm sm:text-base font-semibold text-light-1">{list.creator?.Name}</p>
-                <p className="text-light-3 text-xs sm:text-sm">@{list.creator?.Username}</p>
+                <p className="text-blue-300 text-xs sm:text-sm">@{list.creator?.Username}</p>
               </div>
             </div>
             <button

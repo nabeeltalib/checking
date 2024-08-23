@@ -82,7 +82,7 @@ const Explore: React.FC = () => {
     <div className="explore-container common-container w-full">
       <section className="mb-8">
         <h3 className="text-xl font-semibold text-light-1 mb-4">
-          AI Suggested Lists
+          Interesting List Titles
         </h3>
         {isLoadingAISuggestions ? (
           <Loader />
