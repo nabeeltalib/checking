@@ -59,7 +59,7 @@ const ListComments: React.FC<{ listId: string }> = ({ listId }) => {
               </div>
             ))
           ) : (
-            <p className="text-gray-500 dark:text-gray-400">No comments yet.</p>
+            <p className="text-gray-500 dark:text-gray-400">Be the first to comment!</p>
           )}
         </>
       )}

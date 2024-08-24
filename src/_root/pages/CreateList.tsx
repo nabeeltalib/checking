@@ -62,28 +62,31 @@ const CreateList: React.FC = () => {
   return (
     <div className="flex flex-1 items-center justify-center py-10 px-6 min-h-screen bg-zinc-900">
       <div className="max-w-4xl w-full bg-zinc-800 rounded-xl p-8 shadow-lg">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-4 mb-2">
           
-          <h2 className="font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-          What's in your top 3, 4, 5... for anything!
+          <h2 className="font-extralight text-2xl text-left w-full mt-1" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+          Create your own top list! What's your ranking for...anything!
         </h2>
         </div>
-
-        {listIdea && (
-          <div className="mb-4 p-4 bg-zinc-700 rounded-lg shadow-md">
-            <p className="text-light-1">{listIdea}</p>
-          </div>
-        )}
-
-        <div className="flex justify-end mb-4">
+        <p className="text-gray-400 text-sm">Rank your favorites, share your opinions, or create fun lists on any topic.</p>
+        <div className="flex justify-end mb-10">
+          {listIdea && (
+            <div className="mt-5 p-4 bg-zinc-700 rounded-lg shadow-md">
+              <p className="text-light-1">{listIdea}</p>
+            </div>
+          )}
+        </div>
+        <div className="text-right items-center mb-10">
+          <p className="text-base text-blue-300">Need inspirations?</p> {/* Added text to the left */}
           <button
-            className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors"
+            className="bg-primary-500 text-sm text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors"
             onClick={handleGenerateIdea}
             disabled={isGeneratingIdea}
           >
-            {isGeneratingIdea ? 'Generating Idea...' : 'Generate List Idea'}
+            {isGeneratingIdea ? 'Generating Idea...' : 'Generate Title Ideas'}
           </button>
         </div>
+
 
         <ListForm
           ontSubmit={handleCreateList}

@@ -50,7 +50,7 @@ const AllLists: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-lg font-base mb-4 text-light-2">Title Suggestions</h2>
+          <h2 className="text-lg font-base mb-4 text-light-2">or create these</h2>
           <ul className="space-y-2">
             {aiSuggestions.map((suggestion, index) => (
               <motion.li 

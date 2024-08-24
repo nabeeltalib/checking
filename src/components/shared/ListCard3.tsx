@@ -243,7 +243,7 @@ const ListCard3: React.FC<any> = ({ list }) => {
               </div>
             </ul>
           ) : (
-            <p className="text-sm text-gray-500">No comments yet.</p>
+            <p className="text-sm text-gray-500">Be the first to comment!</p>
           )}
         </div>
       </motion.div>

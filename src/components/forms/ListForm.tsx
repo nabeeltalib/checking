@@ -6,11 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
@@ -71,8 +71,12 @@ const ListForm = ({ list, action, initialData }: any) => {
   const [previousItems, setPreviousItems] = useState<any>([]);
   const [showUndoButton, setShowUndoButton] = useState(false);
   const [friendsLists, setFriendsLists] = useState<any>([]);
+  
+  const [numItems, setNumItems] = useState<number>(5);
 
   const { mutate: generateListItems, isLoading: isGeneratingItems } = useGenerateListItems();
+  const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList(user.id);
+  const { mutateAsync: updateList, isLoading: isLoadingUpdate } = useUpdateList();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -122,7 +126,7 @@ const ListForm = ({ list, action, initialData }: any) => {
           id: z.string().nullable().default(null),
         })
       )
-      .min(5, "At least 5 items are required")
+      .min(3, "At least 3 items are required")
       .max(10, "Maximum 10 items allowed"),
     Categories: z.array(z.string()),
     Tags: z.array(z.string()),
@@ -149,7 +153,7 @@ const ListForm = ({ list, action, initialData }: any) => {
           creator: item?.creator?.$id,
           id: item?.$id,
         })) ||
-        Array(5).fill({ content: "", isVisible: true }),
+        Array(numItems).fill({ content: "", isVisible: true }),
       Categories: initialData?.Categories || list?.Categories || [],
       Tags: initialData?.Tags || list?.Tags || [],
       timespans: initialData?.timespans || list?.timespans || [],
@@ -158,13 +162,22 @@ const ListForm = ({ list, action, initialData }: any) => {
     },
   });
 
-  const { fields, append, move } = useFieldArray({
+  const { fields, append, remove, move } = useFieldArray({
     control: form.control,
     name: "items",
   });
 
-  const { mutateAsync: createList, isLoading: isLoadingCreate } = useCreateList(user.id);
-  const { mutateAsync: updateList, isLoading: isLoadingUpdate } = useUpdateList();
+  const handleItemCountChange = (value: string) => {
+    const count = parseInt(value.replace('Top ', ''));
+    setNumItems(count);
+
+    const currentFields = form.getValues('items');
+    if (currentFields.length > count) {
+      remove([...Array(currentFields.length - count).keys()].map(i => count + i));
+    } else if (currentFields.length < count) {
+      append([...Array(count - currentFields.length)].map(() => ({ content: "", isVisible: true, id: "", creator: "" })));
+    }
+  };
 
   const handleSubmit = async (value: z.infer<typeof formSchema>) => {
     try {
@@ -298,7 +311,7 @@ const ListForm = ({ list, action, initialData }: any) => {
     setTimeout(() => setShowUndoButton(false), 10000);
     toast({
       title: "List items generated",
-      description: "5 items have been generated based on your title.",
+      description: "Items have been generated based on your title.",
     });
   };
 
@@ -359,7 +372,26 @@ const ListForm = ({ list, action, initialData }: any) => {
           name="Title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Let's Give Your Ranking A Title </FormLabel>
+              <div className="flex items-center">
+                <FormLabel>Give Your Ranking A Title*</FormLabel>
+                <div className="relative group">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 ml-2 text-gray-400 cursor-pointer"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-9 3a1 1 0 102 0v-2a1 1 0 10-2 0v2zM9 7a1 1 0 100 2 1 1 0 000-2z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <div className="w-44 absolute bottom-full left-1/2 transform -translate-x-1/2 -mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded-md px-2 py-1">
+                    This is the main title for your list. Be specific and catchy!
+                  </div>
+                </div>
+              </div>
               <FormControl>
                 <Input
                   placeholder="Enter a title"
@@ -378,7 +410,7 @@ const ListForm = ({ list, action, initialData }: any) => {
             name="timespans"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Timespans</FormLabel>
+                <FormLabel>Any timespan?</FormLabel>
                 <FormControl>
                   <div>
                     <div className="flex flex-wrap gap-2">
@@ -393,9 +425,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                         </SelectTrigger>
                         <SelectContent className="bg-dark-4 text-light-1 border-none">
                           {timespans
-                            .filter(
-                              (timespan) => !field.value.includes(timespan)
-                            )
+                            .filter((timespan) => !field.value.includes(timespan))
                             .map((timespan) => (
                               <SelectItem key={timespan} value={timespan}>
                                 {timespan}
@@ -404,10 +434,10 @@ const ListForm = ({ list, action, initialData }: any) => {
                         </SelectContent>
                       </Select>
                       <Input
-                        placeholder="New timespan"
+                        placeholder="e.g. This year, 90s, All-time"
                         value={newTimespan}
                         onChange={(e) => setNewTimespan(e.target.value)}
-                        className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
+                        className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
                       />
                       <Button
                         type="button"
@@ -425,9 +455,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                           <button
                             type="button"
                             onClick={() => {
-                              const newTimespans = field.value.filter(
-                                (_, i) => i !== index
-                              );
+                              const newTimespans = field.value.filter((_, i) => i !== index);
                               field.onChange(newTimespans);
                             }}
                             className="ml-2 text-xs">
@@ -448,7 +476,7 @@ const ListForm = ({ list, action, initialData }: any) => {
             name="locations"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Locations</FormLabel>
+                <FormLabel>Any location?</FormLabel>
                 <FormControl>
                   <div>
                     <div className="flex flex-wrap gap-2">
@@ -463,9 +491,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                         </SelectTrigger>
                         <SelectContent className="bg-dark-4 text-light-1 border-none">
                           {locations
-                            .filter(
-                              (location) => !field.value.includes(location)
-                            )
+                            .filter((location) => !field.value.includes(location))
                             .map((location) => (
                               <SelectItem key={location} value={location}>
                                 {location}
@@ -474,10 +500,10 @@ const ListForm = ({ list, action, initialData }: any) => {
                         </SelectContent>
                       </Select>
                       <Input
-                        placeholder="New location"
+                        placeholder="e.g. New York, Europe, Worldwide"
                         value={newLocation}
                         onChange={(e) => setNewLocation(e.target.value)}
-                        className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
+                        className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
                       />
                       <Button
                         type="button"
@@ -495,9 +521,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                           <button
                             type="button"
                             onClick={() => {
-                              const newLocations = field.value.filter(
-                                (_, i) => i !== index
-                              );
+                              const newLocations = field.value.filter((_, i) => i !== index);
                               field.onChange(newLocations);
                             }}
                             className="ml-2 text-xs">
@@ -514,14 +538,30 @@ const ListForm = ({ list, action, initialData }: any) => {
           />
         </div>
 
+        <FormItem>
+          <FormLabel>How long is your ranking, Top 3, 5, or 10?</FormLabel>
+          <Select onValueChange={handleItemCountChange} defaultValue="5">
+            <SelectTrigger className="w-full md:w-[120px] bg-dark-3 text-light-1 border-none">
+              <SelectValue placeholder="Choose Top 3, 5, or 10" />
+            </SelectTrigger>
+            <SelectContent className="bg-dark-4 text-light-1 border-none">
+              <SelectItem value="3">Top 3</SelectItem>
+              <SelectItem value="5">Top 5</SelectItem>
+              <SelectItem value="10">Top 10</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormItem>
+
+
         <div className="space-y-4">
           <Button
             type="button"
             onClick={handleGenerateListItems}
             disabled={isGeneratingItems}
             className="bg-blue-900 text-light-1 px-4 py-2 rounded-md mb-4">
-            {isGeneratingItems ? "Generating..." : "Get Inspiration"}
+            {isGeneratingItems ? "Generating..." : "Get AI Suggestions"}
           </Button>
+          <span className="text-xs text-gray-300 ml-3">Get AI-powered list ideas based on your title, timespan, or location.</span>
 
           {showUndoButton && (
             <Button type="button" onClick={handleUndo} className="w-full">
@@ -546,7 +586,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                         <FormItem className="flex-grow mr-2">
                           <FormControl>
                             <Input
-                              placeholder={`Rank ${index + 1}`}
+                              placeholder={`Enter #${index + 1} ranked item`}
                               {...field}
                               className="w-full bg-dark-3 text-light-1 border-none"
                             />
@@ -593,7 +633,7 @@ const ListForm = ({ list, action, initialData }: any) => {
           name="Tags"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tags</FormLabel>
+              <FormLabel>Tags (add keywords to help others find your list)</FormLabel>
               <FormControl>
                 <Input
                   placeholder="Enter tags separated by commas"
@@ -621,7 +661,7 @@ const ListForm = ({ list, action, initialData }: any) => {
           name="Categories"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Categories</FormLabel>
+              <FormLabel>Categories (choose a general topic for your list)</FormLabel>
               <FormControl>
                 <div>
                   <div className="flex flex-wrap gap-2">
@@ -666,9 +706,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                         <button
                           type="button"
                           onClick={() => {
-                            const newCategories = field.value.filter(
-                              (_, i) => i !== index
-                            );
+                            const newCategories = field.value.filter((_, i) => i !== index);
                             field.onChange(newCategories);
                           }}
                           className="ml-2 text-xs">

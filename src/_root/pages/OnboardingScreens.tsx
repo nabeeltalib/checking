@@ -86,6 +86,9 @@ const OnboardingScreens = () => {
             <img src="/assets/images/logo.svg" alt="logo" />
 
             <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12 mb-4">New to Topfived? </h2>
+            <p className=" pt-5 sm:pt-12 mb-4">Create your own lists, Discover trusted recommendations, Join discussions </p>
+
+
             
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-400 mb-1" htmlFor="email">

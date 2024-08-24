@@ -5,7 +5,7 @@ const RightSidebar2 = () => {
   const { pathname } = useLocation();
 
   return (
-    <aside className="rightsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 overflow-y-auto fixed right-0 top-20">
+    <aside className="rightsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 overflow-y-auto fixed right-0 top-30">
       <div className="flex flex-col gap-8">
         {rightSidebarLinks2.map(link => (
           <NavLink
@@ -27,7 +27,7 @@ const RightSidebar2 = () => {
           </NavLink>
         ))}
       </div>
-      <div className="flex flex-col gap-4 mt-6 mb-14">
+      <div className="flex flex-col gap-4 mt-6 mb-28">
         
         <div className="text-xs text-gray-400 text-center mt-4">
           <NavLink to="/privacypolicy" className="hover:text-white">

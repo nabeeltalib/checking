@@ -49,9 +49,9 @@ const PreviewMode: React.FC = () => {
   return (
     <div className="flex flex-col gap-8 p-4">
       <div className="text-2xl md:text-3xl text-gray-300 text-center font-base" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-      See Recommendations From Your World                
+      Discover Top Lists From Your World                
       </div>
-      <h1 className="h3-light md:h2-light text-center w-full">What's in your top 3, 4, 5...?</h1>
+      <h1 className="h3-light md:h2-light text-center w-full">Explore Rankings on Anything and Everything</h1>
 
       <div className="flex flex-col gap-4">
         {publicLists.map((list: any, index: number) => (

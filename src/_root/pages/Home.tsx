@@ -84,7 +84,7 @@ const Home: React.FC = () => {
     <div className="flex flex-col gap-6 p-4 w-full items-center common-container">
 
         <div className="text-wrap text-lg md:text-3xl text-gray-300 flex flex-col md:flex-row items-center gap-2 md:gap-4 mb-2 font-base" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-          See Recommendations From Your World {user.name || ""}        
+        Discover Top Lists From Your World {user.name || ""}        
           {user && (
             <div className="text-xs text-light-3 flex flex-col md:flex-row items-center">
               <span>{connection?.follower?.length || 0} followers</span>
@@ -120,10 +120,10 @@ const Home: React.FC = () => {
       </div>*/}
       
       <div className="flex flex-col gap-4 max-w-5xl w-full">
-        <h1 className="h3-light md:h2-light text-center w-full">What's in your top 3, 4, 5...?</h1>
+        <h1 className="h3-light md:h2-light text-center w-full">Explore Rankings on Anything and Everything</h1>
         <div className="mb-2 flex justify-between">
           <select className="bg-zinc-950 w-32 p-2 rounded-md" onChange={handleSortChange} value={sortOption}>
-            <option value="">All</option>
+            <option value="">Filter Lists</option>
             <option value="category">Category</option>
             <option value="tags">Tags</option>
           </select>

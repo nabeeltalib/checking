@@ -26,7 +26,7 @@ export const sidebarLinks = [
   {
     imgURL: "/assets/icons/bookmark.svg",
     route: "/saved",
-    label: "Saved",
+    label: "Bookmark",
     icon:"/assets/icons/bookmark.svg"
   },   
   // {
