@@ -14,7 +14,7 @@ import GridListList from "@/components/shared/GridListList";
 import ListStats from "@/components/shared/ListStats";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
-import { followUser, getConnection, shareList, UnFollow } from "@/lib/appwrite/api";
+import { createEmbedList, followUser, getConnection, shareList, UnFollow } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
 import Comment from "@/components/shared/Comment"; // Assuming you have a Comment component
 
@@ -119,6 +119,25 @@ const ListDetails: React.FC = () => {
     setIsFollowLoading(false);
   };
 
+  const handleEmbed = async () => {
+    try {
+      await createEmbedList(list.$id, list.Categories[0] || "");
+      toast({
+        title: "Success!",
+        description: `${list.Title} has been embedded successfully.`,
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to embed list ${list.Title}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  let isCollaborator = list.users.some((collab:any) => collab.$id === user.id)
+
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto bg-dark-2 rounded-lg shadow-md p-4 sm:p-6">
       <div className="sticky top-0 z-10 bg-dark-3 p-4 border-b border-dark-4 rounded-t-lg flex justify-between items-center">
@@ -189,9 +208,12 @@ const ListDetails: React.FC = () => {
             ))}
         </div>
         
-        <h1 className="text-xl sm:text-3xl font-bold mb-4 text-center sm:text-left">
-          <span className="tracking-tighter	font-light text-sm text-gray-400 italic">Ranking for</span>
+        <h1 className="text-xl sm:text-3xl flex justify-between font-bold mb-4 text-center sm:text-left">
+
           <span className="text-wrap text-primary-500 ml-2">{list.Title}</span>
+          <span>
+                {(isOwnProfile || isCollaborator) && <Button onClick={handleEmbed}>add to embed</Button>}
+          </span>
         </h1>
         {list.Description && (
           <p className="text-sm sm:text-base font-thin mb-6 text-gray-100 text-center sm:text-left">

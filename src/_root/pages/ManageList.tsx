@@ -13,7 +13,7 @@ const ManageList = () => {
       const fetchData = async()=>{
         let resp = await getUserById(id);
         console.log(resp)
-        setUserLists(resp.lists)
+        setUserLists(resp?.lists)
       }
 
       fetchData()

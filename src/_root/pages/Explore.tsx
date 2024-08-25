@@ -110,7 +110,7 @@ const Explore: React.FC = () => {
             popularCategories.map((category, i) => (
               <Link
                 key={i}
-                to={`/category/${category.$id}`}
+                to={`/categories/${category.name}`}
                 className="bg-dark-4 text-light-1 px-3 py-1 rounded-full hover:bg-primary-500 transition-colors">
                 {category.name}
               </Link>

@@ -24,8 +24,11 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      let resp = await getConnection(list.creator.$id);
-      resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+      if(list?.creator?.$id)
+        {
+          let resp = await getConnection(list.creator.$id);
+          resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+        }
     };
 
     fetchData();
@@ -131,7 +134,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
     likeList({ listId: list.$id, likesArray: newLikes });
   };
 
-  let isOwnProfile = user.id === list.creator.$id;
+  let isOwnProfile = user.id === list?.creator?.$id || "";
   let isFollowed = connection?.follower?.some((follow: any) => follow.$id === user.id);
 
   const handleFollow = async () => {
@@ -161,8 +164,12 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
+        {
+
+        }
         <div className="p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+        {
+            list?.creator?.$id && <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
             <Link
               to={`/profile/${list.creator.$id}`}
               className="flex items-center"
@@ -222,10 +229,14 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
               </button>
             </div>
           </div>
+        }
 
-          <h2 className="tracking-tighter	text-sm sm:text-base font-light text-gray-400 italic mb-2">
+          <h2 className="tracking-tighter flex justify-between text-sm sm:text-base font-light text-gray-400 italic mb-2">
             Ranking for
             <span className="text-wrap text-xl sm:text-2xl font-semibold text-primary-500 ml-1">{list.Title}</span>
+            <span>
+                {manageList && <Button onClick={handleEmbed}>add to embed</Button>}
+            </span>
           </h2>
           {list.description && (
             <h4 className="text-sm sm:text-base font-thin mb-6 text-gray-100">

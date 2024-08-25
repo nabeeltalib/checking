@@ -16,12 +16,7 @@ const Saved = () => {
  const savedLists:any = currentUser?.save
   ? currentUser.save.map((savedItem: any) => ({
       ...savedItem.list,
-      creator: {
-        $id: currentUser.$id,
-        Name: currentUser.Name,
-        Username: currentUser.Name,
-        ImageUrl: currentUser.ImageUrl || "/assets/icons/profile-placeholder.svg",
-      },
+     
     }))
   : [];
 
