@@ -14,7 +14,7 @@ const Topbar2 = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { data: searchResults, refetch: searchLists } = useSearchLists(
     searchQuery,
-    user.id
+    user?.id
   );
   const [isOpen, setIsOpen] = useState(false);
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
@@ -35,7 +35,7 @@ const Topbar2 = () => {
   };
 
   const handleCreateList = () => {
-    if (user.isAuthenticated) {
+    if (user?.isAuthenticated) {
       navigate("/create-list");
     } else {
       handleDialogOpen();
@@ -43,7 +43,7 @@ const Topbar2 = () => {
   };
 
   const handleProfileClick = () => {
-    if (user.isAuthenticated) {
+    if (user?.isAuthenticated) {
       navigate("/profile/profile");
     } else {
       handleDialogOpen();
@@ -51,10 +51,10 @@ const Topbar2 = () => {
   };
 
   useEffect(() => {
-    if (isSuccess) navigate(0);
+    if (isSuccess) navigate("/");
   }, [isSuccess, navigate]);
 
-  const handleSearch = (e: any) => {
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       searchLists();
@@ -126,7 +126,7 @@ const Topbar2 = () => {
             </button>
           </div>
 
-          {searchResults && (
+          {searchResults?.pages?.length > 0 && (
             <ul className="absolute bg-white text-black mt-2 rounded-lg shadow-lg w-full max-h-60 overflow-y-auto">
               {searchResults.pages.map((item: any) =>
                 item.map((list: any, index: number) => (
@@ -168,7 +168,7 @@ const Topbar2 = () => {
             <div className="flex items-center cursor-pointer" onClick={toggleDropdown}>
               <img
                 className="w-10 h-10 rounded-full object-cover shadow-lg"
-                src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
+                src={user?.imageUrl || "/assets/icons/profile-placeholder.svg"}
                 alt="Profile"
               />
             </div>
@@ -232,7 +232,7 @@ const Topbar2 = () => {
               <div className="flex items-center cursor-pointer" onClick={toggleDropdown}>
                 <img
                   className="w-10 h-10 rounded-full object-cover mx-auto shadow-lg"
-                  src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
+                  src={user?.imageUrl || "/assets/icons/profile-placeholder.svg"}
                   alt="Profile"
                 />
               </div>

@@ -90,7 +90,7 @@ const ListCard3: React.FC<any> = ({ list }) => {
         <span className="flex-shrink-0 w-8 h-8 text-light-1 bg-gray-800 rounded-full flex items-center justify-center font-bold mr-3">
           {index + 1}
         </span>
-        <span className="text-light-2 truncate">
+        <span className="text-light-2 text-ellipsis">
           {typeof item === "string" ? item : item.content || ""}
         </span>
       </li>
@@ -243,7 +243,7 @@ const ListCard3: React.FC<any> = ({ list }) => {
               </div>
             </ul>
           ) : (
-            <p className="text-sm text-gray-500">Be the first to comment!</p>
+            <p className="text-sm text-gray-500">What do you think? Comment below!</p>
           )}
         </div>
       </motion.div>

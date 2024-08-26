@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, NavLink} from "react-router-dom";
+import { Link, useNavigate, NavLink } from "react-router-dom";
 import { Button } from "../ui/button";
 import { useUserContext } from "@/context/AuthContext";
 import { useSignOutAccount } from "@/lib/react-query/queries";
@@ -7,33 +7,29 @@ import { Input } from "@/components/ui/input";
 import { useSearchLists } from "@/lib/react-query/queries";
 import { NotificationBell } from "./notifications/NotificationBell";
 
-const Topbar = () => {
+const Topbar: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
   const { mutate: signOut, isSuccess } = useSignOutAccount();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const { data: searchResults, refetch: searchLists } = useSearchLists(searchQuery, user.id);
   const [isOpen, setIsOpen] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
 
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleDropdown = () => setIsOpen((prev) => !prev);
 
-  const toggleOffCanvas = () => {
-    setIsOffCanvasOpen(!isOffCanvasOpen);
-  };
+  const toggleOffCanvas = () => setIsOffCanvasOpen((prev) => !prev);
 
   useEffect(() => {
     if (isSuccess) navigate(0);
   }, [isSuccess, navigate]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -45,15 +41,22 @@ const Topbar = () => {
     };
   }, []);
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      searchLists();
+      try {
+        await searchLists();
+      } catch (error) {
+        console.error("Search failed", error);
+      }
     }
   };
 
-  const handleCreateList = () => {
-    navigate("/create-list");
+  const handleCreateList = () => navigate("/create-list");
+
+  const handleSignOut = () => {
+    signOut();
+    navigate("/");
   };
 
   return (
@@ -92,6 +95,7 @@ const Topbar = () => {
               type="submit"
               className="p-2 bg-purple-500 rounded-full hover:bg-purple-700 transition-all duration-300"
               onClick={() => setIsSearch(true)}
+              aria-label="Search"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -112,9 +116,9 @@ const Topbar = () => {
 
           {searchResults && (
             <ul className="absolute bg-white text-black mt-2 rounded-lg shadow-lg w-full max-h-60 overflow-y-auto">
-              {searchResults.pages.map((item) =>
-                item.map((list, index) => (
-                  <li key={index} className="border-b last:border-b-0">
+              {searchResults.pages.map((page) =>
+                page.map((list: any) => (
+                  <li key={list.id} className="border-b last:border-b-0">
                     <Link
                       to={`/lists/${list.id}`}
                       className="block px-4 py-2 hover:bg-gray-100"
@@ -129,7 +133,7 @@ const Topbar = () => {
         </form>
 
         <div className="flex items-center md:hidden">
-          <button onClick={toggleOffCanvas} className="text-white">
+          <button onClick={toggleOffCanvas} className="text-white" aria-label="Open menu">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -154,10 +158,7 @@ const Topbar = () => {
           <Button
             variant="ghost"
             className="p-2 rounded-full hover:bg-gray-700 transition-all duration-300"
-            onClick={() => {
-              signOut();
-              navigate("/");
-            }}
+            onClick={handleSignOut}
             aria-label="Sign out"
           >
             <img src="/assets/icons/logout.svg" alt="Sign out" className="h-8 w-8" />
@@ -224,10 +225,7 @@ const Topbar = () => {
                 </Link>
                 <button
                   className="flex items-center gap-2 px-4 py-3 text-sm text-black hover:bg-red-50 transition-all duration-200 w-full text-left"
-                  onClick={() => {
-                    signOut();
-                    navigate("/");
-                  }}
+                  onClick={handleSignOut}
                 >
                   <img
                     src="/assets/icons/logout.svg"
@@ -247,7 +245,7 @@ const Topbar = () => {
           } transition-transform duration-300 ease-in-out md:hidden`}
         >
           <div className="absolute right-0 bg-gray-800 text-white w-64 h-full p-5">
-            <button className="mb-5 text-white" onClick={toggleOffCanvas}>
+            <button className="mb-5 text-white" onClick={toggleOffCanvas} aria-label="Close menu">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-8 h-8">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -263,7 +261,7 @@ const Topbar = () => {
             <Button
               variant="ghost"
               className="p-2 w-full mb-4 rounded-full hover:bg-gray-700 transition-all duration-300"
-              onClick={() => signOut()}
+              onClick={handleSignOut}
               aria-label="Sign out"
             >
               <img src="/assets/icons/logout.svg" alt="Sign out" className="h-8 w-8 mx-auto" />
@@ -292,41 +290,40 @@ const Topbar = () => {
                   </Link>
                   <button
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                    onClick={() => signOut()}
+                    onClick={handleSignOut}
                   >
                     Logout
                   </button>
                 </div>
               )}
-            </div>   
+            </div>
             <Link
-                  to="/helpfaqpage"
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-white hover:bg-gray-700 transition-all duration-200"
-                >
-                  Help/FAQ
-                </Link>
-                <Link
-                  to="/contactpage"
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-white hover:bg-gray-700 transition-all duration-200"
-                >
-                  Contact Us
-                </Link>
-              {/* Insert the provided snippet here */}
-              <div className="flex flex-col gap-4 mt-6 mb-14">
-                <div className="text-xs text-gray-400 text-center mt-4">
-                  <NavLink to="/privacypolicy" className="hover:text-white">
-                    Privacy Policy
-                  </NavLink>
-                  <span className="mx-2">|</span>
-                  <NavLink to="/termsandconditions" className="hover:text-white">
-                    Terms & Conditions
-                  </NavLink>
-                  <p className="mt-2">&copy; 2024 Topfived. All rights reserved.</p>
-                </div>
+              to="/helpfaqpage"
+              className="flex items-center gap-2 px-4 py-3 text-sm text-white hover:bg-gray-700 transition-all duration-200"
+            >
+              Help/FAQ
+            </Link>
+            <Link
+              to="/contactpage"
+              className="flex items-center gap-2 px-4 py-3 text-sm text-white hover:bg-gray-700 transition-all duration-200"
+            >
+              Contact Us
+            </Link>
+            <div className="flex flex-col gap-4 mt-6 mb-14">
+              <div className="text-xs text-gray-400 text-center mt-4">
+                <NavLink to="/privacypolicy" className="hover:text-white">
+                  Privacy Policy
+                </NavLink>
+                <span className="mx-2">|</span>
+                <NavLink to="/termsandconditions" className="hover:text-white">
+                  Terms & Conditions
+                </NavLink>
+                <p className="mt-2">&copy; 2024 Topfived. All rights reserved.</p>
               </div>
-          </div>          
-        </div>        
-      </div>      
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 };

@@ -26,21 +26,30 @@ const LeftSidebar = () => {
         isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
-      {!isCollapsed && (
-        <div className="flex items-center gap-3 p-4 rounded-lg bg-dark-4 mb-4">
-          <img
-            src={user.imageUrl || '/assets/icons/profile-placeholder.svg'}
-            alt="User Profile"
-            className="w-10 h-10 rounded-full object-cover shadow-md"
-          />
-          <div>
-            <p className="text-light-1 font-semibold">{user.username || 'User'}</p>
-            <NavLink to="/profile/profile" className="text-light-2 text-sm hover:text-light-1">
-              View Profile
-            </NavLink>
+      <div className="flex items-center justify-between mb-4">
+        {!isCollapsed && (
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-dark-4">
+            <img
+              src={user.imageUrl || '/assets/icons/profile-placeholder.svg'}
+              alt="User Profile"
+              className="w-10 h-10 rounded-full object-cover shadow-md"
+            />
+            <div>
+              <p className="text-light-1 font-semibold">{user.username || 'User'}</p>
+              <NavLink to="/profile/profile" className="text-light-2 text-sm hover:text-light-1">
+                View Profile
+              </NavLink>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+        {/* Collapse Button */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="text-white p-2 rounded-md hover:bg-dark-3"
+        >
+          {isCollapsed ? '▶' : '◀'}
+        </button>
+      </div>
 
       <div className="flex-grow flex flex-col gap-4">
         {sidebarLinks.map((link) => (
@@ -59,7 +68,6 @@ const LeftSidebar = () => {
               src={link.icon}
               alt={link.label}
               className={`w-6 h-6 ${pathname === link.route ? 'invert brightness-0' : 'filter invert brightness-0'}`}
-
             />
             {!isCollapsed && <span>{link.label}</span>}
           </NavLink>

@@ -8,12 +8,8 @@ const Bottombar2 = () => {
   const navigate = useNavigate();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleDialogOpen = () => {
-    setIsDialogOpen(true);
-  };
-
-  const handleDialogClose = () => {
-    setIsDialogOpen(false);
+  const toggleDialog = () => {
+    setIsDialogOpen((prev) => !prev);
   };
 
   return (
@@ -21,15 +17,12 @@ const Bottombar2 = () => {
       <nav className="bottom-bar flex justify-around items-center bg-dark-2 py-2 shadow-md fixed bottom-0 left-0 right-0 w-full z-50">
         {bottombarLinks2.map((link) => {
           const isActive = pathname === link.route;
+          const commonClasses = "flex-center flex-col gap-1 p-2 transition-all duration-300";
           return link.label === "Create" ? (
             <button
               key={`bottombar-${link.label}`}
-              onClick={handleDialogOpen}
-              className={`flex-center flex-col gap-1 p-2 transition-all duration-300 ${
-                isActive
-                  ? "bg-primary-500 rounded-[10px] text-light-1"
-                  : "text-light-2 hover:bg-dark-4"
-              }`}
+              onClick={toggleDialog}
+              className={`${commonClasses} ${isActive ? "bg-primary-500 rounded-[10px] text-light-1" : "text-light-2 hover:bg-dark-4"}`}
             >
               <img
                 src={link.imgURL}
@@ -46,11 +39,7 @@ const Bottombar2 = () => {
             <Link
               key={`bottombar-${link.label}`}
               to={link.route}
-              className={`flex-center flex-col gap-1 p-2 transition-all duration-300 ${
-                isActive
-                  ? "bg-primary-500 rounded-[10px] text-light-1"
-                  : "text-light-2 hover:bg-dark-4"
-              }`}
+              className={`${commonClasses} ${isActive ? "bg-primary-500 rounded-[10px] text-light-1" : "text-light-2 hover:bg-dark-4"}`}
             >
               <img
                 src={link.imgURL}
@@ -71,7 +60,7 @@ const Bottombar2 = () => {
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 sm:p-8">
           <div className="relative bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg">
             <button
-              onClick={handleDialogClose}
+              onClick={toggleDialog}
               className="text-gray-500 hover:text-gray-700 absolute top-4 right-4"
               aria-label="Close"
             >

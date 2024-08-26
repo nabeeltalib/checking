@@ -66,7 +66,7 @@ const GridListList: React.FC<GridListListProps> = ({ lists, showUser = true, sho
                 alt={`${item.creator.Name}'s profile picture`}
                 className="w-8 h-8 rounded-full mr-2 object-cover"
               />
-              <p className="text-light-1 truncate">{item.creator.Name}</p>
+              <p className="text-light-1 text-ellipsis">{item.creator.Name}</p>
             </Link>
           )}
           {showStats && (

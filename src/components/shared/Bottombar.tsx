@@ -12,7 +12,7 @@ const Bottombar = () => {
           <Link
             key={`bottombar-${link.label}`}
             to={link.route}
-            className={`flex-center flex-col gap-1 p-2 transition-all duration-300 ${
+            className={`flex flex-col items-center gap-1 p-2 transition-all duration-300 ${
               isActive ? "bg-primary-500 rounded-[10px] text-light-1" : "text-light-2 hover:bg-dark-4"
             }`}
           >
@@ -21,7 +21,7 @@ const Bottombar = () => {
               alt={link.label}
               width={20}
               height={20}
-              className={`w-6 h-6 ${pathname === link.route ? 'invert' : ''} filter brightness-0 invert`}
+              className={`w-6 h-6 filter ${isActive ? '' : 'brightness-0 invert'}`}
             />
             <p className={`tiny-medium ${isActive ? "text-light-1" : "text-light-2"}`}>
               {link.label}

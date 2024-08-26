@@ -47,7 +47,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         <span className="flex-shrink-0 w-8 h-8 bg-gray-500 text-white rounded-full flex items-center justify-center font-bold mr-3">
           {index + 1}
         </span>
-        <span className="text-light-1 truncate">
+        <span className="text-light-1 text-ellipsis">
           {typeof item === "string" ? item : item.content || ""}
         </span>
       </li>
@@ -66,7 +66,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
       aria-label={`List titled ${list.title} by ${list.creator?.name}`}
     >
       <div className="p-6">
-        <h2 className="text-3xl font-bold mb-6 text-primary-500 truncate">
+        <h2 className="text-3xl font-bold mb-6 text-primary-500 text-ellipsis">
           {list.title}
         </h2>
 

@@ -90,7 +90,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
         <span className="text-xs flex-shrink-0 w-8 h-8 text-light-1 bg-gray-900 rounded-full flex items-center justify-center font-bold mr-3">
           {index + 1}
         </span>
-        <span className="text-sm text-light-2 truncate">
+        <span className="text-sm text-light-2 text-ellipsis">
           {typeof item === "string" ? item : item.content || ""}
         </span>
       </li>
@@ -232,7 +232,9 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
             </div>
           </div>
         )}
-
+        <div className="text-slate-400 text-center text-xl sm:text-2xl font-thin px-4 py-2 rounded-t-lg">
+          RANKING FOR
+        </div>
         <h2 className="tracking-tighter flex justify-between text-sm sm:text-base font-light text-gray-400 italic mb-2">
            
           <span className="text-wrap text-xl sm:text-2xl font-semibold text-primary-500 ml-1">
@@ -280,7 +282,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
             <span
               key={`${tag}${index}`}
               onClick={() => navigate(`/categories/${tag}`)}
-              className="bg-gray-800 text-white px-2 py-1 rounded-full text-xs sm:text-sm cursor-pointer shadow-md"
+              className="bg-blue-800 text-blue-200 px-2 py-1 rounded-full text-xs sm:text-sm cursor-pointer shadow-md"
             >
               #{tag}
             </span>
@@ -288,20 +290,31 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
         </div>
 
         {list.locations.length > 0 && (
-          <div className="text-xs sm:text-sm text-blue-200 mb-4">
+          <div className="flex flex-wrap gap-2 mb-4">
             {list.locations.map((location: any, index: number) => (
-              <span key={index}>{location}</span>
+              <span
+                key={index}
+                className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm"
+              >
+                {location}
+              </span>
             ))}
           </div>
         )}
 
         {list.timespans.length > 0 && (
-          <div className="text-xs sm:text-sm text-blue-200">
+          <div className="flex flex-wrap gap-2">
             {list.timespans.map((timespan: any, index: number) => (
-              <span key={index}>{timespan}</span>
+              <span
+                key={index}
+                className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm"
+              >
+                {timespan}
+              </span>
             ))}
           </div>
         )}
+
       </div>
 
       <div className="bg-dark-3 px-4 sm:px-6 py-3 flex justify-between items-center text-light-2 text-xs sm:text-sm">
@@ -364,7 +377,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
             </div>
           </ul>
         ) : (
-          <p className="text-xs sm:text-sm text-gray-500">Be the first to comment!</p>
+          <p className="text-xs sm:text-sm text-gray-500">What do you think? Comment below!</p>
         )}
       </div>
     </motion.div>

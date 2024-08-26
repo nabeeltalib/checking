@@ -13,27 +13,40 @@ const LeftSidebar2 = () => {
     navigate('/sign-in');
   };
 
+  const toggleCollapse = () => {
+    setIsCollapsed((prev) => !prev);
+  };
+
   return (
     <aside
       className={`leftsidebar hidden md:flex flex-col justify-between h-screen p-4 pb-8 bg-gradient-to-r from-purple-600 to-indigo-600 border-r border-dark-4 overflow-y-auto fixed left-0 top-16 transition-all duration-300 ease-in-out ${
         isCollapsed ? 'w-20' : 'w-64'
       }`}
     >
-      {!isCollapsed && (
-        <div className="flex items-center gap-3 p-4 rounded-lg bg-dark-4 mb-4">
-          <img
-            src={'/assets/icons/profile-placeholder.svg'}
-            alt="User Profile"
-            className="w-10 h-10 rounded-full object-cover shadow-md"
-          />
-          <div>
-            <p className="text-light-1 font-semibold">Guest</p>
-            <NavLink to="/sign-in" className="text-light-2 text-sm hover:text-light-1">
-              Sign In /Up
-            </NavLink>
+      <div className="flex items-center justify-between mb-4">
+        {!isCollapsed && (
+          <div className="flex items-center gap-3 p-4 rounded-lg bg-dark-4">
+            <img
+              src={'/assets/icons/profile-placeholder.svg'}
+              alt="User Profile"
+              className="w-10 h-10 rounded-full object-cover shadow-md"
+            />
+            <div>
+              <p className="text-light-1 font-semibold">Guest</p>
+              <NavLink to="/sign-in" className="text-light-2 text-sm hover:text-light-1">
+                Sign In / Up
+              </NavLink>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+        <button
+          onClick={toggleCollapse}
+          className="text-white p-2 rounded hover:bg-primary-400 focus:outline-none"
+          aria-label="Toggle Sidebar"
+        >
+          {isCollapsed ? '▶' : '◀'}
+        </button>
+      </div>
 
       <div className="flex-grow flex flex-col gap-4">
         {sidebarLinks2.map((link) => (
@@ -51,7 +64,7 @@ const LeftSidebar2 = () => {
             <img
               src={link.icon}
               alt={link.label}
-              className={`w-6 h-6 ${pathname === link.route ? 'invert brightness-0' : 'filter invert brightness-0'}`}
+              className="w-6 h-6 filter invert brightness-0"
             />
             {!isCollapsed && <span>{link.label}</span>}
           </NavLink>
@@ -60,7 +73,7 @@ const LeftSidebar2 = () => {
 
       <Button
         onClick={handleSignIn}
-        variant="primary"
+        variant="default" // or use another valid variant like "secondary", "destructive", etc.
         className="w-full mt-4 flex items-center justify-center gap-2 text-white bg-green-600 hover:bg-green-700 shadow-lg mb-9"
       >
         <svg
@@ -75,6 +88,7 @@ const LeftSidebar2 = () => {
         </svg>
         {!isCollapsed && 'Sign In'}
       </Button>
+
     </aside>
   );
 };

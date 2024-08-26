@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { IList } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
@@ -18,7 +18,6 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { data: comments } = useGetComments(list.$id);
   const navigate = useNavigate();
-
   const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
 
   const handleShare = async (e: React.MouseEvent) => {
@@ -67,12 +66,12 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
       <li
         key={index}
         className="flex items-center mb-2 cursor-pointer"
-        onClick={handleDialogOpen} // Open dialog when clicking on an item
+        onClick={handleDialogOpen}
       >
         <span className="text-sm flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-gray-900 text-white rounded-full flex items-center justify-center font-light mr-3">
           {index + 1}
         </span>
-        <span className="text-sm sm:text-base text-light-1 truncate">
+        <span className="text-sm sm:text-base text-light-1 text-ellipsis">
           {typeof item === "string" ? item : item.content || ""}
         </span>
       </li>
@@ -84,7 +83,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
 
     return (
       <div className="mt-4">
-        <h4 className="text-xs sm:text-sm font-semibold text-gray-500 mb-2 ">Comments:</h4>
+        <h4 className="text-xs sm:text-sm font-semibold text-gray-500 mb-2">Comments:</h4>
         <ul>
           {comments.slice(0, 2).map((comment, index) => (
             <li key={index} className="mb-2">
@@ -104,13 +103,10 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        onClick={handleDialogOpen} // Open the dialog on click
+        onClick={handleDialogOpen}
       >
         <div className="p-4 sm:p-6">
-          <div
-            className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4 cursor-pointer"
-            onClick={handleDialogOpen} // Open dialog when clicking on profile area
-          >
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
             <div className="flex items-center">
               <img
                 src={list.creator?.ImageUrl || "/assets/icons/profile-placeholder.svg"}
@@ -133,31 +129,26 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               <Share2 size={24} />
             </button>
           </div>
-          <div
-            className="cursor-pointer"
-            onClick={handleDialogOpen} // Open dialog when clicking on title
-          >
-            {/*<h2 className="tracking-tighter	text-xs sm:text-sm font-light text-gray-400 italic mb-2">
-              Ranking for
-            </h2>*/}              
-            <span className="text-wrap text-sm sm:text-base font-semibold text-primary-500 ml-1">{list.Title}</span>
-
+          <div className="text-slate-400 text-center text-xl sm:text-2xl font-thin px-4 py-2 rounded-t-lg">
+          RANKING FOR
+        </div>
+        <div className="cursor-pointer">
+            <span className="text-wrap text-sm sm:text-base font-semibold text-primary-500 ml-1">
+              {list.Title}
+            </span>
           </div>
           <div className="block" aria-label={`View details of list titled ${list.Title}`}>
             <ol className="list-none mb-6 space-y-3">{renderListItems()}</ol>
-
             {Array.isArray(list.items) && list.items.length > 5 && (
               <p className="text-gray-500 font-semibold text-xs sm:text-sm mb-4">
                 + {list.items.length - 5} more items
               </p>
             )}
-
             {list.tags && list.tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {list.tags.map((tag: string, index: number) => (
                   <span
                     key={index}
-                    onClick={handleDialogOpen} // Open dialog when clicking on a tag
                     className="cursor-pointer bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm"
                   >
                     #{tag}
@@ -165,54 +156,63 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
                 ))}
               </div>
             )}
+          {list.locations.length > 0 && (
+  <div className="flex flex-wrap gap-2 mb-4">
+    {list.locations.map((location: any, index: number) => (
+      <span
+        key={index}
+        className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm"
+      >
+        {location}
+      </span>
+    ))}
+  </div>
+)}
 
-            {list.locations && list.locations.length > 0 && (
-              <div className="text-xs sm:text-sm text-blue-200 mb-4">
-                <strong>Locations: </strong>
-                {list.locations.map((location: string, index: number) => (
-                  <span key={index} className="mr-2">
-                    {location}
-                  </span>
-                ))}
-              </div>
-            )}
+{list.timespans.length > 0 && (
+  <div className="flex flex-wrap gap-2">
+    {list.timespans.map((timespan: any, index: number) => (
+      <span
+        key={index}
+        className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm"
+      >
+        {timespan}
+      </span>
+    ))}
+  </div>
+)}
 
-            {list.timespans && list.timespans.length > 0 && (
-              <div className="text-xs sm:text-sm text-blue-200 mb-4">
-                <strong>Timespans: </strong>
-                {list.timespans.map((timespan: string, index: number) => (
-                  <span key={index} className="mr-2">
-                    {timespan}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
           <div className="bg-dark-3 px-4 sm:px-6 py-1 flex justify-between items-center text-light-2 text-xs">
             <span className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg">
               <img src="/assets/icons/like.svg" alt="Likes" className="w-4 h-4" />
               <p>{list.Likes?.length || 0} Likes</p>
             </span>
-            
             <span className="flex flex-col items-center gap-1 py-2 px-2 rounded-lg">
               <img src="/assets/icons/comment.svg" alt="Comments" className="w-4 h-4" />
               <p>{comments?.length || 0} Comments</p>
             </span>
           </div>
-
           {renderComments()}
-
         </div>
-
-        
       </motion.div>
 
       {isDialogOpen && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 sm:p-8">
-          <div className="relative bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg">
+        <motion.div
+          className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-75 z-50 p-4 sm:p-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+        >
+          <motion.div
+            className="relative bg-white p-6 sm:p-8 rounded-lg shadow-2xl w-full max-w-md md:max-w-lg"
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
             <button
               onClick={handleDialogClose}
-              className="text-gray-500 hover:text-gray-700 absolute top-4 right-4"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
               aria-label="Close"
             >
               <svg
@@ -227,9 +227,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               </svg>
             </button>
             <div className="text-center">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">
-                Welcome Back!
-              </h3>
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Welcome Back!</h3>
               <p className="text-sm sm:text-base text-gray-600 mb-6">
                 Sign in to continue and access all features.
               </p>
@@ -260,8 +258,8 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
                 Sign In with Email
               </Button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
     </>
   );

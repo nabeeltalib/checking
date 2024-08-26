@@ -19,7 +19,7 @@ const RightSidebar = () => {
   };
 
   return (
-    <aside className="rightsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 fixed right-0 top-20">
+    <aside className="rightsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-black border-l border-dark-4 fixed right-0 top-20">
       <div className="flex flex-col gap-4 flex-grow">
         {rightSidebarLinks.map(link => (
           <NavLink
@@ -27,11 +27,10 @@ const RightSidebar = () => {
             to={link.route}
             className={({ isActive }) =>
               `flex items-center gap-4 p-2 rounded-lg transition-colors duration-200 ${
-                isActive
-                  ? 'bg-primary-500 text-light-1'
-                  : 'text-light-2 hover:bg-dark-4'
+                isActive ? 'bg-primary-500 text-light-1' : 'text-light-2 hover:bg-dark-4'
               }`
-            }>
+            }
+          >
             <img
               src={link.icon}
               alt={link.label}
@@ -42,7 +41,6 @@ const RightSidebar = () => {
         ))}
       </div>
       <div className="flex flex-col gap-4 mt-6 mb-24">
-        
         <div className="text-xs text-gray-400 text-center mt-4">
           <NavLink to="/privacypolicy" className="hover:text-white">
             Privacy Policy

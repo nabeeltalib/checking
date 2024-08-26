@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import './globals.css';
 
 import { AuthProvider } from "@/context/AuthContext";
 import { QueryProvider } from "@/lib/react-query/QueryProvider";
@@ -11,10 +10,10 @@ import { SuggestionProvider } from "@/context/SuggestionContext";
 import { CollaborationProvider } from "@/context/CollaborationContext";
 
 import App from "./App";
+import './globals.css';
 
-const AppWrapper = () => {
+const AppWrapper: React.FC = () => {
   useEffect(() => {
-    // Hide the loader after the app has mounted
     const hideLoader = () => {
       const loader = document.getElementById('loader');
       if (loader) {
@@ -22,7 +21,6 @@ const AppWrapper = () => {
       }
     };
 
-    // Use a slight delay to ensure all components have had a chance to render
     const timer = setTimeout(hideLoader, 1000); // Adjust the delay as needed
 
     return () => clearTimeout(timer);

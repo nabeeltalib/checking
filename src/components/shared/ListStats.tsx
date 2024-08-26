@@ -54,13 +54,22 @@ const ListStats = ({
     }
   }, [currentUser, list.$id]);
 
-  const handleLikeList = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
+  const handleLikeList = async (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
     e.stopPropagation();
-    const newLikes = likes.includes(userId)
-      ? likes.filter((Id) => Id !== userId)
-      : [...likes, userId];
-    setLikes(newLikes);
-    likeList({ listId: list.$id, likesArray: newLikes });
+    try {
+      const newLikes = likes.includes(userId)
+        ? likes.filter((Id) => Id !== userId)
+        : [...likes, userId];
+      setLikes(newLikes);
+      likeList({ listId: list.$id, likesArray: newLikes });
+    } catch (error) {
+      console.error("Failed to like the list:", error);
+      toast({
+        title: "Error",
+        description: "Failed to like the list.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSaveList = (e: any) => {
@@ -85,10 +94,6 @@ const ListStats = ({
   const toggleComments = () => {
     setIsCommentsExpanded(!isCommentsExpanded);
   };
-
-  const containerStyles = location.pathname.startsWith("/profile")
-    ? "w-full"
-    : "";
 
   const [newComment, setNewComment] = useState("");
   const { mutate: createComment } = useCreateComment();
@@ -178,76 +183,73 @@ const ListStats = ({
   };
 
   return (
-    <div
-  className={`bg-dark-4 flex justify-center items-center w-full ${backgroundColor} p-1 rounded-lg shadow-md`}>
-  
-  <div className="flex flex-row flex-wrap justify-center items-center gap-3 w-full max-w-xl">
-    <Button className="bg-dark-4 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg">
-      <img
-        src={
-          checkIsLiked(likes, userId)
-            ? "/assets/icons/liked.svg"
-            : "/assets/icons/like.svg"
-        }
-        alt="like"
-        width={20}
-        height={20}
-        onClick={handleLikeList}
-        className="cursor-pointer"
-      />
-      <p className={`${textSize} text-white text-center`}>{likes.length} Likes</p>
-    </Button>
+    <div className={`bg-dark-4 flex justify-center items-center w-full ${backgroundColor} p-1 rounded-lg shadow-md`}>
+      <div className="flex flex-row flex-wrap justify-center items-center gap-3 w-full max-w-xl">
+        <Button className="bg-dark-4 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg">
+          <img
+            src={
+              checkIsLiked(likes, userId)
+                ? "/assets/icons/liked.svg"
+                : "/assets/icons/like.svg"
+            }
+            alt="like"
+            width={20}
+            height={20}
+            onClick={handleLikeList}
+            className="cursor-pointer"
+          />
+          <p className={`${textSize} text-white text-center`}>{likes.length} Likes</p>
+        </Button>
 
-    <Button
-      className="bg-dark-4 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg"
-      onClick={handleSaveList}>
-      <img
-        src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
-        alt="save"
-        width={20}
-        height={20}
-        className="cursor-pointer"
-      />
-      <p className={`${textSize} text-white text-center`}>
-        {isSaved ? "Saved" : "Save"}
-      </p>
-    </Button>
+        <Button
+          className="bg-dark-4 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg"
+          onClick={handleSaveList}>
+          <img
+            src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
+            alt="save"
+            width={20}
+            height={20}
+            className="cursor-pointer"
+          />
+          <p className={`${textSize} text-white text-center`}>
+            {isSaved ? "Saved" : "Save"}
+          </p>
+        </Button>
 
-    <Button
-      className="bg-dark-4 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg"
-      onClick={toggleComments}>
-      <img
-        src="/assets/icons/chat.svg"
-        alt="comment"
-        width={20}
-        height={20}
-      />
-      <p className={`${textSize} text-white text-center`}>
-        {comments?.length} Comment
-      </p>
-    </Button>
+        <Button
+          className="bg-dark-4 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg"
+          onClick={toggleComments}>
+          <img
+            src="/assets/icons/chat.svg"
+            alt="comment"
+            width={20}
+            height={20}
+          />
+          <p className={`${textSize} text-white text-center`}>
+            {comments?.length} Comment
+          </p>
+        </Button>
 
-    <Button
-      className="bg-dark-4 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg"
-      onClick={handleRemix}>
-      <img src="/assets/icons/remix2.svg" alt="remix" width={20} height={20} />
-      <p className={`${textSize} text-white text-center`}>Remix</p>
-    </Button>
+        <Button
+          className="bg-dark-4 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg"
+          onClick={handleRemix}>
+          <img src="/assets/icons/remix2.svg" alt="remix" width={20} height={20} />
+          <p className={`${textSize} text-white text-center`}>Remix</p>
+        </Button>
 
-    <Button
-      onClick={() => navigate(`/update-list/${list?.$id}`)}
-      className="bg-dark-4 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg">
-      <img
-        src="/assets/icons/remix.svg"
-        alt="collaborate"
-        width={20}
-        height={20}
-      />
-      <p className={`${textSize} text-white text-center`}>Collaborate</p>
-    </Button>
-  </div>
-</div>
-
+        <Button
+          onClick={() => navigate(`/update-list/${list?.$id}`)}
+          className="bg-dark-4 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg">
+          <img
+            src="/assets/icons/remix.svg"
+            alt="collaborate"
+            width={20}
+            height={20}
+          />
+          <p className={`${textSize} text-white text-center`}>Collaborate</p>
+        </Button>
+      </div>
+    </div>
   );
 };
 

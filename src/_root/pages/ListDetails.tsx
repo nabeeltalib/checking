@@ -206,17 +206,25 @@ const ListDetails: React.FC = () => {
             ))}
         </div>
         
-        <h1 className="text-xl sm:text-3xl flex justify-between font-bold mb-4 text-center sm:text-left">
-          <span className="text-wrap text-primary-500 ml-2">{list.Title}</span>
+        <div className="text-slate-400 text-center text-xl sm:text-3xl font-thin px-4 py-2 rounded-t-lg">
+          RANKING FOR
+        </div>
+        <h1 className="text-xl sm:text-3xl flex justify-between font-bold mb-4 text-center sm:text-left text-white px-4 py-2">
+          <span className="text-wrap ml-2">{list.Title}</span>
           <span>
-            {(isOwnProfile || isCollaborator) && <Button onClick={handleEmbed}>add to embed</Button>}
+            {(isOwnProfile || isCollaborator) && (
+              <Button className="bg-white text-blue-500 hover:bg-gray-100" onClick={handleEmbed}>
+                add to embed
+              </Button>
+            )}
           </span>
         </h1>
         {list.Description && (
-          <p className="text-sm sm:text-base font-thin mb-6 text-gray-100 text-center sm:text-left">
+          <p className="text-sm sm:text-base font-thin mb-6 text-gray-100 text-center sm:text-left px-4">
             {list.Description}
           </p>
         )}
+
 
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {visibleItems.map((item: any, index: number) => (
@@ -246,7 +254,7 @@ const ListDetails: React.FC = () => {
             <span
               key={`${tag}${index}`}
               onClick={() => navigate(`/categories/${tag}`)}
-              className="bg-gray-800 text-white px-2 py-1 rounded-full text-xs cursor-pointer shadow-md">
+              className="bg-blue-800 text-blue-200 px-2 py-1 rounded-full text-xs cursor-pointer shadow-md">
               #{tag}
             </span>
           ))}
@@ -257,10 +265,10 @@ const ListDetails: React.FC = () => {
         </p>
 
         {list.locations.length > 0 && (
-          <div className="text-sm sm:text-base text-blue-200 mb-4">
+          <div className="text-sm sm:text-base mb-4">
             <strong>Locations: </strong>
             {list.locations.map((location: any, index: number) => (
-              <span key={index} className="mr-2">
+              <span key={index} className="mr-2 bg-gray-800 text-white px-3 py-1 rounded-full  shadow-sm">
                 {location}
               </span>
             ))}
@@ -268,10 +276,10 @@ const ListDetails: React.FC = () => {
         )}
 
         {list.timespans.length > 0 && (
-          <div className="text-sm sm:text-base text-blue-200 mb-4">
+          <div className="text-sm sm:text-base mb-4">
             <strong>Timespans: </strong>
             {list.timespans.map((timespan: any, index: number) => (
-              <span key={index} className="mr-2">
+              <span key={index} className="mr-2 bg-gray-800 text-white px-3 py-1 rounded-full  shadow-sm">
                 {timespan}
               </span>
             ))}

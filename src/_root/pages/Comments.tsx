@@ -162,7 +162,7 @@ const Comments: React.FC = () => {
                 ))
               ) : (
                 <p className="text-gray-500 dark:text-gray-400">
-                  Be the first to comment!
+                  What do you think? Comment below!
                 </p>
               )}
             </div>
