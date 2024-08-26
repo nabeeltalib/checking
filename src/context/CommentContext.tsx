@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback, useMemo } from "react";
 import { IComment } from "@/types";
 
 interface CommentContextProps {
@@ -13,24 +13,31 @@ const CommentContext = createContext<CommentContextProps | undefined>(undefined)
 export const CommentProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [comments, setComments] = useState<IComment[]>([]);
 
-  const addComment = (comment: IComment) => {
+  const addComment = useCallback((comment: IComment) => {
     setComments((prevComments) => [...prevComments, comment]);
-  };
+  }, []);
 
-  const updateComment = (id: string, updatedComment: Partial<IComment>) => {
+  const updateComment = useCallback((id: string, updatedComment: Partial<IComment>) => {
     setComments((prevComments) =>
       prevComments.map((comment) =>
         comment.id === id ? { ...comment, ...updatedComment } : comment
       )
     );
-  };
+  }, []);
 
-  const deleteComment = (id: string) => {
+  const deleteComment = useCallback((id: string) => {
     setComments((prevComments) => prevComments.filter((comment) => comment.id !== id));
-  };
+  }, []);
+
+  const contextValue = useMemo(() => ({
+    comments,
+    addComment,
+    updateComment,
+    deleteComment,
+  }), [comments, addComment, updateComment, deleteComment]);
 
   return (
-    <CommentContext.Provider value={{ comments, addComment, updateComment, deleteComment }}>
+    <CommentContext.Provider value={contextValue}>
       {children}
     </CommentContext.Provider>
   );

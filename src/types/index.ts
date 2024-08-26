@@ -15,6 +15,7 @@ export type IUpdateUser = {
   imageUrl: URL | string;
   file: File[];
 };
+
 export type INewList = Omit<
   IList,
   '$id' | '$createdAt' | '$updatedAt' | 'userId'
@@ -41,15 +42,14 @@ export interface IList extends Models.Document {
     imageUrl: string;
   };
   likes: string[];
-  comments: any[];
-  createdAt: string;
+  comments: IComment[];
+  createdAt: Date;
+  updatedAt: Date;
   bookmarkCount: number;
   sharesCount: number;
   views: number;
   aiScore?: number;
   suggestions?: ISuggestion[];
-  CreatedAt?: Date;
-  UpdatedAt?: Date;
   Public: boolean;
 }
 
@@ -72,15 +72,15 @@ export type INewUser = {
 };
 
 export interface IListItem {
-  id:string,
-  title:string,
-  description:string
+  id: string;
+  title: string;
+  description: string;
 }
 
 export type ICategoryItem = {
   id: string;
   name: string;
-  // Add other properties specific to list items
+  // Add other properties specific to list items if needed
 };
 
 export type IContextType = {
@@ -96,8 +96,6 @@ export type IContextType = {
   setNotifications: React.Dispatch<React.SetStateAction<INotification[]>>;
 };
 
-// New types for Comments, Suggestions, and Collaborations
-
 export type INewComment = Omit<IComment, 'id' | 'createdAt'>;
 
 export type IComment = {
@@ -105,7 +103,7 @@ export type IComment = {
   listId: string;
   userId: string;
   content: string;
-  createdAt: string;
+  createdAt: Date;
 };
 
 export type ISuggestion = {
@@ -146,15 +144,7 @@ export type Sentiment = 'positive' | 'negative' | 'neutral';
 export interface SentimentAnalysisResult {
   sentiment: Sentiment;
 }
-export interface IAICategory {
-  id: string;
-  name: string;
-}
 
-export interface IAISuggestion {
-  id: string;
-  suggestion: string;
-}
 export interface IFriendRequest {
   $id: string;
   userId: string;
@@ -168,13 +158,5 @@ export interface INotification {
   type: 'friend_request' | 'list_like' | 'list_comment';
   message: string;
   read: boolean;
-  createdAt: string;
-}
-export interface INotification {
-  $id: string;
-  userId: string;
-  type: 'friend_request' | 'list_like' | 'list_comment';
-  message: string;
-  read: boolean;
-  createdAt: string;
+  createdAt: Date;
 }

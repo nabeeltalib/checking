@@ -18,35 +18,18 @@ export const sidebarLinks = [
     icon:"/assets/icons/explore.svg"
   },
   {
+    imgURL: "/assets/icons/trending.svg",
+    route: "/trending",
+    label: "Trending",
+    icon:"/assets/icons/trending.svg"
+  },
+  {
     imgURL: "/assets/icons/tags.svg",
     route: "/categories/no-value",
     label: "Tags",
     icon:"/assets/icons/tags.svg"
   }, 
-  {
-    imgURL: "/assets/icons/bookmark.svg",
-    route: "/saved",
-    label: "Bookmark",
-    icon:"/assets/icons/bookmark.svg"
-  },   
-  // {
-  //   imgURL: "/assets/icons/collabrative.svg",
-  //   route: "/collaborations",
-  //   label: "collaborative",
-  //   icon:"/assets/icons/collabrative.svg"
-  // },  
-  {
-    imgURL: "/assets/icons/people.svg",
-    route: "/listfromfriends",
-    label: "Friends",
-    icon:"/assets/icons/people.svg"
-  },  
-  {
-    imgURL: "/assets/icons/collab.svg",
-    route: "/userlists",
-    label: "Collaboration",
-    icon:"/assets/icons/collab.svg"
-  },  
+  
   {
     imgURL: "/assets/icons/list.svg",
     route: "/comprehensive-leaderboard",
@@ -140,34 +123,52 @@ export const bottombarLinks2 = [
 ];
 
 export const rightSidebarLinks = [
+   {
+    imgURL: "/assets/icons/bookmark.svg",
+    route: "/saved",
+    label: "Bookmarks",
+    icon:"/assets/icons/bookmark.svg"
+  },   
+  // {
+  //   imgURL: "/assets/icons/collabrative.svg",
+  //   route: "/collaborations",
+  //   label: "collaborative",
+  //   icon:"/assets/icons/collabrative.svg"
+  // },  
   {
-    imgURL: "/assets/icons/trending.svg",
-    route: "/trending",
-    label: "Trending",
-    icon:"/assets/icons/trending.svg"
-  },
+    imgURL: "/assets/icons/people.svg",
+    route: "/listfromfriends",
+    label: "Friends",
+    icon:"/assets/icons/people.svg"
+  },  
   {
-    imgURL: "/assets/icons/recommended.svg",
-    route: "/recommended",
-    label: "Recommended",    
-    icon:"/assets/icons/recommended.svg"
-  },
-  {
-    imgURL: "/assets/icons/activity.svg",
-    route: "/userActivity",
-    label: "Activity",
-    icon:"/assets/icons/activity.svg"
-  },
+    imgURL: "/assets/icons/collab.svg",
+    route: "/userlists",
+    label: "Collaboration",
+    icon:"/assets/icons/collab.svg"
+  },  
+  //{
+  //  imgURL: "/assets/icons/recommended.svg",
+  //  route: "/recommended",
+  //  label: "Recommended",    
+   // icon:"/assets/icons/recommended.svg"
+  //},
+  //{
+  //  imgURL: "/assets/icons/activity.svg",
+   // route: "/userActivity",
+   // label: "Activity",
+   // icon:"/assets/icons/activity.svg"
+  //},
   {
     imgURL: "/assets/icons/profile.svg",
     route: "/profile/profile",
-    label: "Profile",
+    label: "My Profile",
     icon:"/assets/icons/profile.svg"
   },
   {
     imgURL: "/assets/icons/user-embed.svg",
     route: "/embed",
-    label: "View Embed List's",
+    label: "Embed Your List",
     icon:"/assets/icons/embed.svg"
   },
 ];

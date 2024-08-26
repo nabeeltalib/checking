@@ -6,20 +6,20 @@ import * as z from "zod";
 export const SignupValidation = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   username: z.string().min(2, { message: "Username must be at least 2 characters." }),
-  email: z.string().email(),
+  email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
 });
 
 export const SigninValidation = z.object({
-  email: z.string().email(),
+  email: z.string().email({ message: "Invalid email address." }),
   password: z.string().min(8, { message: "Password must be at least 8 characters." }),
 });
 
 export const ProfileValidation = z.object({
-  file: z.custom<File[]>(),
+  file: z.custom<File[]>().optional(),
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   username: z.string().min(2, { message: "Username must be at least 2 characters." }),
-  email: z.string().email(),
+  email: z.string().email({ message: "Invalid email address." }),
   bio: z.string().max(500, { message: "Bio must not exceed 500 characters." }).optional(),
 });
 
@@ -34,7 +34,7 @@ export const ListItemValidation = z.object({
 export const ListValidation = z.object({
   userId: z.string(),
   title: z.string().min(1, { message: "Title is required." }).max(100, { message: "Maximum 100 characters." }),
-  description: z.string().min(5, { message: "Minimum 5 characters." }).max(1000, { message: "Maximum 1,000 characters" }),
+  description: z.string().min(5, { message: "Minimum 5 characters." }).max(1000, { message: "Maximum 1,000 characters." }),
   items: z.array(ListItemValidation).min(1, { message: "At least one item is required." }).max(10, { message: "Maximum 10 items allowed." }),
   tags: z.array(z.string().max(30, { message: "Maximum 30 characters per tag." })).max(10, { message: "Maximum 10 tags allowed." }),
   aiScore: z.number().min(0).max(1).optional(),
@@ -56,7 +56,7 @@ export const SuggestionValidation = z.object({
   listId: z.string(),
   userId: z.string(),
   suggestedTitle: z.string().min(1, { message: "Title is required." }).max(100, { message: "Maximum 100 characters." }),
-  suggestedDescription: z.string().min(5, { message: "Minimum 5 characters." }).max(1000, { message: "Maximum 1,000 characters" }),
+  suggestedDescription: z.string().min(5, { message: "Minimum 5 characters." }).max(1000, { message: "Maximum 1,000 characters." }),
   suggestedItems: z.array(ListItemValidation).min(1, { message: "At least one item is required." }).max(10, { message: "Maximum 10 items allowed." }),
   status: z.string(),
 });

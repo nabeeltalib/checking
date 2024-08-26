@@ -7,6 +7,7 @@ import {
   useDeleteList,
   useGetUserById,
   useGetComments,
+  useCreateComment,
 } from "@/lib/react-query/queries";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/shared";
@@ -16,7 +17,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { createEmbedList, followUser, getConnection, shareList, UnFollow } from "@/lib/appwrite/api";
 import { Share2 } from "lucide-react";
-import Comment from "@/components/shared/Comment"; // Assuming you have a Comment component
+import Comment from "@/components/shared/Comment";
 
 const ListDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -25,24 +26,25 @@ const ListDetails: React.FC = () => {
   const { toast } = useToast();
   const { data: list, isLoading } = useGetListById(id || "");
   const { mutateAsync: deleteList, isLoading: isDeleting } = useDeleteList();
-  const { data: relatedLists, isLoading: isRelatedListsLoading } =
-    useGetRelatedLists(id || "");
-  const { data: listCreator, isLoading: isCreatorLoading } = useGetUserById(
-    list?.creator.$id || ""
-  );
-  const { data: comments } = useGetComments(id || ""); // Fetch comments for the list
-  const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const { data: relatedLists, isLoading: isRelatedListsLoading } = useGetRelatedLists(id || "");
+  const { data: listCreator, isLoading: isCreatorLoading } = useGetUserById(list?.creator.$id || "");
+  const { data: comments } = useGetComments(id || ""); 
+  const { mutate: createComment, isLoading: isCreatingComment } = useCreateComment();
 
+  const [newComment, setNewComment] = useState("");
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [connection, setConnection] = useState<any>(undefined);
+
   useEffect(() => {
-    const fetchData = async () => {
-      let list = await getListById(id);
-      let resp = await getConnection(list.creator.$id);
-      resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+    const fetchConnection = async () => {
+      if (listCreator?.$id) {
+        const resp = await getConnection(listCreator.$id);
+        setConnection(resp.length > 0 ? resp[0] : undefined);
+      }
     };
 
-    fetchData();
-  }, []);
+    fetchConnection();
+  }, [listCreator]);
 
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -88,34 +90,42 @@ const ListDetails: React.FC = () => {
     }
   };
 
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+
+    try {
+      await createComment({ listId: id!, userId: user.id, content: newComment });
+      setNewComment("");
+      toast({ title: "Comment added successfully", variant: "default" });
+    } catch (error) {
+      toast({ title: "Error adding comment", variant: "destructive" });
+    }
+  };
+
   if (isLoading || isCreatorLoading) return <Loader />;
   if (!list || !listCreator)
     return <div className="text-center text-light-1">List not found</div>;
 
-  let isOwnProfile = user.id === list.creator.$id;
-  let isFollowed = connection?.follower?.some(
-    (follow: any) => follow.$id === user.id
-  );
+  const isOwnProfile = user.id === list.creator.$id;
+  const isFollowed = connection?.follower?.some((follow: any) => follow.$id === user.id);
+
+  const updateConnection = async () => {
+    const resp = await getConnection(list.creator.$id);
+    setConnection(resp.length > 0 ? resp[0] : undefined);
+  };
 
   const handleFollow = async () => {
     setIsFollowLoading(true);
     await followUser(user.id, list.creator.$id);
-    let resp = await getConnection(list.creator.$id);
-    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
-    isFollowed = connection?.following?.some(
-      (follow: any) => follow.$id === id
-    );
+    await updateConnection();
     setIsFollowLoading(false);
   };
 
   const handleUnFollow = async () => {
     setIsFollowLoading(true);
     await UnFollow(user.id, list.creator.$id);
-    let resp = await getConnection(list.creator.$id);
-    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
-    isFollowed = connection?.following?.some(
-      (follow: any) => follow.$id === id
-    );
+    await updateConnection();
     setIsFollowLoading(false);
   };
 
@@ -136,7 +146,7 @@ const ListDetails: React.FC = () => {
     }
   };
 
-  let isCollaborator = list.users.some((collab:any) => collab.$id === user.id)
+  const isCollaborator = list.users.some((collab: any) => collab.$id === user.id);
 
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto bg-dark-2 rounded-lg shadow-md p-4 sm:p-6">
@@ -158,9 +168,7 @@ const ListDetails: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
           <div className="flex flex-col items-center sm:items-start">
             <img
-              src={
-                listCreator.ImageUrl || "/assets/icons/profile-placeholder.svg"
-              }
+              src={listCreator.ImageUrl || "/assets/icons/profile-placeholder.svg"}
               alt="creator"
               className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg"
             />
@@ -183,36 +191,25 @@ const ListDetails: React.FC = () => {
           {listCreator.Public &&
             (!isFollowed && !isOwnProfile ? (
               <Button
-                className="text-xs border-2 border-white text-white  px-2 sm:px-3 py-2 rounded-xl"
+                className="text-xs bg-primary-500 border-white text-white  px-2 sm:px-3 py-2 rounded-xl"
                 onClick={handleFollow}
                 disabled={isFollowLoading}>
-                {isFollowLoading ? (
-                  <Loader />
-                ) : (
-                  <span>Follow</span>
-                )}
+                {isFollowLoading ? <Loader /> : <span>Follow</span>}
               </Button>
-            ) : isOwnProfile ? (
-              ""
-            ) : (
+            ) : isOwnProfile ? null : (
               <Button
-                className="text-xs sm:text-sm bg-dark-4 text-gray-400 px-3 py-2 rounded-full"
+                className="border-2 text-xs sm:text-sm bg-dark-4 text-gray-400 px-3 py-2 rounded-xl"
                 onClick={handleUnFollow}
                 disabled={isFollowLoading}>
-                {isFollowLoading ? (
-                  <Loader />
-                ) : (
-                  <span>Unfollow</span>
-                )}
+                {isFollowLoading ? <Loader /> : <span>Unfollow</span>}
               </Button>
             ))}
         </div>
         
         <h1 className="text-xl sm:text-3xl flex justify-between font-bold mb-4 text-center sm:text-left">
-
           <span className="text-wrap text-primary-500 ml-2">{list.Title}</span>
           <span>
-                {(isOwnProfile || isCollaborator) && <Button onClick={handleEmbed}>add to embed</Button>}
+            {(isOwnProfile || isCollaborator) && <Button onClick={handleEmbed}>add to embed</Button>}
           </span>
         </h1>
         {list.Description && (
@@ -222,7 +219,7 @@ const ListDetails: React.FC = () => {
         )}
 
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          {visibleItems?.map((item: any, index: number) => (
+          {visibleItems.map((item: any, index: number) => (
             <li
               key={index}
               className="p-4 bg-dark-3 rounded-lg shadow-md flex justify-between items-center hover:shadow-lg transition-shadow">
@@ -245,7 +242,7 @@ const ListDetails: React.FC = () => {
         )}
 
         <div className="flex flex-wrap gap-2 mb-6 text-center sm:text-left">
-          {list?.Tags?.map((tag: string, index: number) => (
+          {list.Tags?.map((tag: string, index: number) => (
             <span
               key={`${tag}${index}`}
               onClick={() => navigate(`/categories/${tag}`)}
@@ -284,10 +281,10 @@ const ListDetails: React.FC = () => {
         <ListStats 
           list={list} 
           userId={user.id} 
-          textSize="text-xs" // Adjust text size as needed
-          backgroundColor="" // Adjust background color as needed
+          textSize="text-xs" 
+          backgroundColor="" 
         />
-        {list?.creator?.$id === user.id && (
+        {isOwnProfile && (
           <div className="flex gap-4 mt-6 justify-center sm:justify-start">
             <Button
               onClick={() => navigate(`/update-list/${list?.$id}`)}
@@ -302,17 +299,30 @@ const ListDetails: React.FC = () => {
             </Button>
           </div>
         )}
-        {/* Render the first two comments */}
+        
         <div className="mt-6">
           <h3 className="text-sm font-semibold text-gray-500 mb-2"> Comments:</h3>
-          {comments && comments.slice(0, 2).map((comment, index) => (
+          <form onSubmit={handleAddComment} className="mb-4">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              className="w-full p-2  rounded-lg bg-gray-800 dark:text-white"
+            />
+            <button
+              type="submit"
+              className="mt-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600"
+              disabled={isCreatingComment}
+            >
+              {isCreatingComment ? <Loader /> : "Post Comment"}
+            </button>
+          </form>
+          {comments?.map((comment, index) => (
             <div key={index} className="mb-4">
               <Comment comment={comment} />
             </div>
           ))}
         </div>
-
-        
       </div>
 
       <div className="p-4 sm:p-6">

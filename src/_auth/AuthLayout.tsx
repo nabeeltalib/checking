@@ -1,9 +1,24 @@
 import { Outlet, Navigate } from "react-router-dom";
-
 import { useUserContext } from "@/context/AuthContext";
 
 export default function AuthLayout() {
-  const { isAuthenticated } = useUserContext();
+  const { isAuthenticated, isLoading, error } = useUserContext(); // Assuming these states are available
+
+  if (isLoading) {
+    return (
+      <section className="flex flex-1 justify-center items-center flex-col py-10">
+        <p>Loading...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="flex flex-1 justify-center items-center flex-col py-10">
+        <p>Error: {error.message || "Something went wrong. Please try again."}</p>
+      </section>
+    );
+  }
 
   return (
     <>

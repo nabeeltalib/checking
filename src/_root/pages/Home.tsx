@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useUserContext } from "@/context/AuthContext";
 import { useGenerateListIdea, useGetInfiniteLists } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
@@ -35,14 +35,21 @@ const Home: React.FC = () => {
   };
 
   const [connection, setConnection] = useState<any>(undefined);
+  
   useEffect(() => {
     const fetchData = async () => {
-      let resp = await getConnection(user.id);
-      resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+      try {
+        let resp = await getConnection(user.id);
+        setConnection(resp.length > 0 ? resp[0] : undefined);
+      } catch (error) {
+        console.error('Error fetching connection:', error);
+      }
     };
 
-    fetchData();
-  }, []);
+    if (user?.id) {
+      fetchData();
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     if (inView && hasNextPage) {
@@ -54,26 +61,21 @@ const Home: React.FC = () => {
     setSortOption(e.target.value);
   };
 
-  const sortLists = (lists: Models.Document[]) => {
+  const sortLists = useCallback((lists: Models.Document[]) => {
     return [...lists].sort((a, b) => {
-      if (sortOption === "category") {
-        const categoryA = a.Categories && a.Categories.length > 0 ? a.Categories[0] : '';
-        const categoryB = b.Categories && b.Categories.length > 0 ? b.Categories[0] : '';
-        if (!categoryA && !categoryB) return 0;
-        if (!categoryA) return 1;
-        if (!categoryB) return -1;
-        return categoryA.localeCompare(categoryB);
-      } else if (sortOption === "tags") {
-        const tagA = a.Tags && a.Tags.length > 0 ? a.Tags[0] : '';
-        const tagB = b.Tags && b.Tags.length > 0 ? b.Tags[0] : '';
-        if (!tagA && !tagB) return 0;
-        if (!tagA) return 1;
-        if (!tagB) return -1;
-        return tagA.localeCompare(tagB);
-      }
-      return 0;
+      const getCategoryOrTag = (item: Models.Document, field: 'Categories' | 'Tags') => {
+        return item[field] && item[field].length > 0 ? item[field][0] : '';
+      };
+
+      const aValue = sortOption === 'category' ? getCategoryOrTag(a, 'Categories') : getCategoryOrTag(a, 'Tags');
+      const bValue = sortOption === 'category' ? getCategoryOrTag(b, 'Categories') : getCategoryOrTag(b, 'Tags');
+
+      if (!aValue && !bValue) return 0;
+      if (!aValue) return 1;
+      if (!bValue) return -1;
+      return aValue.localeCompare(bValue);
     });
-  };
+  }, [sortOption]);
 
   if (isErrorLists) {
     toast({ title: "Something went wrong.", variant: "destructive" });
@@ -82,43 +84,17 @@ const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-full items-center common-container">
-
-        <div className="text-wrap text-lg md:text-3xl text-gray-300 flex flex-col md:flex-row items-center gap-2 md:gap-4 mb-2 font-base" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+      <div className="text-wrap text-lg md:text-3xl text-gray-300 flex flex-col md:flex-row items-center gap-2 md:gap-4 mb-2 font-base" style={{ fontFamily: "'Permanent Marker', cursive" }}>
         Discover Top Lists From Your World {user.name || ""}        
-          {user && (
-            <div className="text-xs text-light-3 flex flex-col md:flex-row items-center">
-              <span>{connection?.follower?.length || 0} followers</span>
-              <span className="hidden md:inline mx-2">•</span>
-              <span>{connection?.following?.length || 0} following</span>
-            </div>
-          )}
-        </div>
-
-      
-      {/*<div className="w-full max-w-5xl bg-dark-3 rounded-lg p-6 shadow-lg">
-        <h2 className="font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-          Share Your Best
-        </h2>
-        <button
-          onClick={handleGenerateIdea}
-          className="bg-primary-500 text-light-1 px-4 py-2 rounded-md mt-2"
-          disabled={isGeneratingIdea}
-        >
-          {isGeneratingIdea ? "Generating..." : "Generate List Idea"}
-        </button>
-        {isGeneratingIdea ? (
-          <div className="mt-4 p-4 bg-dark-4 rounded-lg">
-            <Loader />
-          </div>
-        ) : listIdea && (
-          <div className="mt-4 p-4 bg-dark-4 rounded-lg">
-            <p className="text-light-1">{listIdea.map((list: any, index: number) => (
-              <p className='m' key={index}>{list}</p>
-            ))}</p>
+        {user && (
+          <div className="text-xs text-light-3 flex flex-col md:flex-row items-center">
+            <span>{connection?.follower?.length || 0} followers</span>
+            <span className="hidden md:inline mx-2">•</span>
+            <span>{connection?.following?.length || 0} following</span>
           </div>
         )}
-      </div>*/}
-      
+      </div>
+
       <div className="flex flex-col gap-4 max-w-5xl w-full">
         <h1 className="h3-light md:h2-light text-center w-full">Explore Rankings on Anything and Everything</h1>
         <div className="mb-2 flex justify-between">
@@ -141,7 +117,7 @@ const Home: React.FC = () => {
               <React.Fragment key={pageIndex}>
                 {sortLists(page.documents).map((document: Models.Document) => {
                   const list = document as unknown as IList;
-                  return user.id ? (
+                  return user?.id ? (
                     <ListCard2 key={list.$id} list={list} />
                   ) : (
                     <ListCard key={list.$id} list={list} />

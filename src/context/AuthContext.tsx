@@ -17,7 +17,7 @@ export const INITIAL_USER: IUser = {
 interface IAuthContext {
   user: IUser;
   isLoading: boolean;
-  setUser: React.Dispatch<React.SetStateAction<any>>;
+  setUser: React.Dispatch<React.SetStateAction<IUser>>;
   isAuthenticated: boolean;
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
   checkAuthUser: () => Promise<boolean>;
@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const currentAccount = await getCurrentUser();
-      
+
       if (currentAccount) {
         const curatedList = await getUserLists(currentAccount.$id);
         setUser({
@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return false;
     } catch (error) {
-      console.log("Error checking auth user:", error);
+      console.error("Error checking auth user:", error);
       return false;
     } finally {
       setIsLoading(false);
@@ -76,8 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle();
-      // The user will be redirected to Google's sign-in page.
-      // After successful sign-in, they'll be redirected back to our app.
+      // Google sign-in will handle redirection
     } catch (error) {
       console.error("Error initiating Google sign-in:", error);
     }
@@ -85,24 +84,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const initAuth = async () => {
+      setIsLoading(true);
       try {
         const session = await account.getSession("current");
         if (session) {
           await checkAuthUser();
-        } else {
-          const isCallbackUrl = location.search.includes("userId");
-          if (!isCallbackUrl && location.pathname !== '/sign-up' && location.pathname !== '/sign-in') {
-            navigate("/sign-in");
-          }
+        } else if (
+          !location.search.includes("userId") &&
+          !["/sign-up", "/sign-in"].includes(location.pathname)
+        ) {
+          navigate("/sign-in");
         }
       } catch (error) {
-      // to not through errors on guest users
-        if (error.code === 401) {
-          return null;
+        if (error.code !== 401) {
+          console.error("Error initializing auth:", error);
         }
-        console.log("Error initializing auth:", error);
       } finally {
-        setIsLoading(false);  
+        setIsLoading(false);
       }
     };
 
@@ -112,16 +110,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const handleAuthRedirect = async () => {
       const urlParams = new URLSearchParams(window.location.search);
-      const userId = urlParams.get('userId');
-      
+      const userId = urlParams.get("userId");
+
       if (userId) {
-        // Clear the URL parameters
         window.history.replaceState({}, document.title, window.location.pathname);
-        
-        // Check if the user is authenticated
+
         const isLoggedIn = await checkAuthUser();
         if (isLoggedIn) {
-          navigate('/'); // or wherever you want to redirect after successful login
+          navigate("/");
         }
       }
     };

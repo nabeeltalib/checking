@@ -21,6 +21,8 @@ const requiredEnvVars = [
   'VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID',
   'VITE_APPWRITE_NOTIFICATIONS_COLLECTION_ID',
   'VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID',
+  'VITE_EMBED_LIST_COLLECTION_ID',
+  'VITE_APPWRITE_GENERATE_LIST_ITEMS_FUNCTION_ID',
 ];
 
 const missingEnvVars = requiredEnvVars.filter(varName => !import.meta.env[varName]);
@@ -476,8 +478,6 @@ export async function getUserLists(userId?: string) {
   }
 }
 
-
-
 export async function getCuratedList(userId: string): Promise<IListItem[]> {
   try {
     const lists = await databases.listDocuments(
@@ -504,9 +504,6 @@ export async function getCuratedList(userId: string): Promise<IListItem[]> {
 // ============================================================
 // CATEGORY
 // ============================================================
-
-
-
 
 // ============================================================
 // USER
@@ -543,7 +540,6 @@ export async function getUsers(limit?: number) {
     return null;
   }
 }
-
 
 export async function getUserById(userId: any) {
   try {
@@ -808,7 +804,6 @@ export async function updateCollaboration(collaborationId: string, status: strin
   }
 }
 
-
 export async function getCategories(): Promise<{ id: string; name: string }[]> {
   try {
     const response = await databases.listDocuments(
@@ -824,6 +819,7 @@ export async function getCategories(): Promise<{ id: string; name: string }[]> {
     return [];
   }
 }
+
 export async function searchLists(query: string): Promise<any[]> {
   try {
     const response = await functions.createExecution(
@@ -858,11 +854,11 @@ export const shareList = async (listId: string): Promise<string> => {
   try {
     // Check if a shared link already exists for this list
     const existingLinks = await databases.listDocuments(
-      "your_database_id",
-      "shared_links",
+      appwriteConfig.databaseId,
+      appwriteConfig.sharedLinksCollectionId,
       [
-        databases.Query.equal("listId", listId),
-        databases.Query.greaterThan("expiresAt", new Date().toISOString())
+        Query.equal("listId", listId),
+        Query.greaterThan("expiresAt", new Date().toISOString())
       ]
     );
 
@@ -873,8 +869,8 @@ export const shareList = async (listId: string): Promise<string> => {
 
     // If no valid shared link exists, create a new one
     const sharedLink = await databases.createDocument(
-      "your_database_id",
-      "shared_links",
+      appwriteConfig.databaseId,
+      appwriteConfig.sharedLinksCollectionId,
       ID.unique(),
       {
         listId: listId,
@@ -889,6 +885,7 @@ export const shareList = async (listId: string): Promise<string> => {
     throw new Error("Failed to create shared link");
   }
 };
+
 // Fetch user's friends
 export const getUserFriends = async (userId: string) => {
   try {
@@ -931,6 +928,7 @@ export const getFriendsLists = async (userId: string) => {
     throw error;
   }
 };
+
 // Function to send a friend request
 export const sendFriendRequest = async (userId: string, friendId: string) => {
   try {

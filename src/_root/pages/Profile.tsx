@@ -23,107 +23,75 @@ import {
 const Profile: React.FC = () => {
   const { user } = useUserContext();
   const { profile } = useParams();
-  let id = profile ? (profile === "profile" ? user.id : profile) : "";
+  const id = profile === "profile" ? user?.id : profile || "";
 
   const navigate = useNavigate();
-
   const [activeTab, setActiveTab] = useState("lists");
-  const { data: currentUser, isLoading: isLoadingCurrentUser } = useGetUserById(
-    id || ""
-  );
-  const { data: userLists, isLoading: isLoadingLists } = useGetUserLists(
-    id || ""
-  );
-  const { data: friends, isLoading: isLoadingFriends } = useGetUserFriends(
-    id || ""
-  );
-  const { data: friendRequests, isLoading: isLoadingFriendRequests } =
-    useGetFriendRequests(user?.id || "");
-
   const [isCuratedExpanded, setCuratedExpanded] = useState(false);
   const [isSavedExpanded, setSavedExpanded] = useState(false);
   const [isCollaborativeExpanded, setCollaborativeExpanded] = useState(false);
-  const [sentRequest, setSentRequest] = useState<any>([]);
+  const [sentRequest, setSentRequest] = useState<any[]>([]);
   const [connection, setConnection] = useState<any>(undefined);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
 
-  const handleFriendRequest = async () => {
-    await sendFriendRequest(user.id, id);
-  };
+  const { data: currentUser, isLoading: isLoadingCurrentUser } = useGetUserById(id);
+  const { data: userLists, isLoading: isLoadingLists } = useGetUserLists(id);
+  const { data: friends, isLoading: isLoadingFriends } = useGetUserFriends(id);
+  const { data: friendRequests, isLoading: isLoadingFriendRequests } =
+    useGetFriendRequests(user?.id || "");
 
   useEffect(() => {
-    const fetch = async () => {
-      let resp = await getConnection(id);
-      resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+    const fetchConnection = async () => {
+      if (id) {
+        const resp = await getConnection(id);
+        setConnection(resp.length > 0 ? resp[0] : undefined);
+      }
     };
-
-    fetch();
+    fetchConnection();
   }, [id]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchSentRequests = async () => {
       const res = await getSentRequests();
-      setSentRequest(res);
-      setSentRequest((prevState: any) =>
-        prevState.filter((req: any) => req.userId.$id === user.id)
-      );
+      setSentRequest(res.filter((req: any) => req.userId.$id === user.id));
     };
+    fetchSentRequests();
+  }, [user.id]);
 
-    fetchData();
-  }, []);
-
-  let isAccepted = sentRequest.some(
-    (data: any) => data.friendId.$id === id && data.status === "accepted"
+  const isRequestSent = sentRequest.some(
+    (data: any) => data.friendId.$id === id
   );
 
   if (!id) return <div className="text-center text-light-1">User ID not found</div>;
+  if (isLoadingCurrentUser || isLoadingLists) return <Loader />;
+  if (!currentUser) return <div className="text-center text-light-1">User not found</div>;
 
-  if (isLoadingCurrentUser || isLoadingLists) {
-    return <Loader />;
-  }
+  const savedLists = currentUser.save?.map((savedItem: any) => ({
+    ...savedItem.list,
+    creator: savedItem.list.creator,
+  })) || [];
 
-  if (!currentUser) {
-    return <div className="text-center text-light-1">User not found</div>;
-  }
+  const isOwnProfile = currentUser.$id === user.id;
+  const isFollowed = connection?.follower?.some((follow: any) => follow.$id === user.id);
 
-  const collaborativeList: any = [];
-
-  // Correctly map saved lists with their respective creators
-  const savedLists = currentUser?.save
-    ? currentUser.save.map((savedItem: any) => ({
-        ...savedItem.list,
-        creator: savedItem.list.creator, // Correctly assign the creator from the saved item
-      }))
-    : [];
-
-  let isRequestSent = sentRequest?.some((data: any) => data.friendId.$id === id);
-  let isOwnProfile = currentUser.$id === user?.id;
-
-  let isFollowed = connection?.follower?.some(
-    (follow: any) => follow.$id === user.id
-  );
-
-  // Follower
   const handleFollow = async () => {
     setIsFollowLoading(true);
     await followUser(user.id, id);
-    let resp = await getConnection(id);
-    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
-    isFollowed = connection?.following?.some(
-      (follow: any) => follow.$id === id
-    );
+    const resp = await getConnection(id);
+    setConnection(resp.length > 0 ? resp[0] : undefined);
     setIsFollowLoading(false);
   };
 
   const handleUnFollow = async () => {
     setIsFollowLoading(true);
     await UnFollow(user.id, id);
-    let resp = await getConnection(id);
-    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
-    isFollowed = connection?.following?.some(
-      (follow: any) => follow.$id === id
-    );
+    const resp = await getConnection(id);
+    setConnection(resp.length > 0 ? resp[0] : undefined);
     setIsFollowLoading(false);
+  };
+
+  const handleFriendRequest = async () => {
+    await sendFriendRequest(user.id, id);
   };
 
   return (
@@ -148,78 +116,45 @@ const Profile: React.FC = () => {
               <span>{connection?.follower?.length || 0} followers</span>
               <span>{connection?.following?.length || 0} following</span>
               <span>{userLists?.length || 0} lists</span>
-              <span>
-                {currentUser.Public &&
-                  (!isOwnProfile && !isFollowed ? (
-                    <Button
-                      className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
-                      style={{ marginTop: "-10px" }}
-                      onClick={handleFollow}
-                      disabled={isFollowLoading}
-                    >
-                      {isFollowLoading ? (
-                        <div>
-                          <Loader />
-                        </div>
-                      ) : (
-                        <span>Follow</span>
-                      )}
-                    </Button>
-                  ) : isOwnProfile ? (
-                    ""
-                  ) : (
-                    <Button
-                      className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
-                      style={{ marginTop: "-10px" }}
-                      onClick={handleUnFollow}
-                      disabled={isFollowLoading}
-                    >
-                      {isFollowLoading ? (
-                        <div>
-                          <Loader />
-                        </div>
-                      ) : (
-                        <span>Unfollow</span>
-                      )}
-                    </Button>
-                  ))}
-              </span>
-            </div>
-            <div>
-              {connection?.follower?.length > 2 ? (
-                <span>
-                  followed by{" "}
-                  {connection?.follower
-                    ?.slice(0, 2)
-                    .map((user: any) => (
-                      <Link
-                        className="mr-2"
-                        to={`/profile/${user.$id}`}
-                        key={user.$id}
-                      >
-                        {user.Name}
-                      </Link>
-                    ))}{" "}
-                  +{connection.follower.length - 2} more
-                </span>
-              ) : (
-                ""
+              {currentUser.Public && (
+                !isOwnProfile && !isFollowed ? (
+                  <Button
+                    className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-xl"
+                    onClick={handleFollow}
+                    disabled={isFollowLoading}
+                  >
+                    {isFollowLoading ? <Loader /> : <span>Follow</span>}
+                  </Button>
+                ) : isOwnProfile ? null : (
+                  <Button
+                    className="border-2 text-white px-4 sm:px-6 py-2 rounded-xl"
+                    onClick={handleUnFollow}
+                    disabled={isFollowLoading}
+                  >
+                    {isFollowLoading ? <Loader /> : <span>Unfollow</span>}
+                  </Button>
+                )
               )}
             </div>
-            {!currentUser.Public &&
-              (!isOwnProfile && !isAccepted ? (
-                <Button
-                  className="mt-4 bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
-                  onClick={handleFriendRequest}
-                  disabled={isRequestSent}
-                >
-                  {isRequestSent ? "Request Sent" : "Send Friend Request"}
-                </Button>
-              ) : isOwnProfile ? (
-                ""
-              ) : (
-                <h3>Friend</h3>
-              ))}
+            {connection?.follower?.length > 2 && (
+              <span>
+                followed by{" "}
+                {connection.follower.slice(0, 2).map((user: any) => (
+                  <Link key={user.$id} to={`/profile/${user.$id}`} className="mr-2">
+                    {user.Name}
+                  </Link>
+                ))}{" "}
+                +{connection.follower.length - 2} more
+              </span>
+            )}
+            {!currentUser.Public && !isOwnProfile && !isRequestSent && (
+              <Button
+                className="mt-4 bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
+                onClick={handleFriendRequest}
+              >
+                {isRequestSent ? "Request Sent" : "Send Friend Request"}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -228,9 +163,7 @@ const Profile: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-2">
         <Button
           onClick={() => setActiveTab("lists")}
-          className={`tab-button ${
-            activeTab === "lists" ? "active" : ""
-          } flex gap-2`}
+          className={`tab-button ${activeTab === "lists" ? "active" : ""} flex gap-2`}
         >
           <img
             src="/assets/icons/list.svg"
@@ -242,9 +175,7 @@ const Profile: React.FC = () => {
         </Button>
         <Button
           onClick={() => setActiveTab("liked")}
-          className={`tab-button ${
-            activeTab === "liked" ? "active" : ""
-          } flex gap-2`}
+          className={`tab-button ${activeTab === "liked" ? "active" : ""} flex gap-2`}
         >
           <img
             src="/assets/icons/like.svg"
@@ -256,9 +187,7 @@ const Profile: React.FC = () => {
         </Button>
         <Button
           onClick={() => setActiveTab("friends")}
-          className={`tab-button ${
-            activeTab === "friends" ? "active" : ""
-          } flex gap-2`}
+          className={`tab-button ${activeTab === "friends" ? "active" : ""} flex gap-2`}
         >
           <img
             src="/assets/icons/people.svg"

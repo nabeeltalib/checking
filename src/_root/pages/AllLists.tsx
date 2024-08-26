@@ -6,7 +6,6 @@ import { useGetInfiniteLists, useGetAISuggestions } from "@/lib/react-query/quer
 import { useUserContext } from "@/context/AuthContext";
 import { IList } from "@/types";
 import { motion } from "framer-motion";
-import { Models } from "appwrite";
 import ListCard2 from "@/components/shared/ListCard2";
 
 const AllLists: React.FC = () => {
@@ -22,7 +21,7 @@ const AllLists: React.FC = () => {
     hasNextPage,
   } = useGetInfiniteLists();
 
-  const { data: aiSuggestions, isLoading: isLoadingAISuggestions } = useGetAISuggestions(user.id);
+  const { data: aiSuggestions } = useGetAISuggestions(user.id);
 
   useEffect(() => {
     if (inView && hasNextPage) {
@@ -41,9 +40,7 @@ const AllLists: React.FC = () => {
         Discover Rankings
       </h1>
       
-      {isLoadingAISuggestions ? (
-        <Loader />
-      ) : aiSuggestions && aiSuggestions.length > 0 ? (
+      {aiSuggestions && aiSuggestions.length > 0 && (
         <motion.div 
           className="mb-8"
           initial={{ opacity: 0, y: 20 }}
@@ -65,7 +62,7 @@ const AllLists: React.FC = () => {
             ))}
           </ul>
         </motion.div>
-      ) : null}
+      )}
 
       {isLoading && !lists ? (
         <Loader />
@@ -77,16 +74,14 @@ const AllLists: React.FC = () => {
           transition={{ duration: 0.5 }}
         >
           {lists?.pages.map((page, pageIndex) => (
-            <React.Fragment key={pageIndex}>
-              {page?.documents.map((document: Models.Document) => {
-                const list = document as unknown as IList;
-                return user.id ? (
-                  <ListCard2 key={list.$id} list={list} />
-                ) : (
-                  <ListCard key={list.$id} list={list} />
-                );
-              })}
-            </React.Fragment>
+            page?.documents.map((document: Models.Document) => {
+              const list = document as unknown as IList;
+              return user.id ? (
+                <ListCard2 key={list.$id} list={list} />
+              ) : (
+                <ListCard key={list.$id} list={list} />
+              );
+            })
           ))}
         </motion.div>
       )}

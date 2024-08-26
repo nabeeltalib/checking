@@ -137,10 +137,11 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
             className="cursor-pointer"
             onClick={handleDialogOpen} // Open dialog when clicking on title
           >
-            <h2 className="tracking-tighter	text-xs sm:text-sm font-light text-gray-400 italic mb-2">
+            {/*<h2 className="tracking-tighter	text-xs sm:text-sm font-light text-gray-400 italic mb-2">
               Ranking for
-              <span className="text-wrap text-sm sm:text-lg font-semibold text-primary-500 ml-1">{list.Title}</span>
-            </h2>
+            </h2>*/}              
+            <span className="text-wrap text-sm sm:text-base font-semibold text-primary-500 ml-1">{list.Title}</span>
+
           </div>
           <div className="block" aria-label={`View details of list titled ${list.Title}`}>
             <ol className="list-none mb-6 space-y-3">{renderListItems()}</ol>

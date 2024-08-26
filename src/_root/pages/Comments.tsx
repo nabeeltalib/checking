@@ -12,28 +12,44 @@ import { useToast } from "@/components/ui/use-toast";
 const Comments: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useUserContext();
-  const { data: comments, isLoading } = useGetComments(id!);
+  const { data: comments, isLoading, error } = useGetComments(id!);
   const { mutate: createComment } = useCreateComment();
   const [newComment, setNewComment] = useState("");
   const { mutate: analyzeSentiment, isLoading: isAnalyzingSentiment } =
     useAnalyzeSentiment();
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load comments.",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
+
   const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newComment.trim() === "") return;
 
     try {
-      await createComment({
+      const optimisticComment = {
+        $id: Date.now().toString(), // Temporary ID for optimistic update
+        userName: user.name,
+        userImageUrl: user.imageUrl || "/assets/icons/profile-placeholder.svg",
+        content: newComment,
+        sentiment: null,
+      };
+      setNewComment("");
+      createComment({
         listId: id!,
         userId: user.id,
         content: newComment,
       });
 
-      // Analyze sentiment of the new comment
       analyzeSentiment(newComment, {
         onSuccess: (sentiment) => {
-          console.log("Comment sentiment:", sentiment);
           toast({
             title: "Comment posted",
             description: `Your comment has been posted. Sentiment: ${sentiment}`,
@@ -45,8 +61,7 @@ const Comments: React.FC = () => {
                 : "secondary",
           });
         },
-        onError: (error) => {
-          console.error("Failed to analyze sentiment:", error);
+        onError: () => {
           toast({
             title: "Error",
             description: "Failed to analyze comment sentiment.",
@@ -54,10 +69,7 @@ const Comments: React.FC = () => {
           });
         },
       });
-
-      setNewComment("");
     } catch (error) {
-      console.error("Failed to create comment:", error);
       toast({
         title: "Error",
         description: "Failed to post comment.",
