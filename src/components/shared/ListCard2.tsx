@@ -231,13 +231,14 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
               </button>
             </div>
           </div>
-        )}
-        <div className="text-slate-400 text-center text-xl sm:text-2xl font-thin px-4 py-2 rounded-t-lg">
-          RANKING FOR
+        )}        
+        <div className="bg-dark-4 text-slate-700 text-center text-2xl sm:text-xl font-thin px-4 py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
+          Ranking For
         </div>
+
         <h2 className="tracking-tighter flex justify-between text-sm sm:text-base font-light text-gray-400 italic mb-2">
            
-          <span className="text-wrap text-xl sm:text-2xl font-semibold text-primary-500 ml-1">
+          <span className="text-wrap text-lg sm:text-xl font-semibold text-primary-500 ml-1">
             {list.Title}
           </span>
           <span>{manageList && <Button onClick={handleEmbed}>add to embed</Button>}</span>

@@ -129,11 +129,11 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               <Share2 size={24} />
             </button>
           </div>
-          <div className="text-slate-400 text-center text-xl sm:text-2xl font-thin px-4 py-2 rounded-t-lg">
-          RANKING FOR
+          <div className="bg-dark-4 text-slate-700 text-center text-2xl sm:text-xl font-thin px-4 py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
+          Ranking For
         </div>
         <div className="cursor-pointer">
-            <span className="text-wrap text-sm sm:text-base font-semibold text-primary-500 ml-1">
+            <span className="text-wrap text-sm sm:text-base font-semibold text-blue-300 ml-1">
               {list.Title}
             </span>
           </div>

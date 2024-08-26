@@ -206,18 +206,12 @@ const ListDetails: React.FC = () => {
             ))}
         </div>
         
-        <div className="text-slate-400 text-center text-xl sm:text-3xl font-thin px-4 py-2 rounded-t-lg">
-          RANKING FOR
+        <div className="bg-dark-4 text-slate-700 text-center text-2xl sm:text-3xl font-thin px-4 py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
+          Ranking For
         </div>
-        <h1 className="text-xl sm:text-3xl flex justify-between font-bold mb-4 text-center sm:text-left text-white px-4 py-2">
-          <span className="text-wrap ml-2">{list.Title}</span>
-          <span>
-            {(isOwnProfile || isCollaborator) && (
-              <Button className="bg-white text-blue-500 hover:bg-gray-100" onClick={handleEmbed}>
-                add to embed
-              </Button>
-            )}
-          </span>
+        <h1 className="text-base sm:text-2xl flex justify-between font-bold mb-4 text-center sm:text-left text-white px-4 py-2">
+          <span className="text-wrap text-blue-300 ml-2">{list.Title}</span>
+          
         </h1>
         {list.Description && (
           <p className="text-sm sm:text-base font-thin mb-6 text-gray-100 text-center sm:text-left px-4">
@@ -248,6 +242,43 @@ const ListDetails: React.FC = () => {
             {isExpanded ? "Show Less" : "Show More"}
           </button>
         )}
+      <div className="flex justify-between items-center">
+          <div className="ml-auto relative group flex items-center">
+            {(isOwnProfile || isCollaborator) && (
+              <>
+                <Button
+                  className="border-2 border-gray-700 text-xs text-blue-500 hover:bg-gray-200 mt-5"
+                  onClick={handleEmbed}
+                >
+                  Add to Embed
+                </Button>
+                <div className="relative group ml-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 text-gray-400 cursor-pointer"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-9 3a1 1 0 102 0v-2a1 1 0 10-2 0v2zM9 7a1 1 0 100 2 1 1 0 000-2z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <div className="w-44 absolute bottom-full left-1/2 transform -translate-x-1/2 -mb-2 hidden group-hover:block bg-dark-4 text-white text-xs rounded-md px-2 py-1">
+                    Click to add this list to your embed tab. You can then generate a code snippet to seamlessly integrate your list into any website.
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+     
+
+      
+
+
 
         <div className="flex flex-wrap gap-2 mb-6 text-center sm:text-left">
           {list.Tags?.map((tag: string, index: number) => (

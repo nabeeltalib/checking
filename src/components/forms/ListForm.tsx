@@ -56,10 +56,10 @@ const ListForm = ({ list, action, initialData }: any) => {
   const [categories, setCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
   const [timespans, setTimespans] = useState<string[]>([
-    "all-time",
-    "decade",
-    "year",
-    "week",
+    "All-time",
+    "Decade",
+    "This year",
+    "This week",
   ]);
   const [newTimespan, setNewTimespan] = useState("");
   const [locations, setLocations] = useState<string[]>([ "all-time",
@@ -380,7 +380,7 @@ const ListForm = ({ list, action, initialData }: any) => {
           render={({ field }) => (
             <FormItem>
               <div className="flex items-center">
-                <FormLabel>Give Your Ranking A Title*</FormLabel>
+                <FormLabel>What's your title?*</FormLabel>
                 <div className="relative group">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -394,14 +394,17 @@ const ListForm = ({ list, action, initialData }: any) => {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <div className="w-44 absolute bottom-full left-1/2 transform -translate-x-1/2 -mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded-md px-2 py-1">
+                  <div className="w-44 absolute bottom-full left-1/2 transform -translate-x-1/2 -mb-2 hidden group-hover:block bg-dark-3 text-white text-xs rounded-md px-2 py-1">
                     This is the main title for your list. Be specific and catchy!
                   </div>
                 </div>
-              </div>
+                
+              </div><div className="text-slate-500 text-left text-2xl sm:text-xl font-thin py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
+                Your Ranking For
+                </div>
               <FormControl>
                 <Input
-                  placeholder="Enter a title"
+                  placeholder="Enter a title e.g. Chicago HS Basketball Players, Innovations That Will Shape the Future"
                   {...field}
                   className="w-full bg-dark-3 text-light-1 border-none"
                 />
@@ -681,15 +684,20 @@ const ListForm = ({ list, action, initialData }: any) => {
                       <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-dark-2 text-light-1 border-none">
                         {categories
                           .filter((category) => !field.value.includes(category))
                           .map((category) => (
-                            <SelectItem key={category} value={category}>
+                            <SelectItem 
+                              key={category} 
+                              value={category}
+                              className="bg-dark-4 text-light-1 border-none"
+                            >
                               {category}
                             </SelectItem>
                           ))}
                       </SelectContent>
+
                     </Select> or
                     <Input
                       placeholder="Create new"
