@@ -62,7 +62,14 @@ const ListForm = ({ list, action, initialData }: any) => {
     "week",
   ]);
   const [newTimespan, setNewTimespan] = useState("");
-  const [locations, setLocations] = useState<string[]>([]);
+  const [locations, setLocations] = useState<string[]>([ "all-time",
+    "United States",
+    "Los Angeles",
+    "South America",
+    "Brooklyn",
+    "Hyde Park",
+    "Pace HS",
+  ]);
   const [newLocation, setNewLocation] = useState("");
   const [showDescription, setShowDescription] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -432,9 +439,9 @@ const ListForm = ({ list, action, initialData }: any) => {
                               </SelectItem>
                             ))}
                         </SelectContent>
-                      </Select>
+                      </Select> or
                       <Input
-                        placeholder="e.g. This year, 90s, All-time"
+                        placeholder="Create new e.g. 90s, GOAT"
                         value={newTimespan}
                         onChange={(e) => setNewTimespan(e.target.value)}
                         className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
@@ -497,10 +504,10 @@ const ListForm = ({ list, action, initialData }: any) => {
                                 {location}
                               </SelectItem>
                             ))}
-                        </SelectContent>
+                        </SelectContent>or
                       </Select>
                       <Input
-                        placeholder="e.g. New York, Europe, Worldwide"
+                        placeholder="Create new e.g. East, Worldwide"
                         value={newLocation}
                         onChange={(e) => setNewLocation(e.target.value)}
                         className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
@@ -683,9 +690,9 @@ const ListForm = ({ list, action, initialData }: any) => {
                             </SelectItem>
                           ))}
                       </SelectContent>
-                    </Select>
+                    </Select> or
                     <Input
-                      placeholder="New category"
+                      placeholder="Create new"
                       value={newCategory}
                       onChange={(e) => setNewCategory(e.target.value)}
                       className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none"

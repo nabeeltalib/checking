@@ -77,7 +77,7 @@ const CreateList: React.FC = () => {
         )}
 
         <div className="text-right space-y-2">
-          <p className="text-base text-blue-300">Need inspiration?</p>
+          <p className="italic text-base text-blue-300">Need inspiration?</p>
           <button
             className="bg-primary-500 text-sm text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors"
             onClick={handleGenerateIdea}
