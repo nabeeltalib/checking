@@ -28,8 +28,8 @@ const Topbar: React.FC = () => {
   }, [isSuccess, navigate]);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event:any) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
@@ -41,14 +41,10 @@ const Topbar: React.FC = () => {
     };
   }, []);
 
-  const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = (e:any) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      try {
-        await searchLists();
-      } catch (error) {
-        console.error("Search failed", error);
-      }
+      searchLists();
     }
   };
 
@@ -115,7 +111,7 @@ const Topbar: React.FC = () => {
           </div>
 
           {searchResults && (
-            <ul className="absolute bg-white text-black mt-2 rounded-lg shadow-lg w-full max-h-60 overflow-y-auto">
+            <ul className="absolute bg-white text-black mt-2 rounded-lg shadow-lg w-4/12 max-h-60 overflow-y-auto">
               {searchResults.pages.map((page) =>
                 page.map((list: any) => (
                   <li key={list.id} className="border-b last:border-b-0">
@@ -123,7 +119,7 @@ const Topbar: React.FC = () => {
                       to={`/lists/${list.id}`}
                       className="block px-4 py-2 hover:bg-gray-100"
                     >
-                      "{list.Title}"
+                      {list.Title}
                     </Link>
                   </li>
                 ))

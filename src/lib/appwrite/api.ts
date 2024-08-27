@@ -161,6 +161,7 @@ export async function saveUserToDB(user: {
 export async function signInWithGoogle() {
   try {
     const session = await account.createOAuth2Session('google');
+    
     return session;
   } catch (error) {
     console.error("Error signing in with Google:", error);
@@ -298,7 +299,7 @@ export async function getTrendingTags() {
       [Query.orderDesc('$createdAt'), Query.limit(10)]
     );
     return tags.documents
-      .map(doc => doc.tags)
+      .map(doc => doc.Tags)
       .flat()
       .slice(0, 10);
   } catch (error) {

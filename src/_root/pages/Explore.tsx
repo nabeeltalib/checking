@@ -120,7 +120,7 @@ const Explore: React.FC = () => {
             trendingTags.map((tag, i) => (
               <Link
                 key={i}
-                to={`/tags/${tag}`}
+                to={`/categories/${tag}`}
                 className="bg-dark-3 text-light-2 px-3 py-1 rounded-full hover:bg-primary-500 hover:text-light-1 transition-colors"
               >
                 #{tag}

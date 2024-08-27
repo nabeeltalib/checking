@@ -93,12 +93,8 @@ export const useSignOutAccount = () => {
 export const useSignInWithGoogle = () => {
   return useMutation({
     mutationFn: signInWithGoogle,
-    onError: (error) => {
-      console.error('Error with Google Sign-In:', error);
-      // Handle error (e.g., show a toast notification)
-    },
     onSuccess: () => {
-      // If needed, handle additional success logic here
+    "http://localhost:3000"
     },
   });
 };
