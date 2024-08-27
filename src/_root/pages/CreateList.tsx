@@ -62,7 +62,7 @@ const CreateList: React.FC = () => {
     <div className="flex flex-1 items-center justify-center py-10 px-6 min-h-screen bg-zinc-900">
       <div className="max-w-4xl w-full bg-zinc-800 rounded-xl p-8 shadow-lg space-y-6">
         <div>
-          <h2 className="font-extralight text-2xl text-left w-full mt-1" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+          <h2 className="text-orange-300 font-extralight text-3xl text-left w-full mt-1" style={{ fontFamily: "'Permanent Marker', cursive" }}>
             Create your own top list! What's your ranking for...anything!
           </h2>
           <p className="text-gray-400 text-sm mt-2">
@@ -79,7 +79,7 @@ const CreateList: React.FC = () => {
         <div className="text-right space-y-2">
           <p className="italic text-base text-blue-300">Need inspiration?</p>
           <button
-            className="bg-primary-500 text-sm text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors"
+            className="bg-primary-500 text-xs text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors"
             onClick={handleGenerateIdea}
             disabled={isGeneratingIdea}
           >
