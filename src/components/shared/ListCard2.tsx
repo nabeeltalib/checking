@@ -32,7 +32,8 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (list?.creator?.$id) {
+      if(list?.creator?.$id)
+      {
         let resp = await getConnection(list.creator.$id);
         resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
       }
