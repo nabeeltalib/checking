@@ -65,10 +65,10 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     return items.slice(0, 5).map((item, index) => (
       <li
         key={index}
-        className="flex items-center mb-2 cursor-pointer"
+        className="flex items-center mb-2 cursor-pointer bg-dark-1"
         onClick={handleDialogOpen}
       >
-        <span className="text-sm flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-gray-900 text-white rounded-full flex items-center justify-center font-light mr-3">
+        <span className="text-sm flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-dark-4 text-blue-300 rounded-full flex items-center justify-center font-light mr-3">
           {index + 1}
         </span>
         <span className="text-sm sm:text-base text-light-1 text-ellipsis">
@@ -132,7 +132,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           <div className="bg-dark-4 text-slate-700 text-center text-2xl sm:text-xl font-thin px-4 py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
           Ranking For
         </div>
-        <div className="cursor-pointer">
+        <div className="cursor-pointer py-3">
             <span className="text-wrap text-sm sm:text-base font-semibold text-blue-300 ml-1">
               {list.Title}
             </span>
@@ -144,29 +144,35 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
                 + {list.items.length - 5} more items
               </p>
             )}
-            {list.tags && list.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {list.tags.map((tag: string, index: number) => (
-                  <span
-                    key={index}
-                    className="cursor-pointer bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
+            
+        {list.Description && (
+            <p className="text-sm sm:text-base font-thin mb-6 text-gray-100 text-center sm:text-left px-4">
+              {list.Description}
+            </p>
+          )}
+            
+            
+            <div className="flex flex-wrap gap-2 mb-6 text-center sm:text-left">
+          {list.Tags?.map((tag: string, index: number) => (
+            <span
+              key={`${tag}${index}`}
+              
+              className="bg-blue-800 text-blue-200 px-2 py-1 rounded-full text-xs cursor-pointer shadow-md">
+              #{tag}
+            </span>
+          ))}
+        </div>
           {list.locations.length > 0 && (
-  <div className="flex flex-wrap gap-2 mb-4">
-    {list.locations.map((location: any, index: number) => (
-      <span
-        key={index}
-        className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm"
-      >
-        {location}
-      </span>
-    ))}
-  </div>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {list.locations.map((location: any, index: number) => (
+            <span
+              key={index}
+              className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm"
+            >
+              {location}
+            </span>
+          ))}
+        </div>
 )}
 
 {list.timespans.length > 0 && (

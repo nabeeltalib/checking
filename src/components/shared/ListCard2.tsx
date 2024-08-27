@@ -86,8 +86,8 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
     }
 
     return items.slice(0, 5).map((item, index) => (
-      <li key={index} className="flex items-center mb-2">
-        <span className="text-xs flex-shrink-0 w-8 h-8 text-light-1 bg-gray-900 rounded-full flex items-center justify-center font-bold mr-3">
+      <li key={index} className="flex items-center mb-2 bg-dark-1">
+        <span className="text-xs flex-shrink-0 w-8 h-8 text-blue-300 bg-dark-4 rounded-full flex items-center justify-center font-bold mr-3">
           {index + 1}
         </span>
         <span className="text-sm text-light-2 text-ellipsis">
@@ -238,18 +238,12 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
 
         <h2 className="tracking-tighter flex justify-between text-sm sm:text-base font-light text-gray-400 italic mb-2">
            
-          <span className="text-wrap text-lg sm:text-xl font-semibold text-primary-500 ml-1">
+          <span className="text-wrap text-lg sm:text-xl font-semibold text-primary-500 ml-1 py-3">
             {list.Title}
           </span>
           <span>{manageList && <Button onClick={handleEmbed}>add to embed</Button>}</span>
         </h2>
-
-        {list.description && (
-          <h4 className="text-sm sm:text-base font-thin mb-6 text-gray-100">
-            {list.Description}
-          </h4>
-        )}
-
+      
         <Link to={`/lists/${list.$id}`} className="block">
           <ol className="list-none mb-6 space-y-3">{renderListItems()}</ol>
 
@@ -258,7 +252,11 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
               + {list.items.length - 5} more items
             </p>
           )}
-
+          {list.description && (
+            <h4 className="text-sm sm:text-base font-thin mb-6 text-gray-100">
+              {list.Description}
+            </h4>
+          )}
           {list.tags && list.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {list.tags.slice(0, 3).map((tag: string, index: number) => (

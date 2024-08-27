@@ -209,24 +209,20 @@ const ListDetails: React.FC = () => {
         <div className="bg-dark-4 text-slate-700 text-center text-2xl sm:text-3xl font-thin px-4 py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
           Ranking For
         </div>
-        <h1 className="text-base sm:text-2xl flex justify-between font-bold mb-4 text-center sm:text-left text-white px-4 py-2">
-          <span className="text-wrap text-blue-300 ml-2">{list.Title}</span>
+        <h1 className="text-base sm:text-2xl flex justify-between font-bold mb-4 text-center sm:text-left text-white px-1 py-3">
+          <span className="text-wrap text-blue-300 ml-1">{list.Title}</span>
           
         </h1>
-        {list.Description && (
-          <p className="text-sm sm:text-base font-thin mb-6 text-gray-100 text-center sm:text-left px-4">
-            {list.Description}
-          </p>
-        )}
+        
 
 
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {visibleItems.map((item: any, index: number) => (
             <li
               key={index}
-              className="p-4 bg-dark-3 rounded-lg shadow-md flex justify-between items-center hover:shadow-lg transition-shadow">
+              className="p-4 bg-dark-1 rounded-lg shadow-md flex justify-between items-center hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-4">
-                <span className="w-8 h-6 sm:w-10 sm:h-8 bg-gray-800 rounded-full flex items-center justify-center text-light-1 font-light text-xs">
+                <span className="w-8 h-6 sm:w-10 sm:h-8 bg-dark-4 rounded-full flex items-center justify-center text-blue-300 font-light text-xs">
                   {index + 1}
                 </span>
                 <span className="text-light-1 text-sm sm:text-base">{item?.content || item}</span>
@@ -273,7 +269,14 @@ const ListDetails: React.FC = () => {
             )}
           </div>
         </div>
-
+         <p className="text-light-3 text-sm sm:text-base mb-6 text-right">
+          {formatDistanceToNow(new Date(list.$createdAt), { addSuffix: true })}
+        </p> 
+        {list.Description && (
+            <p className="text-sm sm:text-base font-thin mb-6 text-gray-100 text-center sm:text-left px-4">
+              {list.Description}
+            </p>
+          )}
      
 
       
@@ -291,9 +294,7 @@ const ListDetails: React.FC = () => {
           ))}
         </div>
 
-        <p className="text-light-3 text-sm sm:text-base mb-6">
-          {formatDistanceToNow(new Date(list.$createdAt), { addSuffix: true })}
-        </p>
+        
 
         {list.locations.length > 0 && (
           <div className="text-sm sm:text-base mb-4">
