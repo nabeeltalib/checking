@@ -36,8 +36,8 @@ const AllLists: React.FC = () => {
 
   return (
     <div className="flex-1 max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-gray-300 font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-        Discover Rankings
+      <h1 className="text-orange-300 font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+        What's in your Top Five?
       </h1>
       
       {aiSuggestions && aiSuggestions.length > 0 && (
@@ -47,7 +47,7 @@ const AllLists: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-lg font-base mb-4 text-light-2">or create these</h2>
+          <h2 className="text-lg font-base mb-4 text-light-2">Here's some title ideas</h2>
           <ul className="space-y-2">
             {aiSuggestions.map((suggestion, index) => (
               <motion.li 

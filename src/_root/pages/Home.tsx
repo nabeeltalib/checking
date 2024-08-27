@@ -84,8 +84,8 @@ const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-6 p-4 w-full items-center common-container">
-      <div className="text-wrap text-lg md:text-3xl text-gray-300 flex flex-col md:flex-row items-center gap-2 md:gap-4 mb-2 font-base" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-        Discover Top Lists From Your World {user.name || ""}        
+      <div className="text-wrap text-lg md:text-2xl text-orange-300 flex flex-col md:flex-row items-center gap-2 md:gap-4 mb-2 font-base" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+        Where Your World Ranks {user.name || ""}        
         {user && (
           <div className="text-xs text-light-3 flex flex-col md:flex-row items-center">
             <span>{connection?.follower?.length || 0} followers</span>
