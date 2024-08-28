@@ -17,21 +17,7 @@ const ListPreview: React.FC<ListPreviewProps> = ({ title, description, items, ca
 
   return (
     <div className="p-6 bg-dark-2 rounded-lg shadow-md">      
-      <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
-        <div className="flex items-center space-x-4">
-          <img
-            src={'/assets/icons/profile-placeholder.svg'}
-            alt="User Profile"
-            className="w-10 h-10 rounded-full object-cover shadow-md"
-          />        
-          
-          <div>
-            <p className="text-lg font-semibold text-light-1">You</p>
-            <p className="text-sm text-blue-400">@you</p>
-            <p className="text-xs text-gray-500">6 Followers • 2 Following</p>
-          </div>
-        </div>
-
+      <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-2">
         {/* Button moved to the right for both mobile and desktop views */}
        </div>
 
