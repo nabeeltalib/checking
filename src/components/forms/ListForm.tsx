@@ -47,6 +47,7 @@ import {
 import { SortableItem } from "./SortableItem";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { getUserFriends, indexList } from "@/lib/appwrite/config";
+import ListPreview from "@/components/shared/ListPreview";
 
 const ListForm = ({ list, action, initialData }: any) => {
   const { user } = useUserContext();
@@ -402,14 +403,14 @@ const ListForm = ({ list, action, initialData }: any) => {
                     </div>
                   </div>
                 </div>
-                <div className="italic text-slate-500 text-left text-sm sm:text-xl py-1">
+                <div className="italic text-blue-300 text-left text-sm sm:text-xl py-1">
                   Your Ranking For:
                 </div>
                 <FormControl>
                   <Input
                     placeholder="Enter a title e.g. Chicago HS Basketball Players, Innovations That Will Shape the Future"
                     {...field}
-                    className="text-xs w-full bg-dark-3 text-light-1 border-none"
+                    className="text-xs md:text-sm w-full bg-dark-3 text-light-1 border-none"
                   />
                 </FormControl>
                 <FormMessage />
@@ -480,7 +481,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                             <Input
                               placeholder={`Enter #${index + 1} ranked item`}
                               {...field}
-                              className="text-xs w-full bg-dark-3 text-light-1 border-none"
+                              className="text-xs md:text-sm w-full bg-dark-3 text-light-1 border-none"
                             />
                           </FormControl>
                         </FormItem>
@@ -556,7 +557,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                           placeholder="Create new e.g. 90s, GOAT"
                           value={newTimespan}
                           onChange={(e) => setNewTimespan(e.target.value)}
-                          className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
+                          className="text-xs md:text-sm w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
                         />
                         <Button
                           type="button"
@@ -577,7 +578,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                                 const newTimespans = field.value.filter((_, i) => i !== index);
                                 field.onChange(newTimespans);
                               }}
-                              className="ml-2 text-xs">
+                              className="ml-2 text-xs md:text-sm">
                               ×
                             </button>
                           </div>
@@ -622,7 +623,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                           placeholder="Create new e.g. East, Worldwide"
                           value={newLocation}
                           onChange={(e) => setNewLocation(e.target.value)}
-                          className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
+                          className="text-xs md:text-sm w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
                         />
                         <Button
                           type="button"
@@ -643,7 +644,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                                 const newLocations = field.value.filter((_, i) => i !== index);
                                 field.onChange(newLocations);
                               }}
-                              className="ml-2 text-xs">
+                              className="ml-2 text-xs md:text-sm">
                               ×
                             </button>
                           </div>
@@ -673,7 +674,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                         field.onChange(Tags);
                       }}
                       defaultValue={field.value.join(", ")}
-                      className="text-xs w-full bg-dark-3 text-light-1 border-none"
+                      className="text-xs md:text-sm w-full bg-dark-3 text-light-1 border-none"
                     />
                   </FormControl>
                   <FormDescription>
@@ -721,7 +722,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                           placeholder="Create new"
                           value={newCategory}
                           onChange={(e) => setNewCategory(e.target.value)}
-                          className="text-xs w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
+                          className="text-xs md:text-sm w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
                         />
                         <Button
                           type="button"
@@ -742,7 +743,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                                 const newCategories = field.value.filter((_, i) => i !== index);
                                 field.onChange(newCategories);
                               }}
-                              className="ml-2 text-xs">
+                              className="ml-2 text-xs md:text-sm">
                               ×
                             </button>
                           </div>
@@ -776,7 +777,7 @@ const ListForm = ({ list, action, initialData }: any) => {
             <Button
               type="button"
               onClick={() => setShowDescription(!showDescription)}
-              className="text-xs px-4 py-2 rounded-md mb-4">
+              className="text-xs md:text-sm px-4 py-2 rounded-md mb-4">
               {showDescription
                 ? "Hide Description"
                 : "If you want to add description"}
@@ -805,8 +806,8 @@ const ListForm = ({ list, action, initialData }: any) => {
               />
             )}
           </div>
-        </div>
-
+        </div>       
+      
         {/* Submit Section */}
         <div className="flex flex-col sm:flex-row justify-end items-center gap-2 sm:gap-4 mb-2">
           <Button
@@ -823,6 +824,28 @@ const ListForm = ({ list, action, initialData }: any) => {
             {action === "Remix" ? "Create Remixed List" : `${action} List`}
           </Button>
         </div>
+        <h3 className="text-right text-2xl font-semibold text-slate-700 mb-1">Your Live Preview</h3>
+
+        <div className="flex flex-col sm:flex-row space-y-8 sm:space-y-0 sm:space-x-8">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="w-full sm:w-44 space-y-8">
+            {/* Form fields go here */}
+          </form>
+
+          {/* Live Preview */}
+          <div className="w-full sm:w-full">
+            <ListPreview
+              title={form.watch("Title")}
+              
+              items={form.watch("items")}
+              description={form.watch("Description")}
+              categories={form.watch("Categories")}
+              tags={form.watch("Tags")}
+              timespans={form.watch("timespans")}
+              locations={form.watch("locations")}
+            />
+          </div>
+        </div>
+
       </form>
 
       <ConfirmationDialog
