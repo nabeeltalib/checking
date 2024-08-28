@@ -11,7 +11,7 @@ const RootLayout = () => {
       <div className="flex flex-1 pt-16">
         <aside
           aria-label="Left Sidebar"
-          className="hidden md:flex lg:w-[25%] md:w-[15%]"
+          className="hidden md:flex lg:w-[20%] md:w-[15%]"
         >
           <LeftSidebar />
         </aside>
@@ -20,7 +20,7 @@ const RootLayout = () => {
         </main>
         <aside
           aria-label="Right Sidebar"
-          className="hidden md:flex lg:w-[25%] md:w-[15%]"
+          className="hidden md:flex lg:w-[20%] md:w-[15%]"
         >
           <RightSidebar />
         </aside>

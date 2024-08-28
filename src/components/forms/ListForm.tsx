@@ -73,6 +73,7 @@ const ListForm = ({ list, action, initialData }: any) => {
   ]);
   const [newLocation, setNewLocation] = useState("");
   const [showDescription, setShowDescription] = useState(false);
+  const [showAdditionalDetails, setShowAdditionalDetails] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [generatedItems, setGeneratedItems] = useState<any[]>([]);
@@ -375,441 +376,444 @@ const ListForm = ({ list, action, initialData }: any) => {
         </div>
       )}
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-        {/* Basic Info Section */}
-        <div className="space-y-4 p-4 border border-slate-300 rounded-lg">
-          <h2 className="text-2xl font-semibold text-slate-700">Basic Info*</h2>
-          <FormField
-            control={form.control}
-            name="Title"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center">
-                  <FormLabel>What's your title?*</FormLabel>
-                  <div className="relative group">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 ml-2 text-gray-400 cursor-pointer"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-9 3a1 1 0 102 0v-2a1 1 0 10-2 0v2zM9 7a1 1 0 100 2 1 1 0 000-2z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <div className="w-44 absolute bottom-full left-1/2 transform -translate-x-1/2 -mb-2 hidden group-hover:block bg-dark-3 text-white text-xs rounded-md px-2 py-1">
-                      This is the main title for your list. Be specific and catchy!
-                    </div>
-                  </div>
-                </div>
-                <div className="italic text-blue-300 text-left text-sm sm:text-xl py-1">
-                  Your Ranking For:
-                </div>
-                <FormControl>
-                  <Input
-                    placeholder="Enter a title e.g. Chicago HS Basketball Players, Innovations That Will Shape the Future"
-                    {...field}
-                    className="text-xs md:text-sm w-full bg-dark-3 text-light-1 border-none"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Progressive Disclosure - List Items */}
-        <div className="space-y-4 p-4 border border-slate-300 rounded-lg mt-8">
-          <h2 className="text-2xl font-semibold text-slate-700">List Items*</h2>
-          <FormItem>
-          <FormLabel>How long is your ranking, Top 3, 5, or 10?</FormLabel>
-          <Select onValueChange={handleItemCountChange} defaultValue="5">
-            <SelectTrigger className="w-[80px] md:w-[120px] bg-dark-3 text-light-1 border-none">
-              <SelectValue placeholder="Choose Top 3, 5, or 10" />
-            </SelectTrigger>
-            <SelectContent className="bg-dark-4 text-light-1 border-none">
-              <SelectItem value="3">Top 3</SelectItem>
-              <SelectItem value="5">Top 5</SelectItem>
-              <SelectItem value="10">Top 10</SelectItem>
-            </SelectContent>
-          </Select>
-        </FormItem>
-        <div className="text-right">
-          <span className="text-xs text-gray-300 ml-3">Based on your title, time frame, or location details</span>
-          <Button
-            type="button"
-            onClick={handleGenerateListItems}
-            disabled={isGeneratingItems}
-            className="bg-blue-900 text-xs text-light-1 px-4 py-2 rounded-md mb-4">
-            {isGeneratingItems ? "Generating..." : "Get AI Item Suggestions"}
-          </Button>
-        </div>
-          {showUndoButton && (
-            <Button type="button" onClick={handleUndo} className="w-full">
-              Undo Generated Items
-            </Button>
-          )}
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}>
-            <SortableContext
-              items={fields.map((field) => field.id)}
-              strategy={verticalListSortingStrategy}>
-              {fields.map((field, index) => (
-                <SortableItem key={field.id} id={field.id}>
-                  <div className="flex items-center mb-2">
-                  <div className="mr-2">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      fill="currentColor"
-                      className="bi bi-grip-vertical"
-                      viewBox="0 0 16 16"
-                    >
-                      <path d="M2 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />
-                    </svg>
-                  </div>
-                    <FormField
-                      control={form.control}
-                      name={`items.${index}.content`}
-                      render={({ field }) => (
-                        <FormItem className="flex-grow mr-2">
-                          <FormControl>
-                            <Input
-                              placeholder={`Enter #${index + 1} ranked item`}
-                              {...field}
-                              className="text-xs md:text-sm w-full bg-dark-3 text-light-1 border-none"
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`items.${index}.isVisible`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormControl>
-                            <input
-                              type="checkbox"
-                              {...field}
-                              checked={field.value}
-                              className="mr-2"
-                              aria-label={`Make item ${index + 1} visible`}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </SortableItem>
-              ))}
-            </SortableContext>
-          </DndContext>
-
-          {fields.length < 10 && (
-            <Button
-              type="button"
-              onClick={() => append({ content: "", isVisible: true, id: "", creator: "" })}
-              aria-label="Add new item"
-              className="px-4 py-2 rounded-md mb-4">
-              Add Row
-            </Button>
-          )}
-        </div>
-
-        {/* Additional Details Section */}
-        <div className="space-y-4 p-4 border border-slate-300 rounded-lg mt-8">
-          <h2 className="text-2xl font-semibold text-slate-700">Additional Details (optional)</h2>
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="timespans"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Any time frame?</FormLabel>
-                  <FormControl>
-                    <div>
-                      <div className="flex flex-wrap gap-2">
-                        <Select
-                          onValueChange={(value) => {
-                            if (value && !field.value.includes(value)) {
-                              field.onChange([...field.value, value]);
-                            }
-                          }}>
-                          <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
-                            <SelectValue placeholder="Select a timespan" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-dark-4 text-light-1 border-none">
-                            {timespans
-                              .filter((timespan) => !field.value.includes(timespan))
-                              .map((timespan) => (
-                                <SelectItem key={timespan} value={timespan}>
-                                  {timespan}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select> or
-                        <Input
-                          placeholder="Create new e.g. 90s, GOAT"
-                          value={newTimespan}
-                          onChange={(e) => setNewTimespan(e.target.value)}
-                          className="text-xs md:text-sm w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
-                        />
-                        <Button
-                          type="button"
-                          onClick={handleAddTimespan}
-                          className="w-full md:w-auto">
-                          Add Timespan
-                        </Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {field.value.map((timespan, index) => (
-                          <div
-                            key={index}
-                            className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
-                            {timespan}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newTimespans = field.value.filter((_, i) => i !== index);
-                                field.onChange(newTimespans);
-                              }}
-                              className="ml-2 text-xs md:text-sm">
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="locations"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Any location?</FormLabel>
-                  <FormControl>
-                    <div>
-                      <div className="flex flex-wrap gap-2">
-                        <Select
-                          onValueChange={(value) => {
-                            if (value && !field.value.includes(value)) {
-                              field.onChange([...field.value, value]);
-                            }
-                          }}>
-                          <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
-                            <SelectValue placeholder="Select a location" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-dark-4 text-light-1 border-none">
-                            {locations
-                              .filter((location) => !field.value.includes(location))
-                              .map((location) => (
-                                <SelectItem key={location} value={location}>
-                                  {location}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>or
-                        </Select>
-                        <Input
-                          placeholder="Create new e.g. East, Worldwide"
-                          value={newLocation}
-                          onChange={(e) => setNewLocation(e.target.value)}
-                          className="text-xs md:text-sm w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
-                        />
-                        <Button
-                          type="button"
-                          onClick={handleAddLocation}
-                          className="w-full md:w-auto">
-                          Add Location
-                        </Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {field.value.map((location, index) => (
-                          <div
-                            key={index}
-                            className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
-                            {location}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newLocations = field.value.filter((_, i) => i !== index);
-                                field.onChange(newLocations);
-                              }}
-                              className="ml-2 text-xs md:text-sm">
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="Tags"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tags (add keywords to help others find your list)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter tags separated by commas"
-                      onBlur={(e) => {
-                        const Tags = e.target.value
-                          .split(",")
-                          .map((tag) => tag.trim())
-                          .filter(Boolean);
-                        field.onChange(Tags);
-                      }}
-                      defaultValue={field.value.join(", ")}
-                      className="text-xs md:text-sm w-full bg-dark-3 text-light-1 border-none"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Enter tags for your list separated by commas
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="Categories"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categories (choose a general topic for your list)</FormLabel>
-                  <FormControl>
-                    <div>
-                      <div className="flex flex-wrap gap-2">
-                        <Select
-                          onValueChange={(value) => {
-                            if (value && !field.value.includes(value)) {
-                              field.onChange([...field.value, value]);
-                            }
-                          }}>
-                          <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-dark-2 text-light-1 border-none">
-                            {categories
-                              .filter((category) => !field.value.includes(category))
-                              .map((category) => (
-                                <SelectItem 
-                                  key={category} 
-                                  value={category}
-                                  className="bg-dark-4 text-light-1 border-none"
-                                >
-                                  {category}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-
-                        </Select> or
-                        <Input
-                          placeholder="Create new"
-                          value={newCategory}
-                          onChange={(e) => setNewCategory(e.target.value)}
-                          className="text-xs md:text-sm w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
-                        />
-                        <Button
-                          type="button"
-                          onClick={handleAddCategory}
-                          className="w-full md:w-auto">
-                          Add Category
-                        </Button>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {field.value.map((category, index) => (
-                          <div
-                            key={index}
-                            className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
-                            {category}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const newCategories = field.value.filter((_, i) => i !== index);
-                                field.onChange(newCategories);
-                              }}
-                              className="ml-2 text-xs md:text-sm">
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />  
-            <FormField
-              control={form.control}
-              name="Public"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Public </FormLabel>
-                  <FormControl>
-                    <input
-                      type="checkbox"
-                      checked={field.value}
-                      onChange={(e) => field.onChange(e.target.checked)}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Uncheck this if you want to make your list private
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-            <Button
-              type="button"
-              onClick={() => setShowDescription(!showDescription)}
-              className="text-xs md:text-sm px-4 py-2 rounded-md mb-4">
-              {showDescription
-                ? "Hide Description"
-                : "If you want to add description"}
-            </Button>
-
-            {showDescription && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="space-y-8">
+            {/* Basic Info Section */}
+            <div className="space-y-4 p-4 border border-slate-300 rounded-lg">
+              <h2 className="text-2xl font-semibold text-slate-700">Basic Info*</h2>
               <FormField
                 control={form.control}
-                name="Description"
+                name="Title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
+                    <FormLabel>What's your title?*</FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Enter a description"
+                      <Input
+                        placeholder="Enter a title e.g. Chicago HS Basketball Players, Innovations That Will Shape the Future"
                         {...field}
-                        className="w-full bg-dark-3 text-light-1 border-none"
+                        className="text-xs w-full bg-dark-3 text-light-1 border-none"
                       />
                     </FormControl>
-                    <FormDescription>
-                      Enter a description for your list
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
+            </div>
+
+            {/* List Items Section */}
+            <div className="space-y-4 p-4 border border-slate-300 rounded-lg mt-8">
+              <h2 className="text-2xl font-semibold text-slate-700">List Items*</h2>
+              <FormItem>
+                <FormLabel>How long is your ranking, Top 3, 5, or 10?</FormLabel>
+                <Select onValueChange={handleItemCountChange} defaultValue="5">
+                  <SelectTrigger className="w-[80px] md:w-[120px] bg-dark-3 text-light-1 border-none">
+                    <SelectValue placeholder="Choose Top 3, 5, or 10" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-dark-4 text-light-1 border-none">
+                    <SelectItem value="3">Top 3</SelectItem>
+                    <SelectItem value="5">Top 5</SelectItem>
+                    <SelectItem value="10">Top 10</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormItem>
+              <div className="text-right">
+                <span className="text-xs text-gray-300 ml-3">Based on your title, time frame, or location details</span>
+                <Button
+                  type="button"
+                  onClick={handleGenerateListItems}
+                  disabled={isGeneratingItems}
+                  className="bg-blue-900 text-xs text-light-1 px-4 py-2 rounded-md mb-4">
+                  {isGeneratingItems ? "Generating..." : "Get AI Item Suggestions"}
+                </Button>
+              </div>
+              {showUndoButton && (
+                <Button type="button" onClick={handleUndo} className="w-full">
+                  Undo Generated Items
+                </Button>
+              )}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}>
+                <SortableContext
+                  items={fields.map((field) => field.id)}
+                  strategy={verticalListSortingStrategy}>
+                  {fields.map((field, index) => (
+                    <SortableItem key={field.id} id={field.id}>
+                      <div className="flex items-center mb-2">
+                        <div className="mr-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            className="bi bi-grip-vertical"
+                            viewBox="0 0 16 16"
+                          >
+                            <path d="M2 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />
+                          </svg>
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.content`}
+                          render={({ field }) => (
+                            <FormItem className="flex-grow mr-2">
+                              <FormControl>
+                                <Input
+                                  placeholder={`Enter #${index + 1} ranked item`}
+                                  {...field}
+                                  className="text-xs w-full bg-dark-3 text-light-1 border-none"
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.isVisible`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <input
+                                  type="checkbox"
+                                  {...field}
+                                  checked={field.value}
+                                  className="mr-2"
+                                  aria-label={`Make item ${index + 1} visible`}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </SortableItem>
+                  ))}
+                </SortableContext>
+              </DndContext>
+
+              {fields.length < 10 && (
+                <Button
+                  type="button"
+                  onClick={() => append({ content: "", isVisible: true, id: "", creator: "" })}
+                  aria-label="Add new item"
+                  className="px-4 py-2 rounded-md mb-4">
+                  Add Row
+                </Button>
+              )}
+            </div>
+
+            {/* Additional Details Section */}
+            <div className="space-y-4 p-4 border border-slate-300 rounded-lg mt-8">
+              <div className="flex justify-between items-center cursor-pointer" onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}>
+                <h2 className="text-2xl font-semibold text-slate-700">Additional Details (optional)</h2>
+                <span>{showAdditionalDetails ? "−" : "↘"}</span>
+              </div>
+              {showAdditionalDetails && (
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="timespans"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Any time frame?</FormLabel>
+                        <FormControl>
+                          <div>
+                            <div className="flex flex-wrap gap-2">
+                              <Select
+                                onValueChange={(value) => {
+                                  if (value && !field.value.includes(value)) {
+                                    field.onChange([...field.value, value]);
+                                  }
+                                }}>
+                                <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
+                                  <SelectValue placeholder="Select a timespan" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-dark-4 text-light-1 border-none">
+                                  {timespans
+                                    .filter((timespan) => !field.value.includes(timespan))
+                                    .map((timespan) => (
+                                      <SelectItem key={timespan} value={timespan}>
+                                        {timespan}
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>
+                              </Select> or
+                              <Input
+                                placeholder="Create new e.g. 90s, GOAT"
+                                value={newTimespan}
+                                onChange={(e) => setNewTimespan(e.target.value)}
+                                className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
+                              />
+                              <Button
+                                type="button"
+                                onClick={handleAddTimespan}
+                                className="w-full md:w-auto">
+                                Add Timespan
+                              </Button>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {field.value.map((timespan, index) => (
+                                <div
+                                  key={index}
+                                  className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
+                                  {timespan}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const newTimespans = field.value.filter((_, i) => i !== index);
+                                      field.onChange(newTimespans);
+                                    }}
+                                    className="ml-2 text-xs">
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="locations"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Any location?</FormLabel>
+                        <FormControl>
+                          <div>
+                            <div className="flex flex-wrap gap-2">
+                              <Select
+                                onValueChange={(value) => {
+                                  if (value && !field.value.includes(value)) {
+                                    field.onChange([...field.value, value]);
+                                  }
+                                }}>
+                                <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
+                                  <SelectValue placeholder="Select a location" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-dark-4 text-light-1 border-none">
+                                  {locations
+                                    .filter((location) => !field.value.includes(location))
+                                    .map((location) => (
+                                      <SelectItem key={location} value={location}>
+                                        {location}
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>or
+                              </Select>
+                              <Input
+                                placeholder="Create new e.g. East, Worldwide"
+                                value={newLocation}
+                                onChange={(e) => setNewLocation(e.target.value)}
+                                className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
+                              />
+                              <Button
+                                type="button"
+                                onClick={handleAddLocation}
+                                className="w-full md:w-auto">
+                                Add Location
+                              </Button>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {field.value.map((location, index) => (
+                                <div
+                                  key={index}
+                                  className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
+                                  {location}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const newLocations = field.value.filter((_, i) => i !== index);
+                                      field.onChange(newLocations);
+                                    }}
+                                    className="ml-2 text-xs">
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="Tags"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tags (add keywords to help others find your list)</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter tags separated by commas"
+                            onBlur={(e) => {
+                              const Tags = e.target.value
+                                .split(",")
+                                .map((tag) => tag.trim())
+                                .filter(Boolean);
+                              field.onChange(Tags);
+                            }}
+                            defaultValue={field.value.join(", ")}
+                            className="text-xs w-full bg-dark-3 text-light-1 border-none"
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Enter tags for your list separated by commas
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="Categories"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categories (choose a general topic for your list)</FormLabel>
+                        <FormControl>
+                          <div>
+                            <div className="flex flex-wrap gap-2">
+                              <Select
+                                onValueChange={(value) => {
+                                  if (value && !field.value.includes(value)) {
+                                    field.onChange([...field.value, value]);
+                                  }
+                                }}>
+                                <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
+                                  <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                <SelectContent className="bg-dark-2 text-light-1 border-none">
+                                  {categories
+                                    .filter((category) => !field.value.includes(category))
+                                    .map((category) => (
+                                      <SelectItem 
+                                        key={category} 
+                                        value={category}
+                                        className="bg-dark-4 text-light-1 border-none"
+                                      >
+                                        {category}
+                                      </SelectItem>
+                                    ))}
+                                </SelectContent>
+
+                              </Select> or
+                              <Input
+                                placeholder="Create new"
+                                value={newCategory}
+                                onChange={(e) => setNewCategory(e.target.value)}
+                                className="text-xs w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
+                              />
+                              <Button
+                                type="button"
+                                onClick={handleAddCategory}
+                                className="w-full md:w-auto">
+                                Add Category
+                              </Button>
+                            </div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {field.value.map((category, index) => (
+                                <div
+                                  key={index}
+                                  className="bg-primary-500 text-white px-2 py-1 rounded-full flex items-center">
+                                  {category}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const newCategories = field.value.filter((_, i) => i !== index);
+                                      field.onChange(newCategories);
+                                    }}
+                                    className="ml-2 text-xs">
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />  
+                  <FormField
+                    control={form.control}
+                    name="Public"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Public </FormLabel>
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={(e) => field.onChange(e.target.checked)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          Uncheck this if you want to make your list private
+                        </FormDescription>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Description Section */}
+            <div className="space-y-4 p-4 border border-slate-300 rounded-lg mt-8">
+              <div className="flex justify-between items-center cursor-pointer" onClick={() => setShowDescription(!showDescription)}>
+                <h2 className="text-2xl font-semibold text-slate-700">Description (optional)</h2>
+                <span>{showDescription ? "−" : "↘"}</span>
+              </div>
+              {showDescription && (
+                <FormField
+                  control={form.control}
+                  name="Description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Enter a description"
+                          {...field}
+                          className="w-full bg-dark-3 text-light-1 border-none"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter a description for your list
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
           </div>
-        </div>       
-      
+
+          {/* Preview Section */}
+          <div className="space-y-8">
+            <ListPreview
+              title={form.watch("Title")}
+              items={form.watch("items")}
+              description={form.watch("Description")}
+              categories={form.watch("Categories")}
+              tags={form.watch("Tags")}
+              timespans={form.watch("timespans")}
+              locations={form.watch("locations")}
+              username={form.watch("Username") || "defaultUsername"}  // Ensure defaults are provided
+              name={form.watch("Name") || "defaultName"}  // Ensure defaults are provided
+              followers={form.watch("Followers") || 0}  // Provide default value of 0 if undefined
+              following={form.watch("Following") || 0}  // Provide default value of 0 if undefined
+            />
+          </div>
+        </div>
+
         {/* Submit Section */}
-        <div className="flex flex-col sm:flex-row justify-end items-center gap-2 sm:gap-4 mb-2">
+        <div className="flex justify-end gap-2 sm:gap-4 mt-4">
           <Button
             type="button"
             className="shad-button_dark_4"
@@ -823,27 +827,6 @@ const ListForm = ({ list, action, initialData }: any) => {
             {(isLoadingCreate || isLoadingUpdate) && <Loader />}
             {action === "Remix" ? "Create Remixed List" : `${action} List`}
           </Button>
-        </div>
-        <h3 className="text-right text-2xl font-semibold text-slate-700 mb-1">Your Live Preview</h3>
-
-        <div className="flex flex-col sm:flex-row space-y-8 sm:space-y-0 sm:space-x-8">
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="w-full sm:w-44 space-y-8">
-            {/* Form fields go here */}
-          </form>
-
-          {/* Live Preview */}
-          <div className="w-full sm:w-full">
-            <ListPreview
-              title={form.watch("Title")}
-              
-              items={form.watch("items")}
-              description={form.watch("Description")}
-              categories={form.watch("Categories")}
-              tags={form.watch("Tags")}
-              timespans={form.watch("timespans")}
-              locations={form.watch("locations")}
-            />
-          </div>
         </div>
 
       </form>

@@ -60,7 +60,7 @@ const CreateList: React.FC = () => {
 
   return (
     <div className="flex flex-1 items-center justify-center py-10 px-6 min-h-screen bg-zinc-900">
-      <div className="max-w-4xl w-full bg-zinc-800 rounded-xl p-8 shadow-lg space-y-6">
+      <div className="max-w-4x2 w-full bg-zinc-800 rounded-xl p-4 shadow-lg space-y-6">
         <div>
           <h2 className="text-orange-300 font-extralight text-3xl text-left w-full mt-1" style={{ fontFamily: "'Permanent Marker', cursive" }}>
             Create your own top list! What's your ranking for...anything!
