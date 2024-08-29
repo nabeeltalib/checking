@@ -55,7 +55,8 @@ import {
 } from '@/lib/appwrite/api';
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
 import { useNavigate } from 'react-router-dom';
-
+import { generateListItem } from '@/routes/ai';
+import { updateUser } from '../appwrite/config';
 // ============================================================
 // AUTH QUERIES
 // ============================================================

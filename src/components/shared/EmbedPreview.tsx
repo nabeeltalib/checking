@@ -11,23 +11,34 @@ const EmbedPreview = () => {
   const [refreshData, setRefreshData] = useState(false);
   const { user } = useUserContext();
 
+  const [embedType, setEmbedType] = useState('top5');
+  const [customTitle, setCustomTitle] = useState('List Items');
+
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getListById(id);
-      setEmbedList(data);
+      try {
+        const data = await getListById(id);
+        setEmbedList(data);
+        if (data) {
+          setCustomTitle(data.Title || 'List Items');
+        }
+      } catch (error) {
+        console.error('Error fetching list:', error);
+      }
     };
 
     fetchData();
   }, [refreshData, id]);
 
-  const [embedType, setEmbedType] = useState('top5');
-  const [customTitle, setCustomTitle] = useState('List Items');
+  const items = embedList?.item || [];
 
-  const items = embedType === 'top5' ? embedList?.item : embedList?.item;
-
-  const handleVote = async (id: any) => {
-    await VoteOnItem(user.id, id);
-    setRefreshData((prevState) => !prevState);
+  const handleVote = async (itemId: string) => {
+    try {
+      await VoteOnItem(user.id, itemId);
+      setRefreshData((prevState) => !prevState);
+    } catch (error) {
+      console.error('Error voting on item:', error);
+    }
   };
 
   return (
@@ -71,7 +82,7 @@ const EmbedPreview = () => {
       <TopfivedEmbed
         type={embedType}
         title={customTitle}
-        items={items || []}
+        items={items}
         handleVote={handleVote}
       />
     </div>
