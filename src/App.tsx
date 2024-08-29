@@ -126,7 +126,7 @@ const App = () => {
     <div>
     <Routes>
     <Route element={<RootLayout2 />}>
-    <Route path="/" element={<PreviewMode />} />
+    <Route path="/" element={<Home />} />
     <Route path="/home" element={<Home />} />
     <Route path="/explore" element={<Explore />} />
     <Route path="/discover" element={<AllLists />} />

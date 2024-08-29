@@ -98,7 +98,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   return (
     <>
       <motion.div
-        className="bg-dark-2 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer"
+        className="bg-dark-3 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer w-full max-w-2xl mx-auto"
         whileHover={{ y: -5 }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

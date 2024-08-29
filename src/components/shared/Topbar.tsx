@@ -111,13 +111,13 @@ const Topbar: React.FC = () => {
           </div>
 
           {searchResults && (
-            <ul className="absolute bg-white text-black mt-2 rounded-lg shadow-lg w-4/12 max-h-60 overflow-y-auto">
+            <ul className="absolute bg-gray-700 text-white mt-2 rounded-lg shadow-lg w-1/4 max-h-60 overflow-y-auto">
               {searchResults.pages.map((page) =>
                 page.map((list: any) => (
                   <li key={list.id} className="border-b last:border-b-0">
                     <Link
                       to={`/lists/${list.id}`}
-                      className="block px-4 py-2 hover:bg-gray-100"
+                      className="block px-4 py-2 hover:bg-gray-500"
                     >
                       {list.Title}
                     </Link>

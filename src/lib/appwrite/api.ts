@@ -160,8 +160,7 @@ export async function saveUserToDB(user: {
 
 export async function signInWithGoogle() {
   try {
-    const session = await account.createOAuth2Session('google');
-    
+    const session = await account.createOAuth2Session('google',"http://localhost:3000/profile/profile");    
     return session;
   } catch (error) {
     console.error("Error signing in with Google:", error);

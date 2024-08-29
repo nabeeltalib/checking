@@ -54,6 +54,7 @@ import {
   updateCollaboration,
 } from '@/lib/appwrite/api';
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
+import { useNavigate } from 'react-router-dom';
 
 // ============================================================
 // AUTH QUERIES
@@ -91,10 +92,11 @@ export const useSignOutAccount = () => {
 };
 
 export const useSignInWithGoogle = () => {
+  const navigate = useNavigate();
   return useMutation({
     mutationFn: signInWithGoogle,
     onSuccess: () => {
-    "http://localhost:3000"
+    navigate("http://localhost:3000");
     },
   });
 };
