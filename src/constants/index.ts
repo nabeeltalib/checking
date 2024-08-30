@@ -184,6 +184,7 @@ export const rightSidebarLinks2 = [
     imgURL: "/assets/icons/collab.svg",
     route: "/sign-in",
     label: "Collaboration",
-    icon:"/assets/icons/collab.svg"
-  },  
+    icon: "/assets/icons/collab.svg",
+    restricted: true,  // Restricted
+  },
 ];

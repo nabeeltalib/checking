@@ -34,6 +34,8 @@ const RightSidebar2 = () => {
                 `flex items-center gap-4 p-2 rounded-lg transition-colors duration-200 ${
                   isActive
                     ? 'bg-primary-500 text-light-1'
+                    : link.restricted
+                    ? 'text-gray-500 hover:text-gray-400'  // Darker text for restricted links
                     : 'text-light-2 hover:bg-dark-4'
                 }`
               }
@@ -43,7 +45,11 @@ const RightSidebar2 = () => {
                 src={link.icon}
                 alt={link.label}
                 className={`w-6 h-6 filter ${
-                  pathname === link.route ? '' : 'brightness-75 invert'
+                  pathname === link.route
+                    ? ''
+                    : link.restricted
+                    ? 'brightness-50 invert'  // Darker icon for restricted links
+                    : 'brightness-75 invert'
                 }`}
               />
               <span className="hidden lg:inline">{link.label}</span>

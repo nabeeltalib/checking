@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -77,10 +77,9 @@ const ListForm = ({ list, action, initialData }: any) => {
   const [error, setError] = useState<string | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [generatedItems, setGeneratedItems] = useState<any[]>([]);
-  const [previousItems, setPreviousItems] = useState<any>([]);
+  const [previousItems, setPreviousItems] = useState<any[]>([]);
   const [showUndoButton, setShowUndoButton] = useState(false);
   const [friendsLists, setFriendsLists] = useState<any[]>([]);
-
   const [numItems, setNumItems] = useState<number>(5);
 
   const { mutate: generateListItems, isLoading: isGeneratingItems } = useGenerateListItems();
@@ -392,6 +391,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                         placeholder="Enter a title e.g. Chicago HS Basketball Players, Innovations That Will Shape the Future"
                         {...field}
                         className="text-xs w-full bg-dark-3 text-light-1 border-none"
+                        spellCheck={true} // Enable spellcheck here
                       />
                     </FormControl>
                     <FormMessage />
@@ -463,6 +463,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                                   placeholder={`Enter #${index + 1} ranked item`}
                                   {...field}
                                   className="text-xs w-full bg-dark-3 text-light-1 border-none"
+                                  spellCheck={true} // Enable spellcheck here
                                 />
                               </FormControl>
                             </FormItem>
@@ -543,6 +544,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                                 value={newTimespan}
                                 onChange={(e) => setNewTimespan(e.target.value)}
                                 className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
+                                spellCheck={true} // Enable spellcheck here
                               />
                               <Button
                                 type="button"
@@ -609,6 +611,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                                 value={newLocation}
                                 onChange={(e) => setNewLocation(e.target.value)}
                                 className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
+                                spellCheck={true} // Enable spellcheck here
                               />
                               <Button
                                 type="button"
@@ -660,6 +663,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                             }}
                             defaultValue={field.value.join(", ")}
                             className="text-xs w-full bg-dark-3 text-light-1 border-none"
+                            spellCheck={true} // Enable spellcheck here
                           />
                         </FormControl>
                         <FormDescription>
@@ -708,6 +712,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                                 value={newCategory}
                                 onChange={(e) => setNewCategory(e.target.value)}
                                 className="text-xs w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
+                                spellCheck={true} // Enable spellcheck here
                               />
                               <Button
                                 type="button"
@@ -780,6 +785,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                           placeholder="Enter a description"
                           {...field}
                           className="w-full bg-dark-3 text-light-1 border-none"
+                          spellCheck={true} // Enable spellcheck here
                         />
                       </FormControl>
                       <FormDescription>

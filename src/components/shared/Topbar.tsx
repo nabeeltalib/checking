@@ -94,6 +94,7 @@ const Topbar: React.FC = () => {
               placeholder="Search lists..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              spellCheck={true}  // Spellcheck enabled here
               className={`w-full bg-gray-800 text-white border-none rounded-lg focus:ring-2 focus:ring-purple-400 transition-all duration-300 ${
                 isSearch ? "block" : "block"
               }`}

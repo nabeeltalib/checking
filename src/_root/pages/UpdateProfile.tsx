@@ -40,8 +40,8 @@ const formSchema = z.object({
   accountId: z
     .string()
     .max(100, "accountId must be less than 100 characters"),
-    file: z.instanceof(File).optional(),
-    Public: z.boolean()
+  file: z.instanceof(File).optional(),
+  Public: z.boolean()
 });
 
 const UpdateProfile = () => {
@@ -60,7 +60,7 @@ const UpdateProfile = () => {
       Bio: user.Bio || "",
       ImageUrl: user.imageUrl || "",
       accountId: user.id || "",
-      Public:user.Public || true,
+      Public: user.Public || true,
     },
   });
 
@@ -77,36 +77,33 @@ const UpdateProfile = () => {
         Bio: currentUser.Bio || "",
         ImageUrl: currentUser.ImageUrl || "",
         accountId: currentUser.accountId || "",
-        Public:currentUser.Public,
+        Public: currentUser.Public,
       });
     }
   }, [currentUser, form]);
 
   const handleUpdate = async (data: z.infer<typeof formSchema>) => {
     try {
-
       let updatedUser;
-      if(data.file)
-      {
-       updatedUser = await updateUser({
-        userId: user.id,
-        Name: data.Name,
-        Bio: data.Bio,
-        file: [data.file], 
-        ImageUrl: data.ImageUrl,
-        Public: data.Public,
-      });
-    }
-    else{
-      updatedUser = await updateUser({
-        userId: user.id,
-        Name: data.Name,
-        Bio: data.Bio,
-        file:[],
-        ImageUrl: data.ImageUrl,
-        Public: data.Public,
-      });
-    }
+      if (data.file) {
+        updatedUser = await updateUser({
+          userId: user.id,
+          Name: data.Name,
+          Bio: data.Bio,
+          file: [data.file], 
+          ImageUrl: data.ImageUrl,
+          Public: data.Public,
+        });
+      } else {
+        updatedUser = await updateUser({
+          userId: user.id,
+          Name: data.Name,
+          Bio: data.Bio,
+          file: [],
+          ImageUrl: data.ImageUrl,
+          Public: data.Public,
+        });
+      }
 
       if (!updatedUser) {
         throw new Error('Update user failed. Please try again.');
@@ -162,7 +159,7 @@ const UpdateProfile = () => {
             onSubmit={form.handleSubmit(handleUpdate)}
             className="flex flex-col gap-7 w-full mt-4 max-w-5xl"
           >
-             <FormField
+            <FormField
               control={form.control}
               name="file"
               render={({ field }) => (
@@ -190,6 +187,7 @@ const UpdateProfile = () => {
                       className="shad-input"
                       {...field}
                       aria-label="Name"
+                      spellCheck={true}
                     />
                   </FormControl>
                   <FormMessage />
@@ -210,6 +208,7 @@ const UpdateProfile = () => {
                       {...field}
                       disabled
                       aria-label="Username"
+                      spellCheck={true}
                     />
                   </FormControl>
                   <FormMessage />
@@ -230,6 +229,7 @@ const UpdateProfile = () => {
                       {...field}
                       disabled
                       aria-label="Email"
+                      spellCheck={true}
                     />
                   </FormControl>
                   <FormMessage />
@@ -248,6 +248,7 @@ const UpdateProfile = () => {
                       className="shad-textarea custom-scrollbar"
                       {...field}
                       aria-label="Bio"
+                      spellCheck={true}
                     />
                   </FormControl>
                   <FormMessage className="shad-form_message" />
@@ -255,7 +256,7 @@ const UpdateProfile = () => {
               )}
             />
 
-          <FormField
+            <FormField
               control={form.control}
               name="Public"
               render={({ field }) => (
@@ -269,7 +270,7 @@ const UpdateProfile = () => {
                     />
                   </FormControl>
                   <FormDescription>
-                     Uncheck this if you want to make your Account private
+                    Uncheck this if you want to make your Account private
                   </FormDescription>
                 </FormItem>
               )}
