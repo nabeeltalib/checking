@@ -97,7 +97,7 @@ const Topbar2 = () => {
 
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="flex-grow max-w-md mx-auto w-full">
-          <div className="flex justify-center items-center gap-2">
+          <div className="flex justify-center items-center gap-2"onClick={handleCreateList}>
             <Input
               type="text"
               placeholder="Search lists..."
@@ -107,7 +107,7 @@ const Topbar2 = () => {
             />
             <button
               type="submit"
-              className="p-2 bg-purple-500 rounded-full hover:bg-purple-700 transition-all duration-300"
+              className="p-2 bg-purple-500 rounded-full hover:bg-purple-700 transition-all duration-300"onClick={handleCreateList}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -127,13 +127,13 @@ const Topbar2 = () => {
           </div>
 
           {searchResults?.pages?.length > 0 && (
-            <ul className="absolute bg-white text-black mt-2 rounded-lg shadow-lg w-full max-h-60 overflow-y-auto">
+            <ul className="absolute bg-gray-600 text-white mt-2 rounded-lg shadow-lg w-1/4 max-h-60 overflow-y-auto">
               {searchResults.pages.map((item: any) =>
                 item.map((list: any, index: number) => (
                   <li key={index} className="border-b last:border-b-0">
                     <Link
                       to={`/lists/${list.id}`}
-                      className="block px-4 py-2 hover:bg-gray-100"
+                      className="block px-4 py-2 hover:bg-gray-500"
                     >
                       "{list.Title}"
                     </Link>

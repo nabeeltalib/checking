@@ -18,6 +18,8 @@ const Topbar: React.FC = () => {
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLFormElement>(null);
+  const searchResultsRef = useRef<HTMLUListElement>(null);
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
 
@@ -28,8 +30,16 @@ const Topbar: React.FC = () => {
   }, [isSuccess, navigate]);
 
   useEffect(() => {
-    const handleClickOutside = (event:any) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchRef.current &&
+        searchResultsRef.current &&
+        !searchRef.current.contains(event.target as Node) &&
+        !searchResultsRef.current.contains(event.target as Node)
+      ) {
+        setIsSearch(false);
+      }
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -41,10 +51,11 @@ const Topbar: React.FC = () => {
     };
   }, []);
 
-  const handleSearch = (e:any) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       searchLists();
+      setIsSearch(true); // Show search results on search
     }
   };
 
@@ -76,7 +87,7 @@ const Topbar: React.FC = () => {
           />
         </Link>
 
-        <form onSubmit={handleSearch} className="flex-grow max-w-md mx-auto w-full">
+        <form onSubmit={handleSearch} ref={searchRef} className="flex-grow max-w-md mx-auto w-full">
           <div className="flex justify-center items-center gap-2">
             <Input
               type="text"
@@ -84,13 +95,12 @@ const Topbar: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className={`w-full bg-gray-800 text-white border-none rounded-lg focus:ring-2 focus:ring-purple-400 transition-all duration-300 ${
-                isSearch ? "block" : "hidden md:block"
+                isSearch ? "block" : "block"
               }`}
             />
             <button
               type="submit"
               className="p-2 bg-purple-500 rounded-full hover:bg-purple-700 transition-all duration-300"
-              onClick={() => setIsSearch(true)}
               aria-label="Search"
             >
               <svg
@@ -110,8 +120,8 @@ const Topbar: React.FC = () => {
             </button>
           </div>
 
-          {searchResults && (
-            <ul className="absolute bg-gray-700 text-white mt-2 rounded-lg shadow-lg w-1/4 max-h-60 overflow-y-auto">
+          {isSearch && searchResults?.pages?.length > 0 && (
+            <ul ref={searchResultsRef} className="absolute bg-gray-600 text-white rounded-lg shadow-lg w-1/2 md:w-1/4 max-h-60 overflow-y-auto">
               {searchResults.pages.map((page) =>
                 page.map((list: any) => (
                   <li key={list.id} className="border-b last:border-b-0">
