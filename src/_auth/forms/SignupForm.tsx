@@ -49,7 +49,7 @@ const SignupForm = () => {
       });
 
       if (!session) {
-        toast({ title: "Something went wrong. Please login to your new account." });
+        toast({ title: "Something went wrong. Please login your new account" });
         navigate("/sign-in");
         return;
       }
@@ -63,20 +63,7 @@ const SignupForm = () => {
         toast({ title: "Login failed. Please try again." });
       }
     } catch (error) {
-      // Enhanced error handling with user-friendly messages
-      if (error?.response?.status === 409) {
-        toast({
-          title: "Account already exists.",
-          description: "A user with this email or username already exists. Please try logging in.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Sign up failed.",
-          description: "An unexpected error occurred. Please try again later.",
-          variant: "destructive",
-        });
-      }
+      console.log({ error });
     }
   };
 
@@ -93,11 +80,7 @@ const SignupForm = () => {
       }
     } catch (error) {
       console.error("Google sign-up error:", error);
-      toast({
-        title: "Google sign-up failed.",
-        description: "An unexpected error occurred. Please try again later.",
-        variant: "destructive",
-      });
+      toast({ title: "Google sign-up failed. Please try again." });
     }
   };
 
@@ -110,7 +93,7 @@ const SignupForm = () => {
           Create a new account
         </h2>
         <p className="text-light-3 small-medium md:base-regular mt-2">
-          To use Snapgram, please enter your details
+          To use Snapgram, Please enter your details
         </p>
 
         <form

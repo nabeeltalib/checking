@@ -31,51 +31,26 @@ const SigninForm = () => {
   });
 
   const handleSignin = async (user: z.infer<typeof SigninValidation>) => {
-    try {
-      const session = await signInAccount(user);
+    const session = await signInAccount(user);
 
-      if (!session) {
-        toast({ title: "Login failed. Please try again.", description: "Invalid email or password." });
-        return;
-      }
+    if (!session) {
+      toast({ title: "Login failed. Please try again." });
+      return;
+    }
 
-      const isLoggedIn = await checkAuthUser();
+    const isLoggedIn = await checkAuthUser();
 
-      if (isLoggedIn) {
-        form.reset();
-        navigate("/");
-      } else {
-        toast({ title: "Login failed. Please try again.", description: "Unable to verify your session." });
-      }
-    } catch (error) {
-      // Handle specific errors with custom messages
-      if (error?.response?.status === 409) {
-        toast({
-          title: "Account already exists.",
-          description: "A user with this email already exists. Please try logging in.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Login failed.",
-          description: "An unexpected error occurred. Please try again later.",
-          variant: "destructive",
-        });
-      }
+    if (isLoggedIn) {
+      form.reset();
+      navigate("/");
+    } else {
+      toast({ title: "Login failed. Please try again." });
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    try {
-      await signInWithGoogle();
-      // Note: This will redirect the user, so no need for further handling here
-    } catch (error) {
-      toast({
-        title: "Google sign-in failed.",
-        description: "An unexpected error occurred. Please try again later.",
-        variant: "destructive",
-      });
-    }
+ const handleGoogleSignIn = () => {
+    signInWithGoogle();
+    // Note: This will redirect the user, so no need for further handling here
   };
 
   return (
