@@ -5,7 +5,7 @@ import { TopfivedEmbed } from './TopfivedEmbed';
 import { getListById, VoteOnItem } from '@/lib/appwrite/api';
 import { useUserContext } from '@/context/AuthContext';
 
-const EmbedPreview = () => {
+const EmbedFrame = () => {
   const { id } = useParams();
   const [embedList, setEmbedList] = useState<any>(null);
   const [refreshData, setRefreshData] = useState(false);
@@ -30,7 +30,7 @@ const EmbedPreview = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-zinc-900 text-black dark:text-white rounded-lg shadow-md">
+    <div className="w-full p-6 bg-white dark:bg-zinc-900 text-black dark:text-white rounded-lg shadow-md">
       <h2 className="text-3xl font-bold mb-4 text-center">Embed Preview</h2>
       <div className="flex space-x-4 mb-6">
         <button
@@ -54,10 +54,8 @@ const EmbedPreview = () => {
           <BarChart className="inline-block mr-2" /> Live Leaderboard
         </button>
       </div>
-
       {
-        embedList &&
-        <TopfivedEmbed
+        embedList && <TopfivedEmbed
         type={embedType}
         items={items || []}
         handleVote={handleVote}
@@ -65,8 +63,9 @@ const EmbedPreview = () => {
         list={embedList}
         />
       }
+      
     </div>
   );
 };
 
-export default EmbedPreview;
+export default EmbedFrame;

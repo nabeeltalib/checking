@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { IUser } from "@/types";
 import { getCurrentUser, getUserLists, signInWithGoogle } from "@/lib/appwrite/api";
 import { account } from "@/lib/appwrite/config";
+import { IUser } from "@/types";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export const INITIAL_USER: IUser = {
   id: "",
@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     try {
       const currentAccount = await getCurrentUser();
-      
+
       if (currentAccount) {
         const curatedList = await getUserLists(currentAccount.$id);
         setUser({
@@ -96,13 +96,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } catch (error) {
-      // to not through errors on guest users
+        // to not through errors on guest users
         if (error.code === 401) {
           return null;
         }
         console.log("Error initializing auth:", error);
       } finally {
-        setIsLoading(false);  
+        setIsLoading(false);
       }
     };
 
@@ -113,11 +113,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const handleAuthRedirect = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const userId = urlParams.get('userId');
-      
+
       if (userId) {
-        // Clear the URL parameters
+        // Clear the URL parametersw
         window.history.replaceState({}, document.title, window.location.pathname);
-        
+
         // Check if the user is authenticated
         const isLoggedIn = await checkAuthUser();
         if (isLoggedIn) {
@@ -128,7 +128,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     handleAuthRedirect();
   }, [navigate]);
-
   const contextValue = useMemo(
     () => ({
       user,
@@ -139,6 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       checkAuthUser,
       signOut,
       signInWithGoogle: handleGoogleSignIn,
+      
     }),
     [user, isLoading, isAuthenticated]
   );

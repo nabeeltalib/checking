@@ -96,8 +96,9 @@ export const useSignInWithGoogle = () => {
   const navigate = useNavigate();
   return useMutation({
     mutationFn: signInWithGoogle,
-    onSuccess: () => {
-    navigate("http://localhost:3000");
+    onSuccess: (data) => {
+      console.log("Success sigin in with google: ", data)
+      navigate("http://localhost:3000");
     },
   });
 };

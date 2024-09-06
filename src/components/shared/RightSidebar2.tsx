@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { rightSidebarLinks2 } from '@/constants';
-import { Button } from '../ui/button'; // Assuming Button component exists
+import { Button } from '../ui/button';
 import { useUserContext } from '@/context/AuthContext';
 
 const RightSidebar2 = () => {
@@ -16,7 +16,16 @@ const RightSidebar2 = () => {
   const handleCollaborationClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (user?.isAuthenticated) {
-      // Handle the normal navigation or action for Collaboration
+      // Handle Collaboration click
+    } else {
+      handleDialogOpen();
+    }
+  };
+
+  const handleFriendsClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (user?.isAuthenticated) {
+      // Handle Friends click
     } else {
       handleDialogOpen();
     }
@@ -35,11 +44,14 @@ const RightSidebar2 = () => {
                   isActive
                     ? 'bg-primary-500 text-light-1'
                     : link.restricted
-                    ? 'text-gray-500 hover:text-gray-400'  // Darker text for restricted links
+                    ? 'text-gray-400 hover:text-gray-200'
                     : 'text-light-2 hover:bg-dark-4'
                 }`
               }
-              onClick={link.label === 'Collaboration' ? handleCollaborationClick : undefined}
+              onClick={
+                link.label === 'Collaboration' ? handleCollaborationClick : 
+                link.label === 'Friends' ? handleFriendsClick : undefined // Handle Friends click
+              }
             >
               <img
                 src={link.icon}
@@ -48,14 +60,15 @@ const RightSidebar2 = () => {
                   pathname === link.route
                     ? ''
                     : link.restricted
-                    ? 'brightness-50 invert'  // Darker icon for restricted links
-                    : 'brightness-75 invert'
+                    ? 'brightness-50 invert'
+                    : 'brightness-50 invert'
                 }`}
               />
               <span className="hidden lg:inline">{link.label}</span>
             </NavLink>
           ))}
         </div>
+
         <div className="flex flex-col gap-4 mt-6 mb-28">
           <div className="text-xs text-gray-400 text-center mt-4">
             <NavLink to="/privacypolicy" className="hover:text-white">
@@ -83,8 +96,8 @@ const RightSidebar2 = () => {
               </svg>
             </button>
             <div className="text-center">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Welcome Back!</h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-6">Sign in to continue and access all features.</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Unlock Full Access!</h3>
+              <p className="text-sm sm:text-sm text-gray-600 mb-6">Sign up now to like, comment, save, and remix lists. Create your own rankings and join the community!</p>
             </div>
             <div className="flex flex-col gap-4">
               <Button

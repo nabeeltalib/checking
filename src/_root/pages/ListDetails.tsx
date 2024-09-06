@@ -33,6 +33,7 @@ const ListDetails: React.FC = () => {
 
   const [newComment, setNewComment] = useState("");
   const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [isEmbed, setIsEmbed] = useState(false)
   const [connection, setConnection] = useState<any>(undefined);
 
   useEffect(() => {
@@ -147,6 +148,8 @@ const ListDetails: React.FC = () => {
   };
 
   const isCollaborator = list.users.some((collab: any) => collab.$id === user.id);
+  
+  let embedLink = `<iframe src="https://topfived.com/embed?type=top5&title=${list.Title.replace(/\s+/g, '+')}&listId=${list.$id}" width="100%" height="300"></iframe>`;
 
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto bg-dark-2 rounded-lg shadow-md p-4 sm:p-6">
@@ -198,7 +201,7 @@ const ListDetails: React.FC = () => {
               </Button>
             ) : isOwnProfile ? null : (
               <Button
-                className="border-2 text-xs sm:text-sm bg-dark-4 text-gray-400 px-3 py-2 rounded-xl"
+                className="border border-slate-300 text-xs sm:text-sm text-gray-400 px-3 py-2 rounded-xl"
                 onClick={handleUnFollow}
                 disabled={isFollowLoading}>
                 {isFollowLoading ? <Loader /> : <span>Unfollow</span>}
@@ -242,12 +245,7 @@ const ListDetails: React.FC = () => {
           <div className="ml-auto relative group flex items-center">
             {(isOwnProfile || isCollaborator) && (
               <>
-                <Button
-                  className="border-2 border-gray-700 text-xs text-blue-500 hover:bg-gray-200 mt-5"
-                  onClick={handleEmbed}
-                >
-                  Add to Embed
-                </Button>
+                
                 <div className="relative group ml-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -320,9 +318,10 @@ const ListDetails: React.FC = () => {
 
         <ListStats 
           list={list} 
-          userId={user.id} 
-          textSize="text-xs" 
-          backgroundColor="" 
+          userId={user.id}
+          setIsEmbed={setIsEmbed} 
+          textSize="text-xs" // Adjust text size as needed
+          backgroundColor="" // Adjust background color as needed
         />
         {isOwnProfile && (
           <div className="flex gap-4 mt-6 justify-center sm:justify-start">
@@ -339,9 +338,24 @@ const ListDetails: React.FC = () => {
             </Button>
           </div>
         )}
-        
+        <div className="">
+        {isEmbed && <div className="flex flex-col gap-2">
+          <h1 className="text-white text-xl font-bold">Embed Code</h1>
+          <div className="flex justify-between">
+            <div className="gap-2 flex">
+              <button className="w-24 bg-zinc-950 p-2 border-2 border-solid border-blue-950 rounded-xl">Static</button>
+              <button  className="w-24">Live</button>
+            </div>
+            <Link to={"#"} className="text-sm underline text-blue-400" >What's the difference?</Link>
+          </div>
+          <div className="border-2 border-solid border-white p-2">
+          {embedLink}
+          </div>
+          <Link to={`${import.meta.env.VITE_APP_DOMAIN}/embedpreview/${list.$id}`} className="flex justify-end text-blue-400 text-lg mr-3">See Preview</Link>
+        </div>}
+      </div>
         <div className="mt-6">
-          <h3 className="text-sm font-semibold text-gray-500 mb-2"> Comments:</h3>
+          {/*<h3 className="text-sm font-semibold text-gray-500 mb-2"> Comments:</h3>
           <form onSubmit={handleAddComment} className="mb-4">
             <textarea
               value={newComment}
@@ -361,7 +375,7 @@ const ListDetails: React.FC = () => {
             <div key={index} className="mb-4">
               <Comment comment={comment} />
             </div>
-          ))}
+          ))}*/}
         </div>
       </div>
 

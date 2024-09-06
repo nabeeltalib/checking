@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Loader } from "@/components/shared";
 import { useGetCurrentUser } from "@/lib/react-query/queries";
 import ListCard2 from "@/components/shared/ListCard2";
-import { motion } from "framer-motion"; // Add this import
+import { motion } from "framer-motion";
 
 const Saved: React.FC = () => {
   const { data: currentUser, isLoading, error } = useGetCurrentUser();
@@ -12,7 +12,7 @@ const Saved: React.FC = () => {
   }
 
   if (error) {
-    return <div className="text-light-4 text-center">An error occurred. Please try again later.</div>;
+    return <div className="text-light-4 text-center">Error: {error.message || 'An error occurred. Please try again later.'}</div>;
   }
 
   if (!currentUser) {
@@ -20,7 +20,7 @@ const Saved: React.FC = () => {
   }
 
   const savedLists = useMemo(
-    () => currentUser?.save?.map((savedItem: any) => ({ ...savedItem.list })) || [],
+    () => currentUser?.save?.map((savedItem: any) => savedItem?.list || {}) || [],
     [currentUser?.save]
   );
 
@@ -49,9 +49,9 @@ const Saved: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-            {savedLists.map((list: any) => (
+            {savedLists.map((list: any, index) => (
               <motion.div
-                key={list.$id}
+                key={`${list.$id}-${index}`} // Combine $id and index to ensure uniqueness
                 className="shadow-lg rounded-lg overflow-hidden bg-dark-2 hover:shadow-xl transition-shadow duration-300"
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}

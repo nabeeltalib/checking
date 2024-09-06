@@ -53,13 +53,13 @@ export const sidebarLinks2 = [
   },
   {
     imgURL: "/assets/icons/explore.svg",
-    route: "/explore",
+    route: "/explore2",
     label: "Explore",
     icon:"/assets/icons/explore.svg"
   },
   {
     imgURL: "/assets/icons/list.svg",
-    route: "/comprehensive-leaderboard",
+    route: "/comprehensive-leaderboard2",
     label: "LeaderBoard",
     icon:"/assets/icons/list.svg"
   }, 
@@ -103,14 +103,14 @@ export const bottombarLinks2 = [
     label: "Home",
   },  
   {
-    imgURL: "/assets/icons/discover.svg",
-    route: "/discover",
-    label: "Discover",
-    icon:"/assets/icons/discover.svg"
+    imgURL: "/assets/icons/explore.svg",
+    route: "/explore2",
+    label: "Explore",
+    icon:"/assets/icons/explore.svg"
   },
   {
     imgURL: "/assets/icons/list.svg",
-    route: "/comprehensive-leaderboard",
+    route: "/comprehensive-leaderboard2",
     label: "Leaderboard",
   },
   {
@@ -165,12 +165,7 @@ export const rightSidebarLinks = [
     label: "My Profile",
     icon:"/assets/icons/profile.svg"
   },
-  {
-    imgURL: "/assets/icons/user-embed.svg",
-    route: "/embed",
-    label: "Embed Your List",
-    icon:"/assets/icons/embed.svg"
-  },
+ 
 ];
 
 export const rightSidebarLinks2 = [
@@ -187,4 +182,11 @@ export const rightSidebarLinks2 = [
     icon: "/assets/icons/collab.svg",
     restricted: true,  // Restricted
   },
+  {
+    imgURL: "/assets/icons/people.svg",
+    route: "/sign-in",
+    label: "Friends",
+    icon:"/assets/icons/people.svg",
+    restricted: true,  // Restricted
+  },  
 ];

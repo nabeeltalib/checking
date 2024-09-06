@@ -4,6 +4,7 @@ import { Routes, Route } from "react-router-dom";
 import {
   Home,
   Explore,
+  Explore2,
   Saved,
   CreateList,
   Profile,
@@ -46,8 +47,11 @@ import EmbedPreview from "./components/shared/EmbedPreview";
 import SegmentedLeaderboardPage from "./_root/pages/SegmentedLeaderboardPage";
 import ProfileScreen from "./_root/pages/ProfileScreen";
 import ComprehensiveLeaderboard from "./_root/pages/ComprehensiveLeaderboard";
+import ComprehensiveLeaderboard2 from "./_root/pages/ComprehensiveLeaderboard2";
 import OnboardingScreens from "./_root/pages/OnBoardingScreens";
 import OnboardingPage from "./components/shared/OnboardingPage";
+import EmbedList from "./_root/pages/EmbedList";
+import EmbedFrame from "./components/shared/EmbedFrame";
 
 const App = () => {
 
@@ -113,13 +117,16 @@ const App = () => {
           <Route path="/helpfaqpage" element={<HelpFAQPage />} />
           <Route path="/contactpage" element={<ContactPage />} />          
           <Route path="/comprehensive-leaderboard" element={<ComprehensiveLeaderboard />} /> {/* New route */}
+          <Route path="/comprehensive-leaderboard2" element={<ComprehensiveLeaderboard2 />} /> {/* New route */}
           <Route path="/privacypolicy" element={<PrivacyPolicy />} />
           <Route path="/termsandconditions" element={<TermsAndConditions />} />
           <Route path="/cookiepolicy" element={<CookiePolicy />} />
-          
+          <Route path="/explore2" element={<Explore2 />} />
+
         </Route>
+        <Route path="/embedframe/:id" element={<EmbedFrame />} />
       </Routes>
-      <FAB />
+     
       <Toaster />
     </main> 
     : 
@@ -128,7 +135,7 @@ const App = () => {
     <Route element={<RootLayout2 />}>
     <Route path="/" element={<Home />} />
     <Route path="/home" element={<Home />} />
-    <Route path="/explore" element={<Explore />} />
+    <Route path="/explore2" element={<Explore2 />} />
     <Route path="/discover" element={<AllLists />} />
     <Route path="/trending" element={<Trending />} />
     <Route path="/recommended" element={<Recomended />} />
@@ -137,10 +144,11 @@ const App = () => {
     <Route path="/helpfaqpage" element={<HelpFAQPage />} />
     <Route path="/contactpage" element={<ContactPage />} />          
     <Route path="/comprehensive-leaderboard" element={<ComprehensiveLeaderboard />} /> {/* New route */}
+    <Route path="/comprehensive-leaderboard2" element={<ComprehensiveLeaderboard2 />} /> {/* New route */}
     <Route path="/privacypolicy" element={<PrivacyPolicy />} />
     <Route path="/termsandconditions" element={<TermsAndConditions />} />
     <Route path="/cookiepolicy" element={<CookiePolicy />} />
-    
+
     </Route>
     </Routes>
     </div>}

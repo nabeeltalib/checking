@@ -55,7 +55,7 @@ const Categories = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4 w-full max-w-5xl mx-auto">
+    <div className="flex flex-col gap-4 p-4 w-full max-w-2xl mx-auto">
       <h1 className="font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
         Explore Lists by Categories or Tags
       </h1>

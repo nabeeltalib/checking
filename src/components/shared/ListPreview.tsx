@@ -16,16 +16,16 @@ const ListPreview: React.FC<ListPreviewProps> = ({ title, description, items, ca
   const visibleItems = isExpanded ? items : items.slice(0, 5);
 
   return (
-    <div className="p-6 bg-dark-2 rounded-lg shadow-md">      
+    <div className="text-slate-600 p-6 bg-dark-4 rounded-lg shadow-md">      PREVIEW
       <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-2">
         {/* Button moved to the right for both mobile and desktop views */}
        </div>
 
-      <div className="bg-dark-3 text-gray-500 text-center text-xl font-thin py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
-        Ranking For
+      <div className="bg-dark-3 text-slate-600 text-center text-xl font-thin py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
+        Your Ranking For
       </div>
 
-      <h4 className="text-md font-bold text-blue-300 mt-4 mb-6">{title || "Your Title Here"}</h4>
+      <h4 className="text-md font-bold text-blue-300 mt-4 mb-6">{title || "Title"}</h4>
 
       <ul className="text-xs grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
         {visibleItems.filter(item => item.isVisible).map((item, index) => (
@@ -33,7 +33,7 @@ const ListPreview: React.FC<ListPreviewProps> = ({ title, description, items, ca
             <span className="text-xs w-6 h-6 flex items-center justify-center bg-dark-4 text-blue-300 rounded-full mr-2">
               {index + 1}
             </span>
-            <span>{item.content || "Item content here"}</span>
+            <span>{item.content || "ranking"}</span>
           </li>
         ))}
       </ul>

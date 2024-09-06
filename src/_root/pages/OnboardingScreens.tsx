@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { EyeIcon, EyeOffIcon } from 'lucide-react';
-import { useCreateUserAccount, useSignInAccount, useSignInWithGoogle } from "@/lib/react-query/queries";
-import { useToast } from "@/components/ui/use-toast";
-import { Link, useNavigate } from "react-router-dom";
-import { useUserContext } from "@/context/AuthContext";
 import { Loader2 } from "@/components/shared/Loader";
+import { useToast } from "@/components/ui/use-toast";
+import { useUserContext } from "@/context/AuthContext";
+import { getCurrentUser } from "@/lib/appwrite/api";
+import { useCreateUserAccount, useSignInAccount, useSignInWithGoogle } from "@/lib/react-query/queries";
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from "react-router-dom";
 
 const initialData = {
   name: "",
@@ -25,7 +26,7 @@ const OnboardingScreens = () => {
   const { mutateAsync: createUserAccount, isLoading: isCreatingAccount } = useCreateUserAccount();
   const { mutateAsync: signInAccount, isLoading: isSigningInUser } = useSignInAccount();
   const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
-  const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
+  const { checkAuthUser, isLoading: isUserLoading, user: sessionUser } = useUserContext();
 
   const handleSignup = async () => {
     try {
@@ -48,10 +49,13 @@ const OnboardingScreens = () => {
       }
 
       const isLoggedIn = await checkAuthUser();
+      const currentAccount = await getCurrentUser();
+
+
 
       if (isLoggedIn) {
         setUser(initialData);
-        navigate("/");
+        navigate(currentAccount?.$id ? `/update-profile/${currentAccount.$id}` : `/profile/profile`);
       } else {
         toast({ title: "Login failed. Please try again." });
       }
@@ -82,14 +86,14 @@ const OnboardingScreens = () => {
     switch (step) {
       case 1:
         return (
-          <>        
+          <>
             <img src="/assets/images/logo.svg" alt="logo" />
 
             <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12 mb-4">New to Topfived? </h2>
             <p className=" pt-5 sm:pt-12 mb-4">Create your own lists, Discover trusted recommendations, Join discussions </p>
 
 
-            
+
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-400 mb-1" htmlFor="email">
                 Enter email address*
@@ -233,8 +237,8 @@ const OnboardingScreens = () => {
         <span className="flex-shrink mx-4 text-gray-600">OR</span>
         <div className="flex-grow border-t border-gray-300"></div>
       </div>
-      <button 
-        type="button" 
+      <button
+        type="button"
         className="w-full mt-4 flex items-center justify-center bg-blue-950 border border-gray-700 rounded-md py-2 px-4 text-sm font-medium text-white hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         onClick={handleGoogleSignIn}
         disabled={isGoogleLoading}

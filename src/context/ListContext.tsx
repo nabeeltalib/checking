@@ -4,6 +4,10 @@ import { IList, IListItem } from '@/types';
 import { getRecentLists } from '@/lib/appwrite/api';
 import { QUERY_KEYS } from '@/lib/react-query/queryKeys';
 
+interface APIResponse {
+  documents: IList[];
+}
+
 interface ListContextProps {
   lists: IList[];
   isLoading: boolean;
@@ -24,11 +28,11 @@ export const useListContext = (): ListContextProps => {
 };
 
 export const ListProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { data, isLoading, refetch } = useQuery<{ documents: any[] }>([QUERY_KEYS.GET_RECENT_LISTS], getRecentLists, {
+  const { data, isLoading, refetch } = useQuery<APIResponse>([QUERY_KEYS.GET_RECENT_LISTS], getRecentLists, {
     refetchOnWindowFocus: false,
   });
 
-  const [localLists, setLocalLists] = useState<any[]>([]);
+  const [localLists, setLocalLists] = useState<IList[]>([]);
 
   const lists = useMemo(() => {
     const apiLists = data?.documents?.map(list => ({
@@ -39,21 +43,22 @@ export const ListProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return { content, isVisible: isVisible === 'true' };
         }
         return item;
-      })
+      }) || [],
     })) || [];
     return [...apiLists, ...localLists];
   }, [data, localLists]);
 
-  const addList = useCallback((list: any) => {
-    setLocalLists(prev => [...prev, list]);
+  const addList = useCallback((list: IList) => {
+    const newList = { ...list, id: list.id || `local-${Date.now()}` }; // Ensure unique ID
+    setLocalLists(prev => [...prev, newList]);
   }, []);
 
-  const updateList = useCallback((id: string, updatedList: Partial<any>) => {
-    setLocalLists(prev => prev.map(list => list.id === id ? { ...list, ...updatedList } : list));
+  const updateList = useCallback((id: string, updatedList: Partial<IList>) => {
+    setLocalLists(prev => prev.map(list => list.$id === id ? { ...list, ...updatedList } : list));
   }, []);
 
   const deleteList = useCallback((id: string) => {
-    setLocalLists(prev => prev.filter(list => list.id !== id));
+    setLocalLists(prev => prev.filter(list => list.$id !== id));
   }, []);
 
   const value = useMemo(

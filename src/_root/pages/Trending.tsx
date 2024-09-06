@@ -50,7 +50,7 @@ const Trending = () => {
   return (
     <div>
       <h1 className="font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>Trending List's</h1>
-      <div className="mt-5 flex flex-col">
+      <div className="flex flex-col gap-4 p-4 w-full max-w-2xl mx-auto">
         {user.id
           ? trending.map((list: any, index: number) => (
               <ListCard2 list={list} key={index} />

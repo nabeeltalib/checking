@@ -97,62 +97,50 @@ const Profile: React.FC = () => {
   return (
     <div className="flex flex-col gap-6 w-full p-6 mx-auto max-w-7xl">
       {/* User Info */}
-      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 bg-dark-2 p-4 sm:p-6 rounded-lg">
+      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 bg-dark-2 p-4 sm:p-6 rounded-lg shadow-lg">
         <img
           src={currentUser.ImageUrl || "/assets/icons/profile-placeholder.svg"}
           alt={`${currentUser.Name}'s profile`}
-          className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover"
+          className="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover shadow-md"
         />
         <div className="text-center sm:text-left">
-          <h1 className="text-2xl sm:text-3xl font-bold text-light-1">
+          <h1 className="text-3xl sm:text-4xl font-bold text-light-1">
             {currentUser.Name}
           </h1>
-          <p className="text-light-3">@{currentUser.Username}</p>
-          <p className="text-light-2 mt-2">
+          <p className="text-light-3 text-sm">@{currentUser.Username}</p>
+          <p className="text-light-2 mt-2 text-xs">
             {currentUser.Bio || "No bio available"}
           </p>
-          <div className="flex flex-col gap-1">
-            <div className="flex justify-center sm:justify-start gap-4 mt-3 text-light-2">
-              <span>{connection?.follower?.length || 0} followers</span>
-              <span>{connection?.following?.length || 0} following</span>
-              <span>{userLists?.length || 0} lists</span>
-              {currentUser.Public && (
-                !isOwnProfile && !isFollowed ? (
-                  <Button
-                    className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-xl"
-                    onClick={handleFollow}
-                    disabled={isFollowLoading}
-                  >
-                    {isFollowLoading ? <Loader /> : <span>Follow</span>}
-                  </Button>
-                ) : isOwnProfile ? null : (
-                  <Button
-                    className="border-2 text-white px-4 sm:px-6 py-2 rounded-xl"
-                    onClick={handleUnFollow}
-                    disabled={isFollowLoading}
-                  >
-                    {isFollowLoading ? <Loader /> : <span>Unfollow</span>}
-                  </Button>
-                )
-              )}
-            </div>
-            {connection?.follower?.length > 2 && (
-              <span>
-                followed by{" "}
-                {connection.follower.slice(0, 2).map((user: any) => (
-                  <Link key={user.$id} to={`/profile/${user.$id}`} className="mr-2">
-                    {user.Name}
-                  </Link>
-                ))}{" "}
-                +{connection.follower.length - 2} more
-              </span>
-            )}
-            {!currentUser.Public && !isOwnProfile && !isRequestSent && (
+          <div className="text-xs flex gap-6 mt-3 text-light-2">
+            <span>{connection?.follower?.length || 0} followers</span>
+            <span>{connection?.following?.length || 0} following</span>
+            <span>{userLists?.length || 0} lists</span>
+          </div>
+          <div className="mt-4 flex justify-center sm:justify-start gap-4">
+            {currentUser.Public && !isOwnProfile && !isFollowed && (
               <Button
-                className="mt-4 bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-full"
-                onClick={handleFriendRequest}
+                className="bg-primary-500 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-primary-600"
+                onClick={handleFollow}
+                disabled={isFollowLoading}
               >
-                {isRequestSent ? "Request Sent" : "Send Friend Request"}
+                {isFollowLoading ? <Loader /> : "Follow"}
+              </Button>
+            )}
+            {isOwnProfile && (
+              <Button
+                className="bg-gray-700 text-white px-4 sm:px-6 py-2 rounded-lg"
+                onClick={() => navigate(`/update-profile/${id}`)}
+              >
+                Edit Profile
+              </Button>
+            )}
+            {!isOwnProfile && isFollowed && (
+              <Button
+                className="border border-slate-300 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-red-600"
+                onClick={handleUnFollow}
+                disabled={isFollowLoading}
+              >
+                {isFollowLoading ? <Loader /> : "Unfollow"}
               </Button>
             )}
           </div>
@@ -160,121 +148,58 @@ const Profile: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-2">
+      <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
         <Button
           onClick={() => setActiveTab("lists")}
-          className={`tab-button ${activeTab === "lists" ? "active" : ""} flex gap-2`}
+          className={`py-2 px-6 ${activeTab === "lists" ? "bg-purple-700 text-white" : "bg-gray-700 text-light-2"} rounded-full`}
         >
-          <img
-            src="/assets/icons/list.svg"
-            alt="lists"
-            width={20}
-            height={20}
-          />
           Lists
         </Button>
         <Button
           onClick={() => setActiveTab("liked")}
-          className={`tab-button ${activeTab === "liked" ? "active" : ""} flex gap-2`}
+          className={`py-2 px-6 ${activeTab === "liked" ? "bg-purple-700 text-white" : "bg-gray-700 text-light-2"} rounded-full`}
         >
-          <img
-            src="/assets/icons/like.svg"
-            alt="like"
-            width={20}
-            height={20}
-          />
           Liked Lists
         </Button>
         <Button
           onClick={() => setActiveTab("friends")}
-          className={`tab-button ${activeTab === "friends" ? "active" : ""} flex gap-2`}
+          className={`py-2 px-6 ${activeTab === "friends" ? "bg-purple-700 text-white" : "bg-gray-700 text-light-2"} rounded-full`}
         >
-          <img
-            src="/assets/icons/people.svg"
-            alt="friends"
-            width={20}
-            height={20}
-          />
           Friends
         </Button>
       </div>
 
-      {/* Edit Functionality */}
-      {isOwnProfile && (
-        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-8">
-          <Button
-            className={`tab-button flex gap-2`}
-            onClick={() => navigate(`/update-profile/${id}`)}
-          >
-            Edit Profile
-          </Button>
-          <Button
-            className={`tab-button flex gap-2`}
-            onClick={() => navigate(`/manage-list/${id}`)}
-          >
-            Manage List
-          </Button>
-          <Button
-            className={`tab-button flex gap-2`}
-            onClick={() => navigate("/userActivity")}
-          >
-            View Activity
-          </Button>
-        </div>
-      )}
-
       {/* Content based on selected tab */}
       {activeTab === "lists" && (
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-5 mt-6">
           <div>
-            <h2
-              className="text-2xl font-bold text-light-1 mb-4 cursor-pointer"
-              onClick={() => setCuratedExpanded(!isCuratedExpanded)}
-            >
-              Curated Lists
+            <h2 className="text-2xl font-bold text-light-1 mb-4">
+              My Lists
             </h2>
             <GridListList lists={userLists || []} showUser={false} />
           </div>
           <div>
-            <h2
-              className="text-2xl font-bold text-light-1 mb-4 cursor-pointer"
-              onClick={() => setSavedExpanded(!isSavedExpanded)}
-            >
+            <h2 className="text-2xl font-bold text-light-1 mb-4">
               Saved Lists
             </h2>
-            {isSavedExpanded &&
-              (savedLists.length === 0 ? (
-                <p className="text-light-4">No saved lists</p>
-              ) : (
-                <GridListList lists={savedLists} showStats={false} />
-              ))}
-          </div>
-          <div>
-            <h2
-              className="text-2xl font-bold text-light-1 mb-4 cursor-pointer"
-              onClick={() =>
-                setCollaborativeExpanded(!isCollaborativeExpanded)
-              }
-            >
-              Collaborative Lists
-            </h2>
-            {isCollaborativeExpanded &&
-              (collaborativeList.length === 0 ? (
-                <p className="text-light-4">No Collaborative lists</p>
-              ) : (
-                <GridListList lists={collaborativeList} showUser={false} />
-              ))}
+            {savedLists.length === 0 ? (
+              <p className="text-light-2">You haven't saved any lists yet.</p>
+            ) : (
+              <GridListList lists={savedLists} showStats={false} />
+            )}
           </div>
         </div>
       )}
+
       {activeTab === "liked" && (
-        <div>
+        <div className="mt-6">
           <h2 className="text-2xl font-bold text-light-1 mb-4">Liked Lists</h2>
           <GridListList lists={currentUser.likedLists || []} showUser={true} />
         </div>
       )}
+
       {activeTab === "friends" && (
-        <div>
+        <div className="mt-6">
           <h2 className="text-2xl font-bold text-light-1 mb-4">Friends</h2>
           {isLoadingFriends ? <Loader /> : <FriendsList friends={friends} />}
         </div>
@@ -283,14 +208,8 @@ const Profile: React.FC = () => {
       {/* Friend Requests section (only on own profile) */}
       {isOwnProfile && activeTab === "friends" && (
         <div className="mt-8">
-          <h2 className="text-2xl font-bold text-light-1 mb-4">
-            Friend Requests
-          </h2>
-          {isLoadingFriendRequests ? (
-            <Loader />
-          ) : (
-            <FriendRequests requests={friendRequests} />
-          )}
+          <h2 className="text-2xl font-bold text-light-1 mb-4">Friend Requests</h2>
+          {isLoadingFriendRequests ? <Loader /> : <FriendRequests requests={friendRequests} />}
         </div>
       )}
 

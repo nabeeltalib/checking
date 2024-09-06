@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useGetRecentLists, useGetAISuggestions } from '@/lib/react-query/queries';
+import { motion } from 'framer-motion';
+import { useGetRecentLists } from '@/lib/react-query/queries';
 import { ListCard, Loader } from '@/components/shared';
 import { getTrendingTags, getPopularCategories } from '@/lib/appwrite/api';
 import { useUserContext } from '@/context/AuthContext';
@@ -11,32 +12,30 @@ const Explore: React.FC = () => {
   const { user } = useUserContext();
   const { toast } = useToast();
   const [trendingTags, setTrendingTags] = useState<string[]>([]);
-  const [popularCategories, setPopularCategories] = useState<string[]>([]);
+  const [popularCategories, setPopularCategories] = useState<{ name: string }[]>([]);
   const [isTagsLoading, setIsTagsLoading] = useState(true);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     data: recentListsData,
     isLoading: isLoadingRecentLists,
-    error: recentListsError,
+    error: recentListsError
   } = useGetRecentLists();
-
-  const {
-    data: aiSuggestions,
-    isLoading: isLoadingAISuggestions,
-    error: aiSuggestionsError,
-  } = useGetAISuggestions(user.id);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [tags, categories] = await Promise.all([getTrendingTags(), getPopularCategories()]);
+        const [tags, categories] = await Promise.all([
+          getTrendingTags(),
+          getPopularCategories()
+        ]);
         setTrendingTags(tags);
         setPopularCategories(categories);
+        setError(null);
       } catch (error) {
         console.error('Error fetching data:', error);
-        setFetchError('Failed to fetch data. Please try again later.');
+        setError('Failed to fetch data. Please try again later.');
       } finally {
         setIsTagsLoading(false);
         setIsCategoriesLoading(false);
@@ -46,96 +45,137 @@ const Explore: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (recentListsError || aiSuggestionsError) {
+    if (recentListsError) {
       toast({
-        title: 'Error',
-        description: 'An error occurred while fetching data. Please try again later.',
-        variant: 'destructive',
+        title: 'Error fetching recent lists',
+        description: 'Please try again later',
+        variant: 'destructive'
       });
     }
-  }, [recentListsError, aiSuggestionsError, toast]);
+  }, [recentListsError, toast]);
 
-  const renderedLists = useMemo(() => {
-    if (recentListsData?.length > 0) {
-      return recentListsData.map((list: any) =>
-        user.id ? <ListCard2 key={list.$id} list={list} /> : <ListCard key={list.$id} list={list} />
-      );
-    } else {
-      return <p>No recent lists available.</p>;
-    }
-  }, [recentListsData, user.id]);
-
-  if (isLoadingRecentLists || isLoadingAISuggestions || isTagsLoading || isCategoriesLoading) {
+  if (isLoadingRecentLists) {
     return <Loader />;
   }
 
-  if (fetchError || recentListsError || aiSuggestionsError) {
+  if (error || recentListsError) {
     return (
-      <div className="text-red-500">
-        {fetchError || recentListsError?.message || aiSuggestionsError?.message}
+      <div className="flex flex-col items-center justify-center h-screen bg-dark-1">
+        <p className="text-red-500 text-xl mb-4">
+          {error || (recentListsError as Error)?.message}
+        </p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="bg-primary-500 text-white px-6 py-2 rounded-full hover:bg-primary-600 transition-colors"
+        >
+          Retry
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="explore-container common-container w-full">
-      <section className="mb-8">
-        <h3 className="text-xl font-semibold text-light-1 mb-4">Interesting List Titles</h3>
-        {aiSuggestions && aiSuggestions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {aiSuggestions.map((suggestion, index) => (
-              <div key={index} className="bg-dark-3 p-4 rounded-lg">
-                <p className="text-light-1">{suggestion}</p>
-              </div>
+    <div className="explore-container common-container w-full max-w-7xl mx-auto px-4 py-8">
+      <motion.h1 
+        className="text-4xl font-bold text-light-1 mb-8 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        Explore TopFived
+      </motion.h1>
+
+      <motion.section 
+        className="mb-12"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <h3 className="text-2xl font-semibold text-light-1 mb-6">Popular Categories</h3>
+        <div className="flex gap-4 flex-wrap">
+          {isCategoriesLoading ? (
+            <Loader />
+          ) : popularCategories.length > 0 ? (
+            popularCategories.map((category, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link
+                  to={`/categories/${category.name}`}
+                  className="bg-dark-4 text-light-1 px-4 py-2 rounded-full hover:bg-primary-500 transition-colors shadow-md"
+                >
+                  {category.name}
+                </Link>
+              </motion.div>
+            ))
+          ) : (
+            <p className="text-light-2">No categories found.</p>
+          )}
+        </div>
+      </motion.section>
+
+      <motion.section 
+        className="mb-12"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <h3 className="text-2xl font-semibold text-light-1 mb-6">Trending Tags</h3>
+        <div className="flex gap-4 flex-wrap">
+          {isTagsLoading ? (
+            <Loader />
+          ) : trendingTags.length > 0 ? (
+            trendingTags.map((tag, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Link
+                  to={`/categories/${tag}`}
+                  className="bg-dark-3 text-light-2 px-4 py-2 rounded-full hover:bg-primary-500 hover:text-light-1 transition-colors shadow-md"
+                >
+                  #{tag}
+                </Link>
+              </motion.div>
+            ))
+          ) : (
+            <p className="text-light-2">No trending tags found.</p>
+          )}
+        </div>
+      </motion.section>
+
+      <motion.section 
+        className="w-full"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+      >
+        <h3 className="text-2xl font-semibold text-light-1 mb-6">Recent Lists</h3>
+        {recentListsData?.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            {recentListsData?.map((list: any) => (
+              <motion.div
+                key={list.$id}
+                whileHover={{ scale: 1.03 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                {user?.id ? (
+                  <ListCard2 list={list} />
+                ) : (
+                  <ListCard list={list} />
+                )}
+              </motion.div>
             ))}
           </div>
         ) : (
-          <p className="text-light-2">No AI suggestions available.</p>
+          <p className="text-light-2 text-center text-lg">
+            No recent lists available. Be the first to create one!
+          </p>
         )}
-      </section>
-
-      <section className="mb-8">
-        <h3 className="text-xl font-semibold text-light-1 mb-4">Popular Categories</h3>
-        <div className="flex gap-4 flex-wrap">
-          {popularCategories.length > 0 ? (
-            popularCategories.map((category, i) => (
-              <Link
-                key={i}
-                to={`/categories/${category.name}`}
-                className="bg-dark-4 text-light-1 px-3 py-1 rounded-full hover:bg-primary-500 transition-colors"
-              >
-                {category.name}
-              </Link>
-            ))
-          ) : (
-            <p>No categories found.</p>
-          )}
-        </div>
-      </section>
-
-      <section className="mb-8">
-        <h3 className="text-xl font-semibold text-light-1 mb-4">Trending Tags</h3>
-        <div className="flex gap-4 flex-wrap">
-          {trendingTags.length > 0 ? (
-            trendingTags.map((tag, i) => (
-              <Link
-                key={i}
-                to={`/categories/${tag}`}
-                className="bg-dark-3 text-light-2 px-3 py-1 rounded-full hover:bg-primary-500 hover:text-light-1 transition-colors"
-              >
-                #{tag}
-              </Link>
-            ))
-          ) : (
-            <p>No trending tags found.</p>
-          )}
-        </div>
-      </section>
-
-      <section className="w-full">
-        <h3 className="text-xl font-semibold text-light-1 mb-4">Recent Lists</h3>
-        <div className="flex flex-col gap-4">{renderedLists}</div>
-      </section>
+      </motion.section>
     </div>
   );
 };

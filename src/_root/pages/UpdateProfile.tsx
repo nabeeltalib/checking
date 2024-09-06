@@ -1,8 +1,8 @@
+import React, { useEffect } from "react";
 import * as z from "zod";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -20,26 +20,12 @@ import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById, useUpdateUser } from "@/lib/react-query/queries";
 
 const formSchema = z.object({
-  Name: z
-    .string()
-    .min(3, "Name must be at least 3 characters")
-    .max(100, "Name must be less than 100 characters"),
-  Username: z
-    .string()
-    .max(100, "Username must be less than 100 characters"),
-  Email: z
-    .string()
-    .max(100, "Email must be less than 100 characters"),
-  Bio: z
-    .string()
-    .max(500, "Bio must be less than 500 characters"),
-  ImageUrl: z
-    .string()
-    .max(256, "Image Url must be less than 256 characters")
-    .optional(),
-  accountId: z
-    .string()
-    .max(100, "accountId must be less than 100 characters"),
+  Name: z.string().min(3, "Name must be at least 3 characters").max(100, "Name must be less than 100 characters"),
+  Username: z.string().max(100, "Username must be less than 100 characters"),
+  Email: z.string().max(100, "Email must be less than 100 characters"),
+  Bio: z.string().max(500, "Bio must be less than 500 characters"),
+  ImageUrl: z.string().max(256, "Image Url must be less than 256 characters").optional(),
+  accountId: z.string().max(100, "accountId must be less than 100 characters"),
   file: z.instanceof(File).optional(),
   Public: z.boolean()
 });
@@ -115,10 +101,16 @@ const UpdateProfile = () => {
         Bio: updatedUser.Bio,
         ImageUrl: updatedUser.ImageUrl,
       });
+      toast({
+        title: "Profile updated successfully!",
+        description: "Your changes have been saved.",
+        duration: 3000,
+      });
       navigate(`/profile/${id}`);
     } catch (error) {
       toast({
-        title: `Update Profile failed. Please try again.`,
+        title: "Update Profile failed",
+        description: "Please try again.",
         variant: "destructive",
       });
     }
@@ -135,15 +127,15 @@ const UpdateProfile = () => {
   if (!currentUser) {
     return (
       <div className="flex-center w-full h-full">
-        <p>User not found.</p>
+        <p className="text-light-1">User not found.</p>
       </div>
     );
   }
 
   return (
     <div className="flex flex-1">
-      <div className="common-container">
-        <div className="flex-start gap-3 justify-start w-full max-w-5xl">
+      <div className="common-container max-w-3xl mx-auto">
+        <div className="flex-start gap-3 justify-start w-full mb-8">
           <img
             src="/assets/icons/edit.svg"
             width={36}
@@ -151,19 +143,19 @@ const UpdateProfile = () => {
             alt="edit"
             className="invert-white"
           />
-          <h2 className="h3-bold md:h2-bold text-left w-full">Edit Profile</h2>
+          <h2 className="h3-bold md:h2-bold text-left w-full">Edit Your Profile</h2>         
         </div>
-
+        <p className="text-light-2 text-center mb-8">Complete your profile to get the most out of your Topfived experience.</p>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleUpdate)}
-            className="flex flex-col gap-7 w-full mt-4 max-w-5xl"
+            className="flex flex-col gap-7 w-full"
           >
             <FormField
               control={form.control}
               name="file"
               render={({ field }) => (
-                <FormItem className="flex">
+                <FormItem className="flex justify-center">
                   <FormControl>
                     <ProfileUploader
                       fieldChange={field.onChange}
@@ -260,18 +252,21 @@ const UpdateProfile = () => {
               control={form.control}
               name="Public"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Public &nbsp;</FormLabel>
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                   <FormControl>
                     <input
                       type="checkbox"
                       checked={field.value}
                       onChange={(e) => field.onChange(e.target.checked)}
+                      className="h-4 w-4 mt-1"
                     />
                   </FormControl>
-                  <FormDescription>
-                    Uncheck this if you want to make your Account private
-                  </FormDescription>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Public Profile</FormLabel>
+                    <FormDescription>
+                      Uncheck this if you want to make your account private
+                    </FormDescription>
+                  </div>
                 </FormItem>
               )}
             />

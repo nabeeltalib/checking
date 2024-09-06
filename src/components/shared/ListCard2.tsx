@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Share2, MessageCircle, Bookmark, Tag, MapPin, Clock } from "lucide-react";
 import { createEmbedList, followUser, getConnection, shareList, UnFollow } from "@/lib/appwrite/api";
-import { Share2 } from "lucide-react";
 import { useDeleteSavedList, useGetComments, useGetCurrentUser, useLikeList, useSaveList } from "@/lib/react-query/queries";
 import Comment from "./Comment";
 import { Button } from "../ui";
@@ -183,9 +183,9 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
       <Button
         className={`text-xs sm:text-xs ${
           isFollowed
-            ? "border-2 bg-dark-4 text-gray-400"
+            ? "border border-slate-300 text-gray-400"
             : "bg-primary-500 border-white text-white"
-        } px-4 py-2 rounded-xl`}
+        } px-3 py-2 rounded-xl`}
         onClick={isFollowed ? handleUnFollow : handleFollow}
         disabled={isFollowLoading}
       >
@@ -196,189 +196,181 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
 
   return (
     <motion.div
-      className="bg-dark-2 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+      className="bg-dark-2 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
       whileHover={{ y: -5 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="p-4 sm:p-6">
+      <div className="p-6">
+        {/* Creator Info */}
         {list?.creator?.$id && (
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-            <Link to={`/profile/${list.creator.$id}`} className="flex items-center">
+          <div className="flex justify-between items-center mb-6">
+            <Link to={`/profile/${list.creator.$id}`} className="flex items-center group">
               <img
                 src={list.creator.ImageUrl || "/assets/icons/profile-placeholder.svg"}
                 alt={`${list.creator.Name}'s profile`}
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-1 border-primary-500"
+                className="w-12 h-12 rounded-full border-2 border-primary-500 group-hover:border-primary-600 transition-colors"
               />
-              <div className="ml-2">
-                <p className="text-sm sm:text-base font-semibold text-light-1">
+              <div className="ml-3">
+                <p className="text-light-1 font-semibold group-hover:text-primary-500 transition-colors">
                   {list.creator?.Name}
                 </p>
-                <p className="text-blue-300 text-xs sm:text-sm">
+                <p className="text-blue-300 text-sm">
                   @{list.creator?.Username}
                 </p>
               </div>
             </Link>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {list.creator.Public && renderFollowButton()}
-              <button
-                aria-label="Share this list"
+              <Button
                 onClick={handleShare}
-                className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
                 disabled={isSharing}
+                className="p-2 rounded-full bg-dark-3 hover:bg-dark-4 transition-colors"
               >
-                <Share2 size={24} />
-              </button>
+                <Share2 size={20} className="text-light-2" />
+              </Button>
             </div>
           </div>
-        )}        
-        <div className="bg-dark-4 text-slate-700 text-center text-2xl sm:text-xl font-thin px-4 py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
-          Ranking For
+        )}
+
+        {/* List Title */}
+        <div className="mb-6">
+          <div className="bg-dark-4 text-slate-600 text-center text-sm font-semibold px-4 py-2 rounded-t-lg">
+            Ranking For
+          </div>
+          <h2 className="text-2xl font-bold text-light-1 mt-2 mb-1">
+            {list.Title}
+          </h2>
+          {manageList && (
+            <Button onClick={handleEmbed} className="mt-2 text-sm">
+              Add to embed
+            </Button>
+          )}
         </div>
 
-        <h2 className="tracking-tighter flex justify-between text-sm sm:text-base font-light text-gray-400 italic mb-2">
-           
-          <span className="text-wrap text-lg sm:text-xl font-semibold text-primary-500 ml-1 py-3">
-            {list.Title}
-          </span>
-          <span>{manageList && <Button onClick={handleEmbed}>add to embed</Button>}</span>
-        </h2>
-      
-        <Link to={`/lists/${list.$id}`} className="block">
-          <ol className="list-none mb-6 space-y-3">{renderListItems()}</ol>
-
+        {/* List Items */}
+        <Link to={`/lists/${list.$id}`} className="block mb-6">
+          <ol className="list-none space-y-3">
+            {renderListItems()}
+          </ol>
           {Array.isArray(list.items) && list.items.length > 5 && (
-            <p className="text-gray-500 font-semibold text-xs sm:text-sm mb-4">
+            <p className="text-primary-500 font-semibold text-sm mt-2">
               + {list.items.length - 5} more items
             </p>
           )}
-          {list.description && (
-            <h4 className="text-sm sm:text-base font-thin mb-6 text-gray-100">
-              {list.Description}
-            </h4>
-          )}
-          {list.tags && list.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {list.tags.slice(0, 3).map((tag: string, index: number) => (
-                <span
-                  key={index}
-                  className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs sm:text-sm"
-                >
-                  #{tag}
-                </span>
-              ))}
-              {list.tags.length > 3 && (
-                <span className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs sm:text-sm">
-                  +{list.tags.length - 3} more
-                </span>
-              )}
-            </div>
-          )}
         </Link>
 
+        {/* Description */}
+        {list.description && (
+          <p className="text-light-2 mb-6">
+            {list.Description}
+          </p>
+        )}
+
+        {/* Tags */}
+        {list.tags && list.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {list.tags.slice(0, 3).map((tag: string, index: number) => (
+              <span key={index} className="flex items-center bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs">
+                <Tag size={12} className="mr-1" /> {tag}
+              </span>
+            ))}
+            {list.tags.length > 3 && (
+              <span className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs">
+                +{list.tags.length - 3} more
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Categories */}
         <div className="flex flex-wrap gap-2 mb-4">
           {list?.Tags?.map((tag: string, index: number) => (
             <span
               key={`${tag}${index}`}
               onClick={() => navigate(`/categories/${tag}`)}
-              className="bg-blue-800 text-blue-200 px-2 py-1 rounded-full text-xs sm:text-sm cursor-pointer shadow-md"
+              className="bg-blue-800 text-blue-200 px-3 py-1 rounded-full text-xs cursor-pointer hover:bg-blue-700 transition-colors"
             >
               #{tag}
             </span>
           ))}
         </div>
 
+        {/* Locations */}
         {list.locations.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
             {list.locations.map((location: any, index: number) => (
-              <span
-                key={index}
-                className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm"
-              >
-                {location}
+              <span key={index} className="flex items-center bg-gray-800 text-white px-3 py-1 rounded-full text-xs">
+                <MapPin size={12} className="mr-1" /> {location}
               </span>
             ))}
           </div>
         )}
 
+        {/* Timespans */}
         {list.timespans.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {list.timespans.map((timespan: any, index: number) => (
-              <span
-                key={index}
-                className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm"
-              >
-                {timespan}
+              <span key={index} className="flex items-center bg-gray-800 text-white px-3 py-1 rounded-full text-xs">
+                <Clock size={12} className="mr-1" /> {timespan}
               </span>
             ))}
           </div>
         )}
-
       </div>
 
-      <div className="bg-dark-3 px-4 sm:px-6 py-3 flex justify-between items-center text-light-2 text-xs sm:text-sm">
-        <span className="bg-dark-3 text-white flex flex-col items-center gap-1 py-2 px-4 rounded-lg">
+      {/* Actions */}
+      <div className="bg-dark-3 px-6 py-4 flex justify-between items-center">
+        <Button
+          onClick={handleLikeList}
+          className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors"
+        >
           <img
-            src={
-              checkIsLiked(likes, userId)
-                ? "/assets/icons/liked.svg"
-                : "/assets/icons/like.svg"
-            }
+            src={checkIsLiked(likes, userId) ? "/assets/icons/liked.svg" : "/assets/icons/like.svg"}
             alt="like"
             width={20}
             height={20}
-            onClick={handleLikeList}
             className="cursor-pointer"
           />
-          <p className="text-xs sm:text-sm text-center">{likes.length} Likes</p>
-        </span>
+          <span className="text-light-2">{likes.length}</span>
+        </Button>
 
-        <span
-          className="flex flex-col items-center gap-1 cursor-pointer"
+        <Button
           onClick={handleSaveList}
+          className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors"
         >
-          <img
-            src={
-              isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"
-            }
-            alt="save"
-            width={20}
-            height={20}
-          />
-          <p className="text-xs sm:text-sm text-center">
-            {isSaved ? "Saved" : "Save"}
-          </p>
-        </span>
+          <Bookmark size={20} className={isSaved ? "text-primary-500 fill-primary-500" : "text-light-2"} />
+          <span className="text-light-2">{isSaved ? "Saved" : "Save"}</span>
+        </Button>
 
-        <span
+        <Button
           onClick={() => navigate(`/lists/${list.$id}`)}
-          className="flex flex-col items-center cursor-pointer"
+          className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors"
         >
-          <img
-            src="/assets/icons/comment.svg"
-            alt="Comments"
-            className="w-5 h-5"
-          />
-          <p className="text-xs sm:text-sm text-center">
-            {comments?.length || 0} Comments
-          </p>
-        </span>
+          <MessageCircle size={20} className="text-light-2" />
+          <span className="text-light-2">{comments?.length || 0}</span>
+        </Button>
       </div>
 
-      <div className="w-full mt-4 p-4 sm:p-6 border-t border-gray-300">
-        <h3 className="text-xs sm:text-sm font-semibold">Comments</h3>
+      {/* Comments */}
+      <div className="p-6 border-t border-dark-4">
+        <h3 className="text-lg font-semibold text-light-1 mb-4">Comments</h3>
         {comments && comments?.length > 0 ? (
-          <ul>
-            <div className="mt-1 flex flex-col gap-2">
-              {comments?.slice(0, 2).map((comment: any, index: number) => (
-                <Comment comment={comment} key={index} />
-              ))}
-            </div>
+          <ul className="space-y-4">
+            {comments?.slice(0, 2).map((comment: any, index: number) => (
+              <Comment comment={comment} key={index} />
+            ))}
           </ul>
         ) : (
-          <p className="text-xs sm:text-sm text-gray-500">What do you think? Comment below!</p>
+          <p className="text-light-3">What do you think? Comment below!</p>
         )}
+        <Button
+          onClick={() => navigate(`/lists/${list.$id}`)}
+          className="mt-4 w-full bg-primary-500 hover:bg-primary-600 text-white transition-colors"
+        >
+          View All Comments
+        </Button>
       </div>
     </motion.div>
   );

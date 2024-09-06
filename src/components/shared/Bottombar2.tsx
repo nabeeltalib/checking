@@ -69,8 +69,8 @@ const Bottombar2 = () => {
               </svg>
             </button>
             <div className="text-center">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Welcome Back!</h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-6">Sign in to continue and access all features.</p>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Unlock Full Access!</h3>
+              <p className="text-sm sm:text-sm text-gray-600 mb-6">Sign up now to like, comment, save, and remix lists. Create your own rankings and join the community!</p>
             </div>
             <div className="flex flex-col gap-4">
               <Button

@@ -48,6 +48,8 @@ import { SortableItem } from "./SortableItem";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { getUserFriends, indexList } from "@/lib/appwrite/config";
 import ListPreview from "@/components/shared/ListPreview";
+import Tooltip from "@/components/ui/Tooltip"; // Assuming Tooltip is correctly exported
+import { Info } from 'lucide-react';
 
 const ListForm = ({ list, action, initialData }: any) => {
   const { user } = useUserContext();
@@ -379,18 +381,25 @@ const ListForm = ({ list, action, initialData }: any) => {
           <div className="space-y-8">
             {/* Basic Info Section */}
             <div className="space-y-4 p-4 border border-slate-300 rounded-lg">
-              <h2 className="text-2xl font-semibold text-slate-700">Basic Info*</h2>
+            <Tooltip content="Enter a catchy title for your list. Make it descriptive and engaging to attract more viewers!">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-xl md:text-2xl font-semibold text-slate-600">Basic Info*</h2>
+                <span className="cursor-pointer">
+                  <Info size={15} color="#64748b" /> {/* Info icon from lucide-react */}
+                </span>
+              </div>
+            </Tooltip>
               <FormField
                 control={form.control}
                 name="Title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>What's your title?*</FormLabel>
+                    <FormLabel>What's your title?</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter a title e.g. Chicago HS Basketball Players, Innovations That Will Shape the Future"
                         {...field}
-                        className="text-xs w-full bg-dark-3 text-light-1 border-none"
+                        className="text-xs w-full bg-dark-4 text-light-1 border-none"
                         spellCheck={true} // Enable spellcheck here
                       />
                     </FormControl>
@@ -400,115 +409,22 @@ const ListForm = ({ list, action, initialData }: any) => {
               />
             </div>
 
-            {/* List Items Section */}
+            {/* Time & Location Section */}
             <div className="space-y-4 p-4 border border-slate-300 rounded-lg mt-8">
-              <h2 className="text-2xl font-semibold text-slate-700">List Items*</h2>
-              <FormItem>
-                <FormLabel>How long is your ranking, Top 3, 5, or 10?</FormLabel>
-                <Select onValueChange={handleItemCountChange} defaultValue="5">
-                  <SelectTrigger className="w-[80px] md:w-[120px] bg-dark-3 text-light-1 border-none">
-                    <SelectValue placeholder="Choose Top 3, 5, or 10" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-dark-4 text-light-1 border-none">
-                    <SelectItem value="3">Top 3</SelectItem>
-                    <SelectItem value="5">Top 5</SelectItem>
-                    <SelectItem value="10">Top 10</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormItem>
-              <div className="text-right">
-                <span className="text-xs text-gray-300 ml-3">Based on your title, time frame, or location details</span>
-                <Button
-                  type="button"
-                  onClick={handleGenerateListItems}
-                  disabled={isGeneratingItems}
-                  className="bg-blue-900 text-xs text-light-1 px-4 py-2 rounded-md mb-4">
-                  {isGeneratingItems ? "Generating..." : "Get AI Item Suggestions"}
-                </Button>
+              <Tooltip content="Specify when and where your list is relevant. This helps contextualize your ranking and makes it more discoverable.">
+                <div
+                  className="flex justify-between items-center cursor-pointer"
+                  onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
+                >
+                  <div className="flex items-center space-x-2">
+                <h2 className="text-xl md:text-2xl  font-semibold text-slate-600">Time & Location</h2>
+                <span className="cursor-pointer">
+                  <Info size={15} color="#64748b" /> {/* Info icon from lucide-react */}
+                </span>
               </div>
-              {showUndoButton && (
-                <Button type="button" onClick={handleUndo} className="w-full">
-                  Undo Generated Items
-                </Button>
-              )}
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}>
-                <SortableContext
-                  items={fields.map((field) => field.id)}
-                  strategy={verticalListSortingStrategy}>
-                  {fields.map((field, index) => (
-                    <SortableItem key={field.id} id={field.id}>
-                      <div className="flex items-center mb-2">
-                        <div className="mr-2">
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            fill="currentColor"
-                            className="bi bi-grip-vertical"
-                            viewBox="0 0 16 16"
-                          >
-                            <path d="M2 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />
-                          </svg>
-                        </div>
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.content`}
-                          render={({ field }) => (
-                            <FormItem className="flex-grow mr-2">
-                              <FormControl>
-                                <Input
-                                  placeholder={`Enter #${index + 1} ranked item`}
-                                  {...field}
-                                  className="text-xs w-full bg-dark-3 text-light-1 border-none"
-                                  spellCheck={true} // Enable spellcheck here
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.isVisible`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormControl>
-                                <input
-                                  type="checkbox"
-                                  {...field}
-                                  checked={field.value}
-                                  className="mr-2"
-                                  aria-label={`Make item ${index + 1} visible`}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </SortableItem>
-                  ))}
-                </SortableContext>
-              </DndContext>
-
-              {fields.length < 10 && (
-                <Button
-                  type="button"
-                  onClick={() => append({ content: "", isVisible: true, id: "", creator: "" })}
-                  aria-label="Add new item"
-                  className="px-4 py-2 rounded-md mb-4">
-                  Add Row
-                </Button>
-              )}
-            </div>
-
-            {/* Additional Details Section */}
-            <div className="space-y-4 p-4 border border-slate-300 rounded-lg mt-8">
-              <div className="flex justify-between items-center cursor-pointer" onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}>
-                <h2 className="text-2xl font-semibold text-slate-700">Additional Details (optional)</h2>
-                <span>{showAdditionalDetails ? "−" : "↘"}</span>
-              </div>
+                  <span>{showAdditionalDetails ? "−" : "↘"}</span>
+                </div>
+              </Tooltip>
               {showAdditionalDetails && (
                 <div className="space-y-4">
                   <FormField
@@ -526,7 +442,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                                     field.onChange([...field.value, value]);
                                   }
                                 }}>
-                                <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
+                                <SelectTrigger className="w-full md:w-[180px] bg-dark-4 text-light-1 border-none">
                                   <SelectValue placeholder="Select a timespan" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-dark-4 text-light-1 border-none">
@@ -543,7 +459,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                                 placeholder="Create new e.g. 90s, GOAT"
                                 value={newTimespan}
                                 onChange={(e) => setNewTimespan(e.target.value)}
-                                className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
+                                className="text-xs w-full md:w-[220px] bg-dark-4 text-light-1 border-none"
                                 spellCheck={true} // Enable spellcheck here
                               />
                               <Button
@@ -593,7 +509,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                                     field.onChange([...field.value, value]);
                                   }
                                 }}>
-                                <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
+                                <SelectTrigger className="w-full md:w-[180px] bg-dark-4 text-light-1 border-none">
                                   <SelectValue placeholder="Select a location" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-dark-4 text-light-1 border-none">
@@ -604,13 +520,13 @@ const ListForm = ({ list, action, initialData }: any) => {
                                         {location}
                                       </SelectItem>
                                     ))}
-                                </SelectContent>or
-                              </Select>
+                                </SelectContent>
+                              </Select> or
                               <Input
                                 placeholder="Create new e.g. East, Worldwide"
                                 value={newLocation}
                                 onChange={(e) => setNewLocation(e.target.value)}
-                                className="text-xs w-full md:w-[220px] bg-dark-3 text-light-1 border-none"
+                                className="text-xs w-full md:w-[220px] bg-dark-4 text-light-1 border-none"
                                 spellCheck={true} // Enable spellcheck here
                               />
                               <Button
@@ -644,7 +560,163 @@ const ListForm = ({ list, action, initialData }: any) => {
                       </FormItem>
                     )}
                   />
+                </div>
+              )}
+            </div>
 
+            {/* List Items Section */}
+            <div className="space-y-4 p-4 border border-slate-300 rounded-lg mt-8">
+              <Tooltip content="Add your ranked items here. You can drag and drop to reorder them. The more specific and unique your items, the better!">
+                <div className="flex items-center space-x-2">
+                <h2 className="text-xl md:text-2xl  font-semibold text-slate-600">List Items*</h2>
+                <span className="cursor-pointer">
+                  <Info size={15} color="#64748b" /> {/* Info icon from lucide-react */}
+                </span>
+              </div>
+              </Tooltip>
+              <FormItem>
+                <FormLabel>How long is your ranking?</FormLabel>
+                <div className="flex gap-0">
+                  <Button
+                    type="button"
+                    onClick={() => handleItemCountChange("3")}
+                    className={`text-xs px-2 py-2 rounded-sm ${
+                      form.getValues("items").length === 3 ? "border border-blue-500 text-gray-300" : "bg-dark-4"
+                    }`}
+                  >
+                    Top 3
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => handleItemCountChange("5")}
+                    className={`text-xs px-2 py-2 rounded-sm ${
+                      form.getValues("items").length === 5 ? "border border-blue-500 text-gray-300" : "bg-dark-4"
+                    }`}
+                  >
+                    Top 5
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={() => handleItemCountChange("10")}
+                    className={`text-xs px-2 py-2 rounded-sm ${
+                      form.getValues("items").length === 10 ? "border border-blue-500 text-gray-300" : "bg-dark-4"
+                    }`}
+                  >
+                    Top 10
+                  </Button>
+                </div>
+              </FormItem>
+              <div className="text-right">
+                <span className="text-xs text-gray-400 ml-3">Based on your title, time frame, or location details</span>
+                <Button
+                  type="button"
+                  onClick={handleGenerateListItems}
+                  disabled={isGeneratingItems}
+                  className="bg-blue-900 text-xs text-light-1 px-4 py-2 rounded-md mb-4"
+                >
+                  {isGeneratingItems ? "Generating..." : "Get AI Item Suggestions"}
+                </Button>
+              </div>
+              {showUndoButton && (
+                <Button type="button" onClick={handleUndo} className="w-full">
+                  Undo Generated Items
+                </Button>
+              )}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={fields.map((field) => field.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {fields.map((field, index) => (
+                    <SortableItem key={field.id} id={field.id}>
+                      <div className="flex items-center mb-2">
+                        <div className="mr-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            className="bi bi-grip-vertical"
+                            viewBox="0 0 16 16"
+                          >
+                            <path d="M2 12a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm4 8a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm0-4a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z" />
+                          </svg>
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.content`}
+                          render={({ field }) => (
+                            <FormItem className="flex-grow mr-2">
+                              <FormControl>
+                                <Input
+                                  placeholder={`Enter #${index + 1} ranked item`}
+                                  {...field}
+                                  className="text-xs w-full bg-dark-4 text-light-1 border-none"
+                                  spellCheck={true} // Enable spellcheck here
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`items.${index}.isVisible`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <input
+                                  type="checkbox"
+                                  {...field}
+                                  checked={field.value}
+                                  className="mr-2"
+                                  aria-label={`Make item ${index + 1} visible`}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </SortableItem>
+                  ))}
+                </SortableContext>
+              </DndContext>
+
+              {fields.length < 10 && (
+                <Button
+                  type="button"
+                  onClick={() => append({ content: "", isVisible: true, id: "", creator: "" })}
+                  aria-label="Add new item"
+                  className="px-4 py-2 rounded-md mb-4"
+                >
+                  Add Row
+                </Button>
+              )}
+            </div>
+
+            {/* Additional Details Section */}
+            <div className="space-y-4 p-4 border border-slate-300 rounded-lg mt-8">
+              <Tooltip content="Tags: Add relevant keywords to help others find your list.
+                Categories: Choose or create a general topic for your list.
+                Public/Private: Decide who can see your list.">
+                <div
+                  className="flex justify-between items-center cursor-pointer"
+                  onClick={() => setShowAdditionalDetails(!showAdditionalDetails)}
+                >
+                  <div className="flex items-center space-x-2">
+                <h2 className="text-xl md:text-2xl  font-semibold text-slate-600">Additional Details</h2>
+                <span className="cursor-pointer">
+                  <Info size={15} color="#64748b" /> {/* Info icon from lucide-react */}
+                </span>
+              </div>
+                  <span>{showAdditionalDetails ? "−" : "↘"}</span>
+                </div>
+              </Tooltip>
+              {showAdditionalDetails && (
+                <div className="space-y-4">
                   <FormField
                     control={form.control}
                     name="Tags"
@@ -662,12 +734,11 @@ const ListForm = ({ list, action, initialData }: any) => {
                               field.onChange(Tags);
                             }}
                             defaultValue={field.value.join(", ")}
-                            className="text-xs w-full bg-dark-3 text-light-1 border-none"
+                            className="text-xs w-full bg-dark-4 text-light-1 border-none"
                             spellCheck={true} // Enable spellcheck here
                           />
                         </FormControl>
                         <FormDescription>
-                          Enter tags for your list separated by commas
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
@@ -689,7 +760,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                                     field.onChange([...field.value, value]);
                                   }
                                 }}>
-                                <SelectTrigger className="w-full md:w-[180px] bg-dark-3 text-light-1 border-none">
+                                <SelectTrigger className="w-full md:w-[180px] bg-dark-4 text-light-1 border-none">
                                   <SelectValue placeholder="Select a category" />
                                 </SelectTrigger>
                                 <SelectContent className="bg-dark-2 text-light-1 border-none">
@@ -705,13 +776,12 @@ const ListForm = ({ list, action, initialData }: any) => {
                                       </SelectItem>
                                     ))}
                                 </SelectContent>
-
                               </Select> or
                               <Input
                                 placeholder="Create new"
                                 value={newCategory}
                                 onChange={(e) => setNewCategory(e.target.value)}
-                                className="text-xs w-full md:w-[180px] bg-dark-3 text-light-1 border-none"
+                                className="text-xs w-full md:w-[180px] bg-dark-4 text-light-1 border-none"
                                 spellCheck={true} // Enable spellcheck here
                               />
                               <Button
@@ -769,11 +839,21 @@ const ListForm = ({ list, action, initialData }: any) => {
             </div>
 
             {/* Description Section */}
-            <div className="space-y-4 p-4 border border-slate-300 rounded-lg mt-8">
-              <div className="flex justify-between items-center cursor-pointer" onClick={() => setShowDescription(!showDescription)}>
-                <h2 className="text-2xl font-semibold text-slate-700">Description (optional)</h2>
-                <span>{showDescription ? "−" : "↘"}</span>
+            <div className="space-y-4 p-4 border border-slate-900 rounded-lg mt-8">
+              <Tooltip content="Provide more context about your list. Explain your ranking criteria or add interesting facts about your chosen topic.">
+                <div
+                  className="flex justify-between items-center cursor-pointer"
+                  onClick={() => setShowDescription(!showDescription)}
+                >
+                  <div className="flex items-center space-x-2">
+                <h2 className="text-sm md:text-base  font-semibold text-slate-600">Description (optional)</h2>
+                <span className="cursor-pointer">
+                  <Info size={15} color="#64748b" /> {/* Info icon from lucide-react */}
+                </span>
               </div>
+                  <span>{showDescription ? "−" : "↘"}</span>
+                </div>
+              </Tooltip>
               {showDescription && (
                 <FormField
                   control={form.control}
@@ -784,7 +864,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                         <Textarea
                           placeholder="Enter a description"
                           {...field}
-                          className="w-full bg-dark-3 text-light-1 border-none"
+                          className="w-full bg-dark-4 text-light-1 border-none"
                           spellCheck={true} // Enable spellcheck here
                         />
                       </FormControl>

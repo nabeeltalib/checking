@@ -1,10 +1,12 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useGetListById } from '@/lib/react-query/queries';
 import ListForm from '@/components/forms/ListForm';
 import { Loader } from "@/components/shared";
 import { useUserContext } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { RefreshCcw, ArrowLeft } from 'lucide-react';
 
 const RemixList: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,16 +15,32 @@ const RemixList: React.FC = () => {
   const navigate = useNavigate();
 
   if (isLoading) {
-    return <Loader />;
+    return (
+      <div className="flex-center w-full h-screen">
+        <Loader />
+      </div>
+    );
   }
 
   if (isError || !originalList) {
-    return <div>Error loading list. Please try again.</div>;
+    return (
+      <div className="flex-center flex-col w-full h-screen text-light-1">
+        <h2 className="h3-bold">Error loading list</h2>
+        <p className="text-light-3 mt-2">Please try again later.</p>
+        <Button 
+          type="button" 
+          className="shad-button_dark_4 mt-4"
+          onClick={() => navigate(-1)}
+        >
+          Go Back
+        </Button>
+      </div>
+    );
   }
 
   const initialData = {
     ...originalList,
-    title: `${originalList.Title} (Remixed)`,
+    title: `${originalList.Title} (Remixed by ${user.Name})`,
     items: originalList.items,
     creator: { $id: user.id, Name: user.Name, ImageUrl: user.ImageUrl },
     likes: [],
@@ -38,20 +56,56 @@ const RemixList: React.FC = () => {
   delete initialData.$updatedAt;
 
   return (
-    <div className="flex flex-col items-center w-full">
-      <h1 className="h3-bold md:h2-bold w-full">Remix List</h1>
-      <p className="text-light-3 small-medium md:base-regular mt-2 w-full">
-        You're creating a new list based on "{originalList.Title}" by {originalList.creator.Name}
+    <motion.div 
+      className="flex flex-col items-center w-full max-w-5xl mx-auto px-4 py-8"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="flex items-center justify-between w-full mb-8">
+        <Button 
+          type="button" 
+          className="shad-button_ghost"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft size={20} className="mr-2" />
+          Back
+        </Button>
+        <h1 className="text-orange-300 h3-bold md:h2-bold text-center flex-1">Remix List</h1>
+        <div className="w-[70px]"></div> {/* Spacer for alignment */}
+      </div>
+
+      <div className="bg-dark-2 p-6 rounded-lg shadow-lg w-full mb-8">
+        <div className="flex items-center mb-4 ">
+        <span className="text-primary-500">
+          <img src="/assets/icons/remix3.svg" alt="Remix" className="w-14 h-14 mr-2" />
+        </span>         
+         
+          <h2 className="text-xl font-bold text-light-1">You're Remixing</h2>
+        </div>
+        <p className="text-light-2 text-lg mb-2">"{originalList.Title}"</p>
+        <p className="text-light-3 text-sm">
+          Originally created by <span className="font-semibold">{originalList.creator.Name}</span>
+        </p>
+      </div>
+
+      <p className="text-light-2 text-center mb-6 max-w-2xl">
+        Get creative! You can modify the title, add or remove items, and make this list your own.
+        Your remixed version will be a new list, and the original will remain unchanged.
       </p>
-      <ListForm action="Create" initialData={initialData} />
-      <Button 
-        type="button" 
-        className="shad-button_dark_4 mt-4"
-        onClick={() => navigate(-1)}
-      >
-        Cancel
-      </Button>
-    </div>
+
+      <ListForm action="Create Remix" initialData={initialData} />
+
+      <div className="flex justify-center mt-8 space-x-4">
+        <Button 
+          type="button" 
+          className="shad-button_dark_4"
+          onClick={() => navigate(-1)}
+        >
+          Cancel Remix
+        </Button>
+      </div>
+    </motion.div>
   );
 };
 
