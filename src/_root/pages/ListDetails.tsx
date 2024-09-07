@@ -34,6 +34,8 @@ const ListDetails: React.FC = () => {
   const [newComment, setNewComment] = useState("");
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isEmbed, setIsEmbed] = useState(false)
+  const [isStatic, setIsStatic] = useState(true)
+
   const [connection, setConnection] = useState<any>(undefined);
 
   useEffect(() => {
@@ -149,7 +151,9 @@ const ListDetails: React.FC = () => {
 
   const isCollaborator = list.users.some((collab: any) => collab.$id === user.id);
   
-  let embedLink = `<iframe src="https://topfived.com/embed?type=top5&title=${list.Title.replace(/\s+/g, '+')}&listId=${list.$id}" width="100%" height="300"></iframe>`;
+  let embedLink = isStatic ? `<iframe src="${import.meta.env.VITE_APP_DOMAIN}/staticframe/${list.$id}" width="50%" height="600"></iframe>`: `<iframe src="${import.meta.env.VITE_APP_DOMAIN}/liveframe/${list.$id}" width="50%" height="600"></iframe>`;
+  
+  console.log(list)
 
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto bg-dark-2 rounded-lg shadow-md p-4 sm:p-6">
@@ -244,25 +248,7 @@ const ListDetails: React.FC = () => {
       <div className="flex justify-between items-center">
           <div className="ml-auto relative group flex items-center">
             {(isOwnProfile || isCollaborator) && (
-              <>
-                
-                <div className="relative group ml-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-gray-400 cursor-pointer"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-9 3a1 1 0 102 0v-2a1 1 0 10-2 0v2zM9 7a1 1 0 100 2 1 1 0 000-2z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <div className="w-44 absolute bottom-full left-1/2 transform -translate-x-1/2 -mb-2 hidden group-hover:block bg-dark-4 text-white text-xs rounded-md px-2 py-1">
-                    Click to add this list to your embed tab. You can then generate a code snippet to seamlessly integrate your list into any website.
-                  </div>
-                </div>
+              <>                                
               </>
             )}
           </div>
@@ -343,8 +329,8 @@ const ListDetails: React.FC = () => {
           <h1 className="text-white text-xl font-bold">Embed Code</h1>
           <div className="flex justify-between">
             <div className="gap-2 flex">
-              <button className="w-24 bg-zinc-950 p-2 border-2 border-solid border-blue-950 rounded-xl">Static</button>
-              <button  className="w-24">Live</button>
+            <button onClick={()=> setIsStatic(true)} className={`w-24 ${isStatic ? "bg-zinc-950 p-2 border-2 border-solid border-blue-950 rounded-xl": ""}`}>Static</button>
+            <button onClick={()=> setIsStatic(false)} className={`w-24 ${!isStatic ? "bg-zinc-950 p-2 border-2 border-solid border-blue-950 rounded-xl": ""}`}>Live</button>
             </div>
             <Link to={"#"} className="text-sm underline text-blue-400" >What's the difference?</Link>
           </div>

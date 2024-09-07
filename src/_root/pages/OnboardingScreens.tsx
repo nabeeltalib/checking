@@ -65,7 +65,7 @@ const OnboardingScreens = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e:any) => {
     e.preventDefault();
     if (step < 3) {
       setStep(step + 1);

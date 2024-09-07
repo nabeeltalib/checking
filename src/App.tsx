@@ -25,7 +25,6 @@ import {
 import RemixList from "@/components/shared/list/RemixList"; // New import
 import AuthLayout from "@/_auth/AuthLayout";
 import RootLayout from "@/_root/RootLayout";
-import SignupForm from "@/_auth/forms/SignupForm";
 import SigninForm from "@/_auth/forms/SigninForm";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -39,7 +38,6 @@ import Trending from "./_root/pages/Trending";
 import Recomended from "./_root/pages/Recomended";
 import UserActivity from "./_root/pages/UserActivity";
 import ManageList from "./_root/pages/ManageList";
-import FAB from "./components/shared/FAB";
 import ListFromFriends from "./_root/pages/listFromFriends";
 import RootLayout2 from "./_root/pages/RootLayout2";
 import EmbedSelector from "./components/shared/EmbedSelector";
@@ -50,8 +48,9 @@ import ComprehensiveLeaderboard from "./_root/pages/ComprehensiveLeaderboard";
 import ComprehensiveLeaderboard2 from "./_root/pages/ComprehensiveLeaderboard2";
 import OnboardingScreens from "./_root/pages/OnBoardingScreens";
 import OnboardingPage from "./components/shared/OnboardingPage";
-import EmbedList from "./_root/pages/EmbedList";
-import EmbedFrame from "./components/shared/EmbedFrame";
+import AdminPanel from "./_root/pages/AdminPanel";
+import StaticFrame from "./components/shared/StaticFrame";
+import LiveFrame from "./components/shared/LiveFrame";
 
 const App = () => {
 
@@ -77,13 +76,15 @@ const App = () => {
           <Route path="/sign-in" element={<SigninForm />} />
           <Route path="/sign-up" element={<OnboardingScreens />} />        
         </Route>
+      <Route path="/staticframe/:id" element={<StaticFrame />} />
+      <Route path="/liveframe/:id" element={<LiveFrame />} />
     </Routes>
     <Toaster />
     </main>
     </>
 
     {(user.id || isLoggedIn ) ?
-    <main className="flex h-screen">
+    <main className="flex">
       <Routes>
         {/* Public Routes */}
         {/* Private Routes */}
@@ -122,9 +123,8 @@ const App = () => {
           <Route path="/termsandconditions" element={<TermsAndConditions />} />
           <Route path="/cookiepolicy" element={<CookiePolicy />} />
           <Route path="/explore2" element={<Explore2 />} />
-
+          <Route path="/admin-panel" element={<AdminPanel />} />
         </Route>
-        <Route path="/embedframe/:id" element={<EmbedFrame />} />
       </Routes>
      
       <Toaster />

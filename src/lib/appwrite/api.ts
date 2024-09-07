@@ -429,7 +429,7 @@ export async function createList(list: any, userId: string): Promise<IList> {
         users: [userId],
       }
     );
-    console.log({ newList });
+
     return newList as IList;
   } catch (error) {
     console.error("Error creating list:", error);

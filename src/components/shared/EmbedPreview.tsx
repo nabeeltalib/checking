@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { List, BarChart } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { TopfivedEmbed } from './TopfivedEmbed';
 import { getListById, VoteOnItem } from '@/lib/appwrite/api';
 import { useUserContext } from '@/context/AuthContext';
@@ -28,9 +28,17 @@ const EmbedPreview = () => {
     await VoteOnItem(user.id, id);
     setRefreshData((prevState) => !prevState);
   };
+  const navigate = useNavigate();
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-zinc-900 text-black dark:text-white rounded-lg shadow-md">
+      <div className="sticky top-0 z-10  rounded-t-lg flex  items-center">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-primary-500 font-bold text-lg">
+          &larr; Back
+        </button>
+      </div>
       <h2 className="text-3xl font-bold mb-4 text-center">Embed Preview</h2>
       <div className="flex space-x-4 mb-6">
         <button

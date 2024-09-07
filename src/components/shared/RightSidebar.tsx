@@ -1,5 +1,5 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { rightSidebarLinks } from '@/constants';
+import rightSidebarLinks  from '@/constants';
 import { Button } from '@/components/ui/button';
 import { useSignOutAccount } from '@/lib/react-query/queries';
 import { useUserContext, INITIAL_USER } from '@/context/AuthContext';
@@ -18,10 +18,12 @@ const RightSidebar = () => {
     navigate('/sign-in');
   };
 
+  let rightSideBar = rightSidebarLinks();
+
   return (
     <aside className="rightsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-black border-l border-dark-4 fixed right-0 top-20">
       <div className="flex flex-col gap-4 flex-grow">
-        {rightSidebarLinks.map(link => (
+        {rightSideBar.map(link => (
           <NavLink
             key={link.label}
             to={link.route}

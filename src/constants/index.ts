@@ -1,3 +1,6 @@
+import { useUserContext } from "@/context/AuthContext";
+
+
 export const sidebarLinks = [
   {
     imgURL: "/assets/icons/home.svg",
@@ -122,8 +125,10 @@ export const bottombarLinks2 = [
 
 ];
 
-export const rightSidebarLinks = [
-   {
+const rightSidebarLinks = ()=>{
+  const { user } = useUserContext();
+  let value = user.isAdmin ? [
+    {
     imgURL: "/assets/icons/bookmark.svg",
     route: "/saved",
     label: "Bookmarks",
@@ -165,8 +170,65 @@ export const rightSidebarLinks = [
     label: "My Profile",
     icon:"/assets/icons/profile.svg"
   },
- 
+  {
+    imgURL: "/assets/icons/profile.svg",
+    route: "/admin-panel",
+    label: "Admin Panel",
+    icon:"/assets/icons/profile.svg"
+  },
+]
+
+:
+
+[
+  {
+  imgURL: "/assets/icons/bookmark.svg",
+  route: "/saved",
+  label: "Bookmarks",
+  icon:"/assets/icons/bookmark.svg"
+},   
+// {
+//   imgURL: "/assets/icons/collabrative.svg",
+//   route: "/collaborations",
+//   label: "collaborative",
+//   icon:"/assets/icons/collabrative.svg"
+// },  
+{
+  imgURL: "/assets/icons/people.svg",
+  route: "/listfromfriends",
+  label: "Friends",
+  icon:"/assets/icons/people.svg"
+},  
+{
+  imgURL: "/assets/icons/collab.svg",
+  route: "/userlists",
+  label: "Collaboration",
+  icon:"/assets/icons/collab.svg"
+},  
+//{
+//  imgURL: "/assets/icons/recommended.svg",
+//  route: "/recommended",
+//  label: "Recommended",    
+ // icon:"/assets/icons/recommended.svg"
+//},
+//{
+//  imgURL: "/assets/icons/activity.svg",
+ // route: "/userActivity",
+ // label: "Activity",
+ // icon:"/assets/icons/activity.svg"
+//},
+{
+  imgURL: "/assets/icons/profile.svg",
+  route: "/profile/profile",
+  label: "My Profile",
+  icon:"/assets/icons/profile.svg"
+},
 ];
+
+return  value
+}
+
+export default rightSidebarLinks;
 
 export const rightSidebarLinks2 = [
   {

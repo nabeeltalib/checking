@@ -1,27 +1,36 @@
-import React, { useState } from "react";
-import { ExternalLink, MessageCircle, Heart, Share2, Info, Trophy } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ExternalLink, MessageCircle, Heart, Share2, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "../ui";
 import { useUserContext } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { checkIsLiked } from "@/lib/utils";
-import { likeList } from "@/lib/appwrite/config";
+import { useNavigate, useParams } from "react-router-dom";
+import { getListById } from "@/lib/appwrite/config";
+import { VoteOnItem } from "@/lib/appwrite/api";
+import { Button } from "../ui";
 
-export const TopfivedEmbed = ({ type, items, handleVote, setRefresh, list }: any) => {
+const LiveFrame = () => {
+  const { id } = useParams();
+  const [list, setList] = useState<any>(null);
+  const [refreshData, setRefreshData] = useState(false);
+  const { user } = useUserContext();
   const [showTooltip, setShowTooltip] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-  const { user } = useUserContext();
-  const userId = user.id;
   const navigate = useNavigate();
 
-  const handleCTAClick = () => navigate("/");
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getListById(id);
+      setList(data);
+    };
+    fetchData();
+  }, [refreshData, id]);
 
-  const handleLikeList = async (list: any) => {
-    let newLikes = list.Likes.includes(userId)
-      ? list.Likes.filter((Id: any) => Id !== userId)
-      : [...list.Likes, userId];
-    await likeList(list.$id, newLikes);
-    setRefresh((prevState: any) => !prevState);
+  const handleVote = async (itemId: string) => {
+    await VoteOnItem(user.id, itemId);
+    setRefreshData((prevState) => !prevState);
+  };
+
+  const handleCTAClick = () => {
+    navigate("/");
   };
 
   const handleShare = () => {
@@ -29,10 +38,7 @@ export const TopfivedEmbed = ({ type, items, handleVote, setRefresh, list }: any
     alert("Link copied to clipboard!");
   };
 
-  const getRankColor = (index: number) => {
-    const colors = ["text-yellow-500", "text-gray-400", "text-orange-500", "text-blue-500", "text-green-500"];
-    return index < colors.length ? colors[index] : "text-purple-500";
-  };
+  if (!list) return null;
 
   return (
     <motion.div 
@@ -80,7 +86,7 @@ export const TopfivedEmbed = ({ type, items, handleVote, setRefresh, list }: any
         </AnimatePresence>
 
         <ul className="space-y-3">
-          {items.map((item: any, index: number) => (
+          {list.item.map((item: any, index: number) => (
             <motion.li
               key={index}
               initial={{ opacity: 0, x: -20 }}
@@ -89,40 +95,28 @@ export const TopfivedEmbed = ({ type, items, handleVote, setRefresh, list }: any
               className="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center"
             >
               <div className="flex items-center space-x-3">
-                <span className={`font-bold text-xl ${getRankColor(index)}`}>
+                <span className={`font-bold text-xl text-indigo-500`}>
                   {index + 1}
-                  {index === 0 && <Trophy size={16} className="inline ml-1" />}
                 </span>
                 <span className="text-indigo-900">{item.content}</span>
               </div>
-              {type !== "top5" && (
-                <div className="flex items-center space-x-2">
-                  <span className="font-semibold text-indigo-600">{item.vote.length * 5 || 0} pts</span>
-                  <Button
-                    onClick={() => handleVote(item.$id)}
-                    className="p-1 rounded-full bg-pink-100 hover:bg-pink-200"
-                  >
-                    <Heart 
-                      size={16} 
-                      color={item.vote.some((v: any) => v.$id === userId) ? 'hotpink' : 'gray'} 
-                    />
-                  </Button>
-                </div>
-              )}
+              <div className="flex items-center space-x-2">
+                <span className="font-semibold text-indigo-600">{item.vote.length * 5 || 0} pts</span>
+                <Button
+                  onClick={() => handleVote(item.$id)}
+                  className="p-1 rounded-full bg-pink-100 hover:bg-pink-200"
+                >
+                  <Heart 
+                    size={16} 
+                    color={item.vote.some((v: any) => v.$id === user.id) ? 'hotpink' : 'gray'} 
+                  />
+                </Button>
+              </div>
             </motion.li>
           ))}
         </ul>
 
-        <div className="mt-6 flex justify-between items-center">
-          <Button
-            onClick={() => handleLikeList(list)}
-            className={`flex items-center space-x-1 ${
-              checkIsLiked(list.Likes, userId) ? 'bg-pink-100 text-pink-600' : 'bg-gray-100 text-gray-600'
-            } px-3 py-1 rounded-full transition-colors`}
-          >
-            <Heart size={16} />
-            <span>{list.Likes.length}</span>
-          </Button>
+        <div className="mt-6 flex justify-end">
           <div
             className="relative"
             onMouseEnter={() => setShowTooltip(true)}
@@ -155,3 +149,5 @@ export const TopfivedEmbed = ({ type, items, handleVote, setRefresh, list }: any
     </motion.div>
   );
 };
+
+export default LiveFrame;

@@ -49,6 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           imageUrl: currentAccount.ImageUrl,
           bio: currentAccount.Bio,
           curatedList: curatedList,
+          isAdmin: currentAccount.isAdmin,
         });
         setIsAuthenticated(true);
         return true;

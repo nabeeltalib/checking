@@ -119,7 +119,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         <div className="p-4">
           {/* Creator Info */}
           <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center">
+            <div className="flex items-center cursor-pointer" onClick={handleDialogOpen}>
               <img
                 src={list.creator?.ImageUrl || "/assets/icons/profile-placeholder.svg"}
                 alt={`${list.creator?.Name}'s profile`}
@@ -175,12 +175,13 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               <span
                 key={`${tag}${index}`}
                 className="bg-blue-800 text-blue-200 px-3 py-1 rounded-full text-xs cursor-pointer shadow-md hover:bg-blue-700 transition-colors"
+                onClick={handleDialogOpen}
               >
                 #{tag}
               </span>
             ))}
             {list.Tags && list.Tags.length > 3 && (
-              <span className="text-primary-500 text-xs">+{list.Tags.length - 3} more tags</span>
+              <span className="text-primary-500 text-xs" onClick={handleDialogOpen}>+{list.Tags.length - 3} more tags</span>
             )}
           </div>
 
