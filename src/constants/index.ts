@@ -171,10 +171,10 @@ const rightSidebarLinks = ()=>{
     icon:"/assets/icons/profile.svg"
   },
   {
-    imgURL: "/assets/icons/profile.svg",
+    imgURL: "/assets/icons/admin.svg",
     route: "/admin-panel",
     label: "Admin Panel",
-    icon:"/assets/icons/profile.svg"
+    icon:"/assets/icons/admin.svg"
   },
 ]
 
