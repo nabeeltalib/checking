@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ExternalLink, MessageCircle, Heart, Share2, Info, Trophy } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui";
@@ -10,9 +10,18 @@ import { likeList } from "@/lib/appwrite/config";
 export const TopfivedEmbed = ({ type, items, handleVote, setRefresh, list }: any) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+  const [selectedHearts, setSelectedHearts] = useState<string[]>([]);
   const { user } = useUserContext();
   const userId = user.id;
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Initialize selected hearts based on existing votes
+    const initialSelectedHearts = items
+      .filter((item: any) => item.vote.some((v: any) => v.$id === userId))
+      .map((item: any) => item.$id);
+    setSelectedHearts(initialSelectedHearts);
+  }, [items, userId]);
 
   const handleCTAClick = () => navigate("/");
 
@@ -27,6 +36,15 @@ export const TopfivedEmbed = ({ type, items, handleVote, setRefresh, list }: any
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     alert("Link copied to clipboard!");
+  };
+
+  const handleHeartClick = (itemId: string) => {
+    handleVote(itemId);
+    setSelectedHearts(prev => 
+      prev.includes(itemId) 
+        ? prev.filter(id => id !== itemId) 
+        : [...prev, itemId]
+    );
   };
 
   const getRankColor = (index: number) => {
@@ -93,18 +111,18 @@ export const TopfivedEmbed = ({ type, items, handleVote, setRefresh, list }: any
                   {index + 1}
                   {index === 0 && <Trophy size={16} className="inline ml-1" />}
                 </span>
-                <span className="text-indigo-900">{item.content}</span>
+                <span className="text-pretty text-indigo-900">{item.content}</span>
               </div>
               {type !== "top5" && (
                 <div className="flex items-center space-x-2">
                   <span className="font-semibold text-indigo-600">{item.vote.length * 5 || 0} pts</span>
                   <Button
-                    onClick={() => handleVote(item.$id)}
+                    onClick={() => handleHeartClick(item.$id)}
                     className="p-1 rounded-full bg-pink-100 hover:bg-pink-200"
                   >
                     <Heart 
                       size={16} 
-                      color={item.vote.some((v: any) => v.$id === userId) ? 'hotpink' : 'gray'} 
+                      color={selectedHearts.includes(item.$id) ? 'hotpink' : 'gray'} 
                     />
                   </Button>
                 </div>

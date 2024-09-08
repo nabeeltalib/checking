@@ -16,7 +16,8 @@ import ListStats from "@/components/shared/ListStats";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { createEmbedList, followUser, getConnection, shareList, UnFollow } from "@/lib/appwrite/api";
-import { Share2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { Share2, Trophy } from "lucide-react";
 import Comment from "@/components/shared/Comment";
 
 const ListDetails: React.FC = () => {
@@ -37,7 +38,10 @@ const ListDetails: React.FC = () => {
   const [isStatic, setIsStatic] = useState(true)
 
   const [connection, setConnection] = useState<any>(undefined);
-
+  const getRankColor = (index: number) => {
+    const colors = ["text-yellow-500", "text-gray-400", "text-orange-500", "text-blue-500", "text-green-500"];
+    return index < colors.length ? colors[index] : "text-purple-500";
+  };
   useEffect(() => {
     const fetchConnection = async () => {
       if (listCreator?.$id) {
@@ -225,16 +229,19 @@ const ListDetails: React.FC = () => {
 
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {visibleItems.map((item: any, index: number) => (
-            <li
+            <motion.li
               key={index}
-              className="p-4 bg-dark-1 rounded-lg shadow-md flex justify-between items-center hover:shadow-lg transition-shadow">
-              <div className="flex items-center gap-4">
-                <span className="w-8 h-6 sm:w-10 sm:h-8 bg-dark-4 rounded-full flex items-center justify-center text-blue-300 font-light text-xs">
-                  {index + 1}
-                </span>
-                <span className="text-light-1 text-sm sm:text-base">{item?.content || item}</span>
-              </div>              
-            </li>
+              className="p-4 bg-dark-1 rounded-lg shadow-md flex items-center gap-4 hover:shadow-lg transition-shadow"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <div className={`w-10 h-10 ${getRankColor(index)} rounded-full flex items-center justify-center text-xl font-bold`}>
+                {index + 1}
+                {index === 0 && <Trophy size={14} className="ml-1" />}
+              </div>
+              <span className="text-light-1 text-sm sm:text-base flex-1">{item?.content || item}</span>
+            </motion.li>
           ))}
         </ul>
 

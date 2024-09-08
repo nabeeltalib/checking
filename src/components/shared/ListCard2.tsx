@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Share2, MessageCircle, Bookmark, Tag, MapPin, Clock } from "lucide-react";
+import { Share2, MessageCircle, Bookmark, Tag, MapPin, Clock, Trophy } from "lucide-react";
 import { createEmbedList, followUser, getConnection, shareList, UnFollow } from "@/lib/appwrite/api";
 import { useDeleteSavedList, useGetComments, useGetCurrentUser, useLikeList, useSaveList } from "@/lib/react-query/queries";
 import Comment from "./Comment";
@@ -74,7 +74,10 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
       setIsSharing(false);
     }
   };
-
+  const getRankColor = (index: number) => {
+    const colors = ["text-yellow-500", "text-gray-400", "text-orange-500", "text-blue-500", "text-green-500"];
+    return index < colors.length ? colors[index] : "text-purple-500";
+  };
   const renderListItems = () => {
     let items: Array<any> = [];
 
@@ -87,14 +90,21 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
     }
 
     return items.slice(0, 5).map((item, index) => (
-      <li key={index} className="flex items-center mb-2 bg-dark-1">
-        <span className="text-xs flex-shrink-0 w-8 h-8 text-blue-300 bg-dark-4 rounded-full flex items-center justify-center font-bold mr-3">
-          {index + 1}
-        </span>
+      <motion.li
+        key={index}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: index * 0.1 }}
+        className="flex items-center mb-3 bg-dark-3 p-3 rounded-lg"
+      >
+        <div className={`flex-shrink-0 w-8 h-8 ${getRankColor(index)} rounded-full flex items-center justify-center font-bold mr-3`}>
+          <span className="text-sm">{index + 1}</span>
+          {index === 0 && <Trophy size={12} className="ml-1" />}
+        </div>
         <span className="text-sm text-light-2 text-ellipsis">
           {typeof item === "string" ? item : item.content || ""}
         </span>
-      </li>
+      </motion.li>
     ));
   };
 
@@ -251,11 +261,11 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
 
         {/* List Items */}
         <Link to={`/lists/${list.$id}`} className="block mb-6">
-          <ol className="list-none space-y-3">
+          <ol className="list-none space-y-3 px-6">
             {renderListItems()}
           </ol>
           {Array.isArray(list.items) && list.items.length > 5 && (
-            <p className="text-primary-500 font-semibold text-sm mt-2">
+            <p className="text-primary-500 font-semibold text-sm mt-2 px-6">
               + {list.items.length - 5} more items
             </p>
           )}

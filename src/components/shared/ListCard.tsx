@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { IList } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
-import { Share2, ThumbsUp, MessageCircle, Bookmark, Lightbulb, X } from "lucide-react";
+import { Share2, ThumbsUp, MessageCircle, Bookmark, Lightbulb, X, Trophy } from "lucide-react";
 import { useGetComments, useSignInWithGoogle } from "@/lib/react-query/queries";
 import Comment from "./Comment";
 import { Button } from "../ui";
@@ -66,6 +66,10 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const handleGoogleSignIn = () => {
     signInWithGoogle();
   };
+  const getRankColor = (index: number) => {
+    const colors = ["text-yellow-500", "text-gray-400", "text-orange-500", "text-blue-500", "text-green-500"];
+    return index < colors.length ? colors[index] : "text-purple-500";
+  };
 
   const renderListItems = () => {
     const items: any[] =
@@ -74,9 +78,9 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         : list.items ? Object.values(list.items) : [];
 
     return items.slice(0, 3).map((item, index) => (
-      <li
+      <motion.li
         key={index}
-        className="flex items-start mb-3 cursor-pointer"
+        className="flex items-center mb-3 cursor-pointer bg-dark-1 p-3 rounded-lg"
         onClick={() => {
           if (!list.isAuthenticated) {
             handleDialogOpen();
@@ -84,14 +88,18 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
             navigate(`/lists/${list.$id}`);
           }
         }}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: index * 0.1 }}
       >
-        <span className="text-sm flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 bg-dark-4 text-blue-300 rounded-full flex items-center justify-center font-light mr-3">
-          {index + 1}
-        </span>
+        <div className={`flex-shrink-0 w-8 h-8 ${getRankColor(index)}  rounded-full flex items-center justify-center font-bold mr-3`}>
+          <span className="text-sm">{index + 1}</span>
+          {index === 0 && <Trophy size={12} className="ml-1" />}
+        </div>
         <span className="text-sm sm:text-base text-light-1 text-ellipsis">
           {typeof item === "string" ? item : item.content || ""}
         </span>
-      </li>
+      </motion.li>
     ));
   };
 
@@ -152,7 +160,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           </h2>
 
           {/* List Items */}
-          <div onClick={handleDialogOpen} className="mb-6">
+          <div onClick={handleDialogOpen} className="mb-6 px-4">
             <ol className="list-none space-y-3">{renderListItems()}</ol>
             {Array.isArray(list.items) && list.items.length > 3 && (
               <p className="text-primary-500 font-semibold text-sm mt-4 text-center">

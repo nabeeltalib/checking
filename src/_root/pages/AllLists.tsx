@@ -35,7 +35,7 @@ const AllLists: React.FC = () => {
   }
 
   return (
-    <div className="flex-1 max-w-3xl mx-auto px-4 py-8">
+    <div className="flex-1 max-w-5xl mx-auto px-4 py-8">
       <h1 className="text-orange-300 font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
         What's in your Top Five?
       </h1>
