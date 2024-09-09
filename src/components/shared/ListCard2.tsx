@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Share2, MessageCircle, Bookmark, Tag, MapPin, Clock, Trophy } from "lucide-react";
-import { createEmbedList, followUser, getConnection, shareList, UnFollow } from "@/lib/appwrite/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { Share2, MessageCircle, Bookmark, Tag, MapPin, Clock, Trophy, MoreHorizontal, Flag } from "lucide-react";
+import { createEmbedList, followUser, getConnection, shareList, UnFollow, reportComment } from "@/lib/appwrite/api";
 import { useDeleteSavedList, useGetComments, useGetCurrentUser, useLikeList, useSaveList } from "@/lib/react-query/queries";
-import Comment from "./Comment";
 import { Button } from "../ui";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
+import Tooltip from "@/components/ui/Tooltip";
 import { Models } from "appwrite";
 import { checkIsLiked } from "@/lib/utils";
 import Loader from "./Loader";
@@ -21,7 +21,97 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
   const { mutate: saveList } = useSaveList();
   const { mutate: likeList } = useLikeList();
   const { data: comments } = useGetComments(list.$id);
+  const CommentWithActions = ({ comment }: { comment: any }) => {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const { user } = useUserContext();
+    const { toast } = useToast();
 
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+          setIsDropdownOpen(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, []);
+
+    const handleReport = async () => {
+      try {
+        await reportComment({
+          User: comment.user.Username,
+          Content: comment.Content,
+          id: comment.$id,
+          Reporter: user.name,
+        });
+        
+        toast({ 
+          title: "Comment Reported", 
+          description: "We'll review this comment soon. Thank you for keeping our community safe.",
+          duration: 5000,
+        });
+      } catch (error) {
+        toast({ 
+          title: "Couldn't Report Comment", 
+          description: "An error occurred. Please try again later.",
+          variant: "destructive",
+        });
+      }
+      
+      setIsDropdownOpen(false);
+    };
+
+    return (
+      <li className="flex items-start space-x-3 bg-dark-3 p-3 rounded-lg">
+        <img
+          src={comment.user.ImageUrl || "/assets/default-avatar.png"}
+          alt={`${comment.user.Username}'s avatar`}
+          className="w-8 h-8 rounded-full object-cover"
+        />
+        <div className="flex-grow">
+          <p className="text-blue-300 text-sm font-semibold">{comment.user.Username}</p>
+          <p className="text-light-2 text-sm">{comment.Content}</p>
+        </div>
+        <div className="relative" ref={dropdownRef}>
+          <Tooltip content="More options">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="text-gray-500 hover:text-gray-300 transition-colors duration-200"
+              aria-label="More options"
+            >
+              <MoreHorizontal size={18} />
+            </motion.button>
+          </Tooltip>
+          <AnimatePresence>
+            {isDropdownOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.1 }}
+                className="absolute right-0 mt-2 w-48 bg-dark-4 rounded-md shadow-lg z-20 overflow-hidden"
+              >
+                <motion.button
+                  whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                  onClick={handleReport}
+                  className="flex items-center w-full px-4 py-2 text-sm text-left text-light-2 hover:bg-dark-3"
+                >
+                  <Flag size={14} className="mr-2" />
+                  Report comment
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </li>
+    );
+  };
   const [isSharing, setIsSharing] = useState(false);
   const [isSaved, setIsSaved] = useState(
     currentUser?.save?.some((saved: any) => saved.list.$id === list.$id)
@@ -246,7 +336,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
 
         {/* List Title */}
         <div className="mb-6">
-          <div className="bg-dark-4 text-slate-600 text-center text-sm font-semibold px-4 py-2 rounded-t-lg">
+          <div className=" text-slate-700 text-center text-xl sm:text-xl font-thin px-4 py-4 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
             Ranking For
           </div>
           <h2 className="text-2xl font-bold text-light-1 mt-2 mb-1">
@@ -365,23 +455,23 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
 
       {/* Comments */}
       <div className="p-6 border-t border-dark-4">
-        <h3 className="text-lg font-semibold text-light-1 mb-4">Comments</h3>
-        {comments && comments?.length > 0 ? (
-          <ul className="space-y-4">
-            {comments?.slice(0, 2).map((comment: any, index: number) => (
-              <Comment comment={comment} key={index} />
-            ))}
-          </ul>
-        ) : (
-          <p className="text-light-3">What do you think? Comment below!</p>
-        )}
-        <Button
-          onClick={() => navigate(`/lists/${list.$id}`)}
-          className="mt-4 w-full bg-primary-500 hover:bg-primary-600 text-white transition-colors"
-        >
-          View All Comments
-        </Button>
-      </div>
+      <h3 className="text-lg font-semibold text-light-1 mb-4">Comments</h3>
+      {comments && comments?.length > 0 ? (
+        <ul className="space-y-4">
+          {comments?.slice(0, 2).map((comment: any, index: number) => (
+            <CommentWithActions key={index} comment={comment} />
+          ))}
+        </ul>
+      ) : (
+        <p className="text-light-3">What do you think? Comment below!</p>
+      )}
+      <Button
+        onClick={() => navigate(`/lists/${list.$id}`)}
+        className="mt-4 w-full hover:bg-primary-600 text-white transition-colors"
+      >
+        View All Comments
+      </Button>
+    </div>
     </motion.div>
   );
 };

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ListData } from "../data/List";
 import { userData } from "../data/user";
-import { createList } from "@/lib/appwrite/api";
+import { createList, getReportedComments } from "@/lib/appwrite/api";
 import { Loader } from "@/components/shared";
 
 
@@ -13,6 +13,8 @@ const AdminPanel = () => {
     const { user } = useUserContext();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false)
+    const [reportedComments, setReportedComments] = useState<any>([])
+    const [refresh, setRefresh] = useState(false)
 
     useEffect(()=>{
         if(!user.isAdmin)
@@ -20,6 +22,15 @@ const AdminPanel = () => {
             navigate("/")
         }
     },[user])
+    
+    useEffect(()=>{
+            const fetchData = async()=>{
+                let data = await getReportedComments()
+                setReportedComments(data);
+            }
+
+            fetchData()
+        },[refresh, user])
 
     const { mutateAsync: createUserAccount} = useCreateUserAccount();
 
@@ -44,6 +55,11 @@ const AdminPanel = () => {
 
         <p className="mt-8">In order to Create 100 lists and 10 users click below</p>
         <Button onClick={handleBulkUpload}>{isLoading ? <Loader /> : "Bulk Upload"}</Button>
+
+        <h1 className="text-2xl mb-3 mt-4">Review Reported Comments</h1>
+        {
+            reportedComments && reportedComments.length > 0 ? reportedComments.map((comment:any)=> <ReportedComments comment={comment} setRefresh={setRefresh} key={comment.$id} />) :  "No Reported Comments.."
+        }
     </div>
   )
 }

@@ -17,7 +17,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { createEmbedList, followUser, getConnection, shareList, UnFollow } from "@/lib/appwrite/api";
 import { motion } from "framer-motion";
-import { Share2, Trophy } from "lucide-react";
+import { Share2, Trophy, MoreVertical } from "lucide-react";
 import Comment from "@/components/shared/Comment";
 
 const ListDetails: React.FC = () => {
@@ -34,14 +34,18 @@ const ListDetails: React.FC = () => {
 
   const [newComment, setNewComment] = useState("");
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [isEmbed, setIsEmbed] = useState(false)
-  const [isStatic, setIsStatic] = useState(true)
-
+  const [isEmbed, setIsEmbed] = useState(false);
+  const [isStatic, setIsStatic] = useState(true);
   const [connection, setConnection] = useState<any>(undefined);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
   const getRankColor = (index: number) => {
     const colors = ["text-yellow-500", "text-gray-400", "text-orange-500", "text-blue-500", "text-green-500"];
     return index < colors.length ? colors[index] : "text-purple-500";
   };
+
   useEffect(() => {
     const fetchConnection = async () => {
       if (listCreator?.$id) {
@@ -52,8 +56,6 @@ const ListDetails: React.FC = () => {
 
     fetchConnection();
   }, [listCreator]);
-
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const visibleItems = useMemo(() => {
     if (!list) return [];
@@ -70,8 +72,6 @@ const ListDetails: React.FC = () => {
       toast({ title: "Error deleting list", variant: "destructive" });
     }
   };
-
-  const [isSharing, setIsSharing] = useState(false);
 
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -110,13 +110,6 @@ const ListDetails: React.FC = () => {
     }
   };
 
-  if (isLoading || isCreatorLoading) return <Loader />;
-  if (!list || !listCreator)
-    return <div className="text-center text-light-1">List not found</div>;
-
-  const isOwnProfile = user.id === list.creator.$id;
-  const isFollowed = connection?.follower?.some((follow: any) => follow.$id === user.id);
-
   const updateConnection = async () => {
     const resp = await getConnection(list.creator.$id);
     setConnection(resp.length > 0 ? resp[0] : undefined);
@@ -153,11 +146,15 @@ const ListDetails: React.FC = () => {
     }
   };
 
+  if (isLoading || isCreatorLoading) return <Loader />;
+  if (!list || !listCreator)
+    return <div className="text-center text-light-1">List not found</div>;
+
+  const isOwnProfile = user.id === list.creator.$id;
   const isCollaborator = list.users.some((collab: any) => collab.$id === user.id);
+  const isFollowed = connection?.follower?.some((follow: any) => follow.$id === user.id);
   
   let embedLink = isStatic ? `<iframe src="${import.meta.env.VITE_APP_DOMAIN}/staticframe/${list.$id}" width="50%" height="600"></iframe>`: `<iframe src="${import.meta.env.VITE_APP_DOMAIN}/liveframe/${list.$id}" width="50%" height="600"></iframe>`;
-  
-  console.log(list)
 
   return (
     <div className="flex flex-col w-full max-w-3xl mx-auto bg-dark-2 rounded-lg shadow-md p-4 sm:p-6">
@@ -167,12 +164,47 @@ const ListDetails: React.FC = () => {
           className="text-primary-500 font-bold text-lg">
           &larr; Back
         </button>
-        <button
-          onClick={handleShare}
-          className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
-          disabled={isSharing}>
-          <Share2 size={24} />
-        </button>
+        <div className="flex items-center">
+          <button
+            onClick={handleShare}
+            className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3 mr-2"
+            disabled={isSharing}>
+            <Share2 size={24} />
+          </button>
+          {(isOwnProfile || isCollaborator) && (
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3">
+                <MoreVertical size={24} />
+              </button>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-8 w-32 bg-dark-4 rounded-md shadow-lg z-50">
+                  <div className="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                    <button
+                      onClick={() => {
+                        navigate(`/update-list/${list?.$id}`);
+                        setIsDropdownOpen(false);
+                      }}
+                      className="block px-4 py-2 text-sm text-light-1 hover:bg-dark-3 w-full text-left"
+                      role="menuitem">
+                      Edit List
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleDeleteList();
+                        setIsDropdownOpen(false);
+                      }}
+                      className="block px-4 py-2 text-sm text-red-500 hover:bg-dark-3 w-full text-left"
+                      role="menuitem">
+                      Delete List
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="p-3 sm:p-6">
@@ -217,21 +249,18 @@ const ListDetails: React.FC = () => {
             ))}
         </div>
         
-        <div className="bg-dark-4 text-slate-700 text-center text-2xl sm:text-3xl font-thin px-4 py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
+        <div className=" text-slate-700 text-center text-xl sm:text-xl font-thin px-4 py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
           Ranking For
         </div>
-        <h1 className="text-base sm:text-2xl flex justify-between font-bold mb-4 text-center sm:text-left text-white px-1 py-3">
+        <h1 className="text-base sm:text-2xl flex justify-between font-bold mb-4 text-center sm:text-left text-blue-300 px-1 py-3">
           <span className="text-wrap text-blue-300 ml-1">{list.Title}</span>
-          
         </h1>
-        
-
 
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {visibleItems.map((item: any, index: number) => (
             <motion.li
               key={index}
-              className="p-4 bg-dark-1 rounded-lg shadow-md flex items-center gap-4 hover:shadow-lg transition-shadow"
+              className="p-4 bg-dark-3 rounded-lg shadow-md flex items-center gap-4 hover:shadow-lg transition-shadow"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -252,27 +281,15 @@ const ListDetails: React.FC = () => {
             {isExpanded ? "Show Less" : "Show More"}
           </button>
         )}
-      <div className="flex justify-between items-center">
-          <div className="ml-auto relative group flex items-center">
-            {(isOwnProfile || isCollaborator) && (
-              <>                                
-              </>
-            )}
-          </div>
-        </div>
-         <p className="text-light-3 text-sm sm:text-base mb-6 text-right">
+
+        <p className="text-light-3 text-sm sm:text-base mb-6 text-right">
           {formatDistanceToNow(new Date(list.$createdAt), { addSuffix: true })}
         </p> 
         {list.Description && (
-            <p className="text-sm sm:text-base font-thin mb-6 text-gray-100 text-center sm:text-left px-4">
-              {list.Description}
-            </p>
-          )}
-     
-
-      
-
-
+          <p className="text-sm sm:text-base font-thin mb-6 text-gray-100 text-center sm:text-left px-4">
+            {list.Description}
+          </p>
+        )}
 
         <div className="flex flex-wrap gap-2 mb-6 text-center sm:text-left">
           {list.Tags?.map((tag: string, index: number) => (
@@ -284,8 +301,6 @@ const ListDetails: React.FC = () => {
             </span>
           ))}
         </div>
-
-        
 
         {list.locations.length > 0 && (
           <div className="text-sm sm:text-base mb-4">
@@ -313,48 +328,50 @@ const ListDetails: React.FC = () => {
           list={list} 
           userId={user.id}
           setIsEmbed={setIsEmbed} 
-          textSize="text-xs" // Adjust text size as needed
-          backgroundColor="" // Adjust background color as needed
+          textSize="text-xs"
+          backgroundColor=""
         />
-        {isOwnProfile && (
-          <div className="flex gap-4 mt-6 justify-center sm:justify-start">
-            <Button
-              onClick={() => navigate(`/update-list/${list?.$id}`)}
-              className="text-xs border-2 border-gray-500 text-light-1 px-4 py-2 rounded-sm shadow-md">
-              Edit List
-            </Button>
-            <Button
-              onClick={handleDeleteList}
-              className="text-xs bg-red-500 text-light-1 px-4 py-2 rounded-sm shadow-md"
-              disabled={isDeleting}>
-              {isDeleting ? "Deleting..." : "Delete List"}
-            </Button>
-          </div>
-        )}
+
         <div className="">
-        {isEmbed && <div className="flex flex-col gap-2">
-          <h1 className="text-white text-xl font-bold">Embed Code</h1>
-          <div className="flex justify-between">
-            <div className="gap-2 flex">
-            <button onClick={()=> setIsStatic(true)} className={`w-24 ${isStatic ? "bg-zinc-950 p-2 border-2 border-solid border-blue-950 rounded-xl": ""}`}>Static</button>
-            <button onClick={()=> setIsStatic(false)} className={`w-24 ${!isStatic ? "bg-zinc-950 p-2 border-2 border-solid border-blue-950 rounded-xl": ""}`}>Live</button>
+          {isEmbed && (
+            <div className="flex flex-col gap-2">
+              <h1 className="text-white text-xl font-bold">Embed Code</h1>
+              <div className="flex justify-between">
+                <div className="gap-2 flex">
+                  <button 
+                    onClick={() => setIsStatic(true)} 
+                    className={`w-24 ${isStatic ? "bg-zinc-950 p-2 border-2 border-solid border-blue-950 rounded-xl" : ""}`}
+                  >
+                    Static
+                  </button>
+                  <button 
+                    onClick={() => setIsStatic(false)} 
+                    className={`w-24 ${!isStatic ? "bg-zinc-950 p-2 border-2 border-solid border-blue-950 rounded-xl" : ""}`}
+                  >
+                    Live
+                  </button>
+                </div>
+                <Link to={"#"} className="text-sm underline text-blue-400">What's the difference?</Link>
+              </div>
+              <div className="border-2 border-solid border-white p-2">
+                {embedLink}
+              </div>
+              <Link to={`${import.meta.env.VITE_APP_DOMAIN}/embedpreview/${list.$id}`} className="flex justify-end text-blue-400 text-lg mr-3">
+                See Preview
+              </Link>
             </div>
-            <Link to={"#"} className="text-sm underline text-blue-400" >What's the difference?</Link>
-          </div>
-          <div className="border-2 border-solid border-white p-2">
-          {embedLink}
-          </div>
-          <Link to={`${import.meta.env.VITE_APP_DOMAIN}/embedpreview/${list.$id}`} className="flex justify-end text-blue-400 text-lg mr-3">See Preview</Link>
-        </div>}
-      </div>
+          )}
+        </div>
+
+        {/* Commented out comment section
         <div className="mt-6">
-          {/*<h3 className="text-sm font-semibold text-gray-500 mb-2"> Comments:</h3>
+          <h3 className="text-sm font-semibold text-gray-500 mb-2">Comments:</h3>
           <form onSubmit={handleAddComment} className="mb-4">
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Add a comment..."
-              className="w-full p-2  rounded-lg bg-gray-800 dark:text-white"
+              className="w-full p-2 rounded-lg bg-gray-800 dark:text-white"
             />
             <button
               type="submit"
@@ -368,8 +385,9 @@ const ListDetails: React.FC = () => {
             <div key={index} className="mb-4">
               <Comment comment={comment} />
             </div>
-          ))}*/}
+          ))}
         </div>
+        */}
       </div>
 
       <div className="p-4 sm:p-6">

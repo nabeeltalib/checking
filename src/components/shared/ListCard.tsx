@@ -80,7 +80,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     return items.slice(0, 3).map((item, index) => (
       <motion.li
         key={index}
-        className="flex items-center mb-3 cursor-pointer bg-dark-1 p-3 rounded-lg"
+        className="flex items-center mb-3 cursor-pointer bg-dark-3 p-3 rounded-lg"
         onClick={() => {
           if (!list.isAuthenticated) {
             handleDialogOpen();
@@ -118,7 +118,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   return (
     <>
       <motion.div
-        className="bg-dark-3 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto"
+        className="bg-dark-2 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 cursor-pointer w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto"
         whileHover={{ y: -5 }}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -151,11 +151,14 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           </div>
 
           {/* List Title */}
-          <div className="bg-dark-4 text-slate-600 text-center text-xl sm:text-sm font-semibold px-4 py-2 rounded-t-lg mb-6">
-            Ranking For
+          <div className="text-center">
+            <div className=" text-slate-700 text-center text-xl sm:text-xl font-thin px-4 py-4 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
+              Ranking For
+            </div>
           </div>
 
-          <h2 className="text-lg sm:text-xl font-bold text-light-1 mb-6">
+
+          <h2 className="text-blue-300 text-lg sm:text-xl font-bold mb-6">
             {list.Title}
           </h2>
 

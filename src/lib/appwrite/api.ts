@@ -858,6 +858,31 @@ export async function createComment(comment: {
   }
 }
 
+export async function reportComment(comment:any) {
+  try {
+    const newComment = await databases.createDocument(
+      appwriteConfig.databaseId,
+      "66dc4454001a27643f2d",
+      ID.unique(),
+      {
+        commentContent: comment.Content,
+        commentId: comment.id,
+        commentedBy: comment.User,
+        ReportedBy: comment.Reporter
+      }
+    );
+
+    if (!newComment) {
+      throw new Error('Failed to Report comment');
+    }
+
+    return newComment;
+  } catch (error) {
+    console.error('Error reporting comment:', error);
+    return null;
+  }
+}
+
 export async function createReply(reply: any) {
   try {
     const newComment = await databases.createDocument(
@@ -898,6 +923,23 @@ export async function getComments(listId: string) {
   }
 }
 
+export async function getReportedComments() {
+  try {
+    const comments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      "66dc4454001a27643f2d",
+      [Query.orderDesc('$createdAt')]
+    );
+
+    if (!comments) throw new Error('No comments found');
+
+    return comments.documents;
+  } catch (error) {
+    console.error('Error getting comments:', error);
+    return null;
+  }
+}
+
 export async function getCommentbyId(commentId: string) {
   try {
     const comment = await databases.getDocument(
@@ -909,6 +951,41 @@ export async function getCommentbyId(commentId: string) {
     return comment;
   } catch (error) {
     console.error("Error getting comments:", error);
+    return null;
+  }
+}
+
+export async function deleteComment(commentId: string) {
+  try {
+    const statusCode = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      commentId
+    );
+
+    if (!statusCode) throw new Error('Failed to delete comment');
+
+    return { status: 'Ok' };
+  } catch (error) {
+    console.error('Error getting comments:', error);
+    return null;
+  }
+}
+
+
+export async function deleteReportedComment(commentId: string) {
+  try {
+    const statusCode = await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      "66dc4454001a27643f2d",
+      commentId
+    );
+
+    if (!statusCode) throw new Error('Failed to delete comment');
+
+    return { status: 'Ok' };
+  } catch (error) {
+    console.error('Error getting comments:', error);
     return null;
   }
 }

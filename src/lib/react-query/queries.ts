@@ -52,6 +52,7 @@ import {
   getCollaborations,
   signInWithGoogle,
   updateCollaboration,
+  getRelatedLists,
 } from '@/lib/appwrite/api';
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
 import { useNavigate } from 'react-router-dom';

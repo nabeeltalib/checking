@@ -46,11 +46,11 @@ import SegmentedLeaderboardPage from "./_root/pages/SegmentedLeaderboardPage";
 import ProfileScreen from "./_root/pages/ProfileScreen";
 import ComprehensiveLeaderboard from "./_root/pages/ComprehensiveLeaderboard";
 import ComprehensiveLeaderboard2 from "./_root/pages/ComprehensiveLeaderboard2";
-import OnboardingScreens from "./_root/pages/OnBoardingScreens";
 import OnboardingPage from "./components/shared/OnboardingPage";
 import AdminPanel from "./_root/pages/AdminPanel";
 import StaticFrame from "./components/shared/StaticFrame";
 import LiveFrame from "./components/shared/LiveFrame";
+import OnboardingScreens from "./_root/pages/OnboardingScreens";
 
 const App = () => {
 
