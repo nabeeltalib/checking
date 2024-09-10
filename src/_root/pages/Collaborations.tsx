@@ -40,11 +40,11 @@ const Collaborations: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900"
+      className="flex flex-col min-h-screen bg-gray-900"
     >
-      <header className="bg-white dark:bg-gray-800 shadow-md p-6">
+      <header className="bg-gray-800 shadow-md p-6">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center">
+          <h1 className="text-3xl font-bold text-white flex items-center">
             <Users className="mr-2" size={32} />
             Collaborations
           </h1>
@@ -57,13 +57,13 @@ const Collaborations: React.FC = () => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg mb-8"
+            className="bg-gray-800 p-6 rounded-lg shadow-lg mb-8"
           >
-            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white flex items-center">
+            <h2 className="text-xl font-semibold mb-4 text-white flex items-center">
               <AlertCircle className="mr-2" size={24} />
               What are Collaborations?
             </h2>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-gray-300">
               Collaborations allow you to work together with other users on lists. Here, you can view and manage collaboration invitations you've received. Accept invitations to join exciting projects or decline those that don't interest you.
             </p>
           </motion.div>
@@ -72,9 +72,9 @@ const Collaborations: React.FC = () => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg"
+            className="bg-gray-800 p-6 rounded-lg shadow-lg"
           >
-            <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-white">Collaboration Invitations</h2>
+            <h2 className="text-2xl font-bold mb-6 text-white">Collaboration Invitations</h2>
 
             <AnimatePresence>
               {collaboration?.length > 0 ? (
@@ -86,12 +86,12 @@ const Collaborations: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-md"
+                      className="bg-gray-700 p-4 rounded-lg shadow-md"
                     >
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="font-semibold text-gray-800 dark:text-white">{collab.listId}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                          <p className="font-semibold text-white">{collab.listId}</p>
+                          <p className="text-sm text-gray-400">
                             Sent by: {collab.userId}
                           </p>
                         </div>
@@ -127,7 +127,7 @@ const Collaborations: React.FC = () => {
                 <motion.p 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="text-gray-500 dark:text-gray-400 text-center py-8"
+                  className="text-gray-400 text-center py-8"
                 >
                   No collaboration invitations at the moment.
                 </motion.p>
@@ -137,8 +137,8 @@ const Collaborations: React.FC = () => {
         </div>
       </main>
 
-      <footer className="p-4 bg-white dark:bg-gray-800 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+      <footer className="p-4 bg-gray-800 text-center">
+        <p className="text-sm text-gray-400">
           © 2024 Topfived. All rights reserved.
         </p>
       </footer>

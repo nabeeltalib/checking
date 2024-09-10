@@ -51,11 +51,11 @@ const Userlist: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col items-center min-h-screen bg-gray-900 dark:bg-gray-900"
+      className="flex flex-col items-center min-h-screen bg-gray-900"
     >
       <header className="w-full bg-bg-gray-800 dark:bg-gray-800 shadow-md p-6 mb-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-white dark:text-white flex items-center mb-4">
+          <h1 className="text-3xl font-bold text-white flex items-center mb-4">
             <Users className="mr-2" size={32} />
             User Directory
           </h1>
@@ -65,11 +65,11 @@ const Userlist: React.FC = () => {
             transition={{ delay: 0.2 }}
             className="bg-blue-900 dark:bg-blue-900 p-4 rounded-lg"
           >
-            <h2 className="text-xl font-semibold mb-2 text-blue-200 dark:text-blue-200 flex items-center">
+            <h2 className="text-xl font-semibold mb-2 text-blue-200 flex items-center">
               <AlertCircle className="mr-2" size={24} />
               Collaborations and Connections
             </h2>
-            <p className="text-blue-300 dark:text-blue-300">
+            <p className="text-blue-300">
               Discover and connect with other users to collaborate on lists and projects. Building a network enhances your Topfived experience, allowing you to share ideas and create together. Browse the directory, send connection requests, and start collaborating!
             </p>
           </motion.div>
@@ -85,11 +85,11 @@ const Userlist: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-md"
+            className="text-center py-12 bg-gray-800 rounded-lg shadow-md"
           >
             <UserPlus size={48} className="mx-auto mb-4 text-gray-400" />
-            <p className="text-xl text-gray-600 dark:text-gray-300">No users found.</p>
-            <p className="mt-2 text-gray-500 dark:text-gray-400">Check back later or try refreshing the page.</p>
+            <p className="text-xl text-gray-300">No users found.</p>
+            <p className="mt-2 text-gray-400">Check back later or try refreshing the page.</p>
           </motion.div>
         ) : (
           <motion.div 
@@ -109,8 +109,8 @@ const Userlist: React.FC = () => {
         )}
       </main>
 
-      <footer className="w-full mt-12 p-4 bg-white dark:bg-gray-800 text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+      <footer className="w-full mt-12 p-4 bg-gray-800 text-center">
+        <p className="text-sm text-gray-400">
           © 2024 Topfived. All rights reserved.
         </p>
       </footer>
