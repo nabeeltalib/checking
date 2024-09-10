@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, NavLink } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
 import { useUserContext } from "@/context/AuthContext";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { Input } from "@/components/ui/input";
 import { useSearchLists } from "@/lib/react-query/queries";
 import { NotificationBell } from "./notifications/NotificationBell";
+import { Search, Menu, X, User, HelpCircle, Mail, LogOut, ChevronRight } from 'lucide-react';
 
 const Topbar: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +24,6 @@ const Topbar: React.FC = () => {
   const searchResultsRef = useRef<HTMLUListElement>(null);
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
-
   const toggleOffCanvas = () => setIsOffCanvasOpen((prev) => !prev);
 
   useEffect(() => {
@@ -45,118 +46,105 @@ const Topbar: React.FC = () => {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       searchLists();
-      setIsSearch(true); // Show search results on search
+      setIsSearch(true);
     }
   };
 
   const handleCreateList = () => navigate("/create-list");
-
   const handleSignOut = () => {
     signOut();
     navigate("/");
   };
 
   return (
-    <section className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg w-full">
+    <motion.section
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg w-full"
+    >
       <div className="container mx-auto flex p-4 gap-4 items-center justify-between">
-        <Link to="/" className="items-center gap-3 hidden md:flex">
+        <Link to="/" className="flex items-center gap-3">
           <img
             src="/assets/images/logo.svg"
             alt="Topfived logo"
             width={130}
             height={32}
-            className="object-contain"
+            className="object-contain hidden md:block"
           />
-        </Link>
-        <Link to="/" className="items-center gap-3 flex md:hidden">
           <img
             src="/assets/images/mobile.png"
             alt="Topfived logo"
             width={40}
-            className="object-contain"
+            className="object-contain md:hidden"
           />
         </Link>
 
-        <form onSubmit={handleSearch} ref={searchRef} className="flex-grow max-w-md mx-auto w-full">
+        <form onSubmit={handleSearch} ref={searchRef} className="flex-grow max-w-md mx-auto w-full relative">
           <div className="flex justify-center items-center gap-2">
             <Input
               type="text"
               placeholder="Search lists..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              spellCheck={true}  // Spellcheck enabled here
-              className={`w-full bg-gray-800 text-white border-none rounded-lg focus:ring-2 focus:ring-purple-400 transition-all duration-300 ${
-                isSearch ? "block" : "block"
-              }`}
+              spellCheck={true}
+              className="w-full bg-gray-800 text-white border-none rounded-lg focus:ring-2 focus:ring-purple-400 transition-all duration-300"
             />
-            <button
+            <Button
               type="submit"
               className="p-2 bg-purple-500 rounded-full hover:bg-purple-700 transition-all duration-300"
               aria-label="Search"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="h-6 w-6 text-white"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                />
-              </svg>
-            </button>
+              <Search className="h-5 w-5 text-white" />
+            </Button>
           </div>
 
-          {isSearch && searchResults?.pages?.length > 0 && (
-            <ul ref={searchResultsRef} className="absolute bg-gray-600 text-white rounded-lg shadow-lg w-1/2 md:w-1/4 max-h-60 overflow-y-auto">
-              {searchResults.pages.map((page) =>
-                page.map((list: any) => (
-                  <li key={list.id} className="border-b last:border-b-0">
-                    <Link
-                      to={`/lists/${list.id}`}
-                      className="block px-4 py-2 hover:bg-gray-500"
+          <AnimatePresence>
+            {isSearch && searchResults?.pages?.length > 0 && (
+              <motion.ul
+                ref={searchResultsRef}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute bg-gray-700 text-white rounded-lg shadow-lg w-full max-h-60 overflow-y-auto mt-2"
+              >
+                {searchResults.pages.map((page) =>
+                  page.map((list: any) => (
+                    <motion.li
+                      key={list.id}
+                      whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                      className="border-b border-gray-600 last:border-b-0"
                     >
-                      {list.Title}
-                    </Link>
-                  </li>
-                ))
-              )}
-            </ul>
-          )}
+                      <Link
+                        to={`/lists/${list.id}`}
+                        className="block px-4 py-2 hover:bg-gray-600 transition-colors duration-200"
+                      >
+                        {list.Title}
+                      </Link>
+                    </motion.li>
+                  ))
+                )}
+              </motion.ul>
+            )}
+          </AnimatePresence>
         </form>
 
         <div className="flex items-center md:hidden">
-          <button onClick={toggleOffCanvas} className="text-white" aria-label="Open menu">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.5"
-              stroke="currentColor"
-              className="w-8 h-8"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 5.25h16.5m-16.5 7.5h16.5m-16.5 7.5h16.5" />
-            </svg>
-          </button>
+          <Button onClick={toggleOffCanvas} className="text-white" aria-label="Open menu">
+            <Menu className="w-6 h-6" />
+          </Button>
         </div>
 
         <div id="side-icons" className="hidden md:flex items-center gap-4">
           <Button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-300"
             onClick={handleCreateList}
           >
             Create List
@@ -168,7 +156,7 @@ const Topbar: React.FC = () => {
             onClick={handleSignOut}
             aria-label="Sign out"
           >
-            <img src="/assets/icons/logout.svg" alt="Sign out" className="h-8 w-8" />
+            <LogOut className="h-6 w-6 text-white" />
           </Button>
 
           <Link to="/notifications" className="hidden md:block">
@@ -176,162 +164,127 @@ const Topbar: React.FC = () => {
           </Link>
 
           <div className="relative" ref={dropdownRef}>
-            <div className="flex items-center cursor-pointer" onClick={toggleDropdown}>
+            <Button
+              className="flex items-center p-0 bg-transparent hover:bg-transparent"
+              onClick={toggleDropdown}
+            >
               <img
                 className="w-10 h-10 rounded-full object-cover shadow-lg"
                 src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
                 alt="Profile"
               />
-            </div>
-
-            {isOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-gray-200 rounded-lg shadow-xl overflow-hidden z-10">
-                <Link
-                  to="/profile/profile"
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-black hover:bg-gray-100 transition-all duration-200"
-                >
-                  <img
-                    src="/assets/icons/profile.svg"
-                    alt="Profile Icon"
-                    className="w-5 h-5 filter invert-0 brightness-0"
-                  />
-                  Profile
-                </Link>
-                <Link
-                  to="/notifications"
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-black hover:bg-gray-100 transition-all duration-200"
-                >
-                  <img
-                    src="/assets/icons/notification.svg"
-                    alt="Notifications Icon"
-                    className="w-5 h-5 filter invert-0 brightness-0"
-                  />
-                  Notifications
-                </Link>
-                <Link
-                  to="/helpfaqpage"
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-black hover:bg-gray-100 transition-all duration-200"
-                >
-                  <img
-                    src="/assets/icons/help.svg"
-                    alt="Help Icon"
-                    className="w-5 h-5 filter invert-0 brightness-0"
-                  />
-                  Help/FAQ
-                </Link>
-                <Link
-                  to="/contactpage"
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-black hover:bg-gray-100 transition-all duration-200"
-                >
-                  <img
-                    src="/assets/icons/contact.svg"
-                    alt="Contact Icon"
-                    className="w-5 h-5 filter invert-0 brightness-0"
-                  />
-                  Contact Us
-                </Link>
-                <button
-                  className="flex items-center gap-2 px-4 py-3 text-sm text-black hover:bg-red-50 transition-all duration-200 w-full text-left"
-                  onClick={handleSignOut}
-                >
-                  <img
-                    src="/assets/icons/logout.svg"
-                    alt="Logout Icon"
-                    className="w-5 h-5 filter invert-0 brightness-0"
-                  />
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div
-          className={`fixed inset-0 z-50 bg-black bg-opacity-50 transform ${
-            isOffCanvasOpen ? "translate-x-0" : "translate-x-full"
-          } transition-transform duration-300 ease-in-out md:hidden`}
-        >
-          <div className="absolute right-0 bg-gray-800 text-white w-64 h-full p-5">
-            <button className="mb-5 text-white" onClick={toggleOffCanvas} aria-label="Close menu">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-8 h-8">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            <Button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg w-full mb-4"
-              onClick={handleCreateList}
-            >
-              Create List
             </Button>
 
-            <Button
-              variant="ghost"
-              className="p-2 w-full mb-4 rounded-full hover:bg-gray-700 transition-all duration-300"
-              onClick={handleSignOut}
-              aria-label="Sign out"
-            >
-              <img src="/assets/icons/logout.svg" alt="Sign out" className="h-8 w-8 mx-auto" />
-            </Button>
-
-            <Link to="/notifications" className="block mb-4">
-              <img src="/assets/icons/notification.svg" alt="notifications" width={27} height={22} className="mx-auto" />
-            </Link>
-
-            <div className="relative">
-              <div className="flex items-center cursor-pointer" onClick={toggleDropdown}>
-                <img
-                  className="w-10 h-10 rounded-full object-cover mx-auto shadow-lg"
-                  src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
-                  alt="Profile"
-                />
-              </div>
-
+            <AnimatePresence>
               {isOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl overflow-hidden z-10">
-                  <Link
-                    to={`/profile/profile`}
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Profile
-                  </Link>
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl overflow-hidden z-10"
+                >
+                  {[
+                    { to: "/profile/profile", icon: User, text: "Profile" },
+                    { to: "/notifications", icon: NotificationBell, text: "Notifications" },
+                    { to: "/helpfaqpage", icon: HelpCircle, text: "Help/FAQ" },
+                    { to: "/contactpage", icon: Mail, text: "Contact Us" },
+                  ].map((item, index) => (
+                    <Link
+                      key={index}
+                      to={item.to}
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                    >
+                      <item.icon className="w-5 h-5" />
+                      {item.text}
+                    </Link>
+                  ))}
                   <button
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                    className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 transition-all duration-200 w-full text-left"
                     onClick={handleSignOut}
                   >
+                    <LogOut className="w-5 h-5" />
                     Logout
                   </button>
-                </div>
+                </motion.div>
               )}
-            </div>
-            <Link
-              to="/helpfaqpage"
-              className="flex items-center gap-2 px-4 py-3 text-sm text-white hover:bg-gray-700 transition-all duration-200"
-            >
-              Help/FAQ
-            </Link>
-            <Link
-              to="/contactpage"
-              className="flex items-center gap-2 px-4 py-3 text-sm text-white hover:bg-gray-700 transition-all duration-200"
-            >
-              Contact Us
-            </Link>
-            <div className="flex flex-col gap-4 mt-6 mb-14">
-              <div className="text-xs text-gray-400 text-center mt-4">
-                <NavLink to="/privacypolicy" className="hover:text-white">
-                  Privacy Policy
-                </NavLink>
-                <span className="mx-2">|</span>
-                <NavLink to="/termsandconditions" className="hover:text-white">
-                  Terms & Conditions
-                </NavLink>
-                <p className="mt-2">&copy; 2024 Topfived. All rights reserved.</p>
-              </div>
-            </div>
+            </AnimatePresence>
           </div>
         </div>
+
+        <AnimatePresence>
+          {isOffCanvasOpen && (
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="fixed inset-y-0 right-0 z-50 w-64 bg-gray-800 p-5 shadow-lg md:hidden"
+            >
+              <Button onClick={toggleOffCanvas} className="mb-5 text-white" aria-label="Close menu">
+                <X className="w-6 h-6" />
+              </Button>
+
+              <div className="space-y-4">
+                <Button
+                  className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-300"
+                  onClick={handleCreateList}
+                >
+                  Create List
+                </Button>
+
+                <Link to="/notifications" className="block">
+                  <Button className="w-full text-left flex items-center justify-between">
+                    Notifications
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                </Link>
+
+                <Link to="/profile/profile" className="block">
+                  <Button className="w-full text-left flex items-center justify-between">
+                    Profile
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                </Link>
+
+                <Link to="/helpfaqpage" className="block">
+                  <Button className="w-full text-left flex items-center justify-between">
+                    Help/FAQ
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                </Link>
+
+                <Link to="/contactpage" className="block">
+                  <Button className="w-full text-left flex items-center justify-between">
+                    Contact Us
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                </Link>
+
+                <Button
+                  variant="destructive"
+                  className="w-full"
+                  onClick={handleSignOut}
+                >
+                  Logout
+                </Button>
+              </div>
+
+              <div className="absolute bottom-4 left-4 right-4 text-xs text-gray-400">
+                <div className="flex justify-between mb-2">
+                  <NavLink to="/privacypolicy" className="hover:text-white transition-colors duration-200">
+                    Privacy Policy
+                  </NavLink>
+                  <NavLink to="/termsandconditions" className="hover:text-white transition-colors duration-200">
+                    Terms & Conditions
+                  </NavLink>
+                </div>
+                <p className="text-center">&copy; 2024 Topfived. All rights reserved.</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
