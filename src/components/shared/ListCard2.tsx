@@ -339,7 +339,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
           <div className=" text-slate-700 text-center text-xl sm:text-xl font-thin px-4 py-4 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
             Ranking For
           </div>
-          <h2 className="text-2xl font-bold text-light-1 mt-2 mb-1">
+          <h2 className="text-xl font-bold text-light-1 mt-2 mb-1">
             {list.Title}
           </h2>
           {manageList && (

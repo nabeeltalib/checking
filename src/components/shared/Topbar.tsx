@@ -1,13 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Link, useNavigate, NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
 import { useUserContext } from "@/context/AuthContext";
-import { useSignOutAccount } from "@/lib/react-query/queries";
+import { useSignOutAccount, useSearchLists, useGetInfiniteLists } from "@/lib/react-query/queries";
 import { Input } from "@/components/ui/input";
-import { useSearchLists } from "@/lib/react-query/queries";
 import { NotificationBell } from "./notifications/NotificationBell";
-import { Search, Menu, X, User, HelpCircle, Mail, LogOut, ChevronRight } from 'lucide-react';
+import { Search, Menu, X, User, HelpCircle, Mail, LogOut, ChevronRight, Filter } from 'lucide-react';
+import { IList } from '@/types';
+import { Models } from 'appwrite';
 
 const Topbar: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Topbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSearch, setIsSearch] = useState(false);
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
+  const [sortOption, setSortOption] = useState<string>("");
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLFormElement>(null);
@@ -25,6 +27,8 @@ const Topbar: React.FC = () => {
 
   const toggleDropdown = () => setIsOpen((prev) => !prev);
   const toggleOffCanvas = () => setIsOffCanvasOpen((prev) => !prev);
+
+  const { data: lists } = useGetInfiniteLists();
 
   useEffect(() => {
     if (isSuccess) navigate(0);
@@ -57,6 +61,31 @@ const Topbar: React.FC = () => {
     }
   };
 
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortOption(e.target.value);
+  };
+
+  const sortAndFilterLists = useCallback((lists: Models.Document[]) => {
+    return [...lists]
+      .filter((list: IList) => 
+        list.Title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        list.Tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+      .sort((a, b) => {
+        const getCategoryOrTag = (item: Models.Document, field: 'Categories' | 'Tags') => {
+          return item[field] && item[field].length > 0 ? item[field][0] : '';
+        };
+
+        const aValue = sortOption === 'category' ? getCategoryOrTag(a, 'Categories') : getCategoryOrTag(a, 'Tags');
+        const bValue = sortOption === 'category' ? getCategoryOrTag(b, 'Categories') : getCategoryOrTag(b, 'Tags');
+
+        if (!aValue && !bValue) return 0;
+        if (!aValue) return 1;
+        if (!bValue) return -1;
+        return aValue.localeCompare(bValue);
+      });
+  }, [sortOption, searchQuery]);
+
   const handleCreateList = () => navigate("/create-list");
   const handleSignOut = () => {
     signOut();
@@ -70,7 +99,7 @@ const Topbar: React.FC = () => {
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg w-full"
     >
-      <div className="container mx-auto flex p-4 gap-4 items-center justify-between">
+      <div className="container mx-auto flex p-4 gap-1 items-center justify-between">
         <Link to="/" className="flex items-center gap-3">
           <img
             src="/assets/images/logo.svg"
@@ -80,15 +109,16 @@ const Topbar: React.FC = () => {
             className="object-contain hidden md:block"
           />
           <img
-            src="/assets/images/mobile.png"
+            src="/assets/images/logo.svg"
             alt="Topfived logo"
-            width={40}
+            width={130}
+            height={32}
             className="object-contain md:hidden"
           />
         </Link>
 
         <form onSubmit={handleSearch} ref={searchRef} className="flex-grow max-w-md mx-auto w-full relative">
-          <div className="flex justify-center items-center gap-2">
+          {/*<div className="flex justify-center items-center gap-2">
             <Input
               type="text"
               placeholder="Search lists..."
@@ -104,7 +134,7 @@ const Topbar: React.FC = () => {
             >
               <Search className="h-5 w-5 text-white" />
             </Button>
-          </div>
+          </div>*/}
 
           <AnimatePresence>
             {isSearch && searchResults?.pages?.length > 0 && (

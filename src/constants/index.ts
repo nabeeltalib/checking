@@ -102,7 +102,7 @@ export const bottombarLinks = [
 export const bottombarLinks2 = [
   {
     imgURL: "/assets/icons/home.svg",
-    route: "/home",
+    route: "/",
     label: "Home",
   },  
   {

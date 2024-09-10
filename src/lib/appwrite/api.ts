@@ -153,12 +153,11 @@ export async function saveUserToDB(user: {
 }
 
 export async function signInWithGoogle() {
-
   try {
     const session = account.createOAuth2Session(
       OAuthProvider.Google,
-      "http://localhost:3000/profile/profile",
-      "http://localhost:3000/sign-in",
+      `${import.meta.env.VITE_APP_URL}/profile/profile`,
+      `${import.meta.env.VITE_APP_URL}/sign-in`,
       [
         "https://www.googleapis.com/auth/userinfo.email",
         "https://www.googleapis.com/auth/userinfo.profile",
@@ -858,31 +857,6 @@ export async function createComment(comment: {
   }
 }
 
-export async function reportComment(comment:any) {
-  try {
-    const newComment = await databases.createDocument(
-      appwriteConfig.databaseId,
-      "66dc4454001a27643f2d",
-      ID.unique(),
-      {
-        commentContent: comment.Content,
-        commentId: comment.id,
-        commentedBy: comment.User,
-        ReportedBy: comment.Reporter
-      }
-    );
-
-    if (!newComment) {
-      throw new Error('Failed to Report comment');
-    }
-
-    return newComment;
-  } catch (error) {
-    console.error('Error reporting comment:', error);
-    return null;
-  }
-}
-
 export async function createReply(reply: any) {
   try {
     const newComment = await databases.createDocument(
@@ -923,6 +897,30 @@ export async function getComments(listId: string) {
   }
 }
 
+export async function reportComment(comment:any) {
+  try {
+    const newComment = await databases.createDocument(
+      appwriteConfig.databaseId,
+      "66dc4454001a27643f2d",
+      ID.unique(),
+      {
+        commentContent: comment.Content,
+        commentId: comment.id,
+        commentedBy: comment.User,
+        ReportedBy: comment.Reporter
+      }
+    );
+
+    if (!newComment) {
+      throw new Error('Failed to Report comment');
+    }
+
+    return newComment;
+  } catch (error) {
+    console.error('Error reporting comment:', error);
+    return null;
+  }
+}
 export async function getReportedComments() {
   try {
     const comments = await databases.listDocuments(
@@ -939,7 +937,6 @@ export async function getReportedComments() {
     return null;
   }
 }
-
 export async function getCommentbyId(commentId: string) {
   try {
     const comment = await databases.getDocument(

@@ -61,7 +61,7 @@ const RightSidebar2 = () => {
                     ? ''
                     : link.restricted
                     ? 'brightness-50 invert'
-                    : 'brightness-100'
+                    : 'brightness-0 invert'
                 }`}
               />
               <span className="hidden lg:inline">{link.label}</span>
