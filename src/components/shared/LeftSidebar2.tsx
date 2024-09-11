@@ -1,9 +1,11 @@
+import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { sidebarLinks2 } from '@/constants';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, LogIn } from 'lucide-react';
 
-const LeftSidebar2 = () => {
+const LeftSidebar2: React.FC = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -18,78 +20,105 @@ const LeftSidebar2 = () => {
   };
 
   return (
-    <aside
-      className={`leftsidebar hidden md:flex flex-col justify-between h-screen p-4 pb-8 bg-gradient-to-r from-purple-600 to-indigo-600 border-r border-dark-4 overflow-y-auto fixed left-0 top-16 transition-all duration-300 ease-in-out ${
-        isCollapsed ? 'w-20' : 'w-64'
-      }`}
+    <motion.aside
+      initial={{ width: 256 }}
+      animate={{ width: isCollapsed ? 80 : 256 }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="leftsidebar hidden md:flex flex-col justify-between h-screen bg-gradient-to-r from-purple-600 to-indigo-600 border-r border-dark-4 overflow-hidden fixed left-0 top-16 shadow-xl"
     >
-      <div className="flex items-center justify-between mb-4">
-        {!isCollapsed && (
-          <div className="flex items-center gap-3 p-4 rounded-lg bg-dark-4">
-            <img
-              src={'/assets/icons/profile-placeholder.svg'}
-              alt="User Profile"
-              className="w-10 h-10 rounded-full object-cover shadow-md"
-            />
-            <div>
-              <p className="text-light-1 font-semibold">Guest</p>
-              <NavLink to="/sign-in" className="text-light-2 text-sm hover:text-light-1">
-                Sign In / Up
-              </NavLink>
-            </div>
-          </div>
-        )}
-        <button
-          onClick={toggleCollapse}
-          className="text-white p-2 rounded hover:bg-primary-400 focus:outline-none"
-          aria-label="Toggle Sidebar"
-        >
-          {isCollapsed ? '▶' : '◀'}
-        </button>
-      </div>
-
-      <div className="flex-grow flex flex-col gap-4">
-        {sidebarLinks2.map((link) => (
-          <NavLink
-            key={link.label}
-            to={link.route}
-            className={({ isActive }) =>
-              `flex items-center gap-4 p-2 rounded-lg transition-colors duration-200 ${
-                isActive
-                  ? 'bg-primary-500 text-white shadow-md'
-                  : 'text-white hover:bg-primary-400 hover:shadow-lg hover:scale-105'
-              }`
-            }
+      <div className="flex flex-col">
+        <div className="flex items-center justify-between p-4">
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center gap-3 p-2 rounded-lg bg-dark-4"
+              >
+                <img
+                  src={'/assets/icons/profile-placeholder.svg'}
+                  alt="User Profile"
+                  className="w-10 h-10 rounded-full object-cover shadow-md"
+                />
+                <div>
+                  <p className="text-light-1 font-semibold">Guest</p>
+                  <NavLink to="/sign-in" className="text-light-2 text-sm hover:text-light-1 transition-colors">
+                    Sign In / Up
+                  </NavLink>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <Button
+            onClick={toggleCollapse}
+            variant="ghost"
+            size="icon"
+            className="text-white hover:bg-primary-400 focus:outline-none"
+            aria-label="Toggle Sidebar"
           >
-            <img
-              src={link.icon}
-              alt={link.label}
-              className="w-6 h-6 filter invert brightness-0"
-            />
-            {!isCollapsed && <span>{link.label}</span>}
-          </NavLink>
-        ))}
+            {isCollapsed ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
+          </Button>
+        </div>
+
+        <nav className="flex-grow flex flex-col gap-2 px-4 py-2">
+          {sidebarLinks2.map((link) => (
+            <NavLink
+              key={link.label}
+              to={link.route}
+              className={({ isActive }) =>
+                `flex items-center gap-4 p-2 rounded-lg transition-all duration-200 ${
+                  isActive
+                    ? 'bg-primary-500 text-white shadow-md'
+                    : 'text-white hover:bg-primary-400 hover:shadow-lg'
+                }`
+              }
+            >
+              <img
+                src={link.icon}
+                alt={link.label}
+                className="w-6 h-6 filter invert brightness-0"
+              />
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {link.label}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </NavLink>
+          ))}
+        </nav>
       </div>
 
-      <Button
-        onClick={handleSignIn}
-        variant="default" // or use another valid variant like "secondary", "destructive", etc.
-        className="w-full mt-4 flex items-center justify-center gap-2 text-white bg-green-600 hover:bg-green-700 shadow-lg mb-9"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-5 w-5"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2}
+      <div className="p-4">
+        <Button
+          onClick={handleSignIn}
+          variant="default"
+          className="w-full flex items-center justify-center gap-2 text-white bg-green-600 hover:bg-green-700 shadow-lg transition-all duration-200 hover:scale-105"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-        {!isCollapsed && 'Sign In'}
-      </Button>
-
-    </aside>
+          <LogIn size={20} />
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                Sign In
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </Button>
+      </div>
+    </motion.aside>
   );
 };
 

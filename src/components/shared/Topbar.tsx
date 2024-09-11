@@ -112,13 +112,12 @@ const Topbar: React.FC = () => {
             src="/assets/images/logo.svg"
             alt="Topfived logo"
             width={130}
-            height={32}
             className="object-contain md:hidden"
           />
         </Link>
 
-        <form onSubmit={handleSearch} ref={searchRef} className="flex-grow max-w-md mx-auto w-full relative">
-          {/*<div className="flex justify-center items-center gap-2">
+        {/*<form onSubmit={handleSearch} ref={searchRef} className="flex-grow max-w-md mx-auto w-full relative">
+          <div className="flex justify-center items-center gap-2">
             <Input
               type="text"
               placeholder="Search lists..."
@@ -134,7 +133,7 @@ const Topbar: React.FC = () => {
             >
               <Search className="h-5 w-5 text-white" />
             </Button>
-          </div>*/}
+          </div>
 
           <AnimatePresence>
             {isSearch && searchResults?.pages?.length > 0 && (
@@ -164,7 +163,7 @@ const Topbar: React.FC = () => {
               </motion.ul>
             )}
           </AnimatePresence>
-        </form>
+        </form>*/}
 
         <div className="flex items-center md:hidden">
           <Button onClick={toggleOffCanvas} className="text-white" aria-label="Open menu">

@@ -4,18 +4,23 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
 import { useUserContext } from "@/context/AuthContext";
 import { useSignOutAccount } from "@/lib/react-query/queries";
+import { Input } from "@/components/ui/input";
+import { useSearchLists } from "@/lib/react-query/queries";
 import { NotificationBell } from "./notifications/NotificationBell";
-import { Menu, X, User, HelpCircle, Mail } from 'lucide-react';
+import { Search, Menu, X, User, HelpCircle, Mail, LogOut } from 'lucide-react';
 
 const Topbar2: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
   const { mutate: signOut, isSuccess } = useSignOutAccount();
+  const [searchQuery, setSearchQuery] = useState("");
+  const { data: searchResults, refetch: searchLists } = useSearchLists(searchQuery, user?.id);
   const [isOpen, setIsOpen] = useState(false);
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLFormElement>(null);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
   const toggleOffCanvas = () => setIsOffCanvasOpen(!isOffCanvasOpen);
@@ -41,6 +46,23 @@ const Topbar2: React.FC = () => {
   useEffect(() => {
     if (isSuccess) navigate("/");
   }, [isSuccess, navigate]);
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!user?.isAuthenticated) {
+      handleDialogOpen();
+      return;
+    }
+    if (searchQuery.trim()) {
+      searchLists();
+    }
+  };
+
+  const handleSearchFocus = () => {
+    if (!user?.isAuthenticated) {
+      handleDialogOpen();
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -72,10 +94,58 @@ const Topbar2: React.FC = () => {
           <img
             src="/assets/images/logo.svg"
             alt="Topfived logo"
-            width={120}
+            width={130}
             className="object-contain md:hidden"
           />
         </Link>
+
+       {/* <form onSubmit={handleSearch} ref={searchRef} className="flex-grow max-w-md mx-auto w-full relative">
+        <div className="flex justify-center items-center gap-2">
+            <Input
+              type="text"
+              placeholder="Search lists..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={handleSearchFocus}
+              className="w-full bg-gray-800 text-white border-none rounded-lg focus:ring-2 focus:ring-purple-400 transition-all duration-300"
+            />
+            <Button
+              type="submit"
+              className="p-2 bg-purple-500 rounded-full hover:bg-purple-700 transition-all duration-300"
+              aria-label="Search"
+            >
+              <Search className="h-5 w-5 text-white" />
+            </Button>
+          </div>
+
+          <AnimatePresence>
+            {user?.isAuthenticated && searchResults?.pages?.length > 0 && (
+              <motion.ul
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute bg-gray-700 text-white rounded-lg shadow-lg w-full max-h-60 overflow-y-auto mt-2 z-10"
+              >
+                {searchResults.pages.map((page, pageIndex) =>
+                  page.map((list: any, index: number) => (
+                    <motion.li
+                      key={`${pageIndex}-${index}`}
+                      whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+                      className="border-b border-gray-600 last:border-b-0"
+                    >
+                      <Link
+                        to={`/lists/${list.id}`}
+                        className="block px-4 py-2 hover:bg-gray-600 transition-colors duration-200"
+                      >
+                        "{list.Title}"
+                      </Link>
+                    </motion.li>
+                  ))
+                )}
+              </motion.ul>
+            )}
+          </AnimatePresence>
+        </form>*/}
 
         <div className="flex items-center md:hidden">
           <Button onClick={toggleOffCanvas} className="text-white" aria-label="Open menu">

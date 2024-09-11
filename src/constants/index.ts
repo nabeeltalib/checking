@@ -8,12 +8,12 @@ export const sidebarLinks = [
     label: "Home",
     icon:"/assets/icons/home.svg"
   },
-  {
-    imgURL: "/assets/icons/discover.svg",
-    route: "/all-lists",
-    label: "Discover",
-    icon:"/assets/icons/discover.svg"
-  },
+  //{
+    //imgURL: "/assets/icons/discover.svg",
+    //route: "/all-lists",
+    //label: "Discover",
+    //icon:"/assets/icons/discover.svg"
+ // },
   {
     imgURL: "/assets/icons/explore.svg",
     route: "/explore",
@@ -26,12 +26,12 @@ export const sidebarLinks = [
     label: "Trending",
     icon:"/assets/icons/trending.svg"
   },
-  {
-    imgURL: "/assets/icons/tags.svg",
-    route: "/categories/no-value",
-    label: "Tags",
-    icon:"/assets/icons/tags.svg"
-  }, 
+  //{
+    //imgURL: "/assets/icons/tags.svg",
+    //route: "/categories/no-value",
+   // label: "Tags",
+    //icon:"/assets/icons/tags.svg"
+  //}, 
   
   {
     imgURL: "/assets/icons/list.svg",
@@ -44,16 +44,16 @@ export const sidebarLinks = [
 export const sidebarLinks2 = [
   {
     imgURL: "/assets/icons/home.svg",
-    route: "/home",
+    route: "/",
     label: "Home",
     icon:"/assets/icons/home.svg"
   },
-  {
-    imgURL: "/assets/icons/discover.svg",
-    route: "/discover",
-    label: "Discover",
-    icon:"/assets/icons/discover.svg"
-  },
+  //{
+   // imgURL: "/assets/icons/discover.svg",
+   // route: "/discover",
+   // label: "Discover",
+  //  icon:"/assets/icons/discover.svg"
+ // },
   {
     imgURL: "/assets/icons/explore.svg",
     route: "/explore2",
@@ -74,11 +74,11 @@ export const bottombarLinks = [
     route: "/",
     label: "Home",
   },
-   {
-    imgURL: "/assets/icons/discover.svg",
-    route: "/all-lists",
-    label: "Discover",
-    icon:"/assets/icons/discover.svg"
+  {
+    imgURL: "/assets/icons/explore.svg",
+    route: "/explore",
+    label: "Explore",
+    icon:"/assets/icons/explore.svg"
   },
   {
     imgURL: "/assets/icons/list.svg",

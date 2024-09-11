@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Trophy, List, ThumbsUp, MessageCircle } from "lucide-react";
+import { Trophy, List, ThumbsUp, MessageCircle, Calendar, Filter } from "lucide-react";
 import { getUsers } from "@/lib/appwrite/config";
 import { getMostLikedLists } from "@/lib/appwrite/api";
 import { Link } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import { Button } from "@/components/ui";
 import { useToast } from "@/components/ui/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ComprehensiveLeaderboard2 = () => {
   const { user } = useUserContext();
@@ -15,7 +16,6 @@ const ComprehensiveLeaderboard2 = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [lists, setLists] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [fadeOut, setFadeOut] = useState(false);
   const [isSignUpDialogOpen, setIsSignUpDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -25,19 +25,19 @@ const ComprehensiveLeaderboard2 = () => {
         setUsers(u?.slice(0, 5));
         const l = await getMostLikedLists();
         setLists(l.slice(0, 5));
-        setTimeout(() => {
-          setFadeOut(true);
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 500);
-        }, 1000);
+        setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);
         setIsLoading(false);
+        toast({
+          title: "Error",
+          description: "Failed to fetch leaderboard data. Please try again.",
+          variant: "destructive",
+        });
       }
     };
     fetchData();
-  }, []);
+  }, [toast]);
 
   const handleProtectedLinkClick = (e: React.MouseEvent, path: string) => {
     if (!user.isAuthenticated) {
@@ -59,7 +59,6 @@ const ComprehensiveLeaderboard2 = () => {
         avatar: user.ImageUrl || "/assets/icons/profile-placeholder.svg",
         listsCreated: user.lists.length,
         totalLikes: user.totalLikes,
-        totalViews: 100,
       })),
     [users]
   );
@@ -73,7 +72,6 @@ const ComprehensiveLeaderboard2 = () => {
         creator: list.creator.Name,
         likes: list.Likes.length,
         comments: list.comments.length,
-        views: 100,
       })),
     [lists]
   );
@@ -81,21 +79,35 @@ const ComprehensiveLeaderboard2 = () => {
   const categories = ["All", "Technology", "Travel", "Food", "Entertainment", "Sports"];
 
   const LeaderboardSection = ({ title, data, columns }: any) => (
-    <div className="mb-8 bg-zinc-900 p-4 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-4 text-light-1">{title}</h2>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="mb-8 bg-dark-2 p-6 rounded-lg shadow-md overflow-hidden"
+    >
+      <h2 className="text-2xl font-bold mb-4 text-light-1 flex items-center">
+        <Trophy className="mr-2 text-yellow-500" />
+        {title}
+      </h2>
       <div className="overflow-x-auto">
         <table className="w-full table-auto">
           <thead>
-            <tr className="bg-zinc-800">
-              <th className="px-4 py-2">Rank</th>
+            <tr className="bg-dark-3">
+              <th className="px-4 py-2 text-left text-light-2">Rank</th>
               {columns.map((col: any, index: number) => (
-                <th key={index} className="px-4 py-2 text-left">{col.header}</th>
+                <th key={index} className="px-4 py-2 text-left text-light-2">{col.header}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {data.map((item: any, index: number) => (
-              <tr key={index} className="border-b border-zinc-700 hover:bg-zinc-800">
+              <motion.tr
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                className="border-b border-dark-4 hover:bg-dark-3 transition-colors duration-200"
+              >
                 <td className="px-4 py-2 text-center font-bold text-light-1">
                   {item.rank === 1 && <Trophy className="inline text-yellow-500 mr-1" />}
                   {item.rank === 2 && <Trophy className="inline text-gray-400 mr-1" />}
@@ -107,64 +119,82 @@ const ComprehensiveLeaderboard2 = () => {
                     {col.render ? col.render(item) : item[col.key]}
                   </td>
                 ))}
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
       </div>
-    </div>
+    </motion.div>
   );
 
   if (isLoading) {
     return (
-      <div
-        className={`flex justify-center items-center h-screen bg-black text-white transition-opacity duration-500 ${
-          fadeOut ? "opacity-0" : "opacity-100"
-        }`}
-      >
-        <div className="text-center">
+      <div className="flex justify-center items-center h-screen bg-dark-1">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="text-center"
+        >
           <img
             src="/assets/images/mobile.png"
-            width={200}
+            width={150}
             alt="Loading..."
             className="mx-auto mb-4"
           />
-          <h1 className="text-2xl flashing">Loading Leaderboard...</h1>
-        </div>
+          <motion.h1
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            className="text-xl sm:text-2xl"
+          >
+            Loading Leaderboard...
+          </motion.h1>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-zinc-950 rounded-lg shadow-lg">
-      <h1 className="text-3xl font-bold mb-6 text-center text-light-1">Topfived Leaderboard</h1>
+    <div className="max-w-6xl mx-auto p-6 bg-dark-1 rounded-lg shadow-lg">
+      <motion.h1
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-4xl font-bold mb-8 text-center text-light-1"
+      >
+        Topfived Leaderboard
+      </motion.h1>
 
-      <div className="flex justify-between mb-6">
-        <div>
-          <label className="mr-2 font-semibold text-light-2">Time Frame:</label>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="flex flex-wrap justify-between mb-8 gap-4"
+      >
+        <div className="flex items-center bg-dark-2 rounded-lg p-2">
+          <Calendar className="text-light-2 mr-2" />
           <select
             value={timeFrame}
             onChange={(e) => setTimeFrame(e.target.value)}
-            className="border rounded p-1 bg-zinc-900 text-light-1"
+            className="bg-dark-2 text-light-1 border-none focus:ring-2 focus:ring-primary-500 rounded"
           >
             <option value="week">This Week</option>
             <option value="month">This Month</option>
             <option value="allTime">All Time</option>
           </select>
         </div>
-        <div>
-          <label className="mr-2 font-semibold text-light-2">Category:</label>
+        <div className="flex items-center bg-dark-2 rounded-lg p-2">
+          <Filter className="text-light-2 mr-2" />
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="border rounded p-1 bg-zinc-900 text-light-1"
+            className="bg-dark-2 text-light-1 border-none focus:ring-2 focus:ring-primary-500 rounded"
           >
             {categories.map((cat) => (
               <option key={cat} value={cat.toLowerCase()}>{cat}</option>
             ))}
           </select>
         </div>
-      </div>
+      </motion.div>
 
       <LeaderboardSection
         title="Top Users"
@@ -175,15 +205,15 @@ const ComprehensiveLeaderboard2 = () => {
             key: "name",
             render: (item: any) => (
               <div className="flex items-center">
-                <img src={item.avatar} alt={item.name} className="w-8 h-8 rounded-full mr-2" />
-                <Link to={item.path} className="text-primary-500 hover:underline" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
+                <img src={item.avatar} alt={item.name} className="w-10 h-10 rounded-full mr-3 border-2 border-primary-500" />
+                <Link to={item.path} className="text-primary-500 hover:underline font-semibold" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
                   {item.name}
                 </Link>
               </div>
             ),
           },
-          { header: <List size={24} className="inline mr-1 text-light-2" />, key: "listsCreated" },
-          { header: <ThumbsUp size={16} className="inline mr-1 text-light-2" />, key: "totalLikes" },
+          { header: <List size={20} className="inline mr-1 text-light-2" />, key: "listsCreated" },
+          { header: <ThumbsUp size={20} className="inline mr-1 text-light-2" />, key: "totalLikes" },
         ]}
       />
 
@@ -196,59 +226,71 @@ const ComprehensiveLeaderboard2 = () => {
             key: "title",
             render: (item: any) => (
               <div className="flex items-center">
-                <Link to={item.path} className="text-primary-500 hover:underline" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
+                <Link to={item.path} className="text-primary-500 hover:underline font-semibold" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
                   {item.title}
                 </Link>
               </div>
             ),
           },
           { header: "Creator", key: "creator" },
-          { header: <ThumbsUp size={16} className="inline mr-1 text-light-2" />, key: "likes" },
-          { header: <MessageCircle size={16} className="inline mr-1 text-light-2" />, key: "comments" },
+          { header: <ThumbsUp size={20} className="inline mr-1 text-light-2" />, key: "likes" },
+          { header: <MessageCircle size={20} className="inline mr-1 text-light-2" />, key: "comments" },
         ]}
       />
 
-      {isSignUpDialogOpen && (
-        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 sm:p-8">
-          <div className="relative bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg">
-            <button
-              onClick={closeSignUpDialog}
-              className="text-gray-500 hover:text-gray-700 absolute top-4 right-4"
-              aria-label="Close"
+      <AnimatePresence>
+        {isSignUpDialogOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 sm:p-8"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <div className="text-center">
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Unlock Full Access!</h3>
-              <p className="text-sm sm:text-sm text-gray-600 mb-6">Sign up now to like, comment, save, and remix lists. Create your own rankings and join the community!</p>
-            </div>
-            <div className="flex flex-col gap-4">
-              <Button
-                type="button"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 sm:px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out"
-                onClick={() => { closeSignUpDialog(); /* Navigate to sign-up page */ }}
+              <button
+                onClick={closeSignUpDialog}
+                className="text-black hover:text-light-1 absolute top-4 right-4 transition-colors duration-200"
+                aria-label="Close"
               >
-                Sign Up
-              </Button>
-              <Button
-                className="flex items-center justify-center bg-white text-gray-700 border border-gray-300 px-4 sm:px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out hover:bg-gray-100"
-                onClick={() => { closeSignUpDialog(); /* Navigate to sign-in page */ }}
-              >
-                <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
-                Sign In with Google
-              </Button>
-              <Button
-                className="text-indigo-600 hover:text-indigo-800 font-semibold"
-                onClick={() => { closeSignUpDialog(); /* Navigate to sign-in page */ }}
-              >
-                Sign In with Email
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-black mb-2">Unlock Full Access!</h3>
+                <p className="text-black mb-6">Sign up now to like, comment, save, and remix lists. Create your own rankings and join the community!</p>
+              </div>
+              <div className="flex flex-col gap-4">
+                <Button
+                  type="button"
+                  className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out"
+                  onClick={() => { closeSignUpDialog(); /* Navigate to sign-up page */ }}
+                >
+                  Sign Up
+                </Button>
+                <Button
+                  className="flex items-center justify-center bg-dark-3 text-light-1 border border-dark-4 px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out hover:bg-dark-4"
+                  onClick={() => { closeSignUpDialog(); /* Navigate to sign-in page */ }}
+                >
+                  <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
+                  Sign In with Google
+                </Button>
+                <Button
+                  className="text-primary-500 hover:text-primary-600 font-semibold transition-colors duration-200"
+                  onClick={() => { closeSignUpDialog(); /* Navigate to sign-in page */ }}
+                >
+                  Sign In with Email
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

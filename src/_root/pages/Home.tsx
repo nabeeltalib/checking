@@ -93,23 +93,54 @@ const Home: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col gap-6 p-4 w-full items-center common-container">
-      <header className="w-full max-w-5xl">
-        <div className="text-wrap text-2xl md:text-4xl text-orange-300 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4 mb-4 font-bold" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-          <span>Where Your World Ranks {user.name || ""}</span>
-          {user && (
-            <div className="text-sm text-light-3 flex items-center gap-4">
-              <span>{connection?.follower?.length || 0} followers</span>
-              <span>•</span>
-              <span>{connection?.following?.length || 0} following</span>
-            </div>
-          )}
+    <div className="flex flex-col w-full items-center bg-dark-1 min-h-screen mt-6">
+      <header className="w-full bg-dark-1 py-4">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-wrap text-2xl md:text-4xl text-orange-300 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4 mb-4 font-bold" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+            <span>Where Your World Ranks {user.name || ""}</span>
+            {user && (
+              <div className="text-sm text-light-3 flex items-center gap-4">
+                <span>{connection?.follower?.length || 0} followers</span>
+                <span>•</span>
+                <span>{connection?.following?.length || 0} following</span>
+              </div>
+            )}
+          </div>
+          <h1 className="h3-light md:h2-light text-center w-full">Explore Opinions on Anything and Everything</h1>
         </div>
-        <h1 className="h3-light md:h2-light text-center w-full mb-6">Explore Rankings on Anything and Everything</h1>
       </header>
 
-      <div className="flex flex-col gap-6 max-w-5xl w-full">
-        <div className="bg-dark-3 p-6 rounded-lg shadow-lg">
+      {/* Sticky Search Bar */}
+      <div className="sticky top-20 z-10 w-full bg-dark-1 shadow-md mt-6">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex flex-col md:flex-row gap-4 items-center">
+          <div className="relative flex-grow">
+            <input
+              type="text"
+              placeholder="Search for better opinions..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="w-full bg-dark-4 text-light-1 pl-10 pr-4 py-2 rounded-3xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
+          </div>
+          {/*<div className="text-xs flex items-center gap-2">
+            <Filter className="text-light-3" />
+            <select 
+              className="bg-dark-3 text-light-1 p-2 rounded-md"
+              onChange={handleSortChange}
+              value={sortOption}
+            >
+              <option value="">Filter Lists</option>
+              <option value="category">Category</option>
+              <option value="tags">Tags</option>
+            </select>
+          </div>*/}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-col gap-6 p-4 w-full items-center max-w-5xl mx-auto mt-6">
+        <div className="bg-dark-3 p-6 rounded-lg shadow-lg w-full">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <Zap className="text-yellow-400" />
             Featured List Idea
@@ -128,37 +159,12 @@ const Home: React.FC = () => {
           )}
         </div>
 
-        <div className="flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative flex-grow">
-            <input
-              type="text"
-              placeholder="Search lists..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="w-full bg-dark-4 text-light-1 pl-10 pr-4 py-2 rounded-md"
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
-          </div>
-          <div className="text-xs flex items-center gap-2">
-            <Filter className="text-light-3" />
-            <select 
-              className="bg-dark-3 text-light-1 p-2 rounded-md"
-              onChange={handleSortChange}
-              value={sortOption}
-            >
-              <option value="">Filter Lists</option>
-              <option value="category">Category</option>
-              <option value="tags">Tags</option>
-            </select>
-          </div>
-        </div>
-
         {isLoading && !lists ? (
           <Loader />
         ) : (
           <AnimatePresence>
             <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}

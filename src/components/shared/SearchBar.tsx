@@ -36,7 +36,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch, query = "" }) => {
     <form onSubmit={handleSubmit} className="flex items-center w-full max-w-md">
       <input
         type="text"
-        placeholder="Search lists..."
+        placeholder="Search for better opinions..."
         value={searchQuery}
         onChange={handleInputChange}
         className="w-full px-4 py-2 rounded-l-md bg-dark-3 border border-dark-4 text-light-1 placeholder-light-4 focus:outline-none focus:ring-2 focus:ring-primary-500"
