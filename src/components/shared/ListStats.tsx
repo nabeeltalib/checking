@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
 import { Models } from "appwrite";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Tooltip from '@/components/ui/Tooltip';
 import { createNotification, UpdateCommentReply } from "@/lib/appwrite/api";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -24,78 +22,111 @@ const ListStats = ({
   setIsEmbed, 
   list, 
   userId, 
-  textSize = "text-sm md:text-base", 
-  backgroundColor = "bg-dark-2" 
-}) => {
+  textSize = "text-base", 
+  backgroundColor = "bg-dark-3" 
+}: any) => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { user } = useUserContext();
-  const { id } = user;
-
-  const [likes, setLikes] = useState(list?.Likes || []);
+  const likesList = list?.Likes || [];
+  const [likes, setLikes] = useState<any[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
-  const [isCommentsExpanded, setIsCommentsExpanded] = useState(true);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [visibleComments, setVisibleComments] = useState([]);
-  const [newComment, setNewComment] = useState("");
-  const [showLabels, setShowLabels] = useState(false);
-
+  const [isCommentsExpanded, setIsCommentsExpanded] = useState(false);
   const { mutate: likeList } = useLikeList();
   const { mutate: saveList } = useSaveList();
+  const { user } = useUserContext();
+  const { id } = user;
   const { mutate: deleteSaveList } = useDeleteSavedList();
   const { data: currentUser } = useGetUserById(id);
-  const { data: comments } = useGetComments(list?.$id);
-  const { mutate: createComment } = useCreateComment();
+  const { data: comments } = useGetComments(list.$id);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [visibleComments, setVisibleComments] = useState<any>([]);
+  const queryClient = useQueryClient();
+  
 
   useEffect(() => {
-    setVisibleComments(() => (isExpanded ? comments : comments?.slice(0, 3)));
+    setVisibleComments(() => (isExpanded ? comments : comments?.slice(0, 4)));
   }, [isExpanded, comments]);
 
   useEffect(() => {
     if (currentUser) {
       const savedListRecord = currentUser.save?.find(
-        (record: Models.Document) => record.list.$id === list?.$id
+        (record: any) => record.list?.$id === list.$id
       );
       setIsSaved(!!savedListRecord);
     }
-  }, [currentUser, list?.$id]);
+  }, [currentUser, list.$id]);
 
-  const handleLikeList = (e) => {
+  const handleLikeList = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
     e.stopPropagation();
     const newLikes = likes.includes(userId)
       ? likes.filter((Id) => Id !== userId)
       : [...likes, userId];
     setLikes(newLikes);
-    likeList({ listId: list?.$id, likesArray: newLikes });
+    likeList({ listId: list.$id, likesArray: newLikes });
   };
 
-  const handleSaveList = (e) => {
+  const handleSaveList = (e: any) => {
     e.stopPropagation();
     if (isSaved) {
       const savedListRecord = currentUser?.save?.find(
-        (record: Models.Document) => record.list.$id === list?.$id
+        (record: Models.Document) => record.list.$id === list.$id
       );
       if (savedListRecord) {
         deleteSaveList(savedListRecord.$id);
       }
     } else {
-      saveList({ userId: userId, listId: list?.$id });
+      saveList({ userId: userId, listId: list.$id });
     }
     setIsSaved(!isSaved);
   };
 
-  const handleCommentSubmit = async (e) => {
+  const handleRemix = () => {
+    navigate(`/remix/${list.$id}`);
+  };
+
+  const toggleComments = () => {
+    setIsCommentsExpanded(!isCommentsExpanded);
+  };
+
+  const containerStyles = location.pathname.startsWith("/profile")
+    ? "w-full"
+    : "";
+
+  const [newComment, setNewComment] = useState("");
+  const { mutate: createComment } = useCreateComment();
+  const [Reply, setReply] = useState(false);
+  const [commentId, setCommentId] = useState("");
+
+  const handleCommentSubmit = async (e: any) => {
     e.preventDefault();
     if (newComment.trim() === "") return;
 
     try {
       await createComment({
-        listId: list?.$id,
+        listId: list.$id,
         userId: id,
         Content: newComment,
       });
+
+      if (list.Likes) {
+        for (let i of list.Likes) {
+          await createNotification({
+            userId: i,
+            type: "list_comment",
+            message: `${user.name} commented on list "${list.Title}"`,
+          });
+        }
+      }
+
+      for (const person of list.users) {
+        await createNotification({
+          userId: person.$id,
+          type: "list_comment",
+          message: `${user.name} commented on your list "${list.Title}"`,
+        });
+      }
+
       setNewComment("");
-      queryClient.invalidateQueries([QUERY_KEYS.GET_COMMENTS, list?.$id]);
     } catch (error) {
       console.error("Failed to create comment:", error);
       toast({
@@ -106,148 +137,174 @@ const ListStats = ({
     }
   };
 
-  if (!list) {
-    return null; // or some loading state
-  }
+  const handleReply = async (e: any) => {
+    e.preventDefault();
+    if (newComment.trim() === "") return;
+
+    try {
+      await UpdateCommentReply({
+        userId: id,
+        Content: newComment,
+        commentId: commentId,
+      });
+
+      if (list.Likes) {
+        for (let i of list.Likes) {
+          await createNotification({
+            userId: i,
+            type: "list_comment",
+            message: `${user.name} replied on list "${list.Title}"`,
+          });
+        }
+      }
+
+      for (const person of list.users) {
+        await createNotification({
+          userId: person.$id,
+          type: "list_comment",
+          message: `${user.name} replied on comments of list "${list.Title}"`,
+        });
+      }
+
+      setReply(false);
+      setNewComment("");
+
+      queryClient.invalidateQueries([QUERY_KEYS.GET_COMMENTS, list.$id]);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reply.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`w-full ${backgroundColor} p-4 rounded-lg shadow-lg`}
-    >
-      <div className="flex flex-wrap justify-between items-center mb-4 gap-2">
-        <div className="flex flex-wrap gap-2">
-          <ActionIcon
-            icon={checkIsLiked(likes, userId) ? "/assets/icons/liked.svg" : "/assets/icons/like.svg"}
-            onClick={handleLikeList}
-            isActive={checkIsLiked(likes, userId)}
-            label="Like"
-            showLabel={showLabels}
-          />
-          <ActionIcon
-            icon="/assets/icons/chat.svg"
-            onClick={() => setIsCommentsExpanded(!isCommentsExpanded)}
-            label="Comment"
-            showLabel={showLabels}
-          />
-          <ActionIcon
-            icon="/assets/icons/remix2.svg"
-            onClick={() => navigate(`/remix/${list.$id}`)}
-            label="Remix"
-            showLabel={showLabels}
-          />
-          <ActionIcon
-            icon="/assets/icons/remix.svg"
-            onClick={() => navigate(`/update-list/${list.$id}`)}
-            label="Collaborate"
-            showLabel={showLabels}
-          />
-        </div>
-        <div className="flex space-x-4">
-          <ActionIcon
-            icon={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
-            onClick={handleSaveList}
-            isActive={isSaved}
-            label={isSaved ? "Saved" : "Save"}
-            showLabel={showLabels}
-          />
-          <ActionIcon
-            icon="/assets/icons/embed.svg"
-            onClick={() => setIsEmbed((prev) => !prev)}
-            label="Embed"
-            showLabel={showLabels}
-          />
-        </div>
-      </div>
+    <div
+      className={`flex flex-row flex-wrap w-full items-center z-20 gap-3 ${containerStyles} ${backgroundColor} p-4 rounded-lg shadow-md`}>
+      <Button className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+        <img
+          src={
+            checkIsLiked(likes, userId)
+              ? "/assets/icons/liked.svg"
+              : "/assets/icons/like.svg"
+          }
+          alt="like"
+          width={20}
+          height={20}
+          onClick={handleLikeList}
+          className="cursor-pointer"
+        />
+        <p className={`${textSize} text-white`}>{likes.length} Likes</p>
+      </Button>
+      <Button
+        className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg"
+        onClick={handleSaveList}>
+        <img
+          src={isSaved ? "/assets/icons/saved.svg" : "/assets/icons/save.svg"}
+          alt="save"
+          width={20}
+          height={20}
+          className="cursor-pointer"
+        />
+        <p className={`${textSize} text-white`}>
+          {isSaved ? "Saved" : "Save"}
+        </p>
+      </Button>
+      <Button
+        className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg"
+        onClick={toggleComments}>
+        <img
+          src="/assets/icons/chat.svg"
+          alt="comment"
+          width={20}
+          height={20}
+        />
+        <p className={`${textSize} text-white`}>
+          {comments?.length} Comment
+        </p>
+      </Button>
+      <Button
+        className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg"
+        onClick={handleRemix}>
+        <img src="/assets/icons/remix2.svg" alt="remix" width={20} height={20} />
+        <p className={`${textSize} text-white`}>Remix</p>
+      </Button>
+      <Button
+        onClick={() => navigate(`/update-list/${list?.$id}`)}
+        className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+        <img
+          src="/assets/icons/remix.svg"
+          alt="collaborate"
+          width={20}
+          height={20}
+        />
+        <p className={`${textSize} text-white`}>Collaborate</p>
+      </Button>
+      <Button
+        onClick={()=> setIsEmbed((prev)=> !prev)}
+        className="bg-dark-3 text-white flex items-center gap-2 py-2 px-4 rounded-lg">
+        <img
+          src="/assets/icons/remix.svg"
+          alt="collaborate"
+          width={20}
+          height={20}
+        />
+        <p className={`${textSize} text-white`}>Embed</p>
+      </Button>
 
-      <div className="flex justify-between items-center mb-4">
-        <div className={`${textSize} font-semibold`}>
-          {likes.length} {likes.length === 1 ? 'like' : 'likes'}
-        </div>
-        <Button
-          onClick={() => setShowLabels(!showLabels)}
-          className="text-primary-500 hover:text-primary-600 text-xs"
-        >
-          {showLabels ? "Hide labels" : "Show labels"}
-        </Button>
-      </div>
-
-      <AnimatePresence>
-        {isCommentsExpanded && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mt-4"
-          >
-            {comments?.length > 0 ? (
-              <ul className="space-y-2 mb-4">
-                {visibleComments?.map((comment, index) => (
+      {/* Collapsible Comments Section */}
+      {(
+        <div className="w-full mt-4 p-4">
+          <h3 className={`text-xl font-semibold`}>Comments</h3>
+          {comments?.length > 0 ? (
+            <ul>
+              <div className="mt-1 flex flex-col gap-2">
+                {visibleComments?.map((comment: any, index: number) => (
                   <Comment
-                    key={index}
-                    setReply={() => {}}
-                    show="show"
-                    setCommentId={() => {}}
+                    setReply={setReply}
+                    show={"show"}
+                    setCommentId={setCommentId}
                     comment={comment}
+                    key={index}
                   />
                 ))}
-              </ul>
-            ) : (
-              <p className={`${textSize} text-gray-500 mb-4`}>No comments yet. Be the first to comment!</p>
-            )}
+              </div>
+            </ul>
+          ) : (
+            <p className={`${textSize} text-gray-500`}>No comments yet.</p>
+          )}
 
-            {comments?.length > 3 && (
-              <Button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="text-primary-500 hover:text-primary-600 mb-4"
-              >
-                {isExpanded ? "Show less" : `View all ${comments.length} comments`}
-              </Button>
-            )}
+          {comments?.length > 4 && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-primary-500">
+              {isExpanded ? "Show Less" : "Show More"}
+            </button>
+          )}
 
-            <form onSubmit={handleCommentSubmit} className="flex items-center">
-              <input
-                type="text"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Add a comment..."
-                className="flex-grow p-2 border-none rounded-lg bg-dark-3 text-light-1 focus:ring-2 focus:ring-primary-500"
-              />
-              <Button
-                type="submit"
-                className="ml-2 bg-primary-500 text-white hover:bg-primary-600"
-              >
-                Post
-              </Button>
-            </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+          <form
+            onSubmit={Reply ? handleReply : handleCommentSubmit}
+            className="mt-4 mb-2">
+            <textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder={`${
+                Reply ? "Add a Reply..." : "Add a comment..."
+              }`}
+              className="w-full p-2 border rounded-lg bg-zinc-900 :text-white"
+            />
+            <button
+              type="submit"
+              className="mt-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600">
+              {`${Reply ? "Add a Reply" : "Add a Comment"}`}
+            </button>
+          </form>
+        </div>
+      )}
+    </div>
+    
   );
 };
-
-const ActionIcon = ({ icon, onClick, isActive = false, label, showLabel }) => (
-  <div className="relative inline-flex items-center">
-    <Tooltip content={label} position="top">
-      <button
-        onClick={onClick}
-        className={`p-2 rounded-full transition-colors flex items-center ${
-          isActive ? 'text-primary-500' : 'text-light-2 hover:bg-dark-3'
-        }`}
-      >
-        <img src={icon} alt={label} width={24} height={24} className="object-contain" />
-        {showLabel && (
-          <span className="ml-1 text-xs sm:text-sm whitespace-nowrap overflow-hidden text-ellipsis max-w-[60px] sm:max-w-none">
-            {label}
-          </span>
-        )}
-      </button>
-    </Tooltip>
-  </div>
-);
 
 export default ListStats;

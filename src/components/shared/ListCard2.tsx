@@ -15,12 +15,19 @@ import Loader from "./Loader";
 const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
   const navigate = useNavigate();
   const { user } = useUserContext();
-  const { id: userId } = user;
+  const { id: userId } = user || {};
   const { data: currentUser } = useGetCurrentUser();
   const { mutate: deleteSaveList } = useDeleteSavedList();
   const { mutate: saveList } = useSaveList();
   const { mutate: likeList } = useLikeList();
-  const { data: comments } = useGetComments(list.$id);
+  const { data: comments } = useGetComments(list?.$id);
+
+  // Define the getRankColor function to return color classes based on the rank
+  const getRankColor = (index: number) => {
+    const colors = ["text-yellow-500", "text-gray-400", "text-orange-500", "text-blue-500", "text-green-500"];
+    return index < colors.length ? colors[index] : "text-purple-500";
+  };
+
   const CommentWithActions = ({ comment }: { comment: any }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -66,15 +73,15 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
     };
 
     return (
-      <li className="flex items-start space-x-3 bg-dark-3 p-3 rounded-lg">
+      <li className="flex items-start space-x-3 p-3 rounded-lg">
         <img
           src={comment.user.ImageUrl || "/assets/default-avatar.png"}
           alt={`${comment.user.Username}'s avatar`}
           className="w-8 h-8 rounded-full object-cover"
         />
         <div className="flex-grow">
-          <p className="text-blue-300 text-sm font-semibold">{comment.user.Username}</p>
-          <p className="text-light-2 text-sm">{comment.Content}</p>
+          <p className="text-blue-300 text-xs font-semibold">{comment.user.Username}</p>
+          <p className="text-light-2 text-xs">{comment.Content}</p>
         </div>
         <div className="relative" ref={dropdownRef}>
           <Tooltip content="More options">
@@ -100,7 +107,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
                 <motion.button
                   whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
                   onClick={handleReport}
-                  className="flex items-center w-full px-4 py-2 text-sm text-left text-light-2 hover:bg-dark-3"
+                  className="flex items-center w-full px-4 py-2 text-xs text-left text-light-2 hover:bg-dark-3"
                 >
                   <Flag size={14} className="mr-2" />
                   Report comment
@@ -112,9 +119,10 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
       </li>
     );
   };
+
   const [isSharing, setIsSharing] = useState(false);
   const [isSaved, setIsSaved] = useState(
-    currentUser?.save?.some((saved: any) => saved.list.$id === list.$id)
+    currentUser?.save?.some((saved: any) => saved.list?.$id === list?.$id)
   );
   const [likes, setLikes] = useState<any[]>(list?.Likes || []);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
@@ -122,11 +130,10 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if(list?.creator?.$id)
-      {
-        let resp = await getConnection(list.creator.$id);
+      if (list?.creator?.$id) {
+        const resp = await getConnection(list.creator.$id);
         resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
-      }
+      }      
     };
 
     fetchData();
@@ -139,11 +146,11 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
     e.stopPropagation();
     setIsSharing(true);
     try {
-      const shareableLink = await shareList(list.$id);
+      const shareableLink = await shareList(list?.$id);
       if (navigator.share) {
         await navigator.share({
-          title: list.title,
-          text: `Check out this list: ${list.Title}`,
+          title: list?.Title,
+          text: `Check out this list: ${list?.Title}`,
           url: shareableLink,
         });
       } else {
@@ -164,73 +171,23 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
       setIsSharing(false);
     }
   };
-  const getRankColor = (index: number) => {
-    const colors = ["text-yellow-500", "text-gray-400", "text-orange-500", "text-blue-500", "text-green-500"];
-    return index < colors.length ? colors[index] : "text-purple-500";
-  };
-  const renderListItems = () => {
-    let items: Array<any> = [];
-
-    if (Array.isArray(list.items)) {
-      items = list.items;
-    } else if (typeof list.items === "string") {
-      items = list.split("\n");
-    } else if (typeof list === "object" && list !== null) {
-      items = Object.values(list);
-    }
-
-    return items.slice(0, 5).map((item, index) => (
-      <motion.li
-        key={index}
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.1 }}
-        className="flex items-center mb-3 bg-dark-3 p-3 rounded-lg"
-      >
-        <div className={`flex-shrink-0 w-8 h-8 ${getRankColor(index)} rounded-full flex items-center justify-center font-bold mr-3`}>
-          <span className="text-sm">{index + 1}</span>
-          {index === 0 && <Trophy size={12} className="ml-1" />}
-        </div>
-        <span className="text-sm text-light-2 text-ellipsis">
-          {typeof item === "string" ? item : item.content || ""}
-        </span>
-      </motion.li>
-    ));
-  };
 
   const handleSaveList = async (e: any) => {
     e.stopPropagation();
     try {
       if (isSaved) {
         const savedListRecord = currentUser?.save?.find(
-          (record: Models.Document) => record.list.$id === list.$id
+          (record: Models.Document) => record.list?.$id === list?.$id
         );
         if (savedListRecord) {
           await deleteSaveList(savedListRecord.$id);
         }
       } else {
-        await saveList({ userId, listId: list.$id });
+        await saveList({ userId, listId: list?.$id });
       }
       setIsSaved(!isSaved);
     } catch (error) {
       console.error("Error saving list:", error);
-    }
-  };
-
-  const handleEmbed = async () => {
-    try {
-      await createEmbedList(list.$id, list.Categories[0] || "");
-      toast({
-        title: "Success!",
-        description: `${list.Title} has been embedded successfully.`,
-        variant: "default",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to embed list ${list.Title}`,
-        variant: "destructive",
-      });
     }
   };
 
@@ -241,20 +198,20 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
       : [...likes, userId];
     setLikes(newLikes);
     try {
-      await likeList({ listId: list.$id, likesArray: newLikes });
+      await likeList({ listId: list?.$id, likesArray: newLikes });
     } catch (error) {
       console.error("Error liking list:", error);
     }
   };
 
-  const isOwnProfile = user.id === list?.creator?.$id || "";
-  const isFollowed = connection?.follower?.some((follow: any) => follow.$id === user.id);
+  const isOwnProfile = user?.id === list?.creator?.$id;
+  const isFollowed = connection?.follower?.some((follow: any) => follow.$id === user?.id);
 
   const handleFollow = async () => {
     setIsFollowLoading(true);
     try {
-      await followUser(user.id, list.creator.$id);
-      let resp = await getConnection(list.creator.$id);
+      await followUser(user?.id, list.creator?.$id);
+      const resp = await getConnection(list.creator?.$id);
       resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
     } catch (error) {
       console.error("Error following user:", error);
@@ -266,8 +223,8 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
   const handleUnFollow = async () => {
     setIsFollowLoading(true);
     try {
-      await UnFollow(user.id, list.creator.$id);
-      let resp = await getConnection(list.creator.$id);
+      await UnFollow(user?.id, list.creator?.$id);
+      const resp = await getConnection(list.creator?.$id);
       resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
     } catch (error) {
       console.error("Error unfollowing user:", error);
@@ -281,11 +238,11 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
 
     return (
       <Button
-        className={`text-xs sm:text-xs ${
+        className={`flex items-center gap-4 ${
           isFollowed
-            ? "border border-slate-300 text-gray-400"
-            : "bg-primary-500 border-white text-white"
-        } px-3 py-2 rounded-xl`}
+            ? "bg-gray-700 text-white hover:bg-gray-600"
+            : "bg-blue-500 text-white hover:bg-blue-600"
+        } flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors`}
         onClick={isFollowed ? handleUnFollow : handleFollow}
         disabled={isFollowLoading}
       >
@@ -296,7 +253,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
 
   return (
     <motion.div
-      className="bg-dark-2 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300"
+      className="bg-gray-900 rounded-xl shadow-lg overflow-hidden"
       whileHover={{ y: -5 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -305,24 +262,24 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
       <div className="p-6">
         {/* Creator Info */}
         {list?.creator?.$id && (
-          <div className="flex justify-between items-center mb-6">
-            <Link to={`/profile/${list.creator.$id}`} className="flex items-center group">
+          <div className="flex items-center justify-between mb-6">
+            <Link to={`/profile/${list.creator?.$id}`} className="flex items-center group">
               <img
-                src={list.creator.ImageUrl || "/assets/icons/profile-placeholder.svg"}
-                alt={`${list.creator.Name}'s profile`}
-                className="w-12 h-12 rounded-full border-2 border-primary-500 group-hover:border-primary-600 transition-colors"
+                src={list.creator?.ImageUrl || "/assets/icons/profile-placeholder.svg"}
+                alt={`${list.creator?.Name}'s profile`}
+                className="w-10 h-10 rounded-full object-cover border-2 border-blue-500 group-hover:border-blue-400 transition-colors"
               />
               <div className="ml-3">
-                <p className="text-light-1 font-semibold group-hover:text-primary-500 transition-colors">
+                <p className="text-white font-semibold group-hover:text-blue-400 transition-colors">
                   {list.creator?.Name}
                 </p>
-                <p className="text-blue-300 text-sm">
+                <p className="text-gray-400 text-sm">
                   @{list.creator?.Username}
                 </p>
               </div>
             </Link>
             <div className="flex items-center gap-3">
-              {list.creator.Public && renderFollowButton()}
+              {list.creator?.Public && renderFollowButton()}
               <Button
                 onClick={handleShare}
                 disabled={isSharing}
@@ -339,46 +296,57 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
           <div className=" text-slate-700 text-center text-xl sm:text-xl font-thin px-4 py-4 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
             Ranking For
           </div>
-          <h2 className="text-xl font-bold text-light-1 mt-2 mb-1">
-            {list.Title}
+          <h2 className="text-2xl font-bold text-white mb-4 hover:text-blue-400 transition-colors">
+            {list?.Title}
           </h2>
-          {manageList && (
-            <Button onClick={handleEmbed} className="mt-2 text-sm">
-              Add to embed
-            </Button>
-          )}
+          
         </div>
 
         {/* List Items */}
-        <Link to={`/lists/${list.$id}`} className="block mb-6">
-          <ol className="list-none space-y-3 px-6">
-            {renderListItems()}
+        <Link to={`/lists/${list?.$id}`} className="block mb-6">
+          <ol className="space-y-4 mb-6">
+            {list?.items?.slice(0, 5).map((item: any, index: number) => (
+              <motion.li
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="flex items-center bg-gray-800 p-4 rounded-lg"
+              >
+                <div className={`flex-shrink-0 w-8 h-8 ${getRankColor(index)} font-bold text-2xl mr-4 w-8 text-center`}>
+                  <span className="text-md">{index + 1}</span>
+                </div>
+                <span className="text-pretty text-white flex-1">
+                  {typeof item === "string" ? item : item?.content || ""}
+                </span>
+              </motion.li>
+            ))}
           </ol>
-          {Array.isArray(list.items) && list.items.length > 5 && (
-            <p className="text-primary-500 font-semibold text-sm mt-2 px-6">
+          {list?.items?.length > 5 && (
+            <p className="text-blue-400 font-semibold text-sm mb-4 hover:underline">
               + {list.items.length - 5} more items
             </p>
           )}
         </Link>
 
         {/* Description */}
-        {list.description && (
+        {list?.Description && (
           <p className="text-light-2 mb-6">
-            {list.Description}
+            {list?.Description}
           </p>
         )}
 
         {/* Tags */}
-        {list.tags && list.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {list.tags.slice(0, 3).map((tag: string, index: number) => (
-              <span key={index} className="flex items-center bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs">
+        {list?.tags?.length > 0 && (
+          <div className="lex flex-wrap gap-2 mb-4">
+            {list?.tags?.slice(0, 3).map((tag: string, index: number) => (
+              <span key={index} className="bg-gray-700 text-gray-300 px-3 py-1 rounded-full text-xs hover:bg-gray-600 transition-colors">
                 <Tag size={12} className="mr-1" /> {tag}
               </span>
             ))}
-            {list.tags.length > 3 && (
+            {list?.tags?.length > 3 && (
               <span className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs">
-                +{list.tags.length - 3} more
+                +{list?.tags?.length - 3} more
               </span>
             )}
           </div>
@@ -398,9 +366,9 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
         </div>
 
         {/* Locations */}
-        {list.locations.length > 0 && (
+        {list?.locations?.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
-            {list.locations.map((location: any, index: number) => (
+            {list?.locations?.map((location: any, index: number) => (
               <span key={index} className="flex items-center bg-gray-800 text-white px-3 py-1 rounded-full text-xs">
                 <MapPin size={12} className="mr-1" /> {location}
               </span>
@@ -409,9 +377,9 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
         )}
 
         {/* Timespans */}
-        {list.timespans.length > 0 && (
+        {list?.timespans?.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {list.timespans.map((timespan: any, index: number) => (
+            {list?.timespans?.map((timespan: any, index: number) => (
               <span key={index} className="flex items-center bg-gray-800 text-white px-3 py-1 rounded-full text-xs">
                 <Clock size={12} className="mr-1" /> {timespan}
               </span>
@@ -421,7 +389,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
       </div>
 
       {/* Actions */}
-      <div className="bg-dark-3 px-6 py-4 flex justify-between items-center">
+      <div className="bg-gray-800 px-6 py-4 flex justify-between items-center">
         <Button
           onClick={handleLikeList}
           className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors"
@@ -445,7 +413,7 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
         </Button>
 
         <Button
-          onClick={() => navigate(`/lists/${list.$id}`)}
+          onClick={() => navigate(`/lists/${list?.$id}`)}
           className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors"
         >
           <MessageCircle size={20} className="text-light-2" />
@@ -455,23 +423,23 @@ const ListCard2: React.FC<any> = ({ list, manageList }: any) => {
 
       {/* Comments */}
       <div className="p-6 border-t border-dark-4">
-      <h3 className="text-lg font-semibold text-light-1 mb-4">Comments</h3>
-      {comments && comments?.length > 0 ? (
-        <ul className="space-y-4">
-          {comments?.slice(0, 2).map((comment: any, index: number) => (
-            <CommentWithActions key={index} comment={comment} />
-          ))}
-        </ul>
-      ) : (
-        <p className="text-light-3">What do you think? Comment below!</p>
-      )}
-      <Button
-        onClick={() => navigate(`/lists/${list.$id}`)}
-        className="mt-4 w-full hover:bg-primary-600 text-white transition-colors"
-      >
-        View All Comments
-      </Button>
-    </div>
+        <h3 className="text-lg font-semibold text-light-1 mb-4">Comments</h3>
+        {comments && comments?.length > 0 ? (
+          <ul className="space-y-4">
+            {comments?.slice(0, 2).map((comment: any, index: number) => (
+              <CommentWithActions key={index} comment={comment} />
+            ))}
+          </ul>
+        ) : (
+          <p className="text-light-3">What do you think? Comment below!</p>
+        )}
+        <Button
+          onClick={() => navigate(`/lists/${list?.$id}`)}
+          className="mt-4 text-blue-400 hover:underline"
+        >
+          View All Comments
+        </Button>
+      </div>
     </motion.div>
   );
 };

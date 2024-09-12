@@ -13,41 +13,44 @@ import { Button } from "@/components/ui/button";
 import FriendsList from "@/components/shared/FriendsList";
 import FriendRequests from "@/components/shared/FriendRequests";
 import {
+  createNotification,
   followUser,
   getConnection,
   getSentRequests,
   sendFriendRequest,
   UnFollow,
 } from "@/lib/appwrite/api";
-import { Lock, Users, ListChecks, Heart, Edit3 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { User, UserPlus, Settings, Activity, List, Heart, Users, ChevronDown, Lock, Edit } from "lucide-react";
 
 const Profile: React.FC = () => {
   const { user } = useUserContext();
   const { profile } = useParams();
-  const id = profile === "profile" ? user?.id : profile || "";
+  const id = profile ? (profile === "profile" ? user.id : profile) : "";
+  const [refresh, setRefresh] = useState(false);
 
   const navigate = useNavigate();
+
+  const [isRequestSent, setIsRequestSent] = useState(false);
+  const [isSendRequestLoading, setIsSendRequestLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("lists");
-  const [isCuratedExpanded, setCuratedExpanded] = useState(false);
-  const [isSavedExpanded, setSavedExpanded] = useState(false);
-  const [isCollaborativeExpanded, setCollaborativeExpanded] = useState(false);
-  const [sentRequest, setSentRequest] = useState<any[]>([]);
+  const { data: currentUser, isLoading: isLoadingCurrentUser } = useGetUserById(id || "");
+  const { data: userLists, isLoading: isLoadingLists } = useGetUserLists(id || "");
+  const { data: friends, isLoading: isLoadingFriends } = useGetUserFriends(id || "");
+  const { data: friendRequests, isLoading: isLoadingFriendRequests } = useGetFriendRequests(user?.id || "");
+
+  const [isCuratedExpanded, setCuratedExpanded] = useState(true);
+  const [isSavedExpanded, setSavedExpanded] = useState(true);
+  const [isCollaborativeExpanded, setCollaborativeExpanded] = useState(true);
+  const [sentRequest, setSentRequest] = useState<any>([]);
   const [connection, setConnection] = useState<any>(undefined);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-
-  const { data: currentUser, isLoading: isLoadingCurrentUser } = useGetUserById(id);
-  const { data: userLists, isLoading: isLoadingLists } = useGetUserLists(id);
-  const { data: friends, isLoading: isLoadingFriends } = useGetUserFriends(id);
-  const { data: friendRequests, isLoading: isLoadingFriendRequests } =
-    useGetFriendRequests(user?.id || "");
 
   useEffect(() => {
     const fetchConnection = async () => {
       if (id) {
         const resp = await getConnection(id);
-        setConnection(resp.length > 0 ? resp[0] : undefined);
+        setConnection(resp.length > 0 ? resp[0] : resp);
       }
     };
     fetchConnection();
@@ -57,31 +60,36 @@ const Profile: React.FC = () => {
     const fetchSentRequests = async () => {
       const res = await getSentRequests();
       setSentRequest(res.filter((req: any) => req.userId.$id === user.id));
+      setIsRequestSent(res.some((data: any) => data.friendId.$id === id));
     };
     fetchSentRequests();
-  }, [user.id]);
-
-  const isRequestSent = sentRequest.some(
-    (data: any) => data.friendId.$id === id
-  );
+    setIsSendRequestLoading(false);
+  }, [id, refresh, user.id]);
 
   if (!id) return <div className="text-center text-light-1">User ID not found</div>;
   if (isLoadingCurrentUser || isLoadingLists) return <Loader />;
   if (!currentUser) return <div className="text-center text-light-1">User not found</div>;
 
-  const savedLists = currentUser.save?.map((savedItem: any) => ({
-    ...savedItem.list,
-    creator: savedItem.list.creator,
-  })) || [];
+  const savedLists = currentUser?.save
+    ?.filter((savedItem: any) => savedItem.list)
+    .map((savedItem: any) => ({
+      ...savedItem.list,
+      creator: savedItem.list.creator,
+    })) || [];
 
-  const isOwnProfile = currentUser.$id === user.id;
+  const collaborativeList: any = [];
+
+  const isOwnProfile = currentUser.$id === user?.id;
   const isFollowed = connection?.follower?.some((follow: any) => follow.$id === user.id);
+  const isAccepted = sentRequest.some(
+    (data: any) => data.friendId.$id === id && data.status === "accepted"
+  );
 
   const handleFollow = async () => {
     setIsFollowLoading(true);
     await followUser(user.id, id);
     const resp = await getConnection(id);
-    setConnection(resp.length > 0 ? resp[0] : undefined);
+    setConnection(resp.length > 0 ? resp[0] : resp);
     setIsFollowLoading(false);
   };
 
@@ -89,23 +97,45 @@ const Profile: React.FC = () => {
     setIsFollowLoading(true);
     await UnFollow(user.id, id);
     const resp = await getConnection(id);
-    setConnection(resp.length > 0 ? resp[0] : undefined);
+    setConnection(resp.length > 0 ? resp[0] : resp);
     setIsFollowLoading(false);
   };
 
   const handleFriendRequest = async () => {
-    await sendFriendRequest(user.id, id);
+    try {
+      setIsSendRequestLoading(true);
+      await sendFriendRequest(user.id, id);
+      await createNotification({
+        userId: id,
+        type: 'friend_request',
+        message: `${user.name} has sent you a friend request. Please check it in your profile Friends tab`,
+      });
+      setRefresh((prev) => !prev);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSendRequestLoading(false);
+    }
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="flex flex-col w-full mx-auto max-w-7xl"
+      className="flex flex-col w-full mx-auto max-w-7xl bg-dark-1"
     >
       {/* Cover Photo */}
-      <div className="h-48 sm:h-64 bg-gradient-to-r from-purple-500 to-pink-500 rounded-b-lg relative">
+      <div className="h-48 sm:h-64 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-b-lg relative">
+        {isOwnProfile && (
+          <Button
+            className="absolute bottom-4 right-4 bg-dark-4 text-light-1 hover:bg-dark-3"
+            onClick={() => navigate(`/update-profile/${id}`)}
+          >
+            <Edit size={16} className="mr-2" />
+            Edit Profile
+          </Button>
+        )}
       </div>
 
       {/* User Info */}
@@ -116,80 +146,67 @@ const Profile: React.FC = () => {
           transition={{ duration: 0.3 }}
           src={currentUser.ImageUrl || "/assets/icons/profile-placeholder.svg"}
           alt={`${currentUser.Name}'s profile`}
-          className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover shadow-md border-4 border-dark-2"
+          className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-dark-1"
         />
-        <div className="text-center sm:text-left flex-grow w-full">
+        <div className="text-center sm:text-left flex-grow">
           <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-light-1">
+              <h1 className="text-3xl sm:text-4xl font-bold text-light-1 flex items-center">
                 {currentUser.Name}
+                {!currentUser.Public && (
+                  <Lock size={20} className="ml-2 text-yellow-500" title="Private Profile" />
+                )}
               </h1>
               <p className="text-light-3 text-sm">@{currentUser.Username}</p>
-              
               {!currentUser.Public && (
-                <div className="flex items-center justify-center sm:justify-start mt-2 text-yellow-500">
-                  <Lock size={16} className="mr-1" />
-                  <span className="text-xs">Private Profile</span>
-                </div>
+                <p className="text-yellow-500 text-sm mt-1">Private Profile</p>
               )}
-
-              {/* Edit Profile button for mobile */}
-              {isOwnProfile && (
-                <Button
-                  className="bg-gray-700 text-white px-4 py-2 rounded-full hover:bg-gray-600 mt-2 sm:hidden"
-                  onClick={() => navigate(`/update-profile/${id}`)}
-                >
-                  <Edit3 size={16} className="mr-2" />
-                  Edit Profile
-                </Button>
-              )}
+              <p className="text-light-2 mt-2 max-w-md">
+                {currentUser.Bio || "No bio available"}
+              </p>
             </div>
             <div className="flex gap-2 mt-4 sm:mt-0">
-              {/* Edit Profile button for desktop */}
               {isOwnProfile ? (
                 <Button
-                  className="bg-gray-700 text-white px-4 py-2 rounded-full hover:bg-gray-600 hidden sm:flex"
+                  className="bg-gray-800 text-white px-4 py-2 rounded-full hover:bg-gray-600"
                   onClick={() => navigate(`/update-profile/${id}`)}
                 >
-                  <Edit3 size={16} className="mr-2" />
+                  <Edit size={16} className="mr-2" />
                   Edit Profile
                 </Button>
               ) : (
                 <>
-                  {currentUser.Public && !isFollowed && (
+                  {currentUser.Public ? (
+                    <Button
+                      className={`px-6 py-2 rounded-full ${
+                        isFollowed
+                          ? "bg-dark-4 text-light-1 hover:bg-red-600 hover:text-white"
+                          : "bg-primary-500 text-white hover:bg-primary-600"
+                      }`}
+                      onClick={isFollowed ? handleUnFollow : handleFollow}
+                      disabled={isFollowLoading}
+                    >
+                      {isFollowLoading ? <Loader /> : (isFollowed ? "Unfollow" : "Follow")}
+                    </Button>
+                  ) : (
                     <Button
                       className="bg-primary-500 text-white px-6 py-2 rounded-full hover:bg-primary-600"
-                      onClick={handleFollow}
-                      disabled={isFollowLoading}
+                      onClick={handleFriendRequest}
+                      disabled={isRequestSent || isSendRequestLoading}
                     >
-                      {isFollowLoading ? <Loader /> : "Follow"}
+                      {isSendRequestLoading ? <Loader /> : (
+                        <>
+                          <UserPlus size={16} className="mr-2" />
+                          {isRequestSent ? "Request Sent" : "Add Friend"}
+                        </>
+                      )}
                     </Button>
                   )}
-                  {isFollowed && (
-                    <Button
-                      className="border border-slate-300 text-white px-6 py-2 rounded-full hover:bg-red-600"
-                      onClick={handleUnFollow}
-                      disabled={isFollowLoading}
-                    >
-                      {isFollowLoading ? <Loader /> : "Unfollow"}
-                    </Button>
-                  )}
-                  <Button
-                    className="bg-gray-700 text-white px-4 py-2 rounded-full hover:bg-gray-600"
-                    onClick={handleFriendRequest}
-                    disabled={isRequestSent}
-                  >
-                    {isRequestSent ? "Request Sent" : "Add Friend"}
-                  </Button>
                 </>
               )}
             </div>
           </div>
           
-          <p className="text-light-2 mt-4 text-sm max-w-2xl">
-            {currentUser.Bio || "No bio available"}
-          </p>
-
           <div className="flex justify-center sm:justify-start gap-6 mt-6">
             <div className="text-center">
               <p className="text-2xl font-bold text-light-1">{connection?.follower?.length || 0}</p>
@@ -208,24 +225,24 @@ const Profile: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex justify-center gap-4 mt-8 mb-6">
+      <div className="flex justify-center gap-4 mt-8 mb-6 bg-dark-2 p-2 rounded-full max-w-md mx-auto">
         <Button
           onClick={() => setActiveTab("lists")}
-          className={`py-2 px-6 rounded-full transition-all duration-300 ${
+          className={`py-2 px-6 rounded-full transition-all duration-300 flex items-center ${
             activeTab === "lists" 
               ? "bg-primary-500 text-white shadow-lg" 
-              : "bg-dark-4 text-light-2 hover:bg-dark-3"
+              : "bg-transparent text-light-2 hover:bg-dark-3"
           }`}
         >
-          <ListChecks size={18} className="mr-2" />
-          Lists
+          <List size={18} className="mr-2" />
+          My Lists
         </Button>
         <Button
           onClick={() => setActiveTab("liked")}
-          className={`py-2 px-6 rounded-full transition-all duration-300 ${
+          className={`py-2 px-6 rounded-full transition-all duration-300 flex items-center ${
             activeTab === "liked"
               ? "bg-primary-500 text-white shadow-lg"
-              : "bg-dark-4 text-light-2 hover:bg-dark-3"
+              : "bg-transparent text-light-2 hover:bg-dark-3"
           }`}
         >
           <Heart size={18} className="mr-2" />
@@ -233,10 +250,10 @@ const Profile: React.FC = () => {
         </Button>
         <Button
           onClick={() => setActiveTab("friends")}
-          className={`py-2 px-6 rounded-full transition-all duration-300 ${
+          className={`py-2 px-6 rounded-full transition-all duration-300 flex items-center ${
             activeTab === "friends"
               ? "bg-primary-500 text-white shadow-lg"
-              : "bg-dark-4 text-light-2 hover:bg-dark-3"
+              : "bg-transparent text-light-2 hover:bg-dark-3"
           }`}
         >
           <Users size={18} className="mr-2" />
@@ -252,50 +269,206 @@ const Profile: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
+          className="w-full px-4 py-6"
         >
           {activeTab === "lists" && (
             <div className="flex flex-col gap-8">
-              <div>
-                <h2 className="text-2xl font-bold text-light-1 mb-4">
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h2
+                  className="text-2xl font-bold text-light-1 mb-4 cursor-pointer flex items-center"
+                  onClick={() => setCuratedExpanded(!isCuratedExpanded)}
+                >
                   My Lists
+                  <ChevronDown 
+                    size={24}
+                    className={`ml-2 transition-transform duration-300 ${isCuratedExpanded ? 'rotate-180' : ''}`}
+                  />
                 </h2>
-                <GridListList lists={userLists || []} showUser={false} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-light-1 mb-4">
-                  Saved Lists
-                </h2>
-                {savedLists.length === 0 ? (
-                  <p className="text-light-2">You haven't saved any lists yet.</p>
-                ) : (
-                  <GridListList lists={savedLists} showStats={false} />
+                {isCuratedExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <GridListList lists={userLists || []} showUser={false} />
+                  </motion.div>
                 )}
-              </div>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h2
+                  className="text-2xl font-bold text-light-1 mb-4 cursor-pointer flex items-center"
+                  onClick={() => setSavedExpanded(!isSavedExpanded)}
+                >
+                  Saved Lists
+                  <ChevronDown 
+                    size={24}
+                    className={`ml-2 transition-transform duration-300 ${isSavedExpanded ? 'rotate-180' : ''}`}
+                  />
+                </h2>
+                {isSavedExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {savedLists.length === 0 ? (
+                      <p className="text-light-4">No saved lists</p>
+                    ) : (
+                      <GridListList lists={savedLists} showStats={false} />
+                    )}
+                  </motion.div>
+                )}
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                >
+                <h2
+                  className="text-2xl font-bold text-light-1 mb-4 cursor-pointer flex items-center"
+                  onClick={() => setSavedExpanded(!isSavedExpanded)}
+                >
+                  Saved Lists
+                  <ChevronDown 
+                    size={24}
+                    className={`ml-2 transition-transform duration-300 ${isSavedExpanded ? 'rotate-180' : ''}`}
+                  />
+                </h2>
+                {isSavedExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {savedLists.length === 0 ? (
+                      <p className="text-light-4">No saved lists</p>
+                    ) : (
+                      <GridListList lists={savedLists} showStats={false} />
+                    )}
+                  </motion.div>
+                )}
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h2
+                  className="text-2xl font-bold text-light-1 mb-4 cursor-pointer flex items-center"
+                  onClick={() => setCollaborativeExpanded(!isCollaborativeExpanded)}
+                >
+                  Collaborative Lists
+                  <ChevronDown 
+                    size={24}
+                    className={`ml-2 transition-transform duration-300 ${isCollaborativeExpanded ? 'rotate-180' : ''}`}
+                  />
+                </h2>
+                {isCollaborativeExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {collaborativeList.length === 0 ? (
+                      <p className="text-light-4">No collaborative lists</p>
+                    ) : (
+                      <GridListList lists={collaborativeList} showUser={false} />
+                    )}
+                  </motion.div>
+                )}
+              </motion.div>
             </div>
           )}
-
+          
           {activeTab === "liked" && (
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
               <h2 className="text-2xl font-bold text-light-1 mb-4">Liked Lists</h2>
-              <GridListList lists={currentUser.likedLists || []} showUser={true} />
-            </div>
+              {currentUser.likedLists && currentUser.likedLists.length > 0 ? (
+                <GridListList lists={currentUser.likedLists} showUser={true} />
+              ) : (
+                <p className="text-light-4">No liked lists yet</p>
+              )}
+            </motion.div>
           )}
-
+          
           {activeTab === "friends" && (
-            <div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
               <h2 className="text-2xl font-bold text-light-1 mb-4">Friends</h2>
-              {isLoadingFriends ? <Loader /> : <FriendsList friends={friends} />}
+              {isLoadingFriends ? (
+                <Loader />
+              ) : friends && friends.length > 0 ? (
+                <FriendsList friends={friends} />
+              ) : (
+                <p className="text-light-4">No friends yet</p>
+              )}
               
               {isOwnProfile && (
-                <div className="mt-8">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.3 }}
+                  className="mt-8"
+                >
                   <h2 className="text-2xl font-bold text-light-1 mb-4">Friend Requests</h2>
-                  {isLoadingFriendRequests ? <Loader /> : <FriendRequests requests={friendRequests} />}
-                </div>
+                  {isLoadingFriendRequests ? (
+                    <Loader />
+                  ) : friendRequests && friendRequests.length > 0 ? (
+                    <FriendRequests requests={friendRequests} />
+                  ) : (
+                    <p className="text-light-4">No friend requests</p>
+                  )}
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           )}
         </motion.div>
       </AnimatePresence>
+
+      {isOwnProfile && (
+        <div className="fixed bottom-4 right-4 flex flex-col gap-2">
+          <Button
+            className="bg-primary-500 text-white rounded-full p-3 shadow-lg hover:bg-primary-600 transition-colors duration-300"
+            onClick={() => navigate(`/manage-list/${id}`)}
+          >
+            <Settings size={24} />
+          </Button>
+          <Button
+            className="bg-secondary-500 text-white rounded-full p-3 shadow-lg hover:bg-secondary-600 transition-colors duration-300"
+            onClick={() => navigate("/userActivity")}
+          >
+            <Activity size={24} />
+          </Button>
+        </div>
+      )}
 
       <Outlet />
     </motion.div>

@@ -10,6 +10,7 @@ const EmbedPreview = () => {
   const [embedList, setEmbedList] = useState<any>(null);
   const [refreshData, setRefreshData] = useState(false);
   const { user } = useUserContext();
+  const [isVoting, setIsVoting] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,8 +26,10 @@ const EmbedPreview = () => {
   const items = embedType === 'top5' ? embedList?.item : embedList?.item;
 
   const handleVote = async (id: any) => {
+    setIsVoting(id)
     await VoteOnItem(user.id, id);
     setRefreshData((prevState) => !prevState);
+    setIsVoting(null)
   };
   const navigate = useNavigate();
 
@@ -69,6 +72,7 @@ const EmbedPreview = () => {
         type={embedType}
         items={items || []}
         handleVote={handleVote}
+        isVoting={isVoting}
         setRefresh={setRefreshData}
         list={embedList}
         />

@@ -15,9 +15,10 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Textarea, Input, Button } from "@/components/ui";
 import { ProfileUploader, Loader } from "@/components/shared";
-
+import { motion } from "framer-motion";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById, useUpdateUser } from "@/lib/react-query/queries";
+import { User, Lock, AtSign, Mail, FileText, Globe } from "lucide-react";
 
 const formSchema = z.object({
   Name: z.string().min(3, "Name must be at least 3 characters").max(100, "Name must be less than 100 characters"),
@@ -30,7 +31,7 @@ const formSchema = z.object({
   Public: z.boolean()
 });
 
-const UpdateProfile = () => {
+const UpdateProfile: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -100,6 +101,7 @@ const UpdateProfile = () => {
         Name: updatedUser.Name,
         Bio: updatedUser.Bio,
         ImageUrl: updatedUser.ImageUrl,
+        Public: updatedUser.Public,
       });
       toast({
         title: "Profile updated successfully!",
@@ -133,23 +135,22 @@ const UpdateProfile = () => {
   }
 
   return (
-    <div className="flex flex-1">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-1 bg-dark-1"
+    >
       <div className="common-container max-w-3xl mx-auto">
         <div className="flex-start gap-3 justify-start w-full mb-8">
-          <img
-            src="/assets/icons/edit.svg"
-            width={36}
-            height={36}
-            alt="edit"
-            className="invert-white"
-          />
-          <h2 className="h3-bold md:h2-bold text-left w-full">Edit Your Profile</h2>         
+          <User size={36} className="text-primary-500" />
+          <h2 className="h3-bold md:h2-bold text-left w-full text-light-1">Edit Your Profile</h2>         
         </div>
-        <p className="text-light-2 text-center mb-8">Complete your profile to get the most out of your Topfived experience.</p>
+        <p className="text-light-2 text-center mb-8">Complete your profile to get the most out of your experience.</p>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleUpdate)}
-            className="flex flex-col gap-7 w-full"
+            className="flex flex-col gap-7 w-full bg-dark-2 p-8 rounded-lg shadow-lg"
           >
             <FormField
               control={form.control}
@@ -162,7 +163,7 @@ const UpdateProfile = () => {
                       mediaUrl={currentUser.ImageUrl || ""}
                     />
                   </FormControl>
-                  <FormMessage className="shad-form_message" />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
@@ -172,17 +173,20 @@ const UpdateProfile = () => {
               name="Name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="shad-form_label">Name</FormLabel>
+                  <FormLabel className="text-light-2 flex items-center">
+                    <User size={18} className="mr-2" />
+                    Name
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="text"
-                      className="shad-input"
+                      className="bg-dark-3 border-dark-4 text-light-1"
                       {...field}
                       aria-label="Name"
                       spellCheck={true}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
@@ -192,18 +196,20 @@ const UpdateProfile = () => {
               name="Username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="shad-form_label">Username</FormLabel>
+                  <FormLabel className="text-light-2 flex items-center">
+                    <AtSign size={18} className="mr-2" />
+                    Username
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="text"
-                      className="shad-input"
+                      className="bg-dark-3 border-dark-4 text-light-1"
                       {...field}
                       disabled
                       aria-label="Username"
-                      spellCheck={true}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
@@ -213,18 +219,20 @@ const UpdateProfile = () => {
               name="Email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="shad-form_label">Email</FormLabel>
+                  <FormLabel className="text-light-2 flex items-center">
+                    <Mail size={18} className="mr-2" />
+                    Email
+                  </FormLabel>
                   <FormControl>
                     <Input
                       type="text"
-                      className="shad-input"
+                      className="bg-dark-3 border-dark-4 text-light-1"
                       {...field}
                       disabled
                       aria-label="Email"
-                      spellCheck={true}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
@@ -234,47 +242,53 @@ const UpdateProfile = () => {
               name="Bio"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="shad-form_label">Bio</FormLabel>
+                  <FormLabel className="text-light-2 flex items-center">
+                    <FileText size={18} className="mr-2" />
+                    Bio
+                  </FormLabel>
                   <FormControl>
                     <Textarea
-                      className="shad-textarea custom-scrollbar"
+                      className="bg-dark-3 border-dark-4 text-light-1 custom-scrollbar"
                       {...field}
                       aria-label="Bio"
                       spellCheck={true}
                     />
                   </FormControl>
-                  <FormMessage className="shad-form_message" />
+                  <FormMessage className="text-red-500" />
                 </FormItem>
               )}
             />
 
-            <FormField
+<FormField
               control={form.control}
               name="Public"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-dark-4 p-4">
                   <FormControl>
                     <input
                       type="checkbox"
                       checked={field.value}
                       onChange={(e) => field.onChange(e.target.checked)}
-                      className="h-4 w-4 mt-1"
+                      className="h-4 w-4 mt-1 rounded border-dark-4 bg-dark-3"
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>Public Profile</FormLabel>
-                    <FormDescription>
-                      Uncheck this if you want to make your account private
+                    <FormLabel className="text-light-2 flex items-center">
+                      <Globe size={18} className="mr-2" />
+                      Public Profile
+                    </FormLabel>
+                    <FormDescription className="text-light-3">
+                      Make your profile visible to everyone
                     </FormDescription>
                   </div>
                 </FormItem>
               )}
             />
 
-            <div className="flex gap-4 items-center justify-end">
+            <div className="flex gap-4 items-center justify-end mt-4">
               <Button
                 type="button"
-                className="shad-button_dark_4"
+                className="bg-dark-4 text-light-1 hover:bg-dark-3"
                 onClick={() => navigate(-1)}
                 aria-label="Cancel"
               >
@@ -282,7 +296,7 @@ const UpdateProfile = () => {
               </Button>
               <Button
                 type="submit"
-                className="shad-button_primary whitespace-nowrap"
+                className="bg-primary-500 text-white hover:bg-primary-600"
                 disabled={isLoadingUpdate}
                 aria-label="Update Profile"
               >
@@ -293,7 +307,7 @@ const UpdateProfile = () => {
           </form>
         </Form>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
