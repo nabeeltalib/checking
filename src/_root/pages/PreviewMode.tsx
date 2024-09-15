@@ -58,8 +58,9 @@ const PreviewMode: React.FC = () => {
     <div className="mt-4 flex flex-col w-full items-center bg-dark-1 min-h-screen">
       <header className="w-full bg-dark-1 py-4">
         <div className="max-w-5xl mx-auto px-4">
-          <div className="text-wrap text-2xl md:text-4xl text-orange-300 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4 mb-4 font-bold" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-            <span>Where Your World Ranks</span>
+          <div className="text-wrap text-2xl md:text-4xl text-center text-orange-300 gap-2 md:gap-4 mb-4 font-bold" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+            <span>Is your top five better?
+            </span>
           </div>
           <h1 className="h3-light md:h2-light text-center w-full">Explore Opinions on Anything and Everything</h1>
         </div>

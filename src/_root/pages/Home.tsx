@@ -9,8 +9,8 @@ import { IList } from '@/types';
 import { Models } from 'appwrite';
 import { motion, AnimatePresence } from "framer-motion";
 import { getConnection } from '@/lib/appwrite/api';
-import { Search, Zap, PlusCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Search } from 'lucide-react';
+import TrendingSlider from "@/components/shared/TrendingSlider";
 
 const Home: React.FC = () => {
   const { user } = useUserContext();
@@ -75,76 +75,61 @@ const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full items-center bg-dark-1 min-h-screen">
+      {/* Header Section */}
       <header className="w-full bg-dark-1 py-8">
-        <div className="max-w-5xl mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl text-white font-bold mb-2" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-            Where Your World Ranks {user.name}
-          </h1>
-          <p className="text-xl text-gray-200">Explore Opinions on Anything and Everything</p>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-xl md:text-2xl text-gray-300 font-semibold mb-2">
+           {user.name}'s Connected Opinions
+          </h2>
+          
           {user && (
-            <div className="text-sm text-gray-400 mt-2">
+            <div className="text-sm text-gray-300 mt-2 flex justify-center space-x-4">
               <span>{connection?.follower?.length || 0} followers</span>
               <span className="mx-2">•</span>
               <span>{connection?.following?.length || 0} following</span>
             </div>
           )}
+          <h1 className="text-3xl md:text-4xl text-orange-300 font-bold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+            Is your top five better?
+          </h1>
+          <p className="text-lg sm:text-xl text-gray-200 mt-6">Discover Rankings on Anything and Everything</p>
         </div>
       </header>
 
-      <div className="w-full max-w-5xl mx-auto px-4">
-       {/* Sticky Search Bar */}
-      <div className="sticky top-20 z-10 w-full bg-dark-1 shadow-md mt-2">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative flex-grow">
-            <input
-              type="text"
-              placeholder="Search for better opinions..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="w-full bg-dark-4 text-light-1 pl-10 pr-4 py-2 rounded-3xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
+      {/* Content Wrapper */}
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Sticky Search Bar */}
+        <div className="sticky top-20 z-10 w-full bg-dark-1 shadow-md my-4">
+          <div className="max-w-3xl mx-auto px-4 py-3">
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search for better opinions..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="w-full bg-dark-4 text-light-1 pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
+              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
+            </div>
           </div>
-          {/*<div className="text-xs flex items-center gap-2">
-            <Filter className="text-light-3" />
-            <select 
-              className="bg-dark-3 text-light-1 p-2 rounded-md"
-              onChange={handleSortChange}
-              value={sortOption}
-            >
-              <option value="">Filter Lists</option>
-              <option value="category">Category</option>
-              <option value="tags">Tags</option>
-            </select>
-          </div>*/}
-        </div>
-      </div>
-
-        <div className="bg-dark-1 p-6 rounded-lg shadow-lg mb-8 mt-6">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-white">
-            <Zap className="text-yellow-400" />
-            Featured List Idea
-          </h2>
-          {isGeneratingIdea ? (
-            <Loader />
-          ) : listIdea ? (
-            <p className="text-light-2">{listIdea}</p>
-          ) : (
-            <button 
-              onClick={handleGenerateIdea}
-              className="bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-600 transition-colors"
-            >
-              Generate List Idea
-            </button>
-          )}
         </div>
 
+        {/* Trending Section */}
+        <div className="my-6 sm:my-8 lg:my-12 bg-dark-3 rounded-lg shadow-lg p-4 sm:p-6">
+          <TrendingSlider />
+        </div>
+
+        <h3 className="text-xl sm:text-2xl lg:text-2xl font-light text-blue-300 mb-4 sm:mb-6">
+          Debate friend's rankings and find opinions to trust
+        </h3>
+
+        {/* List Cards Section */}
         {isLoading && !lists ? (
           <Loader />
         ) : (
           <AnimatePresence>
             <motion.div
-              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
@@ -167,6 +152,8 @@ const Home: React.FC = () => {
             </motion.div>
           </AnimatePresence>
         )}
+        
+        {/* Loader for Infinite Scroll */}
         {hasNextPage && (
           <div ref={ref} className="mt-8 flex justify-center">
             <Loader />

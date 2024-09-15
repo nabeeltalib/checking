@@ -9,17 +9,28 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     resolve: {
       alias: {
-        '@': path.resolve(__dirname, './src'),
+        '@': path.resolve(__dirname, './src'), // Resolves '@' to 'src' directory
       },
     },
     server: {
       port: 3000,
+      proxy: {
+        // Proxy configuration to handle Appwrite API requests
+        '/v1': {
+          target: 'https://cloud.appwrite.io', // Targeting Appwrite cloud
+          changeOrigin: true,
+          secure: true,
+          rewrite: (path) => path.replace(/^\/v1/, '/v1'), // Keeps '/v1' intact
+        },
+      },
     },
     define: {
-      'process.env': env, // Optional: Spreading loaded env variables to process.env
+      'process.env': {
+        ...env, // Spread environment variables from .env files into process.env
+      },
     },
     build: {
-      sourcemap: mode === 'development', // Optional: Sourcemap for dev mode
+      sourcemap: mode === 'development', // Enables sourcemap for development builds
     },
   };
 });

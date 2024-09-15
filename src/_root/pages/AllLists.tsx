@@ -46,7 +46,7 @@ const AllLists: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        What's in your Top Five?
+         Discover & Engage
       </motion.h1>
       
       {aiSuggestions && aiSuggestions.length > 0 && (
@@ -117,7 +117,7 @@ const AllLists: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            Discover & Engage
+           
           </motion.h2>
           <motion.div 
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6"

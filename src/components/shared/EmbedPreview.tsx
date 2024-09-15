@@ -10,6 +10,7 @@ const EmbedPreview = () => {
   const [embedList, setEmbedList] = useState<any>(null);
   const [refreshData, setRefreshData] = useState(false);
   const { user } = useUserContext();
+  const [embedType, setEmbedType] = useState('top5');
   const [isVoting, setIsVoting] = useState<string | null>(null)
 
   useEffect(() => {
@@ -21,7 +22,7 @@ const EmbedPreview = () => {
     fetchData();
   }, [refreshData, id]);
 
-  const [embedType, setEmbedType] = useState('top5');
+
 
   const items = embedType === 'top5' ? embedList?.item : embedList?.item;
 
@@ -32,6 +33,7 @@ const EmbedPreview = () => {
     setIsVoting(null)
   };
   const navigate = useNavigate();
+
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white dark:bg-zinc-900 text-black dark:text-white rounded-lg shadow-md">

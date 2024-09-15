@@ -9,6 +9,7 @@ import { createList, getReportedComments } from "@/lib/appwrite/api";
 import { Loader } from "@/components/shared";
 import ReportedComments from "@/components/shared/ReportedComments";
 import { Users, List, AlertTriangle, BarChart2 } from "lucide-react";
+import React from 'react';
 
 const AdminPanel = () => {
     const { user } = useUserContext();

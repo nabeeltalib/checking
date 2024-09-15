@@ -414,3 +414,16 @@
 .flashing {
   animation: flash 1.0s infinite;
 }
+/* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #3498db; /* Change to the desired blue color */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #1a1a1a; /* Track color (matches the dark theme) */
+}

@@ -49,6 +49,7 @@
     "tailwind-merge": "^1.14.0",
     "tailwindcss-animate": "^1.0.7",
     "uglify-js": "^3.18.0",
+    "unsplash-js": "^7.0.19",
     "zod": "^3.22.4"
   },
   "devDependencies": {

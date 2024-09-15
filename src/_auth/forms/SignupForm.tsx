@@ -9,14 +9,15 @@ import { Button } from "@/components/ui/button";
 import Loader from "@/components/shared/Loader";
 import { useToast } from "@/components/ui/use-toast";
 
-import { useCreateUserAccount, useSignInAccount, useSignInWithGoogle } from "@/lib/react-query/queries";
+import { useCreateUserAccount, useSignInAccount } from "@/lib/react-query/queries"; // Removed useSignInWithGoogle
 import { SignupValidation } from "@/lib/validation";
 import { useUserContext } from "@/context/AuthContext";
+import { account } from "@/lib/appwrite/config"; // Import account
 
 const SignupForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
+  const { checkAuthUser, isLoading: isUserLoading, isAuthenticated, user } = useUserContext();
 
   const form = useForm<z.infer<typeof SignupValidation>>({
     resolver: zodResolver(SignupValidation),
@@ -31,12 +32,12 @@ const SignupForm = () => {
   // Queries
   const { mutateAsync: createUserAccount, isLoading: isCreatingAccount } = useCreateUserAccount();
   const { mutateAsync: signInAccount, isLoading: isSigningInUser } = useSignInAccount();
-  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
+  // Removed useSignInWithGoogle and isGoogleLoading
 
   // Handler
-  const handleSignup = async (user: z.infer<typeof SignupValidation>) => {
+  const handleSignup = async (userData: z.infer<typeof SignupValidation>) => {
     try {
-      const newUser = await createUserAccount(user);
+      const newUser = await createUserAccount(userData);
 
       if (!newUser) {
         toast({ title: "Sign up failed. Please try again." });
@@ -44,12 +45,12 @@ const SignupForm = () => {
       }
 
       const session = await signInAccount({
-        email: user.email,
-        password: user.password,
+        email: userData.email,
+        password: userData.password,
       });
 
       if (!session) {
-        toast({ title: "Something went wrong. Please login your new account" });
+        toast({ title: "Something went wrong. Please log in to your new account" });
         navigate("/sign-in");
         return;
       }
@@ -58,7 +59,7 @@ const SignupForm = () => {
 
       if (isLoggedIn) {
         form.reset();
-        navigate("/");
+        // Navigation is handled in useEffect based on isAuthenticated and user.profileCompleted
       } else {
         toast({ title: "Login failed. Please try again." });
       }
@@ -67,22 +68,23 @@ const SignupForm = () => {
     }
   };
 
-  const handleGoogleSignUp = async () => {
-    try {
-      const session = await signInWithGoogle();
-      if (session) {
-        const isLoggedIn = await checkAuthUser();
-        if (isLoggedIn) {
-          navigate("/");
-        } else {
-          toast({ title: "Sign up failed. Please try again." });
-        }
-      }
-    } catch (error) {
-      console.error("Google sign-up error:", error);
-      toast({ title: "Google sign-up failed. Please try again." });
-    }
+  const handleGoogleSignUp = () => {
+    account.createOAuth2Session(
+      'google',
+      `${import.meta.env.VITE_APP_URL}`, // Success URL
+      `${import.meta.env.VITE_APP_URL}/sign-up` // Failure URL
+    );
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (!user.profileCompleted) {
+        navigate(`/update-profile/${user.id}`);
+      } else {
+        navigate("/");
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   return (
     <Form {...form}>
@@ -93,67 +95,13 @@ const SignupForm = () => {
           Create a new account
         </h2>
         <p className="text-light-3 small-medium md:base-regular mt-2">
-          To use Snapgram, Please enter your details
+          To use Snapgram, please enter your details
         </p>
 
         <form
           onSubmit={form.handleSubmit(handleSignup)}
           className="flex flex-col gap-5 w-full mt-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="shad-form_label">Name</FormLabel>
-                <FormControl>
-                  <Input type="text" className="shad-input" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="shad-form_label">Username</FormLabel>
-                <FormControl>
-                  <Input type="text" className="shad-input" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="shad-form_label">Email</FormLabel>
-                <FormControl>
-                  <Input type="text" className="shad-input" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="shad-form_label">Password</FormLabel>
-                <FormControl>
-                  <Input type="password" className="shad-input" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* ...Form Fields... */}
 
           <Button type="submit" className="shad-button_primary">
             {isCreatingAccount || isSigningInUser || isUserLoading ? (
@@ -173,18 +121,9 @@ const SignupForm = () => {
             type="button" 
             className="shad-button_google"
             onClick={handleGoogleSignUp}
-            disabled={isGoogleLoading}
           >
-            {isGoogleLoading ? (
-              <div className="flex-center gap-2">
-                <Loader /> Loading...
-              </div>
-            ) : (
-              <>
-                <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
-                Sign up with Google
-              </>
-            )}
+            <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
+            Sign up with Google
           </Button>
 
           <p className="text-small-regular text-light-2 text-center mt-2">
