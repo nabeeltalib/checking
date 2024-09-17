@@ -51,7 +51,6 @@ import AdminPanel from "./_root/pages/AdminPanel";
 import StaticFrame from "./components/shared/StaticFrame";
 import LiveFrame from "./components/shared/LiveFrame";
 import OnboardingScreens from "./_root/pages/OnboardingScreens";
-import AuthCallback from './_root/pages/AuthCallback'
 
 const App = () => {
 
@@ -125,8 +124,7 @@ const App = () => {
           <Route path="/cookiepolicy" element={<CookiePolicy />} />
           <Route path="/explore2" element={<Explore2 />} />
           <Route path="/admin-panel" element={<AdminPanel />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          </Route>
+        </Route>
       </Routes>
      
       <Toaster />
