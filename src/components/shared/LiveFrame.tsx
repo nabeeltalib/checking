@@ -1,16 +1,16 @@
 import { ExternalLink, MessageCircle, Heart } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useUserContext } from "@/context/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { getListById } from "@/lib/appwrite/config";
 import { VoteOnItem } from "@/lib/appwrite/api";
 import { Button } from "../ui";
+import Loader from "./Loader";
 
 const LiveFrame = () => {
   const { id } = useParams();
   const [list, setList] = useState<any>(null);
   const [refreshData, setRefreshData] = useState(false);
-  const { user } = useUserContext();
+  const [isVoting, setIsVoting] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,16 +21,33 @@ const LiveFrame = () => {
     fetchData();
   }, [refreshData, id]);
 
+  function addToLocalStorageArray(newString:string) {
+    let array = JSON.parse(localStorage.getItem('myArray')) || [];
+    array.push(newString);
+    localStorage.setItem('myArray', JSON.stringify(array));
+  }
+
 
   const [embedType] = useState("top5");
 
   const items = embedType === "top5" ? list?.item : list?.item;
+  let hasVoted = localStorage.getItem('myArray');
 
   const handleVote = async (id: any) => {
-    await VoteOnItem(user.id, id);
-    setRefreshData((prevState) => !prevState);
-  };
+    setIsVoting(id)
+      const UniqueId = () => {
+        const timestamp = new Date().toISOString().replace(/[-:.T]/g, '');
+        const random = Math.floor(Math.random() * 1000);
+        return `user${timestamp}:${random}`;
+      };
+      let UId = UniqueId();
+      addToLocalStorageArray(id);
+      await VoteOnItem(UniqueId, id)
+      console.log("asdad",UId)
 
+    setRefreshData((prevState) => !prevState);
+    setIsVoting(null)
+  };
   const [showTooltip, setShowTooltip] = useState(false);
 
   const navigate = useNavigate();
@@ -63,7 +80,7 @@ const LiveFrame = () => {
             </div>
             <ul>
             {items.map((item: any, index: number) => {
-              let isDisabled = item.vote.some((i: any) => i.$id === user.id);
+              let isDisabled = hasVoted?.includes(item.$id);
               return (
                 <li
                   key={index}
@@ -79,7 +96,7 @@ const LiveFrame = () => {
                       <Button
                         onClick={() => handleVote(item.$id)}
                         disabled={isDisabled}>
-                        <Heart size={20} />{" "}
+                        {isVoting === item.$id ? <Loader /> : <Heart size={20} />}
                       </Button>
                     </span>
                   </span>

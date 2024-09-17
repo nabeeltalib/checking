@@ -16,9 +16,9 @@ const ComprehensiveLeaderboard = () => {
     const fetchData = async () => {
       try {
         const u = await getUsers();
-        setUsers(u?.slice(0, 5));
+        setUsers(u?.slice(0, 5) || []); // Handle case if u is null
         const l = await getMostLikedLists();
-        setLists(l.slice(0, 5));
+        setLists(l.slice(0, 5) || []); // Handle case if l is null
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -32,12 +32,12 @@ const ComprehensiveLeaderboard = () => {
     () =>
       users.map((user: any, index: number) => ({
         rank: index + 1,
-        path: `/profile/${user.$id}`,
-        name: user.Name,
-        avatar: user.ImageUrl || "/assets/icons/profile-placeholder.svg",
-        listsCreated: user.lists.length,
-        totalLikes: user.totalLikes,
-        key: user.$id || `user-${index}`, // Ensure unique keys
+        path: `/profile/${user?.$id || ""}`,
+        name: user?.Name || "Unknown",
+        avatar: user?.ImageUrl || "/assets/icons/profile-placeholder.svg",
+        listsCreated: user?.lists?.length || 0,
+        totalLikes: user?.totalLikes || 0,
+        key: user?.$id || `user-${index}`, // Ensure unique keys
       })),
     [users]
   );
@@ -46,12 +46,12 @@ const ComprehensiveLeaderboard = () => {
     () =>
       lists.map((list: any, index: number) => ({
         rank: index + 1,
-        path: `/lists/${list.$id}`,
-        title: list.Title,
-        creator: list.creator.Name,
-        likes: list.Likes.length,
-        comments: list.comments.length,
-        key: list.$id || `list-${index}`, // Ensure unique keys
+        path: `/lists/${list?.$id || ""}`,
+        title: list?.Title || "Untitled",
+        creator: list?.creator?.Name || "Unknown",
+        likes: list?.Likes?.length || 0,
+        comments: list?.comments?.length || 0,
+        key: list?.$id || `list-${index}`, // Ensure unique keys
       })),
     [lists]
   );

@@ -4,12 +4,13 @@ import { useUserContext } from "@/context/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { checkIsLiked } from "@/lib/utils";
 import { getListById, likeList } from "@/lib/appwrite/config";
+import Loader from "./Loader";
 
 const StaticFrame = () => {
   const { id } = useParams();
   const [list, setList] = useState<any>(null);
   const [refreshData, setRefreshData] = useState(false);
-  const { user } = useUserContext();
+  const [isLiking, setIsLiking] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,20 +26,14 @@ const StaticFrame = () => {
   const items = embedType === "top5" ? list?.item : list?.item;
 
   const [showTooltip, setShowTooltip] = useState(false);
-  const userId = user.id;
 
   const navigate = useNavigate();
   const handleCTAClick = () => {
     navigate("/");
   };
 
-  const handleLikeList = async (list: any) => {
-    let likes = list.Likes;
-    let newLikes = likes.includes(userId)
-      ? likes.filter((Id: any) => Id !== userId)
-      : [...likes, userId];
-    await likeList(list.$id, newLikes);
-    setRefreshData((prevState: any) => !prevState);
+  const handleLikeList = () => {
+    alert("Inorder to Like Please visit, https://topfived.com")
   };
 
   return (
@@ -76,18 +71,16 @@ const StaticFrame = () => {
               })}
               <div className="flex mt-5 justify-end">
                 <span className="bg-zinc-950 p-2 rounded-lg">
-                  <img
-                    src={
-                      checkIsLiked(list.Likes, userId)
-                        ? "/assets/icons/liked.svg"
-                        : "/assets/icons/like.svg"
-                    }
-                    alt="like"
-                    width={20}
-                    height={20}
-                    onClick={() => handleLikeList(list)}
-                    className="cursor-pointer"
-                  />
+                {isLiking ? <Loader /> : <img
+                    src={ 
+                       "/assets/icons/like.svg"
+                  }
+                  alt="like"
+                  width={20}
+                  height={20}
+                  onClick={() => handleLikeList()}
+                  className="cursor-pointer"
+                />}
                 </span>
               </div>
             </ol>

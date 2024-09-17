@@ -19,6 +19,7 @@ export const getAISuggestionsRoute = (userId: string): Promise<any[]> =>
   new Promise(async (resolve, reject) => {
     try {
       const suggestions = await getAISuggestions(userId);
+      console.log("asdsadas: ",suggestions)
 
       return resolve(suggestions);
     } catch (error: any) {

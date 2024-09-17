@@ -1,123 +1,151 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageCircle, Bookmark, Share2, Trophy, Medal, Award, Send, UserPlus, UserMinus, MoreHorizontal, Flag } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import useUnsplashImage from '@/hooks/useUnsplashImage';
-import { useToast } from '@/components/ui/use-toast';
-import { useUserContext } from '@/context/AuthContext';
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Share2, Heart, MessageCircle, Bookmark, User, MapPin, Clock } from "lucide-react";
 import {
-  useGetCurrentUser,
-  useGetComments,
-  useLikeList,
-  useSaveList,
-  useDeleteSavedList,
-  useCreateComment,
-} from '@/lib/react-query/queries';
-import {
-  createNotification,
+  createEmbedList,
   followUser,
   getConnection,
   shareList,
   UnFollow,
-  reportComment,
-} from '@/lib/appwrite/api';
-import { Models } from 'appwrite';
-import Tooltip from '@/components/ui/Tooltip';
-import Loader from '@/components/shared/Loader';
-import { checkIsLiked } from '@/lib/utils';
+} from "@/lib/appwrite/api";
+import {
+  useDeleteSavedList,
+  useGetComments,
+  useGetCurrentUser,
+  useLikeList,
+  useSaveList,
+} from "@/lib/react-query/queries";
+import Comment from "./Comment";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { useUserContext } from "@/context/AuthContext";
+import { Models } from "appwrite";
+import { checkIsLiked } from "@/lib/utils";
+import Loader from "./Loader";
 
-const ListCard2 = ({ list }) => {
+interface User {
+  id: string;
+  name: string;
+  Username: string;
+  ImageUrl?: string;
+  Public?: boolean; // Assuming 'Public' is a boolean
+  // Add other relevant fields
+}
+
+interface Comment {
+  $id: string;
+  user: User;
+  Content: string;
+  // Add other relevant fields
+}
+
+interface List {
+  $id: string;
+  Title: string;
+  Description?: string;
+  creator: User;
+  items: Array<any> | string;
+  Tags: string[];
+  tags: string[];
+  Categories: string[];
+  locations: string[];
+  timespans: string[];
+  Likes: string[];
+  // Add other relevant fields
+}
+
+interface ListCard2Props {
+  list: List | null; // Allowing null to handle cases when list is not yet loaded
+  manageList?: boolean;
+}
+
+const ListCard2: React.FC<ListCard2Props> = ({ list, manageList }) => {
+  const [isSharing, setIsSharing] = useState(false);
   const navigate = useNavigate();
   const { user } = useUserContext();
-  const userId = user?.id;
+  const { id } = user;
   const { data: currentUser } = useGetCurrentUser();
   const { mutate: deleteSaveList } = useDeleteSavedList();
   const { mutate: saveList } = useSaveList();
   const { mutate: likeList } = useLikeList();
-  const { data: comments, refetch: refetchComments } = useGetComments(list?.$id);
-  const { mutate: createComment } = useCreateComment();
   const { toast } = useToast();
-  const [likes, setLikes] = useState<any[]>(list?.Likes || []);
-  const [isSaved, setIsSaved] = useState(
-    currentUser?.save?.some((saved: any) => saved.list?.$id === list?.$id)
-  );
-  const [isFollowing, setIsFollowing] = useState(false);
+
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [comment, setComment] = useState('');
-  const [showAllComments, setShowAllComments] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
   const [connection, setConnection] = useState<any>(undefined);
-  const { image, loading } = useUnsplashImage(list.Title);
+  const [followdBy, setFollowdBy] = useState<any>([]);
+  const [likes, setLikes] = useState<string[]>(list?.Likes || []);
+  const [isSaved, setIsSaved] = useState(
+    currentUser?.save?.some((saved: any) => saved.list?.$id === list?.$id) || false
+  );
+
+  // Early return if list is null
+  if (!list) {
+    return <Loader />; // Or any fallback UI you prefer
+  }
 
   useEffect(() => {
-    const fetchConnection = async () => {
-      if (list.creator?.$id) {
-        const resp = await getConnection(list.creator.$id);
-        const conn = resp.length > 0 ? resp[0] : resp;
-        setConnection(conn);
-        setIsFollowing(conn?.follower?.some((follower: any) => follower.$id === userId));
+    const fetchData = async () => {
+      if (list?.creator?.$id) {
+        let ProfileConnection = await getConnection(list.creator.$id);
+        let ProfileViewerConnection = await getConnection(user.id);
+
+        if (ProfileConnection.length > 0) {
+          setConnection(ProfileConnection[0]);
+        }
+
+        let commonConnection: any[] = [],
+          remainingConnection: any[] = [],
+          displayConnection: any[] = [];
+
+        if (
+          ProfileConnection?.length > 0 &&
+          ProfileViewerConnection?.length > 0
+        ) {
+          commonConnection = ProfileConnection[0]?.follower.filter(
+            (user: any) =>
+              ProfileViewerConnection[0]?.following.includes(user.$id)
+          );
+          remainingConnection = ProfileConnection[0]?.follower.filter(
+            (user: any) =>
+              !ProfileViewerConnection[0]?.following.includes(user.$id)
+          );
+        }
+
+        if (commonConnection.length > 0) {
+          displayConnection = [...commonConnection, ...remainingConnection];
+        } else {
+          displayConnection =
+            ProfileConnection.length > 0 ? ProfileConnection[0].follower : [];
+        }
+
+        setFollowdBy(displayConnection);
       }
     };
-    fetchConnection();
-  }, [list.creator?.$id, userId]);
 
-  const getRankIcon = (index) => {
-    switch(index) {
-      case 0: return <Trophy className="text-yellow-400" />;
-      case 1: return <Medal className="text-gray-400" />;
-      case 2: return <Award className="text-orange-400" />;
-      default: return null;
-    }
-  };
+    fetchData();
+  }, [list.creator?.$id, user.id]);
 
-  const handleFollowToggle = async () => {
-    setIsFollowLoading(true);
-    try {
-      if (isFollowing) {
-        await UnFollow(userId, list.creator.$id);
-      } else {
-        await followUser(userId, list.creator.$id);
-      }
-      const resp = await getConnection(list.creator.$id);
-      const conn = resp.length > 0 ? resp[0] : resp;
-      setConnection(conn);
-      setIsFollowing(!isFollowing);
-    } catch (error) {
-      console.error("Error toggling follow:", error);
-    } finally {
-      setIsFollowLoading(false);
-    }
-  };
+  const { data: comments } = useGetComments(list.$id);
 
-  const handleCommentSubmit = async (e) => {
-    e.preventDefault();
-    if (comment.trim() === "") return;
-    try {
-      await createComment({ listId: list.$id, userId, Content: comment });
-      setComment('');
-      toast({ title: "Comment added successfully", variant: "default" });
-      refetchComments();
-    } catch (error) {
-      console.error("Error adding comment:", error);
-      toast({ title: "Error adding comment", variant: "destructive" });
-    }
-  };
-
-  const handleShare = async (e) => {
+  const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsSharing(true);
     try {
-      const shareableLink = await shareList(list?.$id);
+      const shareableLink = await shareList(list.$id);
       if (navigator.share) {
         await navigator.share({
-          title: list?.Title,
-          text: `Check out this list: ${list?.Title}`,
+          title: list.Title, // Use consistent property
+          text: `Check out this list: ${list.Title}`,
           url: shareableLink,
         });
       } else {
         await navigator.clipboard.writeText(shareableLink);
-        toast({ title: "Link copied to clipboard!", variant: "default" });
+        toast({
+          title: "Link copied to clipboard!",
+          variant: "default",
+        });
       }
     } catch (error) {
       console.error("Error sharing list:", error);
@@ -131,328 +159,346 @@ const ListCard2 = ({ list }) => {
     }
   };
 
-  const handleSaveList = async (e) => {
+  const renderListItems = () => {
+    let items: Array<any> = [];
+  
+    if (Array.isArray(list.items)) {
+      items = list.items;
+    } else if (typeof list.items === "string") {
+      items = list.items.split("\n");
+    } else if (typeof list.items === "object" && list.items !== null) {
+      items = Object.values(list.items);
+    }
+  
+    return items.slice(0, 5).map((item, index) => (
+      <li key={index} className="flex items-center mb-2 bg-gray-800 rounded-md p-3">
+        <span className="text-lg font-bold text-yellow-500 mr-4">
+          {index + 1}
+        </span>
+        <span className="text-sm text-white truncate">
+          {typeof item === "string" ? item : item.content || ""}
+        </span>
+      </li>
+    ));
+  };
+  
+
+  const handleSaveList = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
       if (isSaved) {
         const savedListRecord = currentUser?.save?.find(
-          (record: Models.Document) => record.list?.$id === list?.$id
+          (record: Models.Document) => record.list?.$id === list.$id
         );
         if (savedListRecord) {
           await deleteSaveList(savedListRecord.$id);
         }
       } else {
-        await saveList({ userId, listId: list?.$id });
+        await saveList({ userId: id, listId: list.$id });
       }
       setIsSaved(!isSaved);
     } catch (error) {
       console.error("Error saving list:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save list. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleLikeList = async (e) => {
+  const handleEmbed = async () => {
+    try {
+      await createEmbedList(list.$id, list.Categories[0] || "");
+      toast({
+        title: "Success!",
+        description: `${list.Title} has been embedded successfully.`,
+        variant: "default",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: `Failed to embed list ${list.Title}`,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLikeList = async (
+    e: React.MouseEvent<HTMLImageElement, MouseEvent>
+  ) => {
     e.stopPropagation();
-    const newLikes = likes.includes(userId)
-      ? likes.filter((Id) => Id !== userId)
-      : [...likes, userId];
+    let newLikes = likes.includes(id)
+      ? likes.filter((Id) => Id !== id)
+      : [...likes, id];
     setLikes(newLikes);
     try {
-      await likeList({ listId: list?.$id, likesArray: newLikes });
+      await likeList({ listId: list.$id, likesArray: newLikes });
     } catch (error) {
       console.error("Error liking list:", error);
+      toast({
+        title: "Error",
+        description: "Failed to like the list. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
-  const isOwnProfile = userId === list.creator?.$id;
+  const isOwnProfile = user.id === list.creator?.$id;
+  const isFollowed = connection?.follower?.some(
+    (follow: any) => follow.$id === user.id
+  );
 
-  const CommentWithActions = ({ comment }) => {
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+  const handleFollow = async () => {
+    setIsFollowLoading(true);
+    try {
+      await followUser(user.id, list.creator.$id);
+      let resp = await getConnection(list.creator.$id);
+      setConnection(resp.length > 0 ? resp[0] : resp);
+      toast({
+        title: "Followed",
+        description: `You are now following ${list.creator.Name}.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error following user:", error);
+      toast({
+        title: "Error",
+        description: "Failed to follow user. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
 
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-          setIsDropdownOpen(false);
-        }
-      };
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }, []);
-
-    const handleReport = async () => {
-      try {
-        await reportComment({
-          User: comment.user.Username,
-          Content: comment.Content,
-          id: comment.$id,
-          Reporter: user.name,
-        });
-        toast({
-          title: "Comment Reported",
-          description: "We'll review this comment soon. Thank you for keeping our community safe.",
-          duration: 5000,
-        });
-      } catch (error) {
-        toast({
-          title: "Couldn't Report Comment",
-          description: "An error occurred. Please try again later.",
-          variant: "destructive",
-        });
-      }
-      setIsDropdownOpen(false);
-    };
-
-    return (
-      <div className="flex items-start space-x-3 p-3 rounded-lg bg-dark-3">
-        <img
-          src={comment.user.ImageUrl || "/assets/default-avatar.png"}
-          alt={`${comment.user.Username}'s avatar`}
-          className="w-8 h-8 rounded-full object-cover"
-        />
-        <div className="flex-grow">
-          <p className="text-primary-500 text-sm font-semibold">{comment.user.Username}</p>
-          <p className="text-light-2 text-sm">{comment.Content}</p>
-        </div>
-        <div className="relative" ref={dropdownRef}>
-          <Tooltip content="More options">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="text-gray-500 hover:text-gray-300 transition-colors duration-200"
-              aria-label="More options"
-            >
-              <MoreHorizontal size={18} />
-            </motion.button>
-          </Tooltip>
-          <AnimatePresence>
-            {isDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.1 }}
-                className="absolute right-0 mt-2 w-48 bg-dark-4 rounded-md shadow-lg z-20 overflow-hidden"
-              >
-                <motion.button
-                  whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                  onClick={handleReport}
-                  className="flex items-center w-full px-4 py-2 text-sm text-left text-light-2 hover:bg-dark-3"
-                >
-                  <Flag size={14} className="mr-2" />
-                  Report comment
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-    );
+  const handleUnFollow = async () => {
+    setIsFollowLoading(true);
+    try {
+      await UnFollow(user.id, list.creator.$id);
+      let resp = await getConnection(list.creator.$id);
+      setConnection(resp.length > 0 ? resp[0] : resp);
+      toast({
+        title: "Unfollowed",
+        description: `You have unfollowed ${list.creator.Name}.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error unfollowing user:", error);
+      toast({
+        title: "Error",
+        description: "Failed to unfollow user. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsFollowLoading(false);
+    }
   };
 
   return (
     <motion.div
-      className="bg-dark-2 rounded-xl shadow-lg overflow-hidden"
+      className="bg-gray-900 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 mb-4"
       whileHover={{ y: -5 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      {/* Image Section */}
-      <Link to={`/lists/${list.$id}`} className="block">
-        <div className="relative h-48 overflow-hidden">
-          {loading ? (
-            <div className="w-full h-full bg-dark-3 animate-pulse"></div>
-          ) : (
-            <img
-              src={image || `https://via.placeholder.com/800x400?text=${encodeURIComponent(list.Title)}`}
-              alt={list.Title}
-              className="w-full h-full object-cover"
-            />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-dark-2 to-transparent"></div>
-          <h2 className="absolute bottom-4 left-4 right-4 text-2xl font-bold text-white">
-            {list.Title}
-          </h2>
-        </div>
-      </Link>
-
       <div className="p-6">
-        {/* Creator Info and Follow Button */}
-        {list.creator && (
-          <div className="flex items-center justify-between mb-6">
-            <Link to={`/profile/${list.creator.$id}`} className="flex items-center group">
+        {/* Creator Info */}
+        {list.creator?.$id && (
+          <div className="flex justify-between items-center mb-4">
+            <Link to={`/profile/${list.creator.$id}`} className="flex items-center">
               <img
-                src={list.creator.ImageUrl || "/assets/default-avatar.png"}
+                src={list.creator.ImageUrl || "/assets/icons/profile-placeholder.svg"}
                 alt={`${list.creator.Name}'s profile`}
-                className="w-10 h-10 rounded-full object-cover border-2 border-primary-500 group-hover:border-primary-600 transition-colors"
+                className="w-10 h-10 rounded-full mr-3"
               />
               <div className="ml-3">
-                <p className="text-white font-semibold group-hover:text-primary-500 transition-colors">
-                  {list.creator.Name}
-                </p>
-                <p className="text-gray-400 text-sm">@{list.creator.Username}</p>
+                <p className="text-white font-semibold">{list.creator?.Name}</p>
+                <p className="text-gray-400 text-sm">@{list.creator?.Username}</p>
               </div>
             </Link>
-            {!isOwnProfile && (
+
+            <div className="flex items-center">
+              {list.creator.Public && !isOwnProfile && (
+                <Button
+                  className={`text-sm px-4 py-2 rounded-full transition-colors duration-300 ${
+                    isFollowed
+                      ? "text-gray-400 hover:text-white"
+                      : "bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-1 rounded-full mr-2"
+                  }`}
+                  onClick={isFollowed ? handleUnFollow : handleFollow}
+                  disabled={isFollowLoading}
+                >
+                  {isFollowLoading ? <Loader /> : (isFollowed ? "Unfollow" : "Follow")}
+                </Button>
+              )}
+
               <button
-                onClick={handleFollowToggle}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  isFollowing
-                    ? 'bg-dark-4 text-white hover:bg-dark-3'
-                    : 'bg-primary-500 text-white hover:bg-primary-600'
-                }`}
-                disabled={isFollowLoading}
+                onClick={handleShare}
+                className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
+                disabled={isSharing}
               >
-                {isFollowLoading ? (
-                  <Loader />
-                ) : isFollowing ? (
-                  <>
-                    <UserMinus size={16} className="inline mr-2" />
-                    Unfollow
-                  </>
-                ) : (
-                  <>
-                    <UserPlus size={16} className="inline mr-2" />
-                    Follow
-                  </>
-                )}
+                <Share2 size={20} />
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Followed By */}
+        {followdBy.length > 0 && (
+          <div className="mb-4 text-xs text-light-3">
+            {followdBy.length > 2 ? (
+              <span>
+                Followed by{" "}
+                {followdBy.slice(0, 2).map((user: any, index: number) => (
+                  <React.Fragment key={user.$id}>
+                    <Link
+                      to={`/profile/${user.$id}`}
+                      className="font-semibold hover:text-primary-500 transition-colors duration-300"
+                    >
+                      {user.Name}
+                    </Link>
+                    {index === 0 && ", "}
+                  </React.Fragment>
+                ))}{" "}
+                and {connection?.follower?.length - 2} others
+              </span>
+            ) : (
+              <span>
+                Followed by{" "}
+                {followdBy.map((user: any, index: number) => (
+                  <React.Fragment key={user.$id}>
+                    <Link
+                      to={`/profile/${user.$id}`}
+                      className="font-semibold hover:text-primary-500 transition-colors duration-300"
+                    >
+                      {user.Name}
+                    </Link>
+                    {index === 0 && followdBy.length > 1 && " and "}
+                  </React.Fragment>
+                ))}
+              </span>
             )}
           </div>
         )}
 
+        {/* List Title and Description */}
+        <div className="mb-6">
+          <h2 className="text-yellow-500 text-base">{list.Title}</h2>
+          {list.Description && (
+            <p className="text-light-2 text-xs">{list.Description}</p>
+          )}
+        </div>
+
         {/* List Items */}
         <Link to={`/lists/${list.$id}`} className="block mb-6">
-          <ol className="space-y-4 mb-6">
-            {list.items?.slice(0, 5).map((item, index) => (
-              <li key={index} className="flex items-center bg-dark-3 p-4 rounded-lg">
-                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-dark-4 mr-4">
-                  {getRankIcon(index) || <span className="text-white font-bold">{index + 1}</span>}
-                </div>
-                <div className="flex-1">
-                  <span className="text-white">{item.content || item}</span>
-                </div>
-              </li>
-            ))}
+          <ol className="list-none space-y-3">
+            {renderListItems()}
           </ol>
-          {list.items?.length > 5 && (
-            <p className="text-primary-500 font-semibold text-sm mb-4 hover:underline">
+
+          {Array.isArray(list.items) && list.items.length > 5 && (
+            <p className="text-primary-500 font-semibold text-sm mt-3 hover:underline">
               + {list.items.length - 5} more items
             </p>
           )}
         </Link>
 
-        {/* Tags */}
-        {list.Tags?.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {list.Tags.map((tag, index) => (
-              <span
-                key={index}
-                className="bg-dark-4 text-primary-500 px-3 py-1 rounded-full text-xs"
-              >
-                #{tag}
-              </span>
-            ))}
+        {/* Tags, Categories, Locations, Timespans */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          {list.tags && list.tags.length > 0 && (
+            <>
+              {list.tags.slice(0, 3).map((tag: string, index: number) => (
+                <span
+                  key={index}
+                  className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs"
+                >
+                  #{tag}
+                </span>
+              ))}
+              {list.tags.length > 3 && (
+                <span className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs">
+                  +{list.tags.length - 3} more
+                </span>
+              )}
+            </>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {list.Tags.map((tag: string, index: number) => (
+            <span
+              key={`${tag}${index}`}
+              onClick={() => navigate(`/categories/${tag}`)}
+              className="bg-primary-500 text-white px-3 py-1 rounded-full text-xs cursor-pointer hover:bg-primary-600 transition-colors duration-300"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+
+        {list.locations.length > 0 && (
+          <div className="flex items-center text-light-3 text-sm mb-2">
+            <MapPin size={16} className="mr-2" />
+            {list.locations.join(", ")}
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex items-center justify-between mt-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleLikeList(e);
-              }}
-              className="flex items-center gap-2 text-gray-400 hover:text-red-500 transition-colors"
-            >
-              <Heart
-                size={20}
-                fill={likes.includes(userId) ? 'red' : 'none'}
-                className={likes.includes(userId) ? 'text-red-500' : ''}
-              />
-              <span>{likes.length}</span>
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                document.getElementById(`comment-input-${list.$id}`)?.focus();
-              }}
-              className="flex items-center gap-2 text-gray-400 hover:text-blue-500 transition-colors"
-            >
-              <MessageCircle size={20} />
-              <span>{comments?.length || 0}</span>
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSaveList(e);
-              }}
-              className="flex items-center gap-2 text-gray-400 hover:text-yellow-500 transition-colors"
-            >
-              <Bookmark
-                size={20}
-                fill={isSaved ? 'yellow' : 'none'}
-                className={isSaved ? 'text-yellow-500' : ''}
-              />
-              <span>{isSaved ? 'Saved' : 'Save'}</span>
-            </button>
+        {list.timespans.length > 0 && (
+          <div className="flex items-center text-light-3 text-sm">
+            <Clock size={16} className="mr-2" />
+            {list.timespans.join(", ")}
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleShare(e);
-            }}
-            className="text-gray-400 hover:text-white transition-colors"
-            disabled={isSharing}
-          >
-            <Share2 size={20} />
-          </button>
-        </div>
+        )}
+      </div>
 
-        {/* Comments Section */}
-        <div className="mt-6 bg-dark-3 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-white mb-4">Comments</h3>
-          
-          {/* Comment Input */}
-          <form onSubmit={handleCommentSubmit} className="mb-4">
-            <div className="flex items-center">
-              <input
-                type="text"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Add a comment..."
-                className="flex-grow bg-dark-4 text-white rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                id={`comment-input-${list.$id}`}
-              />
-              <button
-                type="submit"
-                className="bg-primary-500 text-white rounded-r-lg px-4 py-2 hover:bg-primary-600 transition-colors"
-              >
-                <Send size={20} />
-              </button>
-            </div>
-          </form>
+      {/* Actions */}
+      <div className="bg-dark-3 px-6 py-4 flex justify-between items-center text-light-2 text-xs">
+        <button
+          onClick={handleLikeList}
+          className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
+        >
+          <Heart size={20} className={checkIsLiked(likes, id) ? "fill-primary-500 text-primary-500" : ""} />
+          <span>{likes.length} Likes</span>
+        </button>
 
-          {/* Comments */}
-          <div className="space-y-4">
-            {(showAllComments ? comments : comments?.slice(0, 2))?.map((comment, index) => (
-              <CommentWithActions key={index} comment={comment} />
+        <button
+          onClick={handleSaveList}
+          className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
+        >
+          <Bookmark size={20} className={isSaved ? "fill-primary-500 text-primary-500" : ""} />
+          <span>{isSaved ? "Saved" : "Save"}</span>
+        </button>
+
+        <button
+          onClick={() => navigate(`/lists/${list.$id}`)}
+          className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
+        >
+          <MessageCircle size={20} />
+          <span>{comments?.length || 0} Comments</span>
+        </button>        
+      </div>
+
+      {/* Comments Section */}
+      <div className="p-6 border-t border-dark-4">
+        <h3 className="text-sm font-semibold mb-4">Recent Comments</h3>
+        {comments && comments.length > 0 ? (
+          <ul className="space-y-4 text-xs">
+            {comments.slice(0, 2).map((comment: any, index: number) => (
+              <Comment comment={comment} key={comment.$id || index} />
             ))}
-          </div>
-
-          {comments?.length > 2 && (
-            <button
-              onClick={() => setShowAllComments(!showAllComments)}
-              className="mt-4 text-primary-500 hover:underline"
-            >
-              {showAllComments ? 'Show less' : `View all ${comments.length} comments`}
-            </button>
-          )}
-        </div>
+            {comments.length > 2 && (
+              <Link
+                to={`/lists/${list.$id}`}
+                className="text-primary-500 hover:underline text-xs"
+              >
+                View all {comments.length} comments
+              </Link>
+            )}
+          </ul>
+        ) : (
+          <p className="text-light-3 text-xs">No comments yet. Be the first to comment!</p>
+        )}
       </div>
     </motion.div>
   );

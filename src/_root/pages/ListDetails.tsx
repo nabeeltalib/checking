@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import {
@@ -6,114 +6,71 @@ import {
   useGetRelatedLists,
   useDeleteList,
   useGetUserById,
-  useGetComments,
-  useCreateComment,
-  useLikeList,
-  useSaveList,
-  useDeleteSavedList,
+  useGetInfiniteLists,
 } from "@/lib/react-query/queries";
 import { Button } from "@/components/ui/button";
-import Loader from "@/components/shared/Loader";
+import { Loader } from "@/components/shared";
 import GridListList from "@/components/shared/GridListList";
+import ListStats from "@/components/shared/ListStats";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
-import {
-  followUser,
-  getConnection,
-  shareList,
-  UnFollow,
-  reportComment,
-  createEmbedList,
-} from "@/lib/appwrite/api";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Share2,
-  Trophy,
-  MoreVertical,
-  Heart,
-  MessageCircle,
-  Bookmark,
-  Send,
-  UserPlus,
-  UserMinus,
-  MoreHorizontal,
-  Flag,
-  Repeat,
-  Code,
-} from "lucide-react";
-import Tooltip from "@/components/ui/Tooltip";
-import { Models } from "appwrite";
-import useUnsplashImage from "@/hooks/useUnsplashImage";
+import { createEmbedList, followUser, getConnection, getInfiniteLists, getListById, shareList, UnFollow } from "@/lib/appwrite/api";
+import { Share2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 
 const ListDetails: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { user } = useUserContext();
   const { toast } = useToast();
-
   const { data: list, isLoading } = useGetListById(id || "");
+  const { mutateAsync: deleteList, isLoading: isDeleting } = useDeleteList();
+  const { data: relatedLists, isLoading: isRelatedListsLoading } =
+    useGetRelatedLists(id || "");
   const { data: listCreator, isLoading: isCreatorLoading } = useGetUserById(
     list?.creator.$id || ""
   );
-  const { data: relatedLists, isLoading: isRelatedListsLoading } =
-    useGetRelatedLists(id || "");
-  const { data: comments, refetch: refetchComments } = useGetComments(id || "");
-  const { mutateAsync: deleteList, isLoading: isDeleting } = useDeleteList();
-  const { mutate: createComment, isLoading: isCreatingComment } =
-    useCreateComment();
-  const { mutate: likeList } = useLikeList();
-  const { mutate: saveList } = useSaveList();
-  const { mutate: deleteSaveList } = useDeleteSavedList();
-
-  const [newComment, setNewComment] = useState("");
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [isEmbed, setIsEmbed] = useState(false);
-  const [isStatic, setIsStatic] = useState(true);
+  const [isEmbed, setIsEmbed] = useState(false)
+  const [isStatic, setIsStatic] = useState(true)
+  const [followdBy, setFollowdBy] = useState<any>([])
   const [connection, setConnection] = useState<any>(undefined);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isSharing, setIsSharing] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  const [likes, setLikes] = useState<any[]>(list?.Likes || []);
-  const [isSaved, setIsSaved] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(false);
-
-  // Fetch the header image using useUnsplashImage hook
-  const { image: headerImage, loading: headerImageLoading } = useUnsplashImage(
-    list?.Title || ""
-  );
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    const fetchConnection = async () => {
-      if (listCreator?.$id) {
-        const resp = await getConnection(listCreator.$id);
-        const conn = resp.length > 0 ? resp[0] : resp;
-        setConnection(conn);
-        setIsFollowing(
-          conn?.follower?.some((follower: any) => follower.$id === user.id)
-        );
+    const fetchData = async () => {
+      let list = await getListById(id);
+      let ProfileConnection = await getConnection(list.creator.$id);
+      let ProfileViewerConnection = await getConnection(user.id);
+      ProfileConnection.length > 0 && setConnection(ProfileConnection[0])
+
+      let commonConnection=[], remainingConnection=[], displayConnection=[];   
+      ProfileConnection?.length > 0 && ProfileViewerConnection?.length > 0 ? (   
+        commonConnection = ProfileConnection[0]?.follower.filter((user:any)=> ProfileViewerConnection[0]?.following.includes(user.$id))
+    ):""; 
+      ProfileConnection?.length > 0 && ProfileViewerConnection?.length > 0 ? (   
+        remainingConnection = ProfileConnection[0]?.follower.filter((user:any)=> !ProfileViewerConnection[0]?.following.includes(user.$id))
+    ):""; 
+
+    if(commonConnection.length > 0)
+      {
+        displayConnection = [...commonConnection, ...remainingConnection];
       }
-    };
-    fetchConnection();
-  }, [listCreator, user.id]);
-
-  useEffect(() => {
-    setLikes(list?.Likes || []);
-  }, [list]);
-
-  useEffect(() => {
-    if (user?.save && list) {
-      setIsSaved(
-        user.save?.some(
-          (saved: any) => saved.list?.$id === list?.$id
-        )
-      );
+      else{
+        ProfileConnection.length > 0 ? (displayConnection = ProfileConnection[0].follower) : displayConnection =[""];
+      }
+      setFollowdBy(displayConnection)
     }
-  }, [list, user]);
+
+    fetchData();
+  }, []);
+
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const visibleItems = useMemo(() => {
     if (!list) return [];
-    return isExpanded ? list.item : list.item.slice(0, 5);
+    return isExpanded ? list.item : list.item.slice(0, 4);
   }, [list, isExpanded]);
 
   const handleDeleteList = async () => {
@@ -121,11 +78,14 @@ const ListDetails: React.FC = () => {
     try {
       await deleteList(id);
       toast({ title: "List deleted successfully!" });
-      navigate(-1);
+      queryClient.invalidateQueries([QUERY_KEYS.GET_INFINITE_LISTS]);
+      navigate("/");
     } catch (error) {
       toast({ title: "Error deleting list", variant: "destructive" });
     }
   };
+
+  const [isSharing, setIsSharing] = useState(false);
 
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -141,83 +101,47 @@ const ListDetails: React.FC = () => {
         });
       } else {
         await navigator.clipboard.writeText(shareableLink);
-        toast({ title: "Link copied to clipboard!" });
+        alert("Link copied to clipboard!");
       }
     } catch (error) {
       console.error("Error sharing list:", error);
-      toast({
-        title: "Error",
-        description: "Failed to share list. Please try again.",
-        variant: "destructive",
-      });
+      alert("Failed to share list. Please try again.");
     } finally {
       setIsSharing(false);
     }
   };
 
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-    try {
-      await createComment({ listId: id!, userId: user.id, content: newComment });
-      setNewComment("");
-      toast({ title: "Comment added successfully", variant: "default" });
-      refetchComments();
-    } catch (error) {
-      toast({ title: "Error adding comment", variant: "destructive" });
-    }
-  };
+  if (isLoading || isCreatorLoading) return <Loader />;
+  if (!list || !listCreator)
+    return <div className="text-center text-light-1">List not found</div>;
 
-  const handleLikeList = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    const newLikes = likes.includes(user.id)
-      ? likes.filter((Id) => Id !== user.id)
-      : [...likes, user.id];
-    setLikes(newLikes);
-    try {
-      await likeList({ listId: list?.$id, likesArray: newLikes });
-    } catch (error) {
-      console.error("Error liking list:", error);
-    }
-  };
+  let isOwnProfile = user.id === list.creator.$id;
+  let isFollowed = connection?.follower?.some(
+    (follow: any) => follow.$id === user.id
+  );
 
-  const handleSaveList = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    try {
-      if (isSaved) {
-        const savedListRecord = user.save?.find(
-          (record: Models.Document) => record.list?.$id === list?.$id
-        );
-        if (savedListRecord) {
-          await deleteSaveList(savedListRecord.$id);
-        }
-      } else {
-        await saveList({ userId: user.id, listId: list?.$id });
-      }
-      setIsSaved(!isSaved);
-    } catch (error) {
-      console.error("Error saving list:", error);
-    }
-  };
-
-  const handleFollowToggle = async () => {
+  const handleFollow = async () => {
     setIsFollowLoading(true);
-    try {
-      if (isFollowing) {
-        await UnFollow(user.id, list.creator.$id);
-      } else {
-        await followUser(user.id, list.creator.$id);
-      }
-      const resp = await getConnection(list.creator.$id);
-      const conn = resp.length > 0 ? resp[0] : resp;
-      setConnection(conn);
-      setIsFollowing(!isFollowing);
-    } catch (error) {
-      console.error("Error toggling follow:", error);
-    } finally {
-      setIsFollowLoading(false);
-    }
+    await followUser(user.id, list.creator.$id);
+    let resp = await getConnection(list.creator.$id);
+    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+    isFollowed = connection?.following?.some(
+      (follow: any) => follow.$id === id
+    );
+    setIsFollowLoading(false);
   };
+
+  const handleUnFollow = async () => {
+    setIsFollowLoading(true);
+    await UnFollow(user.id, list.creator.$id);
+    let resp = await getConnection(list.creator.$id);
+    resp.length > 0 ? setConnection(resp[0]) : setConnection(resp);
+    isFollowed = connection?.following?.some(
+      (follow: any) => follow.$id === id
+    );
+    setIsFollowLoading(false);
+  };
+
 
   const handleEmbed = async () => {
     try {
@@ -227,7 +151,6 @@ const ListDetails: React.FC = () => {
         description: `${list.Title} has been embedded successfully.`,
         variant: "default",
       });
-      setIsEmbed(true);
     } catch (error) {
       toast({
         title: "Error",
@@ -237,410 +160,238 @@ const ListDetails: React.FC = () => {
     }
   };
 
-  const handleRemix = () => {
-    navigate(`/remix/${list.$id}`);
-  };
 
-  const getRankIcon = (index: number) => {
-    switch (index) {
-      case 0:
-        return <Trophy className="text-yellow-400" />;
-      default:
-        return <span className="text-white font-bold">{index + 1}</span>;
-    }
-  };
-
-  if (isLoading || isCreatorLoading) return <Loader />;
-  if (!list || !listCreator)
-    return <div className="text-center text-light-1">List not found</div>;
-
-  const isOwnProfile = user.id === list.creator.$id;
-  const isCollaborator = list.users.some(
-    (collab: any) => collab.$id === user.id
-  );
-
-  const CommentWithActions = ({ comment }: { comment: any }) => {
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (
-          dropdownRef.current &&
-          !dropdownRef.current.contains(event.target as Node)
-        ) {
-          setIsDropdownOpen(false);
-        }
-      };
-
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, []);
-
-    const handleReport = async () => {
-      try {
-        await reportComment({
-          User: comment.user.Username,
-          Content: comment.Content,
-          id: comment.$id,
-          Reporter: user.name,
-        });
-        toast({
-          title: "Comment Reported",
-          description:
-            "We'll review this comment soon. Thank you for keeping our community safe.",
-          duration: 5000,
-        });
-      } catch (error) {
-        toast({
-          title: "Couldn't Report Comment",
-          description: "An error occurred. Please try again later.",
-          variant: "destructive",
-        });
-      }
-      setIsDropdownOpen(false);
-    };
-
-    return (
-      <div className="flex items-start space-x-3 p-3 rounded-lg bg-dark-3">
-        <img
-          src={comment.user.ImageUrl || "/assets/default-avatar.png"}
-          alt={`${comment.user.Username}'s avatar`}
-          className="w-8 h-8 rounded-full object-cover"
-        />
-        <div className="flex-grow">
-          <p className="text-primary-500 text-sm font-semibold">
-            {comment.user.Username}
-          </p>
-          <p className="text-light-2 text-sm">{comment.Content}</p>
-        </div>
-        <div className="relative" ref={dropdownRef}>
-          <Tooltip content="More options">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="text-gray-500 hover:text-gray-300 transition-colors duration-200"
-              aria-label="More options"
-            >
-              <MoreHorizontal size={18} />
-            </motion.button>
-          </Tooltip>
-          <AnimatePresence>
-            {isDropdownOpen && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.1 }}
-                className="absolute right-0 mt-2 w-48 bg-dark-4 rounded-md shadow-lg z-20 overflow-hidden"
-              >
-                <motion.button
-                  whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                  onClick={handleReport}
-                  className="flex items-center w-full px-4 py-2 text-sm text-left text-light-2 hover:bg-dark-3"
-                >
-                  <Flag size={14} className="mr-2" />
-                  Report comment
-                </motion.button>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-    );
-  };
-
-  // Generate embed link
-  const embedLink = isStatic
-    ? `<iframe src="${import.meta.env.VITE_APP_DOMAIN}/staticframe/${list.$id}" width="50%" height="600"></iframe>`
-    : `<iframe src="${import.meta.env.VITE_APP_DOMAIN}/liveframe/${list.$id}" width="50%" height="600"></iframe>`;
+  let isCollaborator = list.users.some((collab:any) => collab.$id === user.id)
+  let embedLink = isStatic ? `<iframe src="${import.meta.env.VITE_APP_DOMAIN}/staticframe/${list.$id}" width="50%" height="600"></iframe>`: `<iframe src="${import.meta.env.VITE_APP_DOMAIN}/liveframe/${list.$id}" width="50%" height="600"></iframe>`;
 
   return (
-    <motion.div
-      className="max-w-3xl mx-auto bg-dark-2 rounded-xl shadow-lg overflow-hidden"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      {/* Image Section */}
-      <div className="relative h-64 overflow-hidden">
-        {headerImageLoading ? (
-          <div className="w-full h-full bg-dark-3 animate-pulse"></div>
-        ) : (
-          <img
-            src={
-              headerImage ||
-              `https://via.placeholder.com/800x400?text=${encodeURIComponent(
-                list.Title
-              )}`
-            }
-            alt={list.Title}
-            className="w-full h-full object-cover"
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-dark-2 to-transparent"></div>
-        <h2 className="absolute bottom-4 left-4 right-4 text-3xl font-bold text-white">
-          {list.Title}
-        </h2>
+    <div className="flex flex-col w-full max-w-3xl mx-auto bg-dark-2 rounded-lg shadow-md p-4 sm:p-6">
+      <div className="sticky top-0 z-10 bg-dark-3 p-4 border-b border-dark-4 rounded-t-lg flex justify-between items-center">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-primary-500 font-bold text-lg">
+          &larr; Back
+        </button>
+        <button
+          onClick={handleShare}
+          className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
+          disabled={isSharing}>
+          <Share2 size={24} />
+        </button>
       </div>
 
-      {/* Content */}
-      <div className="p-6">
-        {/* Creator Info */}
-        <div className="flex items-center justify-between mb-6">
-          <Link
-            to={`/profile/${listCreator.$id}`}
-            className="flex items-center group"
-          >
+      <div className="p-3 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-center gap-4 mb-6">
+          <div className="flex flex-col items-center sm:items-start">
             <img
               src={
                 listCreator.ImageUrl || "/assets/icons/profile-placeholder.svg"
               }
-              alt={`${listCreator.Name}'s profile`}
-              className="w-16 h-16 rounded-full object-cover border-2 border-primary-500 group-hover:border-primary-600 transition-colors"
+              alt="creator"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover shadow-lg"
             />
-            <div className="ml-3">
-              <p className="text-white font-semibold group-hover:text-primary-500 transition-colors">
-                {listCreator.Name}
-              </p>
-              <p className="text-gray-400 text-sm">@{listCreator.Username}</p>
+            <div className="flex flex-col items-center sm:items-start gap-1 mt-2 text-xs text-light-2">
+              <span>{connection?.follower?.length || 0} Followers</span>
+              <span>{connection?.following?.length || 0} Following</span>
             </div>
-          </Link>
-          {!isOwnProfile && (
-            <button
-              onClick={handleFollowToggle}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                isFollowing
-                  ? "bg-dark-4 text-white hover:bg-dark-3"
-                  : "bg-primary-500 text-white hover:bg-primary-600"
-              }`}
-              disabled={isFollowLoading}
-            >
-              {isFollowLoading ? (
-                <Loader />
-              ) : isFollowing ? (
-                <>
-                  <UserMinus size={16} className="inline mr-2" />
-                  Unfollow
-                </>
+          </div>
+          <div className="flex-grow text-center items-center sm:text-left">
+            <p className="text-lg sm:text-2xl font-semibold text-light-1">
+              {listCreator.Name}
+            </p>
+            <p className="text-light-3 text-sm sm:text-base">@{listCreator.Username}</p>
+            <Link
+              to={`/profile/${listCreator.$id}`}
+              className="text-primary-500 text-sm sm:text-base mt-2 block">
+              View Profile
+            </Link>
+            <div className="w-40">
+            {followdBy.length > 2 ? (
+                <span>
+                  followed by{" "}
+                  {followdBy
+                    .slice(0, 2)
+                    .map((user: any) => (
+                      <Link
+                        className="mr-2"
+                        to={`/profile/${user.$id}`}
+                        key={user.$id}
+                      >
+                        {user.Name}
+                      </Link>
+                    ))}{" "}
+                  +{connection.follower.length - 2} more
+                </span>
               ) : (
-                <>
-                  <UserPlus size={16} className="inline mr-2" />
-                  Follow
-                </>
+                ""
               )}
-            </button>
-          )}
+           </div>
+          </div>
+         
+          {listCreator.Public &&
+            (!isFollowed && !isOwnProfile ? (
+              <Button
+                className="text-xs border-2 border-white text-white  px-2 sm:px-3 py-2 rounded-xl"
+                onClick={handleFollow}
+                disabled={isFollowLoading}>
+                {isFollowLoading ? (
+                  <Loader />
+                ) : (
+                  <span>Follow</span>
+                )}
+              </Button>
+            ) : isOwnProfile ? (
+              ""
+            ) : (
+              <Button
+                className="text-xs sm:text-sm bg-dark-4 text-gray-400 px-3 py-2 rounded-full"
+                onClick={handleUnFollow}
+                disabled={isFollowLoading}>
+                {isFollowLoading ? (
+                  <Loader />
+                ) : (
+                  <span>Unfollow</span>
+                )}
+              </Button>
+            ))}
         </div>
+        
+        <h1 className="text-xl sm:text-3xl flex justify-between font-bold mb-4 text-center sm:text-left">
+        
+          <span className="text-wrap text-primary-500 ml-2">{list.Title}</span>
+          <span>
+                {(isOwnProfile || isCollaborator) && <Button onClick={handleEmbed}>add to embed</Button>}
+          </span>
+        </h1>
+        {list.Description && (
+          <p className="text-sm sm:text-base font-thin mb-6 text-gray-100 text-center sm:text-left">
+            {list.Description}
+          </p>
+        )}
 
-        {/* List Items */}
-        <ol className="space-y-4 mb-6">
-          {visibleItems.map((item: any, index: number) => (
-            <motion.li
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {visibleItems?.map((item: any, index: number) => (
+            <li
               key={index}
-              className="flex items-center bg-dark-3 p-4 rounded-lg"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-dark-4 mr-4">
-                {getRankIcon(index)}
-              </div>
-              <div className="flex-1">
-                <p className="text-white font-semibold">
-                  {item.content || item}
-                </p>
-              </div>
-            </motion.li>
+              className="p-4 bg-dark-3 rounded-lg shadow-md flex justify-between items-center hover:shadow-lg transition-shadow">
+              <div className="flex items-center gap-4">
+                <span className="w-8 h-6 sm:w-10 sm:h-8 bg-gray-800 rounded-full flex items-center justify-center text-light-1 font-light text-xs">
+                  {index + 1}
+                </span>
+                <span className="text-light-1 text-sm sm:text-base">{item?.content || item}</span>
+              </div>              
+            </li>
           ))}
-        </ol>
-        {list.item.length > visibleItems.length && (
+        </ul>
+
+        {list.item.length > 4 && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-primary-500 font-semibold block mx-auto sm:mx-0"
-          >
+            className="text-primary-500 font-semibold block mx-auto sm:mx-0">
             {isExpanded ? "Show Less" : "Show More"}
           </button>
         )}
 
-        {/* Description */}
-        {list.Description && (
-          <p className="text-light-2 mb-6">{list.Description}</p>
-        )}
+        <div className="flex flex-wrap gap-2 mb-6 text-center sm:text-left">
+          {list?.Tags?.map((tag: string, index: number) => (
+            <span
+              key={`${tag}${index}`}
+              onClick={() => navigate(`/categories/${tag}`)}
+              className="bg-gray-800 text-white px-2 py-1 rounded-full text-xs cursor-pointer shadow-md">
+              #{tag}
+            </span>
+          ))}
+        </div>
 
-        {/* Tags */}
-        {list.Tags?.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {list.Tags.map((tag: string, index: number) => (
-              <span
-                key={index}
-                className="bg-dark-4 text-primary-500 px-3 py-1 rounded-full text-xs cursor-pointer"
-                onClick={() => navigate(`/categories/${tag}`)}
-              >
-                #{tag}
+        <p className="text-light-3 text-sm sm:text-base mb-6">
+          {formatDistanceToNow(new Date(list.$createdAt), { addSuffix: true })}
+        </p>
+
+        {list.locations.length > 0 && (
+          <div className="text-sm sm:text-base text-blue-200 mb-4">
+            <strong>Locations: </strong>
+            {list.locations.map((location: any, index: number) => (
+              <span key={index} className="mr-2">
+                {location}
               </span>
             ))}
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex items-center justify-between mt-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleLikeList}
-              className="flex items-center gap-2 text-gray-400 hover:text-red-500 transition-colors"
-            >
-              <Heart
-                size={20}
-                fill={likes.includes(user.id) ? "red" : "none"}
-                className={likes.includes(user.id) ? "text-red-500" : ""}
-              />
-              <span>{likes.length}</span>
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                document
-                  .getElementById(`comment-input-${list.$id}`)
-                  ?.focus();
-              }}
-              className="flex items-center gap-2 text-gray-400 hover:text-blue-500 transition-colors"
-            >
-              <MessageCircle size={20} />
-              <span>{comments?.length || 0}</span>
-            </button>
-            <button
-              onClick={handleSaveList}
-              className="flex items-center gap-2 text-gray-400 hover:text-yellow-500 transition-colors"
-            >
-              <Bookmark
-                size={20}
-                fill={isSaved ? "yellow" : "none"}
-                className={isSaved ? "text-yellow-500" : ""}
-              />
-              <span>{isSaved ? "Saved" : "Save"}</span>
-            </button>
-            <button
-              onClick={handleRemix}
-              className="flex items-center gap-2 text-gray-400 hover:text-green-500 transition-colors"
-            >
-              <Repeat size={20} />
-              <span>Remix</span>
-            </button>
-            <button
-              onClick={handleEmbed}
-              className="flex items-center gap-2 text-gray-400 hover:text-purple-500 transition-colors"
-            >
-              <Code size={20} />
-              <span>Embed</span>
-            </button>
-          </div>
-          <Button
-            onClick={handleShare}
-            disabled={isSharing}
-            className="p-2 rounded-full bg-dark-3 hover:bg-dark-4 transition-colors"
-          >
-            <Share2 size={24} className="text-light-2" />
-          </Button>
-        </div>
-
-        {/* Embed Section */}
-        {isEmbed && (
-          <div className="mt-6 bg-dark-3 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-white mb-4">
-              Embed Code
-            </h3>
-            <div className="flex items-center mb-4">
-              <button
-                onClick={() => setIsStatic(true)}
-                className={`px-4 py-2 rounded-l-lg ${
-                  isStatic
-                    ? "bg-primary-500 text-white"
-                    : "bg-dark-4 text-gray-400"
-                }`}
-              >
-                Static
-              </button>
-              <button
-                onClick={() => setIsStatic(false)}
-                className={`px-4 py-2 rounded-r-lg ${
-                  !isStatic
-                    ? "bg-primary-500 text-white"
-                    : "bg-dark-4 text-gray-400"
-                }`}
-              >
-                Live
-              </button>
-            </div>
-            <textarea
-              readOnly
-              value={embedLink}
-              className="w-full p-2 bg-dark-4 text-white rounded-lg mb-4"
-            />
-            <Link
-              to={`${import.meta.env.VITE_APP_DOMAIN}/embedpreview/${list.$id}`}
-              className="text-primary-500 hover:underline"
-            >
-              See Preview
-            </Link>
+        {list.timespans.length > 0 && (
+          <div className="text-sm sm:text-base text-blue-200 mb-4">
+            <strong>Timespans: </strong>
+            {list.timespans.map((timespan: any, index: number) => (
+              <span key={index} className="mr-2">
+                {timespan}
+              </span>
+            ))}
           </div>
         )}
 
-        {/* Comments Section */}
-        <div className="mt-6 bg-dark-3 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-white mb-4">
-            Comments
-          </h3>
-          {/* Comment Input */}
-          <form onSubmit={handleAddComment} className="mb-4">
-            <div className="flex items-center">
-              <input
-                type="text"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Add a comment..."
-                className="flex-grow bg-dark-4 text-white rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                id={`comment-input-${list.$id}`}
-              />
-              <button
-                type="submit"
-                className="bg-primary-500 text-white rounded-r-lg px-4 py-2 hover:bg-primary-600 transition-colors"
-                disabled={isCreatingComment}
-              >
-                {isCreatingComment ? <Loader /> : <Send size={20} />}
-              </button>
-            </div>
-          </form>
-          {/* Comments */}
-          <div className="space-y-4">
-            {comments && comments.length > 0 ? (
-              comments.map((comment: any, index: number) => (
-                <CommentWithActions key={index} comment={comment} />
-              ))
-            ) : (
-              <p className="text-light-3">No comments yet.</p>
-            )}
+        <ListStats 
+          list={list} 
+          userId={user.id}
+          setIsEmbed={setIsEmbed} 
+          textSize="text-xs" // Adjust text size as needed
+          backgroundColor="" // Adjust background color as needed
+        />
+        {list?.creator?.$id === user.id && (
+          <div className="flex gap-4 mt-6 justify-center sm:justify-start">
+            <Button
+              onClick={() => navigate(`/update-list/${list?.$id}`)}
+              className="text-xs border-2 border-gray-500 text-light-1 px-4 py-2 rounded-sm shadow-md">
+              Edit List
+            </Button>
+            <Button
+              onClick={handleDeleteList}
+              className="text-xs bg-red-500 text-light-1 px-4 py-2 rounded-sm shadow-md"
+              disabled={isDeleting}>
+              {isDeleting ? "Deleting..." : "Delete List"}
+            </Button>
           </div>
+        )}
+       <div className="">
+      {isEmbed && <div className="flex flex-col gap-2">
+        <h1 className="text-white text-xl font-bold">Embed Code</h1>
+        <div className="flex justify-between">
+          <div className="gap-2 flex">
+            <button onClick={()=> setIsStatic(true)} className={`w-24 ${isStatic ? "bg-zinc-950 p-2 border-2 border-solid border-blue-950 rounded-xl": ""}`}>Static</button>
+            <button onClick={()=> setIsStatic(false)} className={`w-24 ${!isStatic ? "bg-zinc-950 p-2 border-2 border-solid border-blue-950 rounded-xl": ""}`}>Live</button>
+          </div>
+          <Link to={"#"} className="text-sm underline text-blue-400" >What's the difference?</Link>
         </div>
+        <div className="border-2 border-solid border-white p-2">
+        {embedLink}
+        </div>
+        <Link to={`${import.meta.env.VITE_APP_DOMAIN}/embedpreview/${list.$id}`} className="flex justify-end text-blue-400 text-lg mr-3">See Preview</Link>
+      </div>}
       </div>
 
-      {/* Related Lists */}
-      <div className="p-6 border-t border-dark-4">
-        <h3 className="text-2xl font-bold text-light-1 mb-6">
-          Related Lists
-        </h3>
+        {/* Render the first two comments
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-gray-500 mb-2"> Comments:</h3>
+          {comments && comments.slice(0, 2).map((comment, index) => (
+            <div key={index} className="mb-4">
+              <Comment comment={comment} />
+            </div>
+          ))}
+        </div> */}
+
+        
+      </div>
+
+      <div className="p-4 sm:p-6">
+        <h3 className="text-2xl font-bold text-light-1 mb-6 text-center sm:text-left">Related Lists</h3>
         {isRelatedListsLoading ? (
           <Loader />
         ) : relatedLists && relatedLists.length > 0 ? (
           <GridListList lists={relatedLists} />
         ) : (
-          <p className="text-light-2">No related lists found</p>
+          <p className="text-light-2 text-center sm:text-left">No related lists found</p>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
 

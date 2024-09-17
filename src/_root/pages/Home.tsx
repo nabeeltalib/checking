@@ -78,21 +78,19 @@ const Home: React.FC = () => {
       {/* Header Section */}
       <header className="w-full bg-dark-1 py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-xl md:text-2xl text-gray-300 font-semibold mb-2">
-           {user.name}'s Connected Opinions
+          <h2 className="text-3xl md:text-4xl text-orange-300 font-bold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+           {user.name}, is your top five better?
           </h2>
           
           {user && (
-            <div className="text-sm text-gray-300 mt-2 flex justify-center space-x-4">
+            <div className="text-sm text-gray-300 mt-5 flex justify-center space-x-4">
               <span>{connection?.follower?.length || 0} followers</span>
               <span className="mx-2">•</span>
               <span>{connection?.following?.length || 0} following</span>
             </div>
           )}
-          <h1 className="text-3xl md:text-4xl text-orange-300 font-bold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-            Is your top five better?
-          </h1>
-          <p className="text-lg sm:text-xl text-gray-200 mt-6">Discover Rankings on Anything and Everything</p>
+          
+          <p className="text-lg sm:text-xl text-gray-200 mt-8">Discover and Debate Rankings Everything</p>
         </div>
       </header>
 
@@ -115,12 +113,12 @@ const Home: React.FC = () => {
         </div>
 
         {/* Trending Section */}
-        <div className="my-6 sm:my-8 lg:my-12 bg-dark-3 rounded-lg shadow-lg p-4 sm:p-6">
+        <div className="my-6 sm:my-6 lg:my-6 bg-dark-3 rounded-lg shadow-lg p-4 sm:p-6">
           <TrendingSlider />
         </div>
 
-        <h3 className="text-xl sm:text-2xl lg:text-2xl font-light text-blue-300 mb-4 sm:mb-6">
-          Debate friend's rankings and find opinions to trust
+        <h3 className="text-xl sm:text-2xl lg:text-2xl font-light text-blue-300 p-9">
+          Home Feed
         </h3>
 
         {/* List Cards Section */}

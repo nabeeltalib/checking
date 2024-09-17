@@ -154,10 +154,10 @@ export async function saveUserToDB(user: {
 
 export async function signInWithGoogle() {
   try {
-    const session = account.createOAuth2Session(
+    const session = await account.createOAuth2Session(
       OAuthProvider.Google,
-      `${import.meta.env.VITE_APP_URL}/profile/profile`,
-      `${import.meta.env.VITE_APP_URL}/sign-in`,
+      `${import.meta.env.VITE_APP_URL}/auth/callback`, 
+      `${import.meta.env.VITE_APP_URL}/signin`,  
       [
         "https://www.googleapis.com/auth/userinfo.email",
         "https://www.googleapis.com/auth/userinfo.profile",
@@ -335,6 +335,24 @@ export async function getRecentLists() {
     console.log("Error fetching recent lists:", error.message);
     if (error instanceof AppwriteException) {
       console.log("Appwrite error details:", error.message, error.code);
+    }
+    // Instead of throwing, return an empty result
+    return { documents: [], total: 0 };
+  }
+}
+
+export async function getUserLikedLists(userId:string) {
+  try {
+    const lists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      [Query.search('Likes', userId),Query.orderDesc('$createdAt'), Query.limit(10)]
+    );
+    return lists.documents;
+  } catch (error: any) {
+    console.log('Error fetching recent lists:', error.message);
+    if (error instanceof AppwriteException) {
+      console.log('Appwrite error details:', error.message, error.code);
     }
     // Instead of throwing, return an empty result
     return { documents: [], total: 0 };
@@ -641,6 +659,26 @@ export async function likeList(listId: string, likesArray: string[]) {
     return updatedList;
   } catch (error) {
     console.error("Error liking list:", error);
+    return null;
+  }
+}
+
+export async function likeComment(commentId: string, likesArray: string[]) {
+  try {
+    const updatedComment = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      commentId,
+      {
+        Likes: likesArray
+      }
+    );
+
+    if (!updatedComment) throw new Error('Failed to like comment');
+
+    return updatedComment;
+  } catch (error) {
+    console.error('Error liking list:', error);
     return null;
   }
 }
