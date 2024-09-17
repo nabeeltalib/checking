@@ -154,10 +154,10 @@ export async function saveUserToDB(user: {
 
 export async function signInWithGoogle() {
   try {
-    const session = account.createOAuth2Session(
+    const session = await account.createOAuth2Session(
       OAuthProvider.Google,
-      `${import.meta.env.VITE_APP_URL}/profile/profile`,
-      `${import.meta.env.VITE_APP_URL}/sign-in`,
+      `${import.meta.env.VITE_APP_URL}/auth/callback`, 
+      `${import.meta.env.VITE_APP_URL}/signin`,  
       [
         "https://www.googleapis.com/auth/userinfo.email",
         "https://www.googleapis.com/auth/userinfo.profile",
