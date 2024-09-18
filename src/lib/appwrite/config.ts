@@ -63,8 +63,6 @@ export const databases = new Databases(client);
 export const storage = new Storage(client);
 export const avatars = new Avatars(client);
 export const functions = new Functions(client);
-export { Query }; 
-export { ID}
 
 // ============================================================
 // AUTH
