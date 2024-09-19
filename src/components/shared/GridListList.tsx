@@ -1,5 +1,3 @@
-// GridListList.tsx
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -14,7 +12,7 @@ interface Creator {
 interface ListItem {
   $id: string;
   Title: string;
-  items: { id: string; content: string }[]; // Updated to have unique IDs for items
+  items: { id: string; content: string }[]; // Ensure items have unique IDs
   Tags?: string[];
   Likes?: string[];
   comments?: string[];
@@ -55,12 +53,12 @@ const GridListList: React.FC<GridListListProps> = ({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-      {lists.map((item, index) => (
+      {lists.map((item) => (
         <motion.div
-          key={`${item.$id}-${index}`} // Ensuring the key is unique
+          key={item.$id} // Ensure the unique key is based on `$id`
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: (index % 10) * 0.1 }} // Modulo to prevent delay from becoming too long
+          transition={{ duration: 0.5 }}
           className="bg-dark-4 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
         >
           <Link
@@ -71,10 +69,13 @@ const GridListList: React.FC<GridListListProps> = ({
               {item.Title}
             </h3>
             <ul className="mb-3 text-light-2 text-sm space-y-1">
-              {item.items.slice(0, 3).map((listItem, idx) => (
-                <li key={listItem.id} className="flex items-center">
+              {item.items.slice(0, 3).map((listItem, index) => (
+                <li
+                  key={listItem.id || index} // Use listItem.id or fallback to index if id is missing
+                  className="flex items-center"
+                >
                   <span className="mr-2 text-primary-500 font-semibold">
-                    {idx + 1}.
+                    {index + 1}
                   </span>
                   <span className="line-clamp-1">{listItem.content}</span>
                 </li>
@@ -87,9 +88,9 @@ const GridListList: React.FC<GridListListProps> = ({
             )}
             <div className="flex flex-wrap gap-2 mt-3">
               {item.Tags &&
-                item.Tags.slice(0, 3).map((tag, idx) => (
+                item.Tags.slice(0, 3).map((tag, index) => (
                   <span
-                    key={`${tag}-${idx}`} // Combine tag and index for uniqueness
+                    key={`${tag}-${index}`} // Combine tag and index to ensure uniqueness
                     className="flex items-center bg-dark-3 text-light-4 rounded-full px-3 py-1 text-xs"
                   >
                     <Tag size={12} className="mr-1" />
@@ -117,7 +118,9 @@ const GridListList: React.FC<GridListListProps> = ({
                 className="w-10 h-10 rounded-full mr-3 object-cover border-2 border-primary-500"
                 loading="lazy"
               />
-              <p className="text-light-1 font-semibold">{item.creator.Name}</p>
+              <p className="text-light-1 font-semibold">
+                {item.creator.Name}
+              </p>
             </Link>
           )}
           {showStats && (

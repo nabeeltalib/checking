@@ -33,7 +33,7 @@ const RootLayout2 = () => {
         <aside className="hidden md:flex lg:w-[20%] md:w-[15%]">
           <LeftSidebar2 />
         </aside>
-        <main className="flex-1 w-full p-4 pb-16 md:pb-4 pt-16">
+        <main className="flex-1 w-full p-1 pb-16 md:pb-4 pt-16">
           <Outlet />
         </main>
         <aside className="hidden md:flex lg:w-[20%] md:w-[15%]">

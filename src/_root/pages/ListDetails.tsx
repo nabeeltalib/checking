@@ -259,9 +259,9 @@ const ListDetails: React.FC = () => {
         <h1 className="text-xl sm:text-3xl flex justify-between font-bold mb-4 text-center sm:text-left">
         
           <span className="text-wrap text-primary-500 ml-2">{list.Title}</span>
-          <span>
+          {/*<span>
                 {(isOwnProfile || isCollaborator) && <Button onClick={handleEmbed}>add to embed</Button>}
-          </span>
+          </span>*/}
         </h1>
         {list.Description && (
           <p className="text-sm sm:text-base font-thin mb-6 text-gray-100 text-center sm:text-left">

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { getMostLikedLists } from "@/lib/appwrite/api";
+import { getMostLikedLists } from "@/lib/appwrite/api"; // Make sure the API does not return deleted lists, or it returns a flag like isDeleted.
 import Loader from "@/components/shared/Loader";
 import { Locate, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -15,13 +15,18 @@ const TrendingSlider: React.FC = () => {
     const fetchTrendingLists = async () => {
       try {
         const data = await getMostLikedLists();
-        setTrendingLists(data);
+
+        // Filter out lists that are marked as deleted (assuming the backend provides this flag)
+        const filteredLists = data.filter((list: any) => !list.isDeleted);
+        setTrendingLists(filteredLists);
+
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch trending lists:", error);
         setLoading(false);
       }
     };
+
     fetchTrendingLists();
   }, []);
 
@@ -51,9 +56,9 @@ const TrendingSlider: React.FC = () => {
           className="flex overflow-x-scroll space-x-4 pb-2 custom-scrollbar"
           whileTap={{ cursor: "grabbing" }}
         >
-          {trendingLists.map((list) => (
+          {trendingLists.map((list, index) => (
             <motion.div
-              key={list.$id}
+              key={list.$id || index} // Fallback to index if $id doesn't exist
               className="flex-shrink-0 cursor-pointer"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

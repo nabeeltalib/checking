@@ -1,13 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Share2, Heart, MessageCircle, Bookmark, User, MapPin, Clock } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  createEmbedList,
+  Share2,
+  Heart,
+  MessageCircle,
+  Bookmark,
+  MapPin,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  ChevronRight,
+} from "lucide-react";
+import {
   followUser,
   getConnection,
   shareList,
   UnFollow,
+  UpdateCommentReply,
 } from "@/lib/appwrite/api";
 import {
   useDeleteSavedList,
@@ -15,6 +25,7 @@ import {
   useGetCurrentUser,
   useLikeList,
   useSaveList,
+  useCreateComment,
 } from "@/lib/react-query/queries";
 import Comment from "./Comment";
 import { Button } from "@/components/ui/button";
@@ -25,19 +36,11 @@ import { checkIsLiked } from "@/lib/utils";
 import Loader from "./Loader";
 
 interface User {
-  id: string;
-  name: string;
+  $id: string;
+  Name: string;
   Username: string;
   ImageUrl?: string;
-  Public?: boolean; // Assuming 'Public' is a boolean
-  // Add other relevant fields
-}
-
-interface Comment {
-  $id: string;
-  user: User;
-  Content: string;
-  // Add other relevant fields
+  Public?: boolean;
 }
 
 interface List {
@@ -52,15 +55,13 @@ interface List {
   locations: string[];
   timespans: string[];
   Likes: string[];
-  // Add other relevant fields
 }
 
 interface ListCard2Props {
-  list: List | null; // Allowing null to handle cases when list is not yet loaded
-  manageList?: boolean;
+  list: List | null;
 }
 
-const ListCard2: React.FC<ListCard2Props> = ({ list, manageList }) => {
+const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const [isSharing, setIsSharing] = useState(false);
   const navigate = useNavigate();
   const { user } = useUserContext();
@@ -74,61 +75,180 @@ const ListCard2: React.FC<ListCard2Props> = ({ list, manageList }) => {
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [connection, setConnection] = useState<any>(undefined);
   const [followdBy, setFollowdBy] = useState<any>([]);
-  const [likes, setLikes] = useState<string[]>(list?.Likes || []);
-  const [isSaved, setIsSaved] = useState(
-    currentUser?.save?.some((saved: any) => saved.list?.$id === list?.$id) || false
-  );
+  const [likes, setLikes] = useState<string[]>([]);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  // Early return if list is null
-  if (!list) {
-    return <Loader />; // Or any fallback UI you prefer
-  }
+  const [newComment, setNewComment] = useState("");
+  const [isReply, setIsReply] = useState(false);
+  const [commentId, setCommentId] = useState("");
+  const { data: comments } = useGetComments(list?.$id);
+  const { mutate: createComment } = useCreateComment();
+
+  useEffect(() => {
+    if (list) {
+      setLikes(list.Likes || []);
+    }
+  }, [list]);
+
+  useEffect(() => {
+    if (currentUser && list) {
+      setIsSaved(
+        currentUser.save?.some(
+          (saved: any) => saved.list?.$id === list.$id
+        ) || false
+      );
+    }
+  }, [currentUser, list]);
 
   useEffect(() => {
     const fetchData = async () => {
       if (list?.creator?.$id) {
-        let ProfileConnection = await getConnection(list.creator.$id);
-        let ProfileViewerConnection = await getConnection(user.id);
+        try {
+          const [ProfileConnection, ProfileViewerConnection] =
+            await Promise.all([
+              getConnection(list.creator.$id),
+              getConnection(user.id),
+            ]);
+          setConnection(ProfileConnection[0] || undefined);
 
-        if (ProfileConnection.length > 0) {
-          setConnection(ProfileConnection[0]);
+          let commonConnection: any[] = [],
+            remainingConnection: any[] = [],
+            displayConnection: any[] = [];
+
+          if (
+            ProfileConnection?.length > 0 &&
+            ProfileViewerConnection?.length > 0
+          ) {
+            commonConnection = ProfileConnection[0]?.follower.filter(
+              (user: any) =>
+                ProfileViewerConnection[0]?.following.includes(user.$id)
+            );
+            remainingConnection = ProfileConnection[0]?.follower.filter(
+              (user: any) =>
+                !ProfileViewerConnection[0]?.following.includes(user.$id)
+            );
+          }
+
+          if (commonConnection.length > 0) {
+            displayConnection = [
+              ...commonConnection,
+              ...remainingConnection,
+            ];
+          } else {
+            displayConnection =
+              ProfileConnection.length > 0
+                ? ProfileConnection[0].follower
+                : [];
+          }
+
+          setFollowdBy(displayConnection);
+        } catch (error) {
+          console.error("Error fetching connections:", error);
         }
-
-        let commonConnection: any[] = [],
-          remainingConnection: any[] = [],
-          displayConnection: any[] = [];
-
-        if (
-          ProfileConnection?.length > 0 &&
-          ProfileViewerConnection?.length > 0
-        ) {
-          commonConnection = ProfileConnection[0]?.follower.filter(
-            (user: any) =>
-              ProfileViewerConnection[0]?.following.includes(user.$id)
-          );
-          remainingConnection = ProfileConnection[0]?.follower.filter(
-            (user: any) =>
-              !ProfileViewerConnection[0]?.following.includes(user.$id)
-          );
-        }
-
-        if (commonConnection.length > 0) {
-          displayConnection = [...commonConnection, ...remainingConnection];
-        } else {
-          displayConnection =
-            ProfileConnection.length > 0 ? ProfileConnection[0].follower : [];
-        }
-
-        setFollowdBy(displayConnection);
       }
     };
 
     fetchData();
-  }, [list.creator?.$id, user.id]);
+  }, [list?.creator?.$id, user.id]);
 
-  const { data: comments } = useGetComments(list.$id);
+  const isOwnProfile = user.id === list?.creator?.$id;
+  const isFollowed = connection?.follower?.some(
+    (follow: any) => follow.$id === user.id
+  );
+
+  const handleLikeList = useCallback(async () => {
+    if (!list) return;
+    let newLikes = likes.includes(id)
+      ? likes.filter((Id) => Id !== id)
+      : [...likes, id];
+    setLikes(newLikes);
+    try {
+      await likeList({ listId: list.$id, likesArray: newLikes });
+    } catch (error) {
+      console.error("Error liking list:", error);
+      toast({
+        title: "Error",
+        description: "Failed to like the list. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [likes, id, likeList, list, toast]);
+
+  const handleSaveList = useCallback(async () => {
+    if (!list || !currentUser) return;
+    try {
+      if (isSaved) {
+        const savedListRecord = currentUser.save?.find(
+          (record: Models.Document) => record.list?.$id === list.$id
+        );
+        if (savedListRecord) {
+          await deleteSaveList(savedListRecord.$id);
+        }
+      } else {
+        await saveList({ userId: id, listId: list.$id });
+      }
+      setIsSaved(!isSaved);
+    } catch (error) {
+      console.error("Error saving list:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save list. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [isSaved, currentUser, list, deleteSaveList, saveList, id, toast]);
+
+  const handleFollow = useCallback(async () => {
+    if (!list?.creator?.$id) return;
+    setIsFollowLoading(true);
+    try {
+      await followUser(user.id, list.creator.$id);
+      let resp = await getConnection(list.creator.$id);
+      setConnection(resp.length > 0 ? resp[0] : resp);
+      toast({
+        title: "Followed",
+        description: `You are now following ${list.creator.Name}.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error following user:", error);
+      toast({
+        title: "Error",
+        description: "Failed to follow user. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsFollowLoading(false);
+    }
+  }, [list?.creator, user.id, toast]);
+
+  const handleUnFollow = useCallback(async () => {
+    if (!list?.creator?.$id) return;
+    setIsFollowLoading(true);
+    try {
+      await UnFollow(user.id, list.creator.$id);
+      let resp = await getConnection(list.creator.$id);
+      setConnection(resp.length > 0 ? resp[0] : resp);
+      toast({
+        title: "Unfollowed",
+        description: `You have unfollowed ${list.creator.Name}.`,
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error unfollowing user:", error);
+      toast({
+        title: "Error",
+        description: "Failed to unfollow user. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsFollowLoading(false);
+    }
+  }, [list?.creator, user.id, toast]);
 
   const handleShare = async (e: React.MouseEvent) => {
+    if (!list) return;
     e.preventDefault();
     e.stopPropagation();
     setIsSharing(true);
@@ -136,7 +256,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list, manageList }) => {
       const shareableLink = await shareList(list.$id);
       if (navigator.share) {
         await navigator.share({
-          title: list.Title, // Use consistent property
+          title: list.Title,
           text: `Check out this list: ${list.Title}`,
           url: shareableLink,
         });
@@ -159,9 +279,11 @@ const ListCard2: React.FC<ListCard2Props> = ({ list, manageList }) => {
     }
   };
 
-  const renderListItems = () => {
+  const renderListItems = useMemo(() => {
+    if (!list || !list.items) return null;
+
     let items: Array<any> = [];
-  
+
     if (Array.isArray(list.items)) {
       items = list.items;
     } else if (typeof list.items === "string") {
@@ -169,131 +291,67 @@ const ListCard2: React.FC<ListCard2Props> = ({ list, manageList }) => {
     } else if (typeof list.items === "object" && list.items !== null) {
       items = Object.values(list.items);
     }
-  
-    return items.slice(0, 5).map((item, index) => (
-      <li key={index} className="flex items-center mb-2 bg-gray-800 rounded-md p-3">
-        <span className="text-lg font-bold text-yellow-500 mr-4">
-          {index + 1}
-        </span>
-        <span className="text-sm text-white truncate">
-          {typeof item === "string" ? item : item.content || ""}
-        </span>
-      </li>
-    ));
-  };
-  
 
-  const handleSaveList = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+    return items
+      .slice(0, isExpanded ? items.length : 5)
+      .map((item, index) => (
+        <motion.li
+          key={index}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: index * 0.1 }}
+          className="flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300"
+        >
+          <span className="text-lg font-bold text-yellow-500 mr-4">
+            {index + 1}
+          </span>
+          <span className="text-sm text-white truncate">
+            {typeof item === "string" ? item : item.content || ""}
+          </span>
+        </motion.li>
+      ));
+  }, [list?.items, isExpanded]);
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newComment.trim() === "") return;
+
     try {
-      if (isSaved) {
-        const savedListRecord = currentUser?.save?.find(
-          (record: Models.Document) => record.list?.$id === list.$id
-        );
-        if (savedListRecord) {
-          await deleteSaveList(savedListRecord.$id);
-        }
+      if (isReply) {
+        await UpdateCommentReply({
+          userId: id,
+          Content: newComment,
+          commentId: commentId,
+        });
       } else {
-        await saveList({ userId: id, listId: list.$id });
+        await createComment({
+          listId: list.$id,
+          userId: id,
+          Content: newComment,
+        });
       }
-      setIsSaved(!isSaved);
+
+      setNewComment("");
+      setIsReply(false);
+      toast({
+        title: "Success",
+        description: isReply
+          ? "Reply added successfully"
+          : "Comment posted successfully",
+      });
     } catch (error) {
-      console.error("Error saving list:", error);
+      console.error("Failed to post comment:", error);
       toast({
         title: "Error",
-        description: "Failed to save list. Please try again.",
+        description: "Failed to post comment or reply.",
         variant: "destructive",
       });
     }
   };
 
-  const handleEmbed = async () => {
-    try {
-      await createEmbedList(list.$id, list.Categories[0] || "");
-      toast({
-        title: "Success!",
-        description: `${list.Title} has been embedded successfully.`,
-        variant: "default",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: `Failed to embed list ${list.Title}`,
-        variant: "destructive",
-      });
-    }
-  };
+  const visibleComments = comments?.slice(0, 2);
 
-  const handleLikeList = async (
-    e: React.MouseEvent<HTMLImageElement, MouseEvent>
-  ) => {
-    e.stopPropagation();
-    let newLikes = likes.includes(id)
-      ? likes.filter((Id) => Id !== id)
-      : [...likes, id];
-    setLikes(newLikes);
-    try {
-      await likeList({ listId: list.$id, likesArray: newLikes });
-    } catch (error) {
-      console.error("Error liking list:", error);
-      toast({
-        title: "Error",
-        description: "Failed to like the list. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const isOwnProfile = user.id === list.creator?.$id;
-  const isFollowed = connection?.follower?.some(
-    (follow: any) => follow.$id === user.id
-  );
-
-  const handleFollow = async () => {
-    setIsFollowLoading(true);
-    try {
-      await followUser(user.id, list.creator.$id);
-      let resp = await getConnection(list.creator.$id);
-      setConnection(resp.length > 0 ? resp[0] : resp);
-      toast({
-        title: "Followed",
-        description: `You are now following ${list.creator.Name}.`,
-        variant: "default",
-      });
-    } catch (error) {
-      console.error("Error following user:", error);
-      toast({
-        title: "Error",
-        description: "Failed to follow user. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsFollowLoading(false);
-    }
-  };
-
-  const handleUnFollow = async () => {
-    setIsFollowLoading(true);
-    try {
-      await UnFollow(user.id, list.creator.$id);
-      let resp = await getConnection(list.creator.$id);
-      setConnection(resp.length > 0 ? resp[0] : resp);
-      toast({
-        title: "Unfollowed",
-        description: `You have unfollowed ${list.creator.Name}.`,
-        variant: "default",
-      });
-    } catch (error) {
-      console.error("Error unfollowing user:", error);
-      toast({
-        title: "Error",
-        description: "Failed to unfollow user. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsFollowLoading(false);
-    }
-  };
+  if (!list) return null;
 
   return (
     <motion.div
@@ -305,17 +363,27 @@ const ListCard2: React.FC<ListCard2Props> = ({ list, manageList }) => {
     >
       <div className="p-6">
         {/* Creator Info */}
-        {list.creator?.$id && (
+        {list.creator && (
           <div className="flex justify-between items-center mb-4">
-            <Link to={`/profile/${list.creator.$id}`} className="flex items-center">
+            <Link
+              to={`/profile/${list.creator.$id}`}
+              className="flex items-center group"
+            >
               <img
-                src={list.creator.ImageUrl || "/assets/icons/profile-placeholder.svg"}
+                src={
+                  list.creator.ImageUrl ||
+                  "/assets/icons/profile-placeholder.svg"
+                }
                 alt={`${list.creator.Name}'s profile`}
-                className="w-10 h-10 rounded-full mr-3"
+                className="w-10 h-10 rounded-full mr-3 border-2 border-transparent group-hover:border-primary-500 transition-all duration-300"
               />
-              <div className="ml-3">
-                <p className="text-white font-semibold">{list.creator?.Name}</p>
-                <p className="text-gray-400 text-sm">@{list.creator?.Username}</p>
+              <div>
+                <p className="text-white font-semibold group-hover:text-primary-500 transition-colors duration-300">
+                  {list.creator.Name}
+                </p>
+                <p className="text-gray-400 text-sm">
+                  @{list.creator.Username}
+                </p>
               </div>
             </Link>
 
@@ -330,7 +398,13 @@ const ListCard2: React.FC<ListCard2Props> = ({ list, manageList }) => {
                   onClick={isFollowed ? handleUnFollow : handleFollow}
                   disabled={isFollowLoading}
                 >
-                  {isFollowLoading ? <Loader /> : (isFollowed ? "Unfollow" : "Follow")}
+                  {isFollowLoading ? (
+                    <Loader />
+                  ) : isFollowed ? (
+                    "Unfollow"
+                  ) : (
+                    "Follow"
+                  )}
                 </Button>
               )}
 
@@ -385,26 +459,43 @@ const ListCard2: React.FC<ListCard2Props> = ({ list, manageList }) => {
 
         {/* List Title and Description */}
         <div className="mb-6">
-          <h2 className="text-yellow-500 text-base">{list.Title}</h2>
+          <h2 className="text-yellow-500 text-xl font-bold mb-2">
+            {list.Title}
+          </h2>
           {list.Description && (
-            <p className="text-light-2 text-xs">{list.Description}</p>
+            <p className="text-light-2 text-sm">{list.Description}</p>
           )}
         </div>
 
         {/* List Items */}
         <Link to={`/lists/${list.$id}`} className="block mb-6">
-          <ol className="list-none space-y-3">
-            {renderListItems()}
-          </ol>
+          <AnimatePresence>
+            <motion.ol className="list-none space-y-3">
+              {renderListItems}
+            </motion.ol>
+          </AnimatePresence>
 
           {Array.isArray(list.items) && list.items.length > 5 && (
-            <p className="text-primary-500 font-semibold text-sm mt-3 hover:underline">
-              + {list.items.length - 5} more items
-            </p>
+            <Button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-primary-500 font-semibold text-sm mt-3 hover:underline flex items-center"
+            >
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="mr-1" size={16} />
+                  Show less
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="mr-1" size={16} />
+                  + {list.items.length - 5} more items
+                </>
+              )}
+            </Button>
           )}
         </Link>
 
-        {/* Tags, Categories, Locations, Timespans */}
+        {/* Tags and Categories */}
         <div className="flex flex-wrap gap-2 mb-4">
           {list.tags && list.tags.length > 0 && (
             <>
@@ -426,25 +517,27 @@ const ListCard2: React.FC<ListCard2Props> = ({ list, manageList }) => {
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          {list.Tags.map((tag: string, index: number) => (
-            <span
-              key={`${tag}${index}`}
-              onClick={() => navigate(`/categories/${tag}`)}
-              className="bg-primary-500 text-white px-3 py-1 rounded-full text-xs cursor-pointer hover:bg-primary-600 transition-colors duration-300"
-            >
-              #{tag}
-            </span>
-          ))}
+          {list.Tags &&
+            list.Tags.map((tag: string, index: number) => (
+              <span
+                key={`${tag}${index}`}
+                onClick={() => navigate(`/categories/${tag}`)}
+                className="bg-primary-500 text-white px-3 py-1 rounded-full text-xs cursor-pointer hover:bg-primary-600 transition-colors duration-300"
+              >
+                #{tag}
+              </span>
+            ))}
         </div>
 
-        {list.locations.length > 0 && (
+        {/* Locations and Timespans */}
+        {list.locations && list.locations.length > 0 && (
           <div className="flex items-center text-light-3 text-sm mb-2">
             <MapPin size={16} className="mr-2" />
             {list.locations.join(", ")}
           </div>
         )}
 
-        {list.timespans.length > 0 && (
+        {list.timespans && list.timespans.length > 0 && (
           <div className="flex items-center text-light-3 text-sm">
             <Clock size={16} className="mr-2" />
             {list.timespans.join(", ")}
@@ -454,51 +547,99 @@ const ListCard2: React.FC<ListCard2Props> = ({ list, manageList }) => {
 
       {/* Actions */}
       <div className="bg-dark-3 px-6 py-4 flex justify-between items-center text-light-2 text-xs">
-        <button
+        <Button
           onClick={handleLikeList}
+          variant="ghost"
           className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
         >
-          <Heart size={20} className={checkIsLiked(likes, id) ? "fill-primary-500 text-primary-500" : ""} />
+          <Heart
+            size={20}
+            className={
+              checkIsLiked(likes, id) ? "fill-primary-500 text-primary-500" : ""
+            }
+          />
           <span>{likes.length} Likes</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={handleSaveList}
+          variant="ghost"
           className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
         >
-          <Bookmark size={20} className={isSaved ? "fill-primary-500 text-primary-500" : ""} />
+          <Bookmark
+            size={20}
+            className={isSaved ? "fill-primary-500 text-primary-500" : ""}
+          />
           <span>{isSaved ? "Saved" : "Save"}</span>
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={() => navigate(`/lists/${list.$id}`)}
+          variant="ghost"
           className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
         >
           <MessageCircle size={20} />
           <span>{comments?.length || 0} Comments</span>
-        </button>        
+        </Button>
       </div>
 
       {/* Comments Section */}
       <div className="p-6 border-t border-dark-4">
-        <h3 className="text-sm font-semibold mb-4">Recent Comments</h3>
+        <h3 className="text-sm font-semibold mb-4">Comments</h3>
         {comments && comments.length > 0 ? (
           <ul className="space-y-4 text-xs">
-            {comments.slice(0, 2).map((comment: any, index: number) => (
-              <Comment comment={comment} key={comment.$id || index} />
+            {visibleComments?.map((comment: any, index: number) => (
+              <Comment
+                comment={comment}
+                key={comment.$id || index}
+                setReply={setIsReply}
+                show="show"
+                setCommentId={setCommentId}
+                listId={list.$id}
+              />
             ))}
             {comments.length > 2 && (
               <Link
                 to={`/lists/${list.$id}`}
-                className="text-primary-500 hover:underline text-xs"
+                className="text-primary-500 hover:underline text-xs inline-flex items-center"
               >
                 View all {comments.length} comments
+                <ChevronRight size={14} className="ml-1" />
               </Link>
             )}
           </ul>
         ) : (
-          <p className="text-light-3 text-xs">No comments yet. Be the first to comment!</p>
+          <p className="text-light-3 text-xs">
+            No comments yet. Be the first to comment!
+          </p>
         )}
+
+        {/* Comment Input Field */}
+        <form onSubmit={handleCommentSubmit} className="mt-4">
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder={
+              isReply ? "Write a reply..." : "Write a comment..."
+            }
+            className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
+            rows={3}
+          />
+          <div className="mt-2 flex items-center">
+            <Button type="submit" variant="default">
+              {isReply ? "Post Reply" : "Post Comment"}
+            </Button>
+            {isReply && (
+              <Button
+                onClick={() => setIsReply(false)}
+                variant="ghost"
+                className="ml-2"
+              >
+                Cancel Reply
+              </Button>
+            )}
+          </div>
+        </form>
       </div>
     </motion.div>
   );

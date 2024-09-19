@@ -959,6 +959,36 @@ export async function reportComment(comment:any) {
     return null;
   }
 }
+
+export async function reportReply(reply: any) {
+  try {
+    const data = {
+      replyContent: reply.Content,
+      replyId: reply.id,
+      repliedBy: reply.User,
+      ReportedBy: reply.Reporter,
+    };
+
+    console.log('Data being sent to createDocument:', data);
+
+    const newReport = await databases.createDocument(
+      appwriteConfig.databaseId,
+      "66dc4454001a27643f2d", // Ensure this is the correct collection ID
+      ID.unique(),
+      data
+    );
+
+    if (!newReport) {
+      throw new Error('Failed to report reply');
+    }
+
+    return newReport;
+  } catch (error) {
+    console.error('Error reporting reply:', error);
+    return null;
+  }
+}
+
 export async function getReportedComments() {
   try {
     const comments = await databases.listDocuments(
@@ -1653,7 +1683,34 @@ export async function getMostLikedLists() {
     throw error;
   }
 }
-
+export const likeReply = async (replyId: string, likesArray: string[]) => {
+  try {
+    await databases.updateDocument(
+      appwriteConfig.databaseId,
+      '66b22bc7003828cf45ab',
+      replyId,
+      { Likes: likesArray }
+    );
+  } catch (error) {
+    console.error('Error liking reply:', error);
+    throw error;
+  }
+};
+export const getReplies = async (commentId: string) => {
+  try {
+    const response = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      '66b22bc7003828cf45ab',
+      [
+        Query.equal('commentId', commentId),
+      ]
+    );
+    return response.documents; // Each document now includes the Likes field
+  } catch (error) {
+    console.error('Error fetching replies:', error);
+    throw error;
+  }
+};
 export async function getAllLists() {
   try {
     const result = await databases.listDocuments(

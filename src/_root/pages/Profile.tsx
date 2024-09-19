@@ -21,7 +21,6 @@ import {
   sendFriendRequest,
   UnFollow,
 } from "@/lib/appwrite/api";
-
 const Profile: React.FC = () => {
   const { user } = useUserContext();
   const { profile } = useParams();
@@ -44,7 +43,6 @@ const Profile: React.FC = () => {
   );
   const { data: friendRequests, isLoading: isLoadingFriendRequests } =
     useGetFriendRequests(user?.id || "");
-
   const [isCuratedExpanded, setCuratedExpanded] = useState(false);
   const [isSavedExpanded, setSavedExpanded] = useState(false);
   const [isCollaborativeExpanded, setCollaborativeExpanded] = useState(false);
@@ -84,7 +82,7 @@ const Profile: React.FC = () => {
       let ProfileConnection = await getConnection(id);
       let ProfileViewerConnection = await getConnection(user.id);
       ProfileConnection.length > 0 && setConnection(ProfileConnection[0])
-      
+
       let commonConnection=[], remainingConnection=[], displayConnection=[];   
       ProfileConnection?.length > 0 && ProfileViewerConnection?.length > 0 ? (   
         commonConnection = ProfileConnection[0]?.follower.filter((user:any)=> ProfileViewerConnection[0]?.following.includes(user.$id))
@@ -92,7 +90,7 @@ const Profile: React.FC = () => {
       ProfileConnection?.length > 0 && ProfileViewerConnection?.length > 0 ? (   
         remainingConnection = ProfileConnection[0]?.follower.filter((user:any)=> !ProfileViewerConnection[0]?.following.includes(user.$id))
     ):""; 
-    
+
     if(commonConnection.length > 0)
       {
         displayConnection = [...commonConnection, ...remainingConnection];
@@ -102,7 +100,7 @@ const Profile: React.FC = () => {
       }
       setFollowdBy(displayConnection)
   };
-  
+
     fetch();
   }, [id]);
 
@@ -112,9 +110,9 @@ const Profile: React.FC = () => {
       try {
         const res = await getSentRequests();
         const filtered = res.filter((req: any) => req.userId.$id === user.id);
-        
+
         setSentRequest(filtered);
-        
+
         // Directly check for the friend request after filtering
         const reqSent = filtered.some((data: any) => data.friendId.$id === id);
         setIsRequestSent(reqSent);
@@ -137,7 +135,7 @@ const Profile: React.FC = () => {
 
     fetchData();
   },[id])
-  
+
   let isAccepted = sentRequest.some(
     (data: any) => data.friendId.$id === id && data.status === "accepted"
   );
@@ -147,7 +145,6 @@ const Profile: React.FC = () => {
   if (isLoadingCurrentUser || isLoadingLists) {
     return <Loader />;
   }
-
   if (!currentUser) {
     return <div className="text-center text-light-1">User not found</div>;
   }
@@ -162,7 +159,7 @@ const Profile: React.FC = () => {
       }))
     : [];
 
-  
+
   let isOwnProfile = currentUser.$id === user?.id;
 
   let isFollowed = connection?.follower?.some(
@@ -356,7 +353,6 @@ const Profile: React.FC = () => {
           Friends
         </Button>
       </div>
-
       {/* Edit Functionality */}
       {isOwnProfile && (
         <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-8">
@@ -380,7 +376,6 @@ const Profile: React.FC = () => {
           </Button>
         </div>
       )}
-
       {/* Content based on selected tab */}
       {activeTab === "lists" && (
         <div className="flex flex-col gap-5">
@@ -437,7 +432,6 @@ const Profile: React.FC = () => {
           {isLoadingFriends ? <Loader /> : <FriendsList friends={friends} />}
         </div>
       )}
-
       {/* Friend Requests section (only on own profile) */}
       {isOwnProfile && activeTab === "friends" && (
         <div className="mt-8">
@@ -451,10 +445,8 @@ const Profile: React.FC = () => {
           )}
         </div>
       )}
-
       <Outlet />
     </div>
   );
 };
-
 export default Profile;
