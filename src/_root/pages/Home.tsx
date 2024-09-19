@@ -79,18 +79,18 @@ const Home: React.FC = () => {
       <header className="w-full bg-dark-1 py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl text-orange-300 font-bold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-           {user.name}, is your top five better?
+           {user.name}, Top Five Everything!
           </h2>
           
           {user && (
             <div className="text-sm text-gray-300 mt-5 flex justify-center space-x-4">
               <span>{connection?.follower?.length || 0} followers</span>
-              <span className="mx-2">•</span>
+              <span className="mx-2">|</span>
               <span>{connection?.following?.length || 0} following</span>
             </div>
           )}
           
-          <p className="text-lg sm:text-xl text-gray-200 mt-8">Discover and Debate Rankings Everything</p>
+          <p className="text-lg sm:text-xl text-gray-200 mt-8">Discover • Debate • Create</p>
         </div>
       </header>
 
@@ -102,7 +102,7 @@ const Home: React.FC = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search for better opinions..."
+                placeholder="Search for titles, tags or rankings..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="w-full bg-dark-4 text-light-1 pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -113,7 +113,7 @@ const Home: React.FC = () => {
         </div>
 
         {/* Trending Section */}
-        <div className="my-6 sm:my-6 lg:my-6 bg-dark-3 rounded-lg shadow-lg p-4 sm:p-6">
+        <div className="my-6 sm:my-6 lg:my-6 bg-dark-2 rounded-lg shadow-lg p-4 sm:p-6">
           <TrendingSlider />
         </div>
 

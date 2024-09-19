@@ -82,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error) {
       console.error("Error initiating Google sign-in:", error);
     }
-  };
+  };  
 
   useEffect(() => {
     const initAuth = async () => {

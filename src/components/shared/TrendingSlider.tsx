@@ -40,7 +40,7 @@ const TrendingSlider: React.FC = () => {
   }
 
   return (
-    <div className="relative">
+    <div className="relative bg-dark-2">
       <h2 className="font-normal text-xl md:text-xl text-left w-full flex items-center mb-4 text-gray-300">
         <Locate className="mr-2" />
         Trending In Your Area
@@ -59,7 +59,7 @@ const TrendingSlider: React.FC = () => {
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate(`/lists/${list.$id}`)}
             >
-              <div className="bg-dark-4 p-2 rounded-lg shadow-lg hover:bg-dark-3 transition-colors duration-300 w-48 sm:w-56 md:w-64">
+              <div className="bg-dark-1 p-2 rounded-lg shadow-lg hover:bg-dark-3 transition-colors duration-300 w-48 sm:w-56 md:w-64">
                 <h3 className="text-blue-500 font-bold truncate">{list.Title}</h3>
                 <p className="text-gray-400 text-sm mt-1 truncate">by {list.creator?.Name}</p>
               </div>
