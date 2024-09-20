@@ -82,7 +82,7 @@ const Saved: React.FC = () => {
         variants={itemVariants}
       >
         <Bookmark size={36} className="text-primary-500" />
-        <h2 className="text-3xl md:text-4xl font-bold text-light-1">Your Bookmarked Lists</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-light-1">Your Bookmarked Rankings</h2>
       </motion.div>
       
       <motion.div className="w-full max-w-5xl mx-auto" variants={itemVariants}>
@@ -95,7 +95,7 @@ const Saved: React.FC = () => {
               exit={{ opacity: 0, scale: 0.8 }}
             >
               <Bookmark size={64} className="text-light-4 mb-4" />
-              <p className="text-light-4 text-xl mb-4">No saved lists yet</p>
+              <p className="text-light-4 text-xl mb-4">No saved rankings yet</p>
               <p className="text-light-4 text-center max-w-md">
                 Start exploring and save lists that interest you. They'll appear here for easy access.
               </p>

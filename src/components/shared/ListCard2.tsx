@@ -11,6 +11,7 @@ import {
   ChevronDown,
   ChevronUp,
   ChevronRight,
+  Wand,
 } from "lucide-react";
 import {
   followUser,
@@ -34,7 +35,6 @@ import { useUserContext } from "@/context/AuthContext";
 import { Models } from "appwrite";
 import { checkIsLiked } from "@/lib/utils";
 import Loader from "./Loader";
-
 interface User {
   $id: string;
   Name: string;
@@ -78,6 +78,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const [likes, setLikes] = useState<string[]>([]);
   const [isSaved, setIsSaved] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [animatingButton, setAnimatingButton] = useState<string | null>(null);
 
   const [newComment, setNewComment] = useState("");
   const [isReply, setIsReply] = useState(false);
@@ -158,6 +159,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   );
 
   const handleLikeList = useCallback(async () => {
+    setAnimatingButton('like');
     if (!list) return;
     let newLikes = likes.includes(id)
       ? likes.filter((Id) => Id !== id)
@@ -173,9 +175,11 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         variant: "destructive",
       });
     }
+    setTimeout(() => setAnimatingButton(null), 300);
   }, [likes, id, likeList, list, toast]);
 
   const handleSaveList = useCallback(async () => {
+    setAnimatingButton('save');
     if (!list || !currentUser) return;
     try {
       if (isSaved) {
@@ -197,8 +201,21 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         variant: "destructive",
       });
     }
+    setTimeout(() => setAnimatingButton(null), 300);
   }, [isSaved, currentUser, list, deleteSaveList, saveList, id, toast]);
 
+  const handleRemix = () => {
+    setAnimatingButton('remix');
+    navigate(`/remix/${list.$id}`);
+    setTimeout(() => setAnimatingButton(null), 300);
+  };
+
+  const handleCommentNavigate = () => {
+    setAnimatingButton('comment');
+    navigate(`/lists/${list.$id}`);
+    setTimeout(() => setAnimatingButton(null), 300);
+  };
+  
   const handleFollow = useCallback(async () => {
     if (!list?.creator?.$id) return;
     setIsFollowLoading(true);
@@ -549,7 +566,6 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       <div className="bg-dark-3 px-6 py-4 flex justify-between items-center text-light-2 text-xs">
         <Button
           onClick={handleLikeList}
-          variant="ghost"
           className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
         >
           <Heart
@@ -558,29 +574,35 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
               checkIsLiked(likes, id) ? "fill-primary-500 text-primary-500" : ""
             }
           />
-          <span>{likes.length} Likes</span>
+          <span>{likes.length} </span>
         </Button>
 
         <Button
           onClick={handleSaveList}
-          variant="ghost"
           className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
         >
           <Bookmark
             size={20}
             className={isSaved ? "fill-primary-500 text-primary-500" : ""}
           />
-          <span>{isSaved ? "Saved" : "Save"}</span>
+          <span>{isSaved ? " " : " "}</span>
         </Button>
-
         <Button
           onClick={() => navigate(`/lists/${list.$id}`)}
-          variant="ghost"
           className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
         >
           <MessageCircle size={20} />
-          <span>{comments?.length || 0} Comments</span>
+          <span>{comments?.length || 0} </span>
         </Button>
+        <Button
+          onClick={() => navigate(`/remix/${list.$id}`)}
+          className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
+        >
+          <Wand size={20} />
+          <span>Remix</span>
+        </Button>
+
+        
       </div>
 
       {/* Comments Section */}

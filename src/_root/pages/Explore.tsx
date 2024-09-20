@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useGetAISuggestions } from '@/lib/react-query/queries';
 import { ListCard, Loader } from '@/components/shared';
 import { getTrendingTags, getPopularCategories, getRecentLists } from '@/lib/appwrite/api';
 import { useUserContext } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import ListCard2 from '@/components/shared/ListCard2';
+import { Sparkles, Tag, Hash, Clock } from 'lucide-react';
 
 const Explore: React.FC = () => {
   const { user } = useUserContext();
@@ -15,8 +17,7 @@ const Explore: React.FC = () => {
   const [isTagsLoading, setIsTagsLoading] = useState(true);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [recentListsData, setRecentListsData] = useState<any>([])
-  
+  const [recentListsData, setRecentListsData] = useState<any>([]);
 
   const {
     data: aiSuggestions,
@@ -24,24 +25,17 @@ const Explore: React.FC = () => {
     error: aiSuggestionsError
   } = useGetAISuggestions(user.id);
 
-  useEffect(()=>{
-    const fetchData = async ()=>{
-      let data = await getRecentLists();
-    setRecentListsData(data)
-    }
-
-    fetchData();
-  },[])
-
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [tags, categories] = await Promise.all([
+        const [tags, categories, recentLists] = await Promise.all([
           getTrendingTags(),
-          getPopularCategories()
+          getPopularCategories(),
+          getRecentLists()
         ]);
         setTrendingTags(tags);
         setPopularCategories(categories);
+        setRecentListsData(recentLists);
         setError(null);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -70,93 +64,148 @@ const Explore: React.FC = () => {
 
   if (error || aiSuggestionsError) {
     return (
-      <div className="text-red">
+      <div className="text-red-500 text-center p-4 bg-dark-2 rounded-lg">
         {error || (aiSuggestionsError as Error)?.message}
       </div>
     );
   }
 
   return (
-    <div className="explore-container common-container w-full">
-      <section className="mb-8">
-        <h3 className="text-xl font-semibold text-light-1 mb-4">
+    <div className="explore-container common-container w-full space-y-12">
+      <motion.section
+        key="ai-suggestions"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="mb-8 bg-gradient-to-r from-purple-900 to-blue-900 p-6 rounded-xl shadow-lg"
+      >
+        <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
+          <Sparkles className="mr-2" />
           AI Suggested Lists
         </h3>
-        {isLoadingAISuggestions ? (
-          <Loader />
-        ) : aiSuggestions && aiSuggestions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {aiSuggestions.map((suggestion, index) => (
-              <div key={index} className="bg-dark-3 p-4 rounded-lg">
-                <p className="text-light-1">{suggestion}</p>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-light-2">No AI suggestions available.</p>
-        )}
-      </section>
+          {isLoadingAISuggestions ? (
+            <Loader />
+          ) : aiSuggestions && aiSuggestions.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {aiSuggestions.map((suggestion, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  className="bg-white bg-opacity-10 p-4 rounded-lg backdrop-blur-sm hover:bg-opacity-20 transition-all duration-300"
+                >
+                  <p className="text-light-1">{suggestion}</p>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-light-2">No AI suggestions available.</p>
+          )}
+        </motion.section>
 
-      <section className="mb-8">
-        <h3 className="text-xl font-semibold text-light-1 mb-4">
+        <motion.section
+        key="popular-categories"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="mb-8 bg-dark-2 p-6 rounded-xl shadow-lg"
+      >
+        <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center">
+          <Tag className="mr-2" />
           Popular Categories
         </h3>
-        <div className="flex gap-4 flex-wrap">
-          {isCategoriesLoading ? (
-            <Loader />
-          ) : popularCategories.length > 0 ? (
-            popularCategories.map((category, i) => (
-              <Link
-                key={i}
-                to={`/categories/${category.name}`}
-                className="bg-dark-4 text-light-1 px-3 py-1 rounded-full hover:bg-primary-500 transition-colors">
-                {category.name}
-              </Link>
-            ))
-          ) : (
-            <p>No categories found.</p>
-          )}
-        </div>
-      </section>
+          <div className="flex gap-4 flex-wrap">
+            {isCategoriesLoading ? (
+              <Loader />
+            ) : popularCategories.length > 0 ? (
+              popularCategories.map((category, i) => (
+                <motion.div
+                  key={i}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link
+                    to={`/categories/${category.name}`}
+                    className="bg-dark-4 text-light-1 px-4 py-2 rounded-full hover:bg-primary-500 transition-all duration-300 shadow-md"
+                  >
+                    {category.name}
+                  </Link>
+                </motion.div>
+              ))
+            ) : (
+              <p className="text-light-2">No categories found.</p>
+            )}
+          </div>
+        </motion.section>
 
-      <section className="mb-8">
-        <h3 className="text-xl font-semibold text-light-1 mb-4">
+        <motion.section
+        key="trending-tags"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="mb-8 bg-dark-2 p-6 rounded-xl shadow-lg"
+      >
+        <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center">
+          <Hash className="mr-2" />
           Trending Tags
         </h3>
-        <div className="flex gap-4 flex-wrap">
-          {isTagsLoading ? (
-            <Loader />
-          ) : trendingTags.length > 0 ? (
-            trendingTags.map((tag, i) => (
-              <Link
-                key={i}
-                to={`/categories/${tag}`}
-                className="bg-dark-3 text-light-2 px-3 py-1 rounded-full hover:bg-primary-500 hover:text-light-1 transition-colors">
-                #{tag}
-              </Link>
-            ))
-          ) : (
-            <p>No trending tags found.</p>
-          )}
-        </div>
-      </section>
-
-      <section className='w-full'>
-        <h3 className="text-xl font-semibold text-light-1 mb-4">Recent Lists</h3>
-        {recentListsData?.length > 0 ? (
-          <div className="flex flex-col gap-4">
-            {recentListsData?.map((list: any) => (
-               user.id ? (
-                <ListCard2 key={list.$id} list={list} />
-              ) : (
-                <ListCard key={list.$id} list={list} />
-              )
-            ))}
+          <div className="flex gap-4 flex-wrap">
+            {isTagsLoading ? (
+              <Loader />
+            ) : trendingTags.length > 0 ? (
+              trendingTags.map((tag, i) => (
+                <motion.div
+                  key={i}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link
+                    to={`/categories/${tag}`}
+                    className="bg-dark-3 text-light-2 px-4 py-2 rounded-full hover:bg-primary-500 hover:text-light-1 transition-all duration-300 shadow-md"
+                  >
+                    #{tag}
+                  </Link>
+                </motion.div>
+              ))
+            ) : (
+              <p className="text-light-2">No trending tags found.</p>
+            )}
           </div>
-        ) : (
-          <Loader />
-        )}
-      </section>
+        </motion.section>
+
+        <motion.section
+        key="recent-lists"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+        className="w-full bg-dark-2 p-6 rounded-xl shadow-lg"
+      >
+        <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center">
+          <Clock className="mr-2" />
+          Recent Lists
+        </h3>
+          {recentListsData?.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+              {recentListsData?.map((list: any, index: number) => (
+                <motion.div
+                  key={list.$id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  {user.id ? (
+                    <ListCard2 list={list} />
+                  ) : (
+                    <ListCard list={list} />
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <Loader />
+          )}
+        </motion.section>
     </div>
   );
 };
