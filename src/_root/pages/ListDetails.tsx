@@ -495,13 +495,13 @@ const ListDetails: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 1.1 }}
         >
-          <h3 className="text-2xl font-bold text-light-1 mb-6">Related Lists</h3>
+          <h3 className="text-2xl font-bold text-light-1 mb-6">Related Rankings</h3>
           {isRelatedListsLoading ? (
             <Loader />
           ) : relatedLists && relatedLists.length > 0 ? (
             <GridListList lists={relatedLists} />
           ) : (
-            <p className="text-light-2">No related lists found</p>
+            <p className="text-light-2">No related rankings found</p>
           )}
         </motion.div>
         </motion.div>

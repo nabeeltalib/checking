@@ -366,8 +366,47 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     }
   };
 
-  const visibleComments = comments?.slice(0, 2);
+  const renderComments = () => {
+    if (!comments || comments.length === 0) {
+      return (
+        <p className="text-light-3 text-xs">
+          No comments yet. Be the first to comment!
+        </p>
+      );
+    }
 
+    const visibleComment = comments[0];
+
+    return (
+      <>
+        <ul className="space-y-4 text-xs">
+          <Comment
+            comment={visibleComment}
+            key={visibleComment.$id}
+            setReply={setIsReply}
+            show="show"
+            setCommentId={setCommentId}
+            listId={list.$id}
+          />
+        </ul>
+        {comments.length > 1 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Button
+              onClick={() => navigate(`/lists/${list.$id}`)}
+              className="mt-4 text-primary-500 hover:text-primary-600 transition-colors duration-300 flex items-center"
+            >
+              View all {comments.length} comments
+              <ChevronRight size={16} className="ml-2" />
+            </Button>
+          </motion.div>
+        )}
+      </>
+    );
+  };
   if (!list) return null;
 
   return (
@@ -607,37 +646,11 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
 
       {/* Comments Section */}
       <div className="p-6 border-t border-dark-4">
-        <h3 className="text-sm font-semibold mb-4">Comments</h3>
-        {comments && comments.length > 0 ? (
-          <ul className="space-y-4 text-xs">
-            {visibleComments?.map((comment: any, index: number) => (
-              <Comment
-                comment={comment}
-                key={comment.$id || index}
-                setReply={setIsReply}
-                show="show"
-                setCommentId={setCommentId}
-                listId={list.$id}
-              />
-            ))}
-            {comments.length > 2 && (
-              <Link
-                to={`/lists/${list.$id}`}
-                className="text-primary-500 hover:underline text-xs inline-flex items-center"
-              >
-                View all {comments.length} comments
-                <ChevronRight size={14} className="ml-1" />
-              </Link>
-            )}
-          </ul>
-        ) : (
-          <p className="text-light-3 text-xs">
-            No comments yet. Be the first to comment!
-          </p>
-        )}
+        <h3 className="text-xs font-semibold mb-4">Comments</h3>
+        {renderComments()}
 
         {/* Comment Input Field */}
-        <form onSubmit={handleCommentSubmit} className="mt-4">
+        <form onSubmit={handleCommentSubmit} className="text-xs mt-4">
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
@@ -645,7 +658,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
               isReply ? "Write a reply..." : "Write a comment..."
             }
             className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
-            rows={3}
+            rows={1}
           />
           <div className="mt-2 flex items-center">
             <Button type="submit" variant="default">

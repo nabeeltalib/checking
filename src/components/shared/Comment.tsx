@@ -85,7 +85,7 @@ const Comment: React.FC<CommentProps> = ({
         <img
           src={comment.user.ImageUrl || '/assets/icons/profile-placeholder.svg'}
           alt={comment.user.Username}
-          className="w-10 h-10 rounded-full object-cover"
+          className="w-8 h-8 rounded-full object-cover"
         />
         <div className="flex-1">
           <div className="flex items-center justify-between">
@@ -103,7 +103,7 @@ const Comment: React.FC<CommentProps> = ({
               </button>
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-32 bg-dark-2 border border-gray-700 rounded-md shadow-lg z-10">
-                  <ul className="text-sm text-light-1">
+                  <ul className="text-xs text-light-1">
                     <li 
                       className="px-4 py-2 hover:bg-dark-3 cursor-pointer" 
                       onClick={handleReport}

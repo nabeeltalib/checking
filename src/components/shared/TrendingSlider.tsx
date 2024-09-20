@@ -55,7 +55,7 @@ const TrendingSlider: React.FC = () => {
   };
 
   return (
-    <div className="relative bg-gradient-to-r from-purple-900 to-blue-900 p-6 rounded-lg shadow-lg">
+    <div className="relative border-2 border-blue-900 p-6 rounded-lg shadow-lg">
       <h2 className="font-bold text-2xl md:text-3xl text-left w-full flex items-center mb-6 text-white">
         <Locate className="mr-2" />
         Trending In Your Area
@@ -65,9 +65,9 @@ const TrendingSlider: React.FC = () => {
           {loading ? (
             <LoadingSkeleton />
           ) : (
-            <motion.div 
+            <motion.div
               ref={sliderRef}
-              className="flex space-x-4 pb-4 overflow-x-auto scrollbar-hide"
+              className="flex space-x-4 pb-4 overflow-x-auto custom-scrollbar"
               whileTap={{ cursor: "grabbing" }}
               onScroll={checkScrollPosition}
             >
@@ -80,6 +80,7 @@ const TrendingSlider: React.FC = () => {
         {showLeftArrow && <ScrollButton direction="left" onClick={() => scroll('left')} />}
         {showRightArrow && <ScrollButton direction="right" onClick={() => scroll('right')} />}
       </div>
+
     </div>
   );
 };

@@ -67,14 +67,14 @@ const Reply: React.FC<ReplyProps> = ({ reply }) => {
   };
 
   return (
-    <div className="flex items-start space-x-3 bg-dark-4 rounded-lg p-3">
+    <div className="flex items-start space-x-3 bg-dark-1 rounded-lg p-3">
       <img
         src={reply.userId.ImageUrl || '/assets/icons/profile-placeholder.svg'}
         alt={reply.userId.Username}
-        className="w-8 h-8 rounded-full object-cover"
+        className="w-6 h-6 rounded-full object-cover"
       />
       <div className="flex-1">
-        <h5 className="font-semibold text-light-1 text-sm">
+        <h5 className="font-semibold text-light-1 text-xs">
           @{reply.userId.Username}
         </h5>
         <p className="text-light-2 text-sm mt-1">{reply.Content}</p>
@@ -108,7 +108,7 @@ const Reply: React.FC<ReplyProps> = ({ reply }) => {
                 <ul className="text-sm text-light-1">
                   
                   <li 
-                    className="px-4 py-2 hover:bg-dark-3 cursor-pointer" 
+                    className="text-xs px-4 py-2 hover:bg-dark-3 cursor-pointer" 
                     onClick={handleReport}
                     title="Report this reply"
                   >

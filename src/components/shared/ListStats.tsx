@@ -17,7 +17,7 @@ import { useUserContext } from "@/context/AuthContext";
 import { toast } from "../ui";
 import Comment from "./Comment";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
-import { Heart, Bookmark, MessageSquare, Wand, Code } from "lucide-react";
+import { Heart, Bookmark, MessageSquare, Wand, Code, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { checkIsLiked } from "@/lib/utils";
 
 interface ListStatsProps {
@@ -41,6 +41,7 @@ const ListStats: React.FC<ListStatsProps> = ({
   const [likes, setLikes] = useState<string[]>(list?.Likes || []);
   const [isSaved, setIsSaved] = useState(false);
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(true);
+  const [areAllCommentsVisible, setAreAllCommentsVisible] = useState(false);
   const { mutate: likeList } = useLikeList();
   const { mutate: saveList } = useSaveList();
   const { user } = useUserContext();
@@ -49,15 +50,14 @@ const ListStats: React.FC<ListStatsProps> = ({
   const { data: currentUser } = useGetUserById(id);
   const { data: comments, refetch: refetchComments } = useGetComments(list.$id);
   const [visibleComments, setVisibleComments] = useState<any>([]);
-  const queryClient = useQueryClient();
   const [newComment, setNewComment] = useState("");
   const { mutate: createComment } = useCreateComment();
   const [isReply, setIsReply] = useState(false);
   const [commentId, setCommentId] = useState("");
 
   useEffect(() => {
-    setVisibleComments(comments?.slice(0, 2) || []);
-  }, [comments]);
+    setVisibleComments(areAllCommentsVisible ? comments : (comments?.slice(0, 3) || []));
+  }, [comments, areAllCommentsVisible]);
 
   useEffect(() => {
     if (currentUser) {
@@ -125,7 +125,9 @@ const ListStats: React.FC<ListStatsProps> = ({
       });
     }
   };
-
+  const toggleCommentVisibility = () => {
+    setAreAllCommentsVisible(!areAllCommentsVisible);
+  };
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -214,27 +216,45 @@ const ListStats: React.FC<ListStatsProps> = ({
                     setCommentId={setCommentId}
                   />
                 ))}
-                {comments.length > 2 && (
-                  <Button
-                    variant="link"
-                    onClick={() => navigate(`/lists/${list.$id}`)}
-                    className="mt-2"
-                  >
-                    View all {comments.length} comments
-                  </Button>
+                {comments.length > 3 && (
+                  <div className="flex justify-between items-center mt-2">
+                    <Button
+                      variant="link"
+                      onClick={toggleCommentVisibility}
+                      className="text-blue-300 flex items-center"
+                    >
+                      {areAllCommentsVisible ? (
+                        <>
+                          <ChevronUp className="mr-2" size={16} />
+                          Show less
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="mr-2" size={16} />
+                          View {comments.length - 3} more comments
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="link"
+                      onClick={() => navigate(`/lists/${list.$id}`)}
+                      className="text-blue-300 flex items-center"
+                    >
+                      View all comments <ExternalLink className="ml-2" size={16} />
+                    </Button>
+                  </div>
                 )}
               </div>
             ) : (
               <p className={`${textSize} text-gray-500`}>No comments yet. Be the first to comment!</p>
             )}
-
             <form onSubmit={handleCommentSubmit} className="mt-6">
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder={isReply ? "Write a reply..." : "Write a comment..."}
                 className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
-                rows={3}
+                rows={1}
               />
               <div className="flex gap-2 mt-2">
                 <Button type="submit" variant="default">
