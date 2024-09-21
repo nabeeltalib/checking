@@ -150,12 +150,15 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="flex flex-col w-full mx-auto max-w-7xl bg-dark-1"
-    >
+    <div className="flex flex-col min-h-screen bg-dark-1">
+      {/* Main Content Wrapper */}
+      <div className="flex-1 overflow-y-auto">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col w-full bg-dark-1 px-4 sm:px-6 lg:px-8"
+        >
       {/* Cover Photo */}
       <div className="h-48 sm:h-64 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-b-lg relative">
         {isOwnProfile && (
@@ -169,7 +172,7 @@ const Profile: React.FC = () => {
         )}
       </div>
 
-     {/* User Info */}
+      {/* User Info */}
       <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 bg-dark-2 p-6 rounded-lg shadow-lg -mt-20 mx-4 relative z-10">
         <motion.img
           initial={{ scale: 0.8, opacity: 0 }}
@@ -177,12 +180,12 @@ const Profile: React.FC = () => {
           transition={{ duration: 0.3 }}
           src={currentUser.ImageUrl || "/assets/icons/profile-placeholder.svg"}
           alt={`${currentUser.Name}'s profile`}
-          className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover border-4 border-dark-1"
+          className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-dark-1"
         />
         <div className="text-center sm:text-left flex-grow">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between w-full">
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-light-1 flex items-center">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-light-1 flex items-center">
                 {currentUser.Name}
                 {!currentUser.Public && (
                   <Lock size={20} className="ml-2 text-yellow-500" title="Private Profile" />
@@ -278,41 +281,44 @@ const Profile: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex justify-center gap-4 mt-8 mb-6 bg-dark-2 p-2 rounded-full max-w-md mx-auto">
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-8 mb-6 bg-dark-2 p-2 rounded-full w-full max-w-md sm:max-w-lg mx-auto">
         <Button
           onClick={() => setActiveTab("lists")}
-          className={`py-2 px-6 rounded-full transition-all duration-300 flex items-center ${
-            activeTab === "lists" 
-              ? "bg-primary-500 text-white shadow-lg" 
+          className={`py-1.5 px-4 sm:py-2 sm:px-6 rounded-full transition-all duration-300 flex items-center ${
+            activeTab === "lists"
+              ? "bg-primary-500 text-white shadow-lg"
               : "bg-transparent text-light-2 hover:bg-dark-3"
           }`}
         >
-          <List size={18} className="mr-2" />
-          Rankings
+          <List size={16} className="mr-1.5 sm:mr-2" />
+          <span className="text-sm sm:text-base">Rankings</span>
         </Button>
+        
         <Button
           onClick={() => setActiveTab("liked")}
-          className={`py-2 px-6 rounded-full transition-all duration-300 flex items-center ${
+          className={`py-1.5 px-4 sm:py-2 sm:px-6 rounded-full transition-all duration-300 flex items-center ${
             activeTab === "liked"
               ? "bg-primary-500 text-white shadow-lg"
               : "bg-transparent text-light-2 hover:bg-dark-3"
           }`}
         >
-          <Heart size={18} className="mr-2" />
-          Liked Rankings
+          <Heart size={16} className="mr-1.5 sm:mr-2" />
+          <span className="text-sm sm:text-base">Liked Rankings</span>
         </Button>
+
         <Button
           onClick={() => setActiveTab("friends")}
-          className={`py-2 px-6 rounded-full transition-all duration-300 flex items-center ${
+          className={`py-1.5 px-4 sm:py-2 sm:px-6 rounded-full transition-all duration-300 flex items-center ${
             activeTab === "friends"
               ? "bg-primary-500 text-white shadow-lg"
               : "bg-transparent text-light-2 hover:bg-dark-3"
           }`}
         >
-          <Users size={18} className="mr-2" />
-          Friends
+          <Users size={16} className="mr-1.5 sm:mr-2" />
+          <span className="text-sm sm:text-base">Friends</span>
         </Button>
       </div>
+
 
      {/* Content based on selected tab */}
      <AnimatePresence mode="wait">
@@ -474,23 +480,6 @@ const Profile: React.FC = () => {
         </motion.div>
       </AnimatePresence>
 
-      {isOwnProfile && (
-        <div className="fixed bottom-4 right-4 flex flex-col gap-2">
-          <Button
-            className="bg-primary-500 text-white rounded-full p-3 shadow-lg hover:bg-primary-600 transition-colors duration-300"
-            onClick={() => navigate(`/manage-list/${id}`)}
-          >
-            <Settings size={24} />
-          </Button>
-          <Button
-            className="bg-secondary-500 text-white rounded-full p-3 shadow-lg hover:bg-secondary-600 transition-colors duration-300"
-            onClick={() => navigate("/userActivity")}
-          >
-            <Activity size={24} />
-          </Button>
-        </div>
-      )}
-
       {showFollowers && (
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
@@ -520,7 +509,29 @@ const Profile: React.FC = () => {
 
       <Outlet />
     </motion.div>
-  );
+    </div>
+
+{/* Bottom Tabs */}
+{isOwnProfile && (
+  <div className="fixed bottom-0 left-0 w-full">
+    <div className="flex justify-end p-4">
+      <Button
+        className="bg-primary-500 text-white rounded-full p-3 shadow-lg hover:bg-primary-600 transition-colors duration-300"
+        onClick={() => navigate(`/manage-list/${id}`)}
+      >
+        <Settings size={24} />
+      </Button>
+      <Button
+        className="bg-secondary-500 text-white rounded-full p-3 shadow-lg hover:bg-secondary-600 transition-colors duration-300 ml-2"
+        onClick={() => navigate("/userActivity")}
+      >
+        <Activity size={24} />
+      </Button>
+    </div>
+  </div>
+)}
+</div>
+);
 };
 
 export default Profile;

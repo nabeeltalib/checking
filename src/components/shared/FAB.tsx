@@ -1,16 +1,21 @@
+import React from 'react';
 import { useNavigate } from "react-router-dom";
+import useMediaQuery from '@/hooks/useMediaQuery'; // You'll need to create this custom hook
 
-const FAB = () => {
+const FAB: React.FC = () => {
   const navigate = useNavigate();
+  const isDesktop = useMediaQuery('(min-width: 640px)'); // sm breakpoint in Tailwind
 
   const handleClick = () => {
     navigate("/create-list");
   };
 
+  if (!isDesktop) return null; // Don't render anything on mobile
+
   return (
     <div className="fixed bottom-16 left-16 group">
       <button
-        className="bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 flex items-center justify-center hidden sm:flex"
+        className="bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 flex items-center justify-center"
         onClick={handleClick}
       >
         <svg

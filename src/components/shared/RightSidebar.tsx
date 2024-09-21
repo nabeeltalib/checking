@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageSquare, RefreshCw, LocateFixed } from 'lucide-react';
+import { Heart, MessageSquare, LocateFixed } from 'lucide-react';
 import { getMostLikedLists } from "@/lib/appwrite/api";
 import { useGetComments } from "@/lib/react-query/queries";
 
@@ -51,13 +51,13 @@ const RightSidebar: React.FC = () => {
       initial={{ x: 300 }}
       animate={{ x: 0 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="rightsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 fixed right-0 top-20 shadow-xl overflow-y-auto"
+      className="rightsidebar hidden lg:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 fixed right-0 top-20 shadow-xl overflow-y-auto"
     >
       <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold text-light-1 flex items-center">
+        <h2 className="text-xl font-bold text-light-1 flex items-center">
           <LocateFixed className="mr-2" />
-          Trending Rankings
+           In Your Area
         </h2>
         {/*<button onClick={handleRefresh} className="text-primary-500 hover:text-primary-600 transition-colors">
           <RefreshCw size={20} />

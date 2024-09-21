@@ -1,29 +1,34 @@
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { bottombarLinks } from "@/constants";
+import { Home, Compass, Award, PlusCircle, User } from "lucide-react";
 
-const Bottombar = () => {
+const Bottombar: React.FC = () => {
   const { pathname } = useLocation();
 
+  const bottombarLinks = [
+    { icon: Home, label: "Home", route: "/" },
+    { icon: Compass, label: "Explore", route: "/explore" },
+    { icon: PlusCircle, label: "Create", route: "/create-list" },
+    { icon: Award, label: "Leaderboard", route: "/comprehensive-leaderboard" },
+    { icon: User, label: "Profile", route: "/profile/profile" },
+  ];
+
   return (
-    <nav className="bottom-bar flex justify-around items-center bg-dark-2 py-2 shadow-md fixed bottom-0 left-0 right-0 w-full z-50">
+    <nav className="bottom-bar flex justify-around items-center bg-dark-2 py-2 px-4 fixed bottom-0 left-0 right-0 w-full z-50 border-t border-dark-4">
       {bottombarLinks.map((link) => {
         const isActive = pathname === link.route;
         return (
           <Link
             key={`bottombar-${link.label}`}
             to={link.route}
-            className={`flex flex-col items-center gap-1 p-2 transition-all duration-300 ${
-              isActive ? "bg-primary-500 rounded-[10px] text-light-1" : "text-light-2 hover:bg-dark-4"
+            className={`flex flex-col items-center justify-center w-16 h-16 rounded-full transition-all duration-300 ${
+              isActive
+                ? "bg-primary-500 text-white shadow-lg scale-110"
+                : "text-light-2 hover:bg-dark-4"
             }`}
           >
-            <img
-              src={link.imgURL}
-              alt={link.label}
-              width={20}
-              height={20}
-              className={`w-6 h-6 filter ${isActive ? '' : 'brightness-0 invert'}`}
-            />
-            <p className={`tiny-medium ${isActive ? "text-light-1" : "text-light-2"}`}>
+            <link.icon size={24} className={isActive ? "stroke-white" : "stroke-light-2"} />
+            <p className={`text-xs mt-1 ${isActive ? "text-white font-medium" : "text-light-2"}`}>
               {link.label}
             </p>
           </Link>
