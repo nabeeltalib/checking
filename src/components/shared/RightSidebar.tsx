@@ -1,41 +1,49 @@
-import React from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import rightSidebarLinks from '@/constants';
-import { Button } from '@/components/ui/button';
-import { useSignOutAccount } from '@/lib/react-query/queries';
-import { useUserContext, INITIAL_USER } from '@/context/AuthContext';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Users, User, Settings } from 'lucide-react';
+import { Heart, MessageSquare, RefreshCw, LocateFixed } from 'lucide-react';
+import { getMostLikedLists } from "@/lib/appwrite/api";
+import { useGetComments } from "@/lib/react-query/queries";
 
 const RightSidebar: React.FC = () => {
   const navigate = useNavigate();
-  const { setUser, setIsAuthenticated } = useUserContext();
-  const { mutate: signOut } = useSignOutAccount();
-  const { pathname } = useLocation();
+  const [allTrendingLists, setAllTrendingLists] = useState<any[]>([]);
+  const [displayedLists, setDisplayedLists] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleSignOut = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    signOut();
-    setIsAuthenticated(false);
-    setUser(INITIAL_USER);
-    navigate('/sign-in');
-  };
-
-  let rightSideBar = rightSidebarLinks();
-
-  const getIcon = (label: string) => {
-    switch (label) {
-      case 'Notifications':
-        return <Bell size={20} />;
-      case 'Collaboration':
-        return <Users size={20} />;
-      case 'My Profile':
-        return <User size={20} />;
-      case 'Admin Panel':
-        return <Settings size={20} />;
-      default:
-        return null;
+  const fetchTrendingLists = useCallback(async () => {
+    try {
+      const data = await getMostLikedLists();
+      const filteredLists = data.filter((list: any) => !list.isDeleted && list.Title && list.creator);
+      setAllTrendingLists(filteredLists);
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch trending lists:", error);
+      setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    fetchTrendingLists();
+  }, [fetchTrendingLists]);
+
+  useEffect(() => {
+    if (allTrendingLists.length > 0) {
+      const updateDisplayedLists = () => {
+        const shuffled = [...allTrendingLists].sort(() => 0.5 - Math.random());
+        setDisplayedLists(shuffled.slice(0, 5));
+      };
+
+      updateDisplayedLists();
+      const intervalId = setInterval(updateDisplayedLists, 10000); // Rotate every 10 seconds
+
+      return () => clearInterval(intervalId);
+    }
+  }, [allTrendingLists]);
+
+  const handleRefresh = () => {
+    const shuffled = [...allTrendingLists].sort(() => 0.5 - Math.random());
+    setDisplayedLists(shuffled.slice(0, 5));
   };
 
   return (
@@ -43,47 +51,99 @@ const RightSidebar: React.FC = () => {
       initial={{ x: 300 }}
       animate={{ x: 0 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="rightsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 fixed right-0 top-20 shadow-xl"
+      className="rightsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 fixed right-0 top-20 shadow-xl overflow-y-auto"
     >
-      <div className="flex flex-col gap-4 flex-grow">
-        <h2 className="text-xl font-bold text-light-1 mb-4">Quick Access</h2>
-        {rightSideBar.map((link) => (
-          <NavLink
-            key={link.label}
-            to={link.route}
-            className={({ isActive }) =>
-              `flex items-center gap-4 p-3 rounded-lg transition-all duration-200 ${
-                isActive
-                  ? 'bg-primary-500 text-light-1 shadow-md'
-                  : 'text-light-2 hover:bg-dark-3 hover:text-light-1 hover:shadow-md'
-              }`
-            }
-          >
-            {getIcon(link.label)}
-            <span>{link.label}</span>
-          </NavLink>
-        ))}
+      <div className="flex flex-col gap-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold text-light-1 flex items-center">
+          <LocateFixed className="mr-2" />
+          Trending Rankings
+        </h2>
+        {/*<button onClick={handleRefresh} className="text-primary-500 hover:text-primary-600 transition-colors">
+          <RefreshCw size={20} />
+        </button>*/}
       </div>
-      
-      <motion.div
-        className="flex flex-col gap-4 mt-6 mb-24"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-      >
-        <div className="text-xs text-gray-400 text-center mt-4">
-          <NavLink to="/privacypolicy" className="hover:text-white transition-colors duration-200">
-            Privacy Policy
-          </NavLink>
-          <span className="mx-2">|</span>
-          <NavLink to="/termsandconditions" className="hover:text-white transition-colors duration-200">
-            Terms & Conditions
-          </NavLink>
-          <p className="mt-2">&copy; 2024 Topfived. All rights reserved.</p>
-        </div>
-      </motion.div>
+
+
+        {loading ? (
+          <LoadingSkeleton />
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.ul
+              key={displayedLists.map(list => list.$id).join(',')}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4"
+            >
+              {displayedLists.map((list) => (
+                <TrendingListItem key={list.$id} list={list} navigate={navigate} />
+              ))}
+            </motion.ul>
+          </AnimatePresence>
+        )}
+
+        <button
+          className="mt-6 bg-primary-500 text-white py-2 px-4 rounded-lg shadow-lg hover:bg-primary-600 transition-all"
+          onClick={() => navigate('/trending')}
+        >
+          View More Trending
+        </button>
+      </div>
+
+      <div className="text-xs text-gray-400 text-center absolute bottom-20 left-0 right-0 p-4">
+        <NavLink to="/privacypolicy" className="hover:text-white transition-colors duration-200">
+          Privacy Policy
+        </NavLink>
+        <span className="mx-2">|</span>
+        <NavLink to="/termsandconditions" className="hover:text-white transition-colors duration-200">
+          Terms & Conditions
+        </NavLink>
+        <p className="mt-2">&copy; 2024 Topfived. All rights reserved.</p>
+      </div>
     </motion.aside>
   );
 };
+
+const TrendingListItem: React.FC<{ list: any; navigate: Function }> = ({ list, navigate }) => {
+  const { data: comments } = useGetComments(list.$id);
+
+  return (
+    <motion.li
+      className="bg-dark-3 rounded-lg p-4 shadow hover:bg-dark-4 transition-all cursor-pointer"
+      whileHover={{ y: -3 }}
+      onClick={() => navigate(`/lists/${list.$id}`)}
+    >
+      <h3 className="text-white text-sm font-semibold truncate">{list.Title}</h3>
+      <p className="text-xs text-gray-400 truncate">by {list.creator.Name}</p>
+      <div className="flex items-center mt-2 space-x-4">
+        <div className="flex items-center text-xs text-gray-400">
+          <Heart size={14} className="mr-1 text-red-500" />
+          {list.Likes?.length || 0}
+        </div>
+        <div className="flex items-center text-xs text-gray-400">
+          <MessageSquare size={14} className="mr-1 text-blue-500" />
+          {comments?.length || 0}
+        </div>
+      </div>
+    </motion.li>
+  );
+};
+
+const LoadingSkeleton: React.FC = () => (
+  <div className="space-y-4">
+    {[...Array(5)].map((_, index) => (
+      <div key={index} className="bg-dark-3 rounded-lg p-4 shadow animate-pulse">
+        <div className="h-4 bg-dark-4 rounded w-3/4 mb-2"></div>
+        <div className="h-3 bg-dark-4 rounded w-1/2 mb-3"></div>
+        <div className="flex items-center space-x-4">
+          <div className="h-3 bg-dark-4 rounded w-1/4"></div>
+          <div className="h-3 bg-dark-4 rounded w-1/4"></div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export default RightSidebar;

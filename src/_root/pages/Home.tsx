@@ -10,7 +10,6 @@ import { Models } from 'appwrite';
 import { motion, AnimatePresence } from "framer-motion";
 import { getConnection } from '@/lib/appwrite/api';
 import { Search, LampDesk } from 'lucide-react';
-import TrendingSlider from "@/components/shared/TrendingSlider";
 
 const Home: React.FC = () => {
   const { user } = useUserContext();
@@ -112,12 +111,7 @@ const Home: React.FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
             </div>
           </div>
-        </div>
-
-        {/* Trending Section */}
-        <div className="my-6 sm:my-6 lg:my-6 bg-dark-2 rounded-lg shadow-lg p-4 sm:p-6">
-          <TrendingSlider />
-        </div>
+        </div>        
 
         <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center">
           <LampDesk className="mr-2" />

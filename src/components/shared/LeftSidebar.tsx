@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { sidebarLinks } from '@/constants';
+import rightSidebarLinks from '@/constants';
 import { Button } from '@/components/ui/button';
 import { useSignOutAccount } from '@/lib/react-query/queries';
 import { useUserContext, INITIAL_USER } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, LogOut } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogOut, Bell, Users, User, Settings, Bookmark, Heart, Trending, Home, Compass, ChevronDown, ChevronUp } from 'lucide-react';
 
 const LeftSidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const LeftSidebar: React.FC = () => {
   const { mutate: signOut } = useSignOutAccount();
   const { pathname } = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const handleSignOut = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -24,14 +26,56 @@ const LeftSidebar: React.FC = () => {
 
   const toggleCollapse = () => {
     setIsCollapsed((prev) => !prev);
+    setOpenDropdown(null);
   };
+
+  const toggleDropdown = (label: string) => {
+    setOpenDropdown(openDropdown === label ? null : label);
+  };
+
+  const getIcon = (label: string) => {
+    switch (label) {
+      case 'Home': return <Home size={20} />;
+      case 'Explore': return <Compass size={20} />;
+      case 'Trending': return <Compass size={20} />;
+      case 'LeaderBoard': return <Heart size={20} />;
+      case 'Bookmarks': return <Bookmark size={20} />;
+      case 'Notifications': return <Bell size={20} />;
+      case 'Friends': return <Users size={20} />;
+      case 'Collaboration': return <Users size={20} />;
+      case 'My Profile': return <User size={20} />;
+      case 'Admin Panel': return <Settings size={20} />;
+      default: return null;
+    }
+  };
+
+  const groupedLinks = {
+    main: [{ label: 'Home', route: '/' }],
+    discover: [
+      { label: 'Explore', route: '/explore' },
+      { label: 'Trending', route: '/trending' },
+      { label: 'LeaderBoard', route: '/comprehensive-leaderboard' },
+    ],
+    social: [
+      { label: 'Friends', route: '/listfromfriends' },
+      { label: 'Collaboration', route: '/userlists' },
+    ],
+    personal: [
+      { label: 'Bookmarks', route: '/saved' },
+      { label: 'My Profile', route: '/profile/profile' },
+    ],
+  };
+
+  if (user.isAdmin) {
+    groupedLinks.personal.push({ label: 'Admin Panel', route: '/admin-panel' });
+  }
 
   return (
     <motion.aside
       initial={{ width: 256 }}
       animate={{ width: isCollapsed ? 80 : 256 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="leftsidebar flex flex-col justify-between h-screen bg-gradient-to-r from-purple-600 to-indigo-600 border-r border-dark-4 overflow-hidden fixed left-0 top-16 shadow-xl"
+      className="leftsidebar flex flex-col justify-between h-screen bg-dark-2 border-r border-dark-4 overflow-hidden fixed left-0 top-16 shadow-xl"
     >
       <div className="flex flex-col">
         <div className="flex items-center justify-between p-4">
@@ -62,44 +106,66 @@ const LeftSidebar: React.FC = () => {
             onClick={toggleCollapse}
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-primary-400 focus:outline-none"
+            className="text-light-1 hover:bg-dark-4 focus:outline-none"
             aria-label="Toggle Sidebar"
           >
             {isCollapsed ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
           </Button>
         </div>
 
-        <nav className="flex-grow flex flex-col gap-2 px-4 py-2">
-          {sidebarLinks.map((link) => (
-            <NavLink
-              key={link.label}
-              to={link.route}
-              className={({ isActive }) =>
-                `flex items-center gap-4 p-2 rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? 'bg-primary-500 text-white shadow-md'
-                    : 'text-white hover:bg-primary-400 hover:shadow-lg'
-                }`
-              }
-            >
-              <img
-                src={link.icon}
-                alt={link.label}
-                className={`w-6 h-6 ${pathname === link.route ? 'invert brightness-0' : 'filter invert brightness-0'}`}
-              />
+        <nav className="flex-grow flex flex-col gap-2 px-4 py-2 overflow-y-auto">
+          {Object.entries(groupedLinks).map(([group, links]) => (
+            <div key={group}>
+              {group !== 'main' && (
+                <button
+                  onClick={() => toggleDropdown(group)}
+                  className={`flex items-center justify-between w-full p-2 rounded-lg transition-all duration-200 ${
+                    openDropdown === group ? 'bg-dark-4 text-light-1' : 'text-light-2 hover:bg-dark-4 hover:text-light-1'
+                  }`}
+                >
+                  <span className="capitalize">{group}</span>
+                  {openDropdown === group ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              )}
               <AnimatePresence>
-                {!isCollapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
+                {(group === 'main' || openDropdown === group || isCollapsed) && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    {link.label}
-                  </motion.span>
+                    {links.map((link) => (
+                      <NavLink
+                        key={link.label}
+                        to={link.route}
+                        className={({ isActive }) =>
+                          `flex items-center gap-4 p-2 rounded-lg transition-all duration-200 ${
+                            isActive
+                              ? 'bg-primary-500 text-white shadow-md'
+                              : 'text-light-2 hover:bg-dark-4 hover:text-light-1 hover:shadow-md'
+                          }`
+                        }
+                      >
+                        {getIcon(link.label)}
+                        <AnimatePresence>
+                          {!isCollapsed && (
+                            <motion.span
+                              initial={{ opacity: 0, width: 0 }}
+                              animate={{ opacity: 1, width: 'auto' }}
+                              exit={{ opacity: 0, width: 0 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              {link.label}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </NavLink>
+                    ))}
+                  </motion.div>
                 )}
               </AnimatePresence>
-            </NavLink>
+            </div>
           ))}
         </nav>
       </div>
