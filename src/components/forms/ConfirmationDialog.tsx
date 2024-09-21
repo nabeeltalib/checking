@@ -20,12 +20,15 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   useEffect(() => {
     if (isOpen) {
       cancelButtonRef.current?.focus();
+
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
           onClose();
         }
       };
+
       window.addEventListener('keydown', handleKeyDown);
+
       return () => {
         window.removeEventListener('keydown', handleKeyDown);
       };
@@ -39,10 +42,16 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
       className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
       aria-modal="true"
       role="dialog"
+      aria-labelledby="dialog-title"
+      aria-describedby="dialog-description"
     >
       <div className="bg-dark-2 p-8 rounded-lg max-w-md w-full shadow-lg">
-        <h2 className="text-2xl font-bold mb-4 text-light-1">{title}</h2>
-        <p className="mb-6 text-light-3">{description}</p>
+        <h2 id="dialog-title" className="text-2xl font-bold mb-4 text-light-1">
+          {title}
+        </h2>
+        <p id="dialog-description" className="mb-6 text-light-3">
+          {description}
+        </p>
         <div className="flex justify-end space-x-4">
           <button
             ref={cancelButtonRef}

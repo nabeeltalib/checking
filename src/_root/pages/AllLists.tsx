@@ -46,9 +46,9 @@ const AllLists: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-         Discover & Engage
+        Discover & Engage
       </motion.h1>
-      
+
       {aiSuggestions && aiSuggestions.length > 0 && (
         <motion.div 
           className="mb-12 bg-dark-3 rounded-lg p-6 shadow-lg"
@@ -88,7 +88,7 @@ const AllLists: React.FC = () => {
               >
                 {aiSuggestions.map((suggestion, index) => (
                   <motion.li 
-                    key={index} 
+                    key={`suggestion-${index}`}  // Using unique key prefix
                     className="text-light-1 bg-dark-2 p-4 rounded-lg hover:bg-dark-4 transition-colors duration-200 cursor-pointer"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -111,14 +111,6 @@ const AllLists: React.FC = () => {
         </div>
       ) : (
         <>
-          <motion.h2 
-            className="text-2xl font-semibold text-light-1 mb-6"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-           
-          </motion.h2>
           <motion.div 
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6"
             initial={{ opacity: 0 }}
@@ -126,26 +118,18 @@ const AllLists: React.FC = () => {
             transition={{ duration: 0.5, delay: 0.3 }}
           >
             {lists?.pages.map((page, pageIndex) => (
-              <React.Fragment key={pageIndex}>
+              <React.Fragment key={`page-${pageIndex}`}>
                 {page?.documents.map((document: Models.Document) => {
                   const list = document as unknown as IList;
-                  return user.id ? (
+                  const ListComponent = user.id ? ListCard2 : ListCard;  // Simplifying the user condition
+                  return (
                     <motion.div
                       key={list.$id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: pageIndex * 0.1 }}
                     >
-                      <ListCard2 list={list} />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key={list.$id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: pageIndex * 0.1 }}
-                    >
-                      <ListCard list={list} />
+                      <ListComponent list={list} />
                     </motion.div>
                   );
                 })}

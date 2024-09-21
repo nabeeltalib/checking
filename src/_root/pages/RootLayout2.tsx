@@ -7,7 +7,7 @@ import { useSignInWithGoogle } from "@/lib/react-query/queries";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-const RootLayout2 = () => {
+const RootLayout2: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { mutateAsync: signInWithGoogle } = useSignInWithGoogle();
@@ -18,13 +18,12 @@ const RootLayout2 = () => {
       setIsDialogOpen(false); // Close dialog on successful sign-in
     } catch (error) {
       console.error("Google Sign-In failed", error);
-      // Handle error (e.g., show error message)
+      // Optionally, you can set an error message or trigger a toast
     }
   };
 
-  const handleDialogOpen = () => {
-    setIsDialogOpen(true);
-  };
+  const openDialog = () => setIsDialogOpen(true);
+  const closeDialog = () => setIsDialogOpen(false);
 
   return (
     <div className="flex flex-col md:flex-row w-full">
@@ -48,7 +47,7 @@ const RootLayout2 = () => {
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-75 z-50 p-4 sm:p-8">
           <div className="relative bg-white p-6 sm:p-8 rounded-lg shadow-2xl w-full max-w-md md:max-w-lg">
             <button
-              onClick={() => setIsDialogOpen(false)}
+              onClick={closeDialog}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
               aria-label="Close"
             >
@@ -58,7 +57,9 @@ const RootLayout2 = () => {
             </button>
             <div className="text-center">
               <h3 className="text-2xl font-bold text-gray-800 mb-4">Unlock Full Access!</h3>
-              <p className="text-sm sm:text-sm text-gray-600 mb-6">Sign up now to like, comment, save, and remix lists. Create your own rankings and join the community!</p>
+              <p className="text-sm text-gray-600 mb-6">
+                Sign up now to like, comment, save, and remix lists. Create your own rankings and join the community!
+              </p>
             </div>
             <div className="flex flex-col gap-4">
               <Button

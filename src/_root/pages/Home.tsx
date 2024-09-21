@@ -9,7 +9,7 @@ import { IList } from '@/types';
 import { Models } from 'appwrite';
 import { motion, AnimatePresence } from "framer-motion";
 import { getConnection } from '@/lib/appwrite/api';
-import { Search } from 'lucide-react';
+import { Search, LampDesk } from 'lucide-react';
 import TrendingSlider from "@/components/shared/TrendingSlider";
 
 const Home: React.FC = () => {
@@ -78,10 +78,12 @@ const Home: React.FC = () => {
       {/* Header Section */}
       <header className="w-full bg-dark-1 py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl text-orange-300 font-bold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-           {user.name}, Top Five Everything!
+          <h2 className="text-xl md:text-xl text-blue-300 font-bold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+           What's in your Top Five?
           </h2>
-          
+          <h2 className="text-3xl md:text-3xl text-blue-300 font-semibold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+           {user.name}
+          </h2>
           {user && (
             <div className="text-sm text-gray-300 mt-5 flex justify-center space-x-4">
               <span>{connection?.follower?.length || 0} followers</span>
@@ -90,7 +92,7 @@ const Home: React.FC = () => {
             </div>
           )}
           
-          <p className="text-lg sm:text-xl text-gray-200 mt-8">Discover • Debate • Create</p>
+          <p className="text-base sm:text-xl text-thin text-blue-200 mt-8">Your World's Recommendations On Everything • Debate The Best</p>
         </div>
       </header>
 
@@ -102,7 +104,7 @@ const Home: React.FC = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search for titles, tags or rankings..."
+                placeholder="Search for rankings, titles, or tags ..."
                 value={searchTerm}
                 onChange={handleSearchChange}
                 className="w-full bg-dark-4 text-light-1 pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -117,7 +119,8 @@ const Home: React.FC = () => {
           <TrendingSlider />
         </div>
 
-        <h3 className="text-xl sm:text-2xl lg:text-2xl font-light text-blue-300 p-9">
+        <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center">
+          <LampDesk className="mr-2" />
           Home Feed
         </h3>
 

@@ -105,9 +105,9 @@ const Saved: React.FC = () => {
               className="grid grid-cols-1 md:grid-cols-2 gap-6"
               variants={containerVariants}
             >
-              {savedLists.map((list: any, index) => (
+              {savedLists.map((list: any) => (
                 <motion.div
-                  key={`${list.$id}-${index}`}
+                  key={list.$id}
                   variants={itemVariants}
                   className="bg-dark-2 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
                   whileHover={{ y: -5 }}

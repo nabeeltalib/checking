@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { getMostLikedLists } from "@/lib/appwrite/api";
-import { Locate, ChevronLeft, ChevronRight, Heart, MessageSquare } from "lucide-react";
+import { Pin, ChevronLeft, ChevronRight, Heart, MessageSquare } from "lucide-react";
 
 const TrendingSlider: React.FC = () => {
   const [trendingLists, setTrendingLists] = useState<any[]>([]);
@@ -15,7 +15,7 @@ const TrendingSlider: React.FC = () => {
   const fetchTrendingLists = useCallback(async () => {
     try {
       const data = await getMostLikedLists();
-      const filteredLists = data.filter((list: any) => !list.isDeleted);
+      const filteredLists = data.filter((list: any) => !list.isDeleted && list.Title && list.creator);
       setTrendingLists(filteredLists);
       setLoading(false);
     } catch (error) {
@@ -57,7 +57,7 @@ const TrendingSlider: React.FC = () => {
   return (
     <div className="relative border-2 border-blue-900 p-6 rounded-lg shadow-lg">
       <h2 className="font-bold text-2xl md:text-3xl text-left w-full flex items-center mb-6 text-white">
-        <Locate className="mr-2" />
+        <Pin className="mr-2" />
         Trending In Your Area
       </h2>
       <div className="relative overflow-hidden">
@@ -72,7 +72,7 @@ const TrendingSlider: React.FC = () => {
               onScroll={checkScrollPosition}
             >
               {trendingLists.map((list, index) => (
-                <TrendingCard key={list.$id || index} list={list} navigate={navigate} />
+                <TrendingCard key={list.$id ? list.$id : `list-${index}`} list={list} navigate={navigate} />
               ))}
             </motion.div>
           )}
@@ -80,7 +80,6 @@ const TrendingSlider: React.FC = () => {
         {showLeftArrow && <ScrollButton direction="left" onClick={() => scroll('left')} />}
         {showRightArrow && <ScrollButton direction="right" onClick={() => scroll('right')} />}
       </div>
-
     </div>
   );
 };
@@ -123,7 +122,7 @@ const ScrollButton: React.FC<{ direction: 'left' | 'right'; onClick: () => void 
 const LoadingSkeleton: React.FC = () => (
   <div className="flex space-x-4">
     {[...Array(4)].map((_, index) => (
-      <div key={index} className="bg-white bg-opacity-10 p-4 rounded-lg shadow-lg w-64 h-48 animate-pulse">
+      <div key={index} className="bg-white bg-opacity-10 p-4 rounded-lg shadow-lg w-64 h-28 animate-pulse">
         <div className="h-6 bg-white bg-opacity-20 rounded w-3/4 mb-2"></div>
         <div className="h-4 bg-white bg-opacity-20 rounded w-1/2 mb-4"></div>
         <div className="h-20 bg-white bg-opacity-20 rounded"></div>

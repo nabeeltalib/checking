@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Crown } from "lucide-react"; // Import Trophy icon
 
 interface ListPreviewProps {
   title: string;
@@ -16,22 +17,18 @@ const ListPreview: React.FC<ListPreviewProps> = ({ title, description, items, ca
   const visibleItems = isExpanded ? items : items.slice(0, 5);
 
   return (
-    <div className="text-slate-600 p-6 bg-dark-4 rounded-lg shadow-md">      PREVIEW
-      <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-2">
-        {/* Button moved to the right for both mobile and desktop views */}
-       </div>
+    <div className="text-slate-600 p-6 bg-gray-900 rounded-lg shadow-md">
+      <p className="text-slate-500 text-xs mb-4">Your Preview</p>
 
-      <div className="bg-dark-3 text-slate-600 text-center text-xl font-thin py-1 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
-        Your Ranking For
-      </div>
-
-      <h4 className="text-md font-bold text-blue-300 mt-4 mb-6">{title || "Title"}</h4>
-
+      <h4 className="text-yellow-500 text-md font-bold mt-4 mb-3">{title || "Title"}</h4>
+      {description && (
+        <p className="text-light-2 text-xs mb-4">{description.length > 100 ? description.substring(0, 100) + '...' : description}</p>
+      )}
       <ul className="text-xs grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
         {visibleItems.filter(item => item.isVisible).map((item, index) => (
-          <li key={index} className="p-2 bg-dark-1 text-light-1 rounded-md shadow-md flex items-center">
-            <span className="text-xs w-6 h-6 flex items-center justify-center bg-dark-4 text-blue-300 rounded-full mr-2">
-              {index + 1}
+          <li key={index} className="text-xs text-white flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300">
+            <span className="text-sm font-bold text-yellow-500 mr-4">
+              {index === 0 ? <Crown size={20} className="text-yellow-500" /> : index + 1}
             </span>
             <span>{item.content || "ranking"}</span>
           </li>
@@ -44,10 +41,6 @@ const ListPreview: React.FC<ListPreviewProps> = ({ title, description, items, ca
           className="text-primary-500 font-semibold block mx-auto sm:mx-0">
           {isExpanded ? "Show Less" : "Show More"}
         </button>
-      )}
-
-      {description && (
-        <p className="text-sm text-gray-500 mt-4">{description.length > 100 ? description.substring(0, 100) + '...' : description}</p>
       )}
 
       <div className="flex flex-wrap gap-2 mt-6">

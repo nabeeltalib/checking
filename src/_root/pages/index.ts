@@ -20,3 +20,4 @@ export { default as PrivacyPolicy } from "./PrivacyPolicy";
 export { default as TermsAndConditions } from "./TermsAndConditions";
 export { default as CookiePolicy } from "./CookiePolicy";
 export { default as Explore2 } from "./Explore2";
+export { default as ComprehensiveLeaderboard } from "./ComprehensiveLeaderboard";

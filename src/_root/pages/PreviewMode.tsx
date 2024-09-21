@@ -3,13 +3,18 @@ import { getPublicLists } from '@/lib/appwrite/api';
 import ListCard from '@/components/shared/ListCard';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from "framer-motion";
-import { Search, Filter, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, X } from 'lucide-react';
+
+interface IList {
+  $id: string;
+  [key: string]: any; // Adjust based on your list's shape
+}
 
 const PreviewMode: React.FC = () => {
-  const [publicLists, setPublicLists] = useState<any>([]);
+  const [publicLists, setPublicLists] = useState<IList[]>([]);
   const [isContentLoaded, setIsContentLoaded] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -57,12 +62,11 @@ const PreviewMode: React.FC = () => {
   return (
     <div className="mt-4 flex flex-col w-full items-center bg-dark-1 min-h-screen">
       <header className="w-full bg-dark-1 py-4">
-        <div className="max-w-5xl mx-auto px-4">
-          <div className="text-wrap text-2xl md:text-4xl text-center text-orange-300 gap-2 md:gap-4 mb-4 font-bold" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-            <span>Is your top five better?
-            </span>
+        <div className="max-w-5xl mx-auto px-4 text-center">
+          <div className="text-2xl md:text-3xl text-blue-300 font-bold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+            <span>What's in Your Top Five??</span>
           </div>
-          <h1 className="h3-light md:h2-light text-center w-full">Explore Opinions on Anything and Everything</h1>
+          <p className="text-base sm:text-xl text-thin text-blue-200 mt-8">Your World's Recommendations On Everything • Debate The Best</p>
         </div>
       </header>
 
@@ -79,17 +83,6 @@ const PreviewMode: React.FC = () => {
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
           </div>
-          {/*<div className="text-xs flex items-center gap-2">
-            <Filter className="text-light-3" />
-            <select 
-              className="bg-dark-3 text-light-1 p-2 rounded-md"
-              onChange={() => setIsDialogOpen(true)}
-            >
-              <option value="">Filter Lists</option>
-              <option value="category">Category</option>
-              <option value="tags">Tags</option>
-            </select>
-          </div>*/}
         </div>
       </div>
 
@@ -102,9 +95,9 @@ const PreviewMode: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
           >
-            {publicLists.map((list: any, index: number) => (
+            {publicLists.map((list: IList) => (
               <motion.div
-                key={index}
+                key={list.$id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
@@ -116,8 +109,8 @@ const PreviewMode: React.FC = () => {
           </motion.div>
         </AnimatePresence>
 
-        <Button 
-          onClick={() => navigate('/sign-in')} 
+        <Button
+          onClick={() => navigate('/sign-in')}
           className="w-full md:w-auto mx-auto bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out"
         >
           Sign Up/Sign In to Access More Features
@@ -147,7 +140,9 @@ const PreviewMode: React.FC = () => {
               </button>
               <div className="text-center">
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Unlock Full Access!</h3>
-                <p className="text-sm sm:text-base text-gray-600 mb-6">Sign up now to search, like, comment, save, and remix lists. Create your own rankings and join the community!</p>
+                <p className="text-sm sm:text-base text-gray-600 mb-6">
+                  Sign up now to search, like, comment, save, and remix lists. Create your own rankings and join the community!
+                </p>
               </div>
               <div className="flex flex-col gap-4">
                 <Button

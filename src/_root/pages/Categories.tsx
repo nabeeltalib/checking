@@ -3,14 +3,15 @@ import ListCard2 from "@/components/shared/ListCard2";
 import { getAllLists } from "@/lib/appwrite/api";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { IList } from "@/types"; // Assuming you have a proper IList type defined
 
 const Categories = () => {
-  const [allLists, setAllLists] = useState<any>([]);
-  const [filteredLists, setFilteredLists] = useState<any>([]);
+  const [allLists, setAllLists] = useState<IList[]>([]);
+  const [filteredLists, setFilteredLists] = useState<IList[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const { value } = useParams();
+  const { value } = useParams<{ value: string }>();
 
-  const isValue = value === "no-value" ? "" : value;
+  const searchValue = value === "no-value" ? "" : value || "";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,22 +30,22 @@ const Categories = () => {
   }, []);
 
   useEffect(() => {
-    if (isValue) {
-      handleSearch(isValue);
+    if (searchValue) {
+      handleSearch(searchValue);
     } else {
       setFilteredLists(allLists);
     }
-  }, [isValue, allLists]);
+  }, [searchValue, allLists]);
 
   const handleSearch = (query: string) => {
-    if (query) {
-      const lowercasedQuery = query.toLowerCase().trim();
+    const lowercasedQuery = query.toLowerCase().trim();
+    if (lowercasedQuery) {
       const filtered = allLists.filter(
-        (list: any) =>
-          list.Categories.some((category: string) =>
+        (list) =>
+          list.Categories?.some((category) =>
             category.toLowerCase().includes(lowercasedQuery)
           ) ||
-          list.Tags.some((tag: string) =>
+          list.Tags?.some((tag) =>
             tag.toLowerCase().includes(lowercasedQuery)
           )
       );
@@ -59,14 +60,14 @@ const Categories = () => {
       <h1 className="font-extralight text-2xl text-left w-full mt-8" style={{ fontFamily: "'Permanent Marker', cursive" }}>
         Explore Lists by Categories or Tags
       </h1>
-      <SearchBar onSearch={handleSearch} query={isValue || ""} />
+      <SearchBar onSearch={handleSearch} query={searchValue} />
 
       <div className="flex flex-col w-full gap-6 mt-5">
         {isLoading ? (
           <Loader />
         ) : filteredLists.length > 0 ? (
-          filteredLists.map((list: any, index: number) => (
-            <ListCard2 list={list} key={index} />
+          filteredLists.map((list) => (
+            <ListCard2 list={list} key={list.$id} />
           ))
         ) : (
           <p className="text-light-2">No lists found matching your criteria.</p>

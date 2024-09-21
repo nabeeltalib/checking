@@ -4,8 +4,13 @@ import { getUsers } from "@/lib/appwrite/config";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, UserPlus, AlertCircle } from 'lucide-react';
 
+interface IUser {
+  $id: string;
+  [key: string]: any; // Add more properties as needed for the user object
+}
+
 const Userlist: React.FC = () => {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<IUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -53,7 +58,7 @@ const Userlist: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="flex flex-col items-center min-h-screen bg-gray-900"
     >
-      <header className="w-full bg-bg-gray-800 dark:bg-gray-800 shadow-md p-6 mb-8">
+      <header className="w-full bg-bg-gray-800 shadow-md p-6 mb-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold text-white flex items-center mb-4">
             <Users className="mr-2" size={32} />
@@ -63,7 +68,7 @@ const Userlist: React.FC = () => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-blue-900 dark:bg-blue-900 p-4 rounded-lg"
+            className="bg-blue-900 p-4 rounded-lg"
           >
             <h2 className="text-xl font-semibold mb-2 text-blue-200 flex items-center">
               <AlertCircle className="mr-2" size={24} />
@@ -99,8 +104,8 @@ const Userlist: React.FC = () => {
             animate="visible"
           >
             <AnimatePresence>
-              {users.map((user: any, index: number) => (
-                <motion.div key={user.$id || index} variants={itemVariants}>
+              {users.map((user: IUser) => (
+                <motion.div key={user.$id} variants={itemVariants}>
                   <UserCard user={user} listId="" />
                 </motion.div>
               ))}

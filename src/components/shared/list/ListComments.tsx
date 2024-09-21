@@ -17,8 +17,8 @@ const ListComments: React.FC<{ listId: string }> = ({ listId }) => {
       try {
         const listComments = await getListComments(listId);
         setComments(listComments);
-      } catch (error) {
-        console.error('Error fetching comments:', error);
+      } catch (err) {
+        console.error('Error fetching comments:', err);
         setError('Failed to load comments. Please try again later.');
       } finally {
         setIsLoading(false);
@@ -29,15 +29,15 @@ const ListComments: React.FC<{ listId: string }> = ({ listId }) => {
 
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
-    
+
     const optimisticComment: IComment = {
       id: Date.now().toString(),
       content: newComment,
-      user: { id: 'temp', name: 'You' }, // Assume "You" as the current user for optimistic update
+      user: { id: 'temp', name: 'You' }, // Optimistic placeholder for the current user
     };
 
     setComments((prevComments) => [...prevComments, optimisticComment]);
-    setNewComment('');
+    setNewComment(''); // Clear the input field
 
     setIsSubmitting(true);
     try {
@@ -45,11 +45,11 @@ const ListComments: React.FC<{ listId: string }> = ({ listId }) => {
       setComments((prevComments) =>
         prevComments.map((c) => (c.id === optimisticComment.id ? comment : c))
       );
-    } catch (error) {
-      console.error('Error adding comment:', error);
+    } catch (err) {
+      console.error('Error adding comment:', err);
       setError('Failed to add comment. Please try again.');
       setComments((prevComments) =>
-        prevComments.filter((c) => c.id !== optimisticComment.id)
+        prevComments.filter((c) => c.id !== optimisticComment.id) // Remove optimistic comment if error occurs
       );
     } finally {
       setIsSubmitting(false);
@@ -93,7 +93,10 @@ const ListComments: React.FC<{ listId: string }> = ({ listId }) => {
           disabled={isSubmitting}
           maxLength={500} // Optional: Set a max length for comments
         />
-        <Button onClick={handleAddComment} disabled={isSubmitting || !newComment.trim()}>
+        <Button
+          onClick={handleAddComment}
+          disabled={isSubmitting || !newComment.trim()}
+        >
           {isSubmitting ? 'Adding...' : 'Add Comment'}
         </Button>
       </div>

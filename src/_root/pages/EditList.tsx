@@ -7,22 +7,23 @@ import { useUserContext } from '@/context/AuthContext';
 import { useToast } from "@/components/ui/use-toast";
 import { IList, IListItem } from "@/types";
 
-const EditList = () => {
-  const { id } = useParams();
+const EditList: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const { data: list, isLoading, isError } = useGetListById(id);
   const { user } = useUserContext();
   const navigate = useNavigate();
   const { toast } = useToast();
   const { mutateAsync: updateList, isLoading: isUpdating } = useUpdateList();
 
-  // useEffect(() => {
-  //   if (list && user && list.creator.$id !== user.id) {
-  //     navigate(`/lists/${id}`);
-  //   }
-  // }, [list, user, id, navigate]);
+  useEffect(() => {
+    if (list && user && list.creator.$id !== user.id) {
+      navigate(`/lists/${id}`);
+    }
+  }, [list, user, id, navigate]);
 
   const handleUpdateList = async (updatedListData: IList) => {
     if (!id) return;
+
     try {
       const transformedListData = {
         ...updatedListData,
@@ -32,14 +33,17 @@ const EditList = () => {
           }
           return item;
         }),
-        listId: id
+        listId: id,
       };
+
       await updateList(transformedListData);
+
       toast({
         title: "List updated successfully!",
         description: "Your list has been updated and re-indexed.",
         variant: "success",
       });
+
       navigate(`/lists/${id}`);
     } catch (error) {
       toast({

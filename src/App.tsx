@@ -119,7 +119,6 @@ const App = () => {
           <Route path="/helpfaqpage" element={<HelpFAQPage />} />
           <Route path="/contactpage" element={<ContactPage />} />          
           <Route path="/comprehensive-leaderboard" element={<ComprehensiveLeaderboard />} /> {/* New route */}
-          <Route path="/comprehensive-leaderboard2" element={<ComprehensiveLeaderboard2 />} /> {/* New route */}
           <Route path="/privacypolicy" element={<PrivacyPolicy />} />
           <Route path="/termsandconditions" element={<TermsAndConditions />} />
           <Route path="/cookiepolicy" element={<CookiePolicy />} />
@@ -145,7 +144,6 @@ const App = () => {
     <Route path="/onboarding-page" element={<OnboardingPage />} /> {/* New route */}
     <Route path="/helpfaqpage" element={<HelpFAQPage />} />
     <Route path="/contactpage" element={<ContactPage />} />          
-    <Route path="/comprehensive-leaderboard" element={<ComprehensiveLeaderboard />} /> {/* New route */}
     <Route path="/comprehensive-leaderboard2" element={<ComprehensiveLeaderboard2 />} /> {/* New route */}
     <Route path="/privacypolicy" element={<PrivacyPolicy />} />
     <Route path="/termsandconditions" element={<TermsAndConditions />} />

@@ -7,6 +7,7 @@ import {
   MessageCircle,
   Bookmark,
   MapPin,
+  Crown, 
   Clock,
   ChevronDown,
   ChevronUp,
@@ -161,6 +162,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const handleLikeList = useCallback(async () => {
     setAnimatingButton('like');
     if (!list) return;
+    const previousLikes = likes; // Store previous state in case of failure
     let newLikes = likes.includes(id)
       ? likes.filter((Id) => Id !== id)
       : [...likes, id];
@@ -169,6 +171,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       await likeList({ listId: list.$id, likesArray: newLikes });
     } catch (error) {
       console.error("Error liking list:", error);
+      setLikes(previousLikes); // Revert to previous likes if there's an error
       toast({
         title: "Error",
         description: "Failed to like the list. Please try again.",
@@ -176,7 +179,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       });
     }
     setTimeout(() => setAnimatingButton(null), 300);
-  }, [likes, id, likeList, list, toast]);
+  }, [likes, id, likeList, list, toast]);  
 
   const handleSaveList = useCallback(async () => {
     setAnimatingButton('save');
@@ -298,9 +301,9 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
 
   const renderListItems = useMemo(() => {
     if (!list || !list.items) return null;
-
+  
     let items: Array<any> = [];
-
+  
     if (Array.isArray(list.items)) {
       items = list.items;
     } else if (typeof list.items === "string") {
@@ -310,24 +313,24 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     }
 
     return items
-      .slice(0, isExpanded ? items.length : 5)
-      .map((item, index) => (
-        <motion.li
-          key={index}
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: index * 0.1 }}
-          className="flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300"
-        >
-          <span className="text-lg font-bold text-yellow-500 mr-4">
-            {index + 1}
-          </span>
-          <span className="text-sm text-white truncate">
-            {typeof item === "string" ? item : item.content || ""}
-          </span>
-        </motion.li>
-      ));
-  }, [list?.items, isExpanded]);
+    .slice(0, isExpanded ? items.length : 5)
+    .map((item, index) => (
+      <motion.li
+        key={index}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: index * 0.1 }}
+        className="flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300"
+      >
+        <span className="text-lg font-bold text-yellow-500 mr-4">
+          {index === 0 ? <Crown size={20} className="text-yellow-500" /> : index + 1}
+        </span>
+        <span className="text-sm text-white truncate">
+          {typeof item === "string" ? item : item.content || ""}
+        </span>
+      </motion.li>
+    ));
+}, [list?.items, isExpanded]);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

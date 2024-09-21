@@ -6,7 +6,7 @@ import ListForm from '@/components/forms/ListForm';
 import { Loader } from "@/components/shared";
 import { useUserContext } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { RefreshCcw, ArrowLeft } from 'lucide-react';
+import { PlugZap, ArrowLeft } from 'lucide-react';
 
 const RemixList: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -65,26 +65,26 @@ const RemixList: React.FC = () => {
       <div className="flex items-center justify-between w-full mb-8">
         <Button 
           type="button" 
-          className="shad-button_ghost"
+          className="text-primary-500 shad-button_ghost"
           onClick={() => navigate(-1)}
         >
           <ArrowLeft size={20} className="mr-2" />
           Back
         </Button>
-        <h1 className="text-orange-300 h3-bold md:h2-bold text-center flex-1">Remix List</h1>
+        <h1 className="text-blue-300 h3-bold md:h2-bold text-center flex-1">Remix List</h1>
         <div className="w-[70px]"></div> {/* Spacer for alignment */}
       </div>
 
       <div className="bg-dark-2 p-6 rounded-lg shadow-lg w-full mb-8">
         <div className="flex items-center mb-4 ">
-        <span className="text-primary-500">
-          <img src="/assets/icons/remix3.svg" alt="Remix" className="w-14 h-14 mr-2" />
-        </span>         
+        <h3 className="text-2xl font-light text-blue-200 mb-4 flex items-center">
+          <PlugZap className="mr-2" />
+          Show them you know better
+        </h3>      
          
-          <h2 className="text-xl font-bold text-light-1">You're Remixing</h2>
         </div>
-        <p className="text-light-2 text-lg mb-2">"{originalList.Title}"</p>
-        <p className="text-light-3 text-sm">
+        <p className="text-yellow-400 text-lg mb-2">"{originalList.Title}"</p>
+        <p className="text-gray-400 text-sm">
           Originally created by <span className="font-semibold">{originalList.creator.Name}</span>
         </p>
       </div>

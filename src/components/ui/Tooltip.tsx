@@ -1,112 +1,142 @@
-import React, { useState, useRef, useEffect, createContext, useContext } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface TooltipContextType {
-  isVisible: boolean;
-  showTooltip: () => void;
-  hideTooltip: () => void;
-  triggerRef: React.RefObject<HTMLElement>;
-}
-
-const TooltipContext = createContext<TooltipContextType | undefined>(undefined);
-
-export const TooltipProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const Tooltip = ({
+  content,
+  children,
+  position = 'top',
+  showDelay = 300,
+  hideDelay = 100,
+}) => {
   const [isVisible, setIsVisible] = useState(false);
-  const showTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const triggerRef = useRef<HTMLElement>(null);
+  const [coords, setCoords] = useState({ x: 0, y: 0 });
+  const triggerRef = useRef(null);
+  const tooltipRef = useRef(null);
+  const showTimeoutRef = useRef(null);
+  const hideTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      if (triggerRef.current && tooltipRef.current) {
+        const triggerRect = triggerRef.current.getBoundingClientRect();
+        const tooltipRect = tooltipRef.current.getBoundingClientRect();
+        let x = 0,
+          y = 0;
+
+        switch (position) {
+          case 'top':
+            x =
+              triggerRect.left +
+              triggerRect.width / 2 -
+              tooltipRect.width / 2;
+            y = triggerRect.top - tooltipRect.height - 10;
+            break;
+          case 'bottom':
+            x =
+              triggerRect.left +
+              triggerRect.width / 2 -
+              tooltipRect.width / 2;
+            y = triggerRect.bottom + 10;
+            break;
+          case 'left':
+            x = triggerRect.left - tooltipRect.width - 10;
+            y =
+              triggerRect.top +
+              triggerRect.height / 2 -
+              tooltipRect.height / 2;
+            break;
+          case 'right':
+            x = triggerRect.right + 10;
+            y =
+              triggerRect.top +
+              triggerRect.height / 2 -
+              tooltipRect.height / 2;
+            break;
+          default:
+            break;
+        }
+
+        // Ensure the tooltip stays within the viewport
+        const { innerWidth, innerHeight } = window;
+        if (x < 0) x = 10;
+        if (x + tooltipRect.width > innerWidth) x = innerWidth - tooltipRect.width - 10;
+        if (y < 0) y = 10;
+        if (y + tooltipRect.height > innerHeight) y = innerHeight - tooltipRect.height - 10;
+
+        setCoords({ x, y });
+      }
+    };
+
+    if (isVisible) {
+      updatePosition();
+      window.addEventListener('resize', updatePosition);
+      window.addEventListener('scroll', updatePosition);
+    }
+
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener('scroll', updatePosition);
+    };
+  }, [isVisible, position]);
 
   const showTooltip = () => {
-    if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
-    showTimeoutRef.current = setTimeout(() => setIsVisible(true), 300);
+    clearTimeout(hideTimeoutRef.current);
+    showTimeoutRef.current = setTimeout(() => setIsVisible(true), showDelay);
   };
 
   const hideTooltip = () => {
-    if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
-    hideTimeoutRef.current = setTimeout(() => setIsVisible(false), 100);
+    clearTimeout(showTimeoutRef.current);
+    hideTimeoutRef.current = setTimeout(() => setIsVisible(false), hideDelay);
   };
 
   useEffect(() => {
     return () => {
-      if (showTimeoutRef.current) clearTimeout(showTimeoutRef.current);
-      if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current);
+      clearTimeout(showTimeoutRef.current);
+      clearTimeout(hideTimeoutRef.current);
     };
   }, []);
 
   return (
-    <TooltipContext.Provider value={{ isVisible, showTooltip, hideTooltip, triggerRef }}>
-      {children}
-    </TooltipContext.Provider>
-  );
-};
-
-export const TooltipTrigger: React.FC<{ children: React.ReactNode; asChild?: boolean }> = ({ children, asChild }) => {
-  const context = useContext(TooltipContext);
-  if (!context) throw new Error('TooltipTrigger must be used within a TooltipProvider');
-
-  const { showTooltip, hideTooltip, triggerRef } = context;
-
-  const triggerProps = {
-    onMouseEnter: showTooltip,
-    onMouseLeave: hideTooltip,
-    onFocus: showTooltip,
-    onBlur: hideTooltip,
-    onTouchStart: showTooltip,
-    onTouchEnd: hideTooltip,
-    ref: triggerRef,
-  };
-
-  if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children, triggerProps);
-  }
-
-  return <div {...triggerProps}>{children}</div>;
-};
-
-export const TooltipContent: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const context = useContext(TooltipContext);
-  if (!context) throw new Error('TooltipContent must be used within a TooltipProvider');
-
-  const { isVisible, triggerRef } = context;
-  const [position, setPosition] = useState({ top: 0, left: 0 });
-
-  useEffect(() => {
-    if (isVisible && triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + rect.width / 2 + window.scrollX,
-      });
-    }
-  }, [isVisible]);
-
-  return createPortal(
-    <AnimatePresence>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 10 }}
-          transition={{ duration: 0.2 }}
-          className="bg-dark-4 text-light-1 px-2 py-1 rounded text-sm shadow-lg fixed z-50 pointer-events-none"
-          style={{
-            top: `${position.top}px`,
-            left: `${position.left}px`,
-            transform: 'translateX(-50%)',
-          }}
-          role="tooltip"
-        >
-          {children}
-        </motion.div>
+    <>
+      <div
+        ref={triggerRef}
+        onMouseEnter={showTooltip}
+        onMouseLeave={hideTooltip}
+        onTouchStart={showTooltip}
+        onTouchEnd={hideTooltip}
+        aria-describedby="tooltip"
+      >
+        {children}
+      </div>
+      {createPortal(
+        <AnimatePresence>
+          {isVisible && (
+            <motion.div
+              ref={tooltipRef}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2 }}
+              style={{
+                position: 'fixed',
+                left: coords.x,
+                top: coords.y,
+                zIndex: 9999,
+                pointerEvents: 'none',
+              }}
+              className="bg-dark-4 text-light-1 px-2 py-1 rounded text-sm shadow-lg"
+              id="tooltip"
+              role="tooltip"
+            >
+              {content}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
       )}
-    </AnimatePresence>,
-    document.body
+    </>
   );
-};
-
-export const Tooltip: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <TooltipProvider>{children}</TooltipProvider>;
 };
 
 export default Tooltip;
