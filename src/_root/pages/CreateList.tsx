@@ -63,10 +63,10 @@ const CreateList: React.FC = () => {
       <div className="max-w-4x2 w-full bg-dark-1 rounded-xl p-4 shadow-lg space-y-6">
         <div>
           <h2 className="text-orange-300 font-extralight text-3xl text-left w-full mt-1" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-            Create your own top list! What's your ranking for...anything!
+            Create your ranking, for anything!
           </h2>
           <p className="text-base mt-2">
-            Rank your favorites, share your opinions, or create fun lists on any topic.
+            Your opinion could be the best or most trusted, on any topic.
           </p>
         </div>
 
@@ -75,9 +75,7 @@ const CreateList: React.FC = () => {
             <p className="text-light-1">{listIdea}</p>
           </div>
         )}
-          <span className="text-primary-500">
-            <img src="/assets/icons/crown.svg" alt="Remix" className="w-14 h-14 mr-2" />
-          </span> 
+          
         <div className="text-right space-y-2">
           <p className="italic text-base text-blue-300">Need inspiration?</p>
           <button

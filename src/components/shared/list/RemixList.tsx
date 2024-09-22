@@ -71,15 +71,19 @@ const RemixList: React.FC = () => {
           <ArrowLeft size={20} className="mr-2" />
           Back
         </Button>
-        <h1 className="text-blue-300 h3-bold md:h2-bold text-center flex-1">Remix List</h1>
+        <h1 className="text-blue-300 h3-bold md:h2-bold text-center flex-1 mt-6">Remix Their List</h1>
         <div className="w-[70px]"></div> {/* Spacer for alignment */}
+        
       </div>
 
-      <div className="bg-dark-2 p-6 rounded-lg shadow-lg w-full mb-8">
+      <p className="text-light-2 text-center mb-6 max-w-2xl">
+        Get creative! You can modify the title, add or remove items, and make this list your own.
+        Your remixed version will be a new list, and the original will remain unchanged.
+      </p>
+      <div className="bg-dark-4 p-3 rounded-lg shadow-lg w-full mb-8">
         <div className="flex items-center mb-4 ">
-        <h3 className="text-2xl font-light text-blue-200 mb-4 flex items-center">
-          <PlugZap className="mr-2" />
-          Show them you know better
+        <h3 className="text-xl font-light text-slate-400 mb-4 flex items-center">           
+        What You Are Remixing        
         </h3>      
          
         </div>
@@ -88,11 +92,6 @@ const RemixList: React.FC = () => {
           Originally created by <span className="font-semibold">{originalList.creator.Name}</span>
         </p>
       </div>
-
-      <p className="text-light-2 text-center mb-6 max-w-2xl">
-        Get creative! You can modify the title, add or remove items, and make this list your own.
-        Your remixed version will be a new list, and the original will remain unchanged.
-      </p>
 
       <ListForm action="Create Remix" initialData={initialData} />
 

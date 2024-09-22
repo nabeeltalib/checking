@@ -9,7 +9,7 @@ const Bottombar2: React.FC = () => {
     { icon: Home, label: "Home", route: "/" },
     { icon: Compass, label: "Explore", route: "/explore2" },
     { icon: PlusCircle, label: "Create", route: "/create-list" },
-    { icon: Crown, label: "Leaderboard", route: "/comprehensive-leaderboard" },
+    { icon: Crown, label: "Leaderboard", route: "/comprehensive-leaderboard2" },
   ];
 
   return (
