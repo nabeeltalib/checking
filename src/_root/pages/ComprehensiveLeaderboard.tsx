@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Trophy, List, ThumbsUp, MessageCircle } from "lucide-react";
+import { Trophy, List, Heart, MessageCircle } from "lucide-react";
 import { getUsers } from "@/lib/appwrite/config";
 import { getMostLikedLists } from "@/lib/appwrite/api";
 import { Link } from "react-router-dom";
@@ -192,7 +192,7 @@ const ComprehensiveLeaderboard = () => {
               key: "listsCreated"
             },
             {
-              header: <div className="flex items-center"><ThumbsUp size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Likes</span></div>,
+              header: <div className="flex items-center"><Heart size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Likes</span></div>,
               key: "totalLikes"
             },
           ]}
@@ -217,7 +217,7 @@ const ComprehensiveLeaderboard = () => {
               ),
             },
             {
-              header: <div className="flex items-center"><ThumbsUp size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Likes</span></div>,
+              header: <div className="flex items-center"><Heart size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Likes</span></div>,
               key: "likes"
             },
             {

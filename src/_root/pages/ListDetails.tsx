@@ -481,7 +481,7 @@ const ListDetails: React.FC = () => {
             userId={user.id}
             setIsEmbed={isCreator ? setShowEmbedOptions : undefined}
             textSize="text-sm"
-            backgroundColor="bg-dark-3"
+            backgroundColor="bg-gray-900"
             isCreator={isCreator}
           />
         </motion.div>

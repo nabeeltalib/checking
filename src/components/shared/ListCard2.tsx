@@ -322,8 +322,8 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         transition={{ duration: 0.3, delay: index * 0.1 }}
         className="flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300"
       >
-        <span className="text-lg font-bold text-yellow-500 mr-4">
-          {index === 0 ? <Crown size={20} className="text-yellow-500" /> : index + 1}
+        <span className="text-lg font-bold text-yellow-200 mr-4">
+          {index === 0 ? <Crown size={20} className="text-yellow-200" /> : index + 1}
         </span>
         <span className="text-sm text-white truncate">
           {typeof item === "string" ? item : item.content || ""}
@@ -518,6 +518,13 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
 
         {/* List Title and Description */}
         <div className="mb-6">
+        <div
+            className="text-slate-700 text-center text-xl sm:text-xl font-thin px-4 py-2 rounded-t-lg"
+            style={{ fontFamily: "'Racing Sans One', sans-serif" }}
+          >
+            Ranking For
+          </div>
+
           <h2 className="text-yellow-500 text-xl font-bold mb-2">
             {list.Title}
           </h2>
@@ -605,7 +612,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       </div>
 
       {/* Actions */}
-      <div className="bg-dark-3 px-6 py-4 flex justify-between items-center text-light-2 text-xs">
+      <div className=" px-6 py-4 flex justify-between items-center text-light-2 text-xs">
         <Button
           onClick={handleLikeList}
           className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
@@ -613,7 +620,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
           <Heart
             size={20}
             className={
-              checkIsLiked(likes, id) ? "fill-primary-500 text-primary-500" : ""
+              checkIsLiked(likes, id) ? "fill-yellow-500 text-yellow-500" : ""
             }
           />
           <span>{likes.length} </span>
@@ -625,7 +632,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         >
           <Bookmark
             size={20}
-            className={isSaved ? "fill-primary-500 text-primary-500" : ""}
+            className={isSaved ? "fill-yellow-500 text-yellow-500" : ""}
           />
           <span>{isSaved ? " " : " "}</span>
         </Button>
@@ -648,7 +655,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       </div>
 
       {/* Comments Section */}
-      <div className="p-6 border-t border-dark-4">
+      <div className="bg-dark-3 p-6 border-t border-dark-4">
         <h3 className="text-xs font-semibold mb-4">Comments</h3>
         {renderComments()}
 

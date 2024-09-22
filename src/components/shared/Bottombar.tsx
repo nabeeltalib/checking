@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Compass, Award, PlusCircle, User } from "lucide-react";
+import { Home, Compass, Award, PlusCircle, User, Crown } from "lucide-react";
 
 const Bottombar: React.FC = () => {
   const { pathname } = useLocation();
@@ -9,7 +9,7 @@ const Bottombar: React.FC = () => {
     { icon: Home, label: "Home", route: "/" },
     { icon: Compass, label: "Explore", route: "/explore" },
     { icon: PlusCircle, label: "Create", route: "/create-list" },
-    { icon: Award, label: "Leaderboard", route: "/comprehensive-leaderboard" },
+    { icon: Crown, label: "Leaderboard", route: "/comprehensive-leaderboard" },
     { icon: User, label: "Profile", route: "/profile/profile" },
   ];
 

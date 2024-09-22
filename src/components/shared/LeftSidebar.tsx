@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useSignOutAccount } from '@/lib/react-query/queries';
 import { useUserContext, INITIAL_USER } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, LogOut, Bell, Users, User, Settings, Bookmark, Heart, Trending, Home, Compass, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LogOut, Bell, Users, User, Settings, Bookmark, Contact, Crown, TrendingUp, Home, Compass, ChevronDown, ChevronUp } from 'lucide-react';
 
 const LeftSidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -37,11 +37,11 @@ const LeftSidebar: React.FC = () => {
     switch (label) {
       case 'Home': return <Home size={20} />;
       case 'Explore': return <Compass size={20} />;
-      case 'Trending': return <Compass size={20} />;
-      case 'LeaderBoard': return <Heart size={20} />;
+      case 'Trending': return <TrendingUp size={20} />;
+      case 'LeaderBoard': return <Crown size={20} />;
       case 'Bookmarks': return <Bookmark size={20} />;
       case 'Notifications': return <Bell size={20} />;
-      case 'Friends': return <Users size={20} />;
+      case 'Friends': return <Contact size={20} />;
       case 'Collaboration': return <Users size={20} />;
       case 'My Profile': return <User size={20} />;
       case 'Admin Panel': return <Settings size={20} />;

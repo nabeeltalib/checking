@@ -3,8 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { IList } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
-import { Share2, ThumbsUp, MessageCircle, Bookmark, Lightbulb, X, Trophy, ChevronDown, ChevronUp } from "lucide-react";
-import { useGetComments, useSignInWithGoogle } from "@/lib/react-query/queries";
+import {
+  Share2,
+  MessageCircle,
+  Bookmark,
+  Wand,
+  X,
+  Trophy,
+  Heart,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import {
+  useGetComments,
+  useSignInWithGoogle,
+} from "@/lib/react-query/queries";
 import Comment from "./Comment";
 import { Button } from "../ui";
 import Loader from "@/components/shared/Loader";
@@ -22,7 +35,17 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const { data: comments } = useGetComments(list.$id);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle();
+  const {
+    mutateAsync: signInWithGoogle,
+    isLoading: isGoogleLoading,
+  } = useSignInWithGoogle();
+
+  // Assume the user is not authenticated for this example
+  const isAuthenticated = false;
+
+  // Since the user is not authenticated, isFollowed is false
+  const isFollowed = false;
+  const isFollowLoading = false;
 
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,7 +55,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
       const shareableLink = await shareList(list.$id);
       if (navigator.share) {
         await navigator.share({
-          title: list.title,
+          title: list.Title,
           text: `Check out this list: ${list.Title}`,
           url: shareableLink,
         });
@@ -67,25 +90,46 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const handleGoogleSignIn = () => {
     signInWithGoogle();
   };
+
+  // Since the user is not authenticated, clicking follow opens the dialog
+  const handleFollow = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleDialogOpen();
+  };
+
+  const handleUnFollow = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    handleDialogOpen();
+  };
+
   const getRankColor = (index: number) => {
-    const colors = ["text-yellow-500", "text-gray-400", "text-orange-500", "text-blue-500", "text-green-500"];
+    const colors = [
+      "text-yellow-300",
+      "text-gray-400",
+      "text-orange-500",
+      "text-blue-500",
+      "text-green-500",
+    ];
     return index < colors.length ? colors[index] : "text-purple-500";
   };
 
   const renderListItems = () => {
-    const items: any[] =
-      Array.isArray(list.items) ? list.items : typeof list.items === "string"
-        ? list.items.split("\n")
-        : list.items ? Object.values(list.items) : [];
+    const items: any[] = Array.isArray(list.items)
+      ? list.items
+      : typeof list.items === "string"
+      ? list.items.split("\n")
+      : list.items
+      ? Object.values(list.items)
+      : [];
 
-    const displayItems = isExpanded ? items : items.slice(0, 3);
+    const displayItems = isExpanded ? items : items.slice(0, 5);
 
     return displayItems.map((item, index) => (
       <motion.li
         key={index}
-        className="flex items-center mb-3 cursor-pointer bg-dark-3 p-3 rounded-lg hover:bg-dark-4 transition-colors duration-200"
+        className="flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300"
         onClick={() => {
-          if (!list.isAuthenticated) {
+          if (!isAuthenticated) {
             handleDialogOpen();
           } else {
             navigate(`/lists/${list.$id}`);
@@ -95,11 +139,15 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: index * 0.1 }}
       >
-        <div className={`flex-shrink-0 w-8 h-8 ${getRankColor(index)} bg-dark-2 rounded-full flex items-center justify-center font-bold mr-3`}>
+        <div
+          className={`flex-shrink-0 w-8 h-8 ${getRankColor(
+            index
+          )} flex items-center justify-center font-bold mr-3`}
+        >
           <span className="text-sm">{index + 1}</span>
           {index === 0 && <Trophy size={12} className="ml-1" />}
         </div>
-        <span className="text-sm sm:text-base text-light-1 text-ellipsis">
+        <span className="text-sm text-white truncate">
           {typeof item === "string" ? item : item.content || ""}
         </span>
       </motion.li>
@@ -120,7 +168,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
 
   return (
     <motion.div
-      className="bg-dark-2 rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl mx-auto"
+      className="bg-gray-900 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 mb-4"
       whileHover={{ y: -5 }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -129,39 +177,68 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
       <div className="p-4">
         {/* Creator Info */}
         <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center cursor-pointer group" onClick={handleDialogOpen}>
+          {/* Left side: Creator info */}
+          <div
+            className="flex items-center cursor-pointer group"
+            onClick={handleDialogOpen}
+          >
             <img
-              src={list.creator?.ImageUrl || "/assets/icons/profile-placeholder.svg"}
+              src={
+                list.creator?.ImageUrl ||
+                "/assets/icons/profile-placeholder.svg"
+              }
               alt={`${list.creator?.Name}'s profile`}
-              className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-primary-500 shadow-lg group-hover:border-primary-600 transition-colors"
+              className="w-10 h-10 rounded-full mr-3 border-2 border-transparent group-hover:border-primary-500 transition-all duration-300"
             />
             <div className="ml-3">
-              <p className="text-sm sm:text-base font-semibold text-light-1 group-hover:text-primary-500 transition-colors">{list.creator?.Name}</p>
-              <p className="text-blue-300 text-xs sm:text-sm">@{list.creator?.Username}</p>
+              <p className="text-white font-semibold group-hover:text-primary-500 transition-colors duration-300">
+                {list.creator?.Name}
+              </p>
+              <p className="text-gray-400 text-sm">@{list.creator?.Username}</p>
             </div>
           </div>
-          <Tooltip content="Share this list">
-            <button
-              onClick={handleShare}
-              className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-4"
-              disabled={isSharing}
-              aria-label="Share this list"
+          {/* Right side: Follow and Share buttons */}
+          <div className="flex items-center">
+            <Button
+              className={`text-sm px-4 py-2 rounded-full transition-colors duration-300 ${
+                isFollowed
+                  ? "text-gray-400 hover:text-white"
+                  : "bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-1 rounded-full mr-2"
+              }`}
+              onClick={isFollowed ? handleUnFollow : handleFollow}
+              disabled={isFollowLoading}
             >
-              <Share2 size={24} />
-            </button>
-          </Tooltip>
+              {isFollowed ? "Following" : "Follow"}
+            </Button>
+            <Tooltip content="Share this list">
+              <button
+                onClick={handleShare}
+                className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
+                disabled={isSharing}
+                aria-label="Share this list"
+              >
+                <Share2 size={24} />
+              </button>
+            </Tooltip>
+          </div>
         </div>
 
         {/* List Title */}
-        <div className="text-center mb-4">
-          <div className="text-slate-700 text-center text-xl sm:text-xl font-thin px-4 py-2 rounded-t-lg" style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
+        <div className="mb-4">
+          <div
+            className="text-slate-700 text-center text-xl sm:text-xl font-thin px-4 py-2 rounded-t-lg"
+            style={{ fontFamily: "'Racing Sans One', sans-serif" }}
+          >
             Ranking For
           </div>
-          <h2 className="text-blue-300 text-lg sm:text-xl font-bold mt-2">
+          <h2 className="text-yellow-500 text-xl font-bold mb-2">
             {list.Title}
           </h2>
         </div>
-
+        {/* Description */}
+        {list.Description && (
+          <p className="text-light-2 text-sm mb-4">{list.Description}</p>
+        )}
         {/* List Items */}
         <div onClick={handleDialogOpen} className="mb-4">
           <ol className="list-none space-y-3">{renderListItems()}</ol>
@@ -188,12 +265,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           )}
         </div>
 
-        {/* Description */}
-        {list.Description && (
-          <p className="text-sm sm:text-base text-light-2 mb-4 line-clamp-2 hover:line-clamp-none transition-all duration-300">
-            {list.Description}
-          </p>
-        )}
+      
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mb-4">
@@ -209,7 +281,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
             </motion.span>
           ))}
           {list.Tags && list.Tags.length > 3 && (
-            <motion.span 
+            <motion.span
               className="text-primary-500 text-xs cursor-pointer"
               onClick={handleDialogOpen}
               whileHover={{ scale: 1.05 }}
@@ -220,46 +292,55 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           )}
         </div>
 
-        {/* First Comment */}
+        {/* Action Buttons */}
+        <div className="px-6 py-4 flex justify-center items-center text-light-2 text-xs">
+          <div className="flex space-x-2">
+            <ActionButton
+              icon={<Heart size={20} />}
+              label="Like this list"
+              count={list.Likes?.length || 0}
+              onClick={handleDialogOpen}
+            />
+            <ActionButton
+              icon={<MessageCircle size={20} />}
+              label="Comment on this list"
+              count={comments?.length || 0}
+              onClick={handleDialogOpen}
+            />
+            <ActionButton
+              icon={<Bookmark size={20} />}
+              label="Save this list"
+              onClick={handleDialogOpen}
+            />
+            <Tooltip content="Remix this list">
+              <Button
+                onClick={handleDialogOpen}
+                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 px-3 py-2 rounded-lg"
+              >
+                <Wand size={20} />
+                <span>Remix</span>
+              </Button>
+            </Tooltip>
+          </div>
+        </div>
+
+        {/* Comment Section with Clickable Overlay */}
         {comments && comments.length > 0 && (
-          <div className="mb-4 bg-dark-3 p-4 rounded-lg hover:bg-dark-4 transition-colors duration-200">
-            <h3 className="text-sm font-semibold text-light-1 mb-2">Latest Comment:</h3>
+          <div
+            className="mb-4 p-4 rounded-lg cursor-pointer"
+            onClick={handleDialogOpen}
+          >
+            <h3 className="text-sm font-semibold text-light-1 mb-2">
+              Latest Comment:
+            </h3>
             <Comment comment={comments[0]} />
             {comments.length > 1 && (
-              <p className="text-xs text-primary-500 mt-2 cursor-pointer hover:underline" onClick={handleDialogOpen}>
+              <p className="text-xs text-primary-500 mt-2 cursor-pointer hover:underline">
                 View all {comments.length} comments
               </p>
             )}
           </div>
         )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="bg-dark-3 px-4 sm:px-6 py-4 flex justify-between items-center">
-        <div className="flex space-x-2">
-          <ActionButton
-            icon={<ThumbsUp size={20} />}
-            label="Like this list"
-            count={list.Likes?.length || 0}
-            onClick={handleDialogOpen}
-          />
-          <ActionButton
-            icon={<MessageCircle size={20} />}
-            label="Comment on this list"
-            count={comments?.length || 0}
-            onClick={handleDialogOpen}
-          />
-          <ActionButton
-            icon={<Bookmark size={20} />}
-            label="Save this list"
-            onClick={handleDialogOpen}
-          />
-          <ActionButton
-            icon={<Lightbulb size={20} />}
-            label="Remix this list"
-            onClick={handleDialogOpen}
-          />
-        </div>
       </div>
 
       {/* Sign-up Dialog */}
@@ -287,11 +368,15 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               >
                 <X size={24} />
               </button>
-              <h3 id="dialog-title" className="text-2xl font-bold text-gray-800 mb-4 text-center">
+              <h3
+                id="dialog-title"
+                className="text-2xl font-bold text-gray-800 mb-4 text-center"
+              >
                 Unlock Full Access!
               </h3>
               <p className="text-gray-600 mb-6 text-center">
-                Sign up now to like, comment, save, and collaborate on lists. Create your own rankings and join the community!
+                Sign up now to like, comment, save, and collaborate on lists.
+                Create your own rankings and join the community!
               </p>
               <div className="space-y-4">
                 <Button
@@ -309,7 +394,11 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
                     <Loader />
                   ) : (
                     <>
-                      <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
+                      <img
+                        src="/assets/icons/google.svg"
+                        alt="Google"
+                        className="mr-2 h-5 w-5"
+                      />
                       Continue with Google
                     </>
                   )}

@@ -18,8 +18,13 @@ const ListPreview: React.FC<ListPreviewProps> = ({ title, description, items, ca
 
   return (
     <div className="text-slate-600 p-6 bg-gray-900 rounded-lg shadow-md">
-      <p className="text-slate-500 text-xs mb-4">Your Preview</p>
-
+      <p className="text-blue-300 text-xs mb-4">Your Preview</p>
+      <div
+            className="text-slate-700 text-center text-xl sm:text-xl font-thin px-4 py-2 rounded-t-lg"
+            style={{ fontFamily: "'Racing Sans One', sans-serif" }}
+          >
+            Ranking For
+          </div>
       <h4 className="text-yellow-500 text-md font-bold mt-4 mb-3">{title || "Title"}</h4>
       {description && (
         <p className="text-light-2 text-xs mb-4">{description.length > 100 ? description.substring(0, 100) + '...' : description}</p>
@@ -27,8 +32,8 @@ const ListPreview: React.FC<ListPreviewProps> = ({ title, description, items, ca
       <ul className="text-xs grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
         {visibleItems.filter(item => item.isVisible).map((item, index) => (
           <li key={index} className="text-xs text-white flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300">
-            <span className="text-sm font-bold text-yellow-500 mr-4">
-              {index === 0 ? <Crown size={20} className="text-yellow-500" /> : index + 1}
+            <span className="text-sm font-bold text-yellow-200 mr-4">
+              {index === 0 ? <Crown size={20} className="text-yellow-200" /> : index + 1}
             </span>
             <span>{item.content || "ranking"}</span>
           </li>

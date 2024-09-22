@@ -90,7 +90,7 @@ const App = () => {
         {/* Public Routes */}
         {/* Private Routes */}
         <Route element={<RootLayout />}>
-          <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/embed" element={<EmbedSelector />} />
           <Route path="/embedpreview/:id" element={<EmbedPreview />} />

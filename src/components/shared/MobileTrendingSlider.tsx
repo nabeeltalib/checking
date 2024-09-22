@@ -5,7 +5,12 @@ import { getMostLikedLists } from "@/lib/appwrite/api";
 import { LocateFixed, Heart, MessageSquare } from "lucide-react";
 import { useGetComments } from "@/lib/react-query/queries";
 
-const MobileTrendingSlider: React.FC = () => {
+interface MobileTrendingSliderProps {
+  isAuthenticated: boolean; // New prop to check authentication
+  setIsDialogOpen: (open: boolean) => void; // Function to open the popup
+}
+
+const MobileTrendingSlider: React.FC<MobileTrendingSliderProps> = ({ isAuthenticated, setIsDialogOpen }) => {
   const [trendingLists, setTrendingLists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -67,7 +72,13 @@ const MobileTrendingSlider: React.FC = () => {
             onScroll={handleScroll}
           >
             {trendingLists.map((list, index) => (
-              <TrendingCard key={list.$id || index} list={list} navigate={navigate} />
+              <TrendingCard
+                key={list.$id || index}
+                list={list}
+                navigate={navigate}
+                isAuthenticated={isAuthenticated}
+                setIsDialogOpen={setIsDialogOpen}
+              />
             ))}
           </div>
         )}
@@ -79,8 +90,21 @@ const MobileTrendingSlider: React.FC = () => {
   );
 };
 
-const TrendingCard: React.FC<{ list: any; navigate: Function }> = ({ list, navigate }) => {
+const TrendingCard: React.FC<{ list: any; navigate: Function; isAuthenticated: boolean; setIsDialogOpen: (open: boolean) => void }> = ({
+  list,
+  navigate,
+  isAuthenticated,
+  setIsDialogOpen,
+}) => {
   const { data: comments } = useGetComments(list.$id);
+
+  const handleClick = () => {
+    if (!isAuthenticated) {
+      setIsDialogOpen(true); // Open the popup for unauthenticated users
+    } else {
+      navigate(`/lists/${list.$id}`); // Navigate if the user is authenticated
+    }
+  };
 
   return (
     <motion.div
@@ -88,7 +112,7 @@ const TrendingCard: React.FC<{ list: any; navigate: Function }> = ({ list, navig
       style={{ minWidth: "60%", scrollSnapAlign: "start" }}
       whileHover={{ scale: 1.05, y: -5 }}
       whileTap={{ scale: 0.95 }}
-      onClick={() => navigate(`/lists/${list.$id}`)}
+      onClick={handleClick}
     >
       <h3 className="text-yellow-500 text-sm font-semibold truncate">{list.Title}</h3>
       <p className="text-xs text-gray-400 truncate">by {list.creator.Name}</p>
@@ -116,9 +140,7 @@ const SliderIndicator: React.FC<{ total: number; current: number; onIndicatorCli
       {[...Array(total)].map((_, index) => (
         <div
           key={index}
-          className={`h-2 w-2 rounded-full ${
-            index === current ? "bg-primary-500" : "bg-gray-400"
-          } cursor-pointer`}
+          className={`h-2 w-2 rounded-full ${index === current ? "bg-primary-500" : "bg-gray-400"} cursor-pointer`}
           onClick={() => onIndicatorClick(index)}
         />
       ))}

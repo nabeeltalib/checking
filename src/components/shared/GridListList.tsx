@@ -65,44 +65,62 @@ const GridListList: React.FC<GridListListProps> = ({
           onMouseEnter={() => setHoveredItem(item.$id)}
           onMouseLeave={() => setHoveredItem(null)}
         >
+          {showUser && item.creator && (
+            <Link
+              to={`/profile/${item.creator.$id}`}
+              className="px-4 py-3 bg-dark-4 flex items-center hover:bg-dark-2 transition-colors duration-300"
+            >
+              <img
+                src={
+                  item.creator.ImageUrl ||
+                  "/assets/icons/profile-placeholder.svg"
+                }
+                alt={`${item.creator.Name}'s profile`}
+                className="w-6 h-6 rounded-full mr-3 object-cover border-2 border-primary-500"
+                loading="lazy"
+              />
+              <p className="text-sm text-light-1 font-semibold">
+                {item.creator.Name}
+              </p>
+            </Link>
+          )}
           <Link
             to={`/lists/${item.$id}`}
             className="block p-4 hover:bg-dark-3 transition-colors duration-300 relative"
           >
-            <h3 className="text-xl font-bold text-light-1 mb-2 line-clamp-1">
+            <h3 className="text-md font-bold text-yellow-500 mb-2 line-clamp-1">
               {item.Title}
             </h3>
-            <ul className="mb-3 text-light-2 text-sm space-y-1">
+            <ul className="mb-3 text-light-2 text-xs space-y-1">
               {item.items.slice(0, 3).map((listItem, index) => (
-                <li
-                  key={listItem.id || index}
-                  className="flex items-center"
-                >
-                  <span className="mr-2 text-primary-500 font-semibold">
+                <li key={index} className="flex items-center">
+                  <span className="mr-2 text-yellow-500 font-semibold">
                     {index + 1}
                   </span>
-                  <span className="line-clamp-1">{listItem.content}</span>
+                  <span className="line-clamp-1">
+                    {typeof listItem === "string" ? listItem : listItem.content}
+                  </span>
                 </li>
               ))}
             </ul>
             {item.items.length > 3 && (
-              <p className="text-primary-500 text-sm font-semibold">
+              <p className="text-primary-500 text-xs font-semibold">
                 +{item.items.length - 3} more items
               </p>
             )}
-            <div className="flex flex-wrap gap-2 mt-3">
+            <div className="flex flex-wrap gap-2 mt-3 ">
               {item.Tags &&
                 item.Tags.slice(0, 3).map((tag, index) => (
                   <span
                     key={`${tag}-${index}`}
-                    className="flex items-center bg-dark-3 text-light-4 rounded-full px-3 py-1 text-xs"
+                    className="flex items-center text-blue-300 rounded-full px-3 py-1 text-xs"
                   >
                     <Tag size={12} className="mr-1" />
                     {tag}
                   </span>
                 ))}
               {item.Tags && item.Tags.length > 3 && (
-                <span className="bg-dark-3 text-light-4 rounded-full px-3 py-1 text-xs">
+                <span className="text-light-1 rounded-full px-3 py-1 text-xs">
                   +{item.Tags.length - 3}
                 </span>
               )}
@@ -139,29 +157,11 @@ const GridListList: React.FC<GridListListProps> = ({
                   </motion.button>
                 </motion.div>
               )}
-            </AnimatePresence>
-          </Link>
-          {showUser && item.creator && (
-            <Link
-              to={`/profile/${item.creator.$id}`}
-              className="px-4 py-3 bg-dark-3 flex items-center hover:bg-dark-2 transition-colors duration-300"
-            >
-              <img
-                src={
-                  item.creator.ImageUrl ||
-                  "/assets/icons/profile-placeholder.svg"
-                }
-                alt={`${item.creator.Name}'s profile`}
-                className="w-10 h-10 rounded-full mr-3 object-cover border-2 border-primary-500"
-                loading="lazy"
-              />
-              <p className="text-light-1 font-semibold">
-                {item.creator.Name}
-              </p>
+            </AnimatePresence>          
             </Link>
-          )}
+          
           {showStats && (
-            <div className="px-4 py-3 bg-dark-3 flex justify-between items-center border-t border-dark-2">
+            <div className="px-4 py-3 bg-dark-4 flex justify-between items-center border-t border-dark-2">
               <motion.button
                 className="flex items-center text-light-2 text-sm cursor-pointer hover:text-red-500"
                 whileHover={{ scale: 1.1 }}

@@ -4,7 +4,9 @@ import ListCard from '@/components/shared/ListCard';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X } from 'lucide-react';
+import { Search, LampDesk, X } from 'lucide-react';
+import MobileTrendingSlider from '@/components/shared/MobileTrendingSlider';
+import Bottombar2 from '@/components/shared/Bottombar2'; // Importing Bottombar2
 
 interface IList {
   $id: string;
@@ -43,7 +45,9 @@ const PreviewMode: React.FC = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setIsDialogOpen(true);
+    if (!isDialogOpen) {
+      setIsDialogOpen(true); // Only open the dialog if it's not already open
+    }
   };
 
   const handleDialogClose = () => setIsDialogOpen(false);
@@ -60,7 +64,7 @@ const PreviewMode: React.FC = () => {
   }
 
   return (
-    <div className="mt-4 flex flex-col w-full items-center bg-dark-1 min-h-screen">
+    <div className="mt-4 w-full items-center bg-dark-1 min-h-screen pb-20">
       <header className="w-full bg-dark-1 py-4">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <div className="text-2xl md:text-3xl text-blue-300 font-bold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
@@ -71,7 +75,7 @@ const PreviewMode: React.FC = () => {
       </header>
 
       {/* Sticky Search Bar */}
-      <div className="sticky top-20 z-10 w-full bg-dark-1 shadow-md mt-6 ">
+      <div className="sticky top-20 z-10 w-full bg-dark-1 shadow-md mt-6 mb-6">
         <div className="max-w-2xl mx-auto px-4 py-3 flex flex-col md:flex-row gap-4 items-center">
           <div className="relative flex-grow">
             <input
@@ -85,6 +89,14 @@ const PreviewMode: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Trending Slider */}
+      <MobileTrendingSlider setIsDialogOpen={setIsDialogOpen} />
+
+      <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center mt-8">
+        <LampDesk className="mr-2" />
+        Home Feed
+      </h3>
 
       {/* Main Content */}
       <div className="flex flex-col gap-6 p-4 w-full items-center max-w-5xl mx-auto mt-6">
@@ -117,6 +129,10 @@ const PreviewMode: React.FC = () => {
         </Button>
       </div>
 
+      {/* Bottombar2 Component */}
+      <Bottombar2 />
+
+      {/* Dialog */}
       <AnimatePresence>
         {isDialogOpen && (
           <motion.div

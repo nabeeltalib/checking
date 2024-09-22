@@ -1,36 +1,59 @@
-import React, { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { rightSidebarLinks2 } from '@/constants';
-import { Button } from '../ui/button';
-import { useUserContext } from '@/context/AuthContext';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Users, User, Settings, X, LogIn } from 'lucide-react';
+import { Heart, MessageSquare, LocateFixed, X } from 'lucide-react'; // Make sure to import X
+import { getMostLikedLists } from '@/lib/appwrite/api';
+import { useGetComments } from '@/lib/react-query/queries';
+import { Button } from "@/components/ui/button";
 
 const RightSidebar2: React.FC = () => {
-  const { pathname } = useLocation();
-  const { user } = useUserContext();
+  const navigate = useNavigate();
+  const [allTrendingLists, setAllTrendingLists] = useState<any[]>([]);
+  const [displayedLists, setDisplayedLists] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const handleDialogOpen = () => setIsDialogOpen(true);
-  const handleDialogClose = () => setIsDialogOpen(false);
+  // Assume you have an authentication context or state
+  const isLoggedIn = false; // Replace with actual authentication logic
 
-  const handleRestrictedClick = (e: React.MouseEvent, label: string) => {
-    e.preventDefault();
-    if (!user?.isAuthenticated) {
-      handleDialogOpen();
+  const fetchTrendingLists = useCallback(async () => {
+    try {
+      const data = await getMostLikedLists();
+      const filteredLists = data.filter(
+        (list: any) => !list.isDeleted && list.Title && list.creator
+      );
+      setAllTrendingLists(filteredLists);
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch trending lists:', error);
+      setLoading(false);
     }
-    // Handle authenticated user actions here
+  }, []);
+
+  useEffect(() => {
+    fetchTrendingLists();
+  }, [fetchTrendingLists]);
+
+  useEffect(() => {
+    if (allTrendingLists.length > 0) {
+      const updateDisplayedLists = () => {
+        const shuffled = [...allTrendingLists].sort(() => 0.5 - Math.random());
+        setDisplayedLists(shuffled.slice(0, 5));
+      };
+
+      updateDisplayedLists();
+      const intervalId = setInterval(updateDisplayedLists, 10000); // Rotate every 10 seconds
+
+      return () => clearInterval(intervalId);
+    }
+  }, [allTrendingLists]);
+
+  const handleDialogOpen = () => {
+    setIsDialogOpen(true);
   };
 
-  const getIcon = (label: string) => {
-    switch (label) {
-      case 'Notifications': return <Bell size={20} />;
-      case 'Collaboration': return <Users size={20} />;
-      case 'Friends': return <Users size={20} />;
-      case 'My Profile': return <User size={20} />;
-      case 'Admin Panel': return <Settings size={20} />;
-      default: return null;
-    }
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
   };
 
   return (
@@ -39,50 +62,74 @@ const RightSidebar2: React.FC = () => {
         initial={{ x: 300 }}
         animate={{ x: 0 }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="rightsidebar hidden md:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 overflow-y-auto fixed right-0 top-20 shadow-xl"
+        className="rightsidebar hidden lg:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 fixed right-0 top-20 shadow-xl overflow-y-auto"
       >
-        <div className="flex flex-col gap-6">
-          <h2 className="text-xl font-bold text-light-1 mb-2">Quick Access</h2>
-          {rightSidebarLinks2.map(link => (
-            <NavLink
-              key={link.label}
-              to={link.route}
-              className={({ isActive }) =>
-                `flex items-center gap-4 p-3 rounded-lg transition-all duration-200 ${
-                  isActive
-                    ? 'bg-primary-500 text-light-1 shadow-md'
-                    : link.restricted
-                    ? 'text-gray-400 hover:text-gray-200'
-                    : 'text-light-2 hover:bg-dark-3 hover:text-light-1 hover:shadow-md'
-                }`
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-light-1 flex items-center">
+              <LocateFixed className="mr-2" />
+              In Your Area
+            </h2>
+            {/* <button onClick={handleRefresh} className="text-primary-500 hover:text-primary-600 transition-colors">
+              <RefreshCw size={20} />
+            </button> */}
+          </div>
+
+          {loading ? (
+            <LoadingSkeleton />
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.ul
+                key={displayedLists.map((list) => list.$id).join(',')}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-4"
+              >
+                {displayedLists.map((list) => (
+                  <TrendingListItem
+                    key={list.$id}
+                    list={list}
+                    navigate={navigate}
+                    isLoggedIn={isLoggedIn}
+                    handleDialogOpen={handleDialogOpen}
+                  />
+                ))}
+              </motion.ul>
+            </AnimatePresence>
+          )}
+
+          <button
+            className="mt-6 bg-primary-500 text-white py-2 px-4 rounded-lg shadow-lg hover:bg-primary-600 transition-all"
+            onClick={() => {
+              if (isLoggedIn) {
+                navigate('/trending');
+              } else {
+                handleDialogOpen();
               }
-              onClick={link.restricted ? (e) => handleRestrictedClick(e, link.label) : undefined}
-            >
-              {getIcon(link.label)}
-              <span>{link.label}</span>
-            </NavLink>
-          ))}
+            }}
+          >
+            View More Trending
+          </button>
         </div>
 
-        <motion.div
-          className="flex flex-col gap-4 mt-6 mb-28"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <div className="text-xs text-gray-400 text-center mt-4">
-            <NavLink to="/privacypolicy" className="hover:text-white transition-colors duration-200">
-              Privacy Policy
-            </NavLink>
-            <span className="mx-2">|</span>
-            <NavLink to="/termsandconditions" className="hover:text-white transition-colors duration-200">
-              Terms & Conditions
-            </NavLink>
-            <p className="mt-2">&copy; 2024 Topfived. All rights reserved.</p>
-          </div>
-        </motion.div>
+        <div className="text-xs text-gray-400 text-center absolute bottom-20 left-0 right-0 p-4">
+          <NavLink to="/privacypolicy" className="hover:text-white transition-colors duration-200">
+            Privacy Policy
+          </NavLink>
+          <span className="mx-2">|</span>
+          <NavLink
+            to="/termsandconditions"
+            className="hover:text-white transition-colors duration-200"
+          >
+            Terms & Conditions
+          </NavLink>
+          <p className="mt-2">&copy; 2024 Topfived. All rights reserved.</p>
+        </div>
       </motion.aside>
 
+      {/* Popup Component */}
       <AnimatePresence>
         {isDialogOpen && (
           <motion.div
@@ -106,26 +153,42 @@ const RightSidebar2: React.FC = () => {
               </button>
               <div className="text-center">
                 <h3 className="text-2xl font-bold text-light-1 mb-2">Unlock Full Access!</h3>
-                <p className="text-sm text-light-2 mb-6">Sign up now to like, comment, save, and remix lists. Create your own rankings and join the community!</p>
+                <p className="text-sm text-light-2 mb-6">
+                  Sign up now to like, comment, save, and remix lists. Create your own rankings and
+                  join the community!
+                </p>
               </div>
               <div className="flex flex-col gap-4">
                 <Button
                   type="button"
                   className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out"
-                  onClick={handleDialogClose}
+                  onClick={() => {
+                    handleDialogClose();
+                    navigate('/signup');
+                  }}
                 >
                   Sign Up
                 </Button>
                 <Button
                   className="flex items-center justify-center bg-dark-3 text-light-1 border border-dark-4 px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out hover:bg-dark-4"
-                  onClick={handleDialogClose}
+                  onClick={() => {
+                    handleDialogClose();
+                    // Handle Google Sign-In
+                  }}
                 >
-                  <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
+                  <img
+                    src="/assets/icons/google.svg"
+                    alt="Google"
+                    className="mr-2 h-5 w-5"
+                  />
                   Sign In with Google
                 </Button>
                 <Button
                   className="text-primary-500 hover:text-primary-600 font-semibold transition-colors duration-200"
-                  onClick={handleDialogClose}
+                  onClick={() => {
+                    handleDialogClose();
+                    navigate('/signin');
+                  }}
                 >
                   Sign In with Email
                 </Button>
@@ -137,5 +200,65 @@ const RightSidebar2: React.FC = () => {
     </>
   );
 };
+
+interface TrendingListItemProps {
+  list: any;
+  navigate: Function;
+  isLoggedIn: boolean;
+  handleDialogOpen: Function;
+}
+
+const TrendingListItem: React.FC<TrendingListItemProps> = ({
+  list,
+  navigate,
+  isLoggedIn,
+  handleDialogOpen,
+}) => {
+  const { data: comments } = useGetComments(list.$id);
+
+  const handleClick = () => {
+    if (isLoggedIn) {
+      navigate(`/lists/${list.$id}`);
+    } else {
+      handleDialogOpen();
+    }
+  };
+
+  return (
+    <motion.li
+      className="bg-dark-3 rounded-lg p-4 shadow hover:bg-dark-4 transition-all cursor-pointer"
+      whileHover={{ y: -3 }}
+      onClick={handleClick}
+    >
+      <h3 className="text-white text-sm font-semibold truncate">{list.Title}</h3>
+      <p className="text-xs text-gray-400 truncate">by {list.creator.Name}</p>
+      <div className="flex items-center mt-2 space-x-4">
+        <div className="flex items-center text-xs text-gray-400">
+          <Heart size={14} className="mr-1 text-red-500" />
+          {list.Likes?.length || 0}
+        </div>
+        <div className="flex items-center text-xs text-gray-400">
+          <MessageSquare size={14} className="mr-1 text-blue-500" />
+          {comments?.length || 0}
+        </div>
+      </div>
+    </motion.li>
+  );
+};
+
+const LoadingSkeleton: React.FC = () => (
+  <div className="space-y-4">
+    {[...Array(5)].map((_, index) => (
+      <div key={index} className="bg-dark-3 rounded-lg p-4 shadow animate-pulse">
+        <div className="h-4 bg-dark-4 rounded w-3/4 mb-2"></div>
+        <div className="h-3 bg-dark-4 rounded w-1/2 mb-3"></div>
+        <div className="flex items-center space-x-4">
+          <div className="h-3 bg-dark-4 rounded w-1/4"></div>
+          <div className="h-3 bg-dark-4 rounded w-1/4"></div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export default RightSidebar2;

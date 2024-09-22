@@ -67,7 +67,7 @@ const Reply: React.FC<ReplyProps> = ({ reply }) => {
   };
 
   return (
-    <div className="flex items-start space-x-3 bg-dark-1 rounded-lg p-3">
+    <div className="flex items-start space-x-3 bg-dark-2 rounded-lg p-3">
       <img
         src={reply.userId.ImageUrl || '/assets/icons/profile-placeholder.svg'}
         alt={reply.userId.Username}
@@ -77,7 +77,7 @@ const Reply: React.FC<ReplyProps> = ({ reply }) => {
         <h5 className="font-semibold text-light-1 text-xs">
           @{reply.userId.Username}
         </h5>
-        <p className="text-light-2 text-sm mt-1">{reply.Content}</p>
+        <p className="text-light-2 text-xs mt-1">{reply.Content}</p>
         <div className="flex items-center space-x-4 mt-2">
           {/* Like Button */}
           <button

@@ -117,11 +117,11 @@ const Comment: React.FC<CommentProps> = ({
               )}
             </div>
           </div>
-          <p className="text-light-2 mt-1">{comment.Content}</p>
+          <p className="text-xs text-light-2 mt-1">{comment.Content}</p>
           <div className="flex items-center space-x-4 mt-2">
             <button
               onClick={handleLikeComment}
-              className={`flex items-center space-x-1 text-sm ${
+              className={`flex items-center space-x-1 text-xs ${
                 checkIsLiked(likes, user.id) ? 'text-red-500' : 'text-gray-400'
               } hover:text-red-500 transition-colors duration-300`}
               title="Like this comment"

@@ -24,7 +24,7 @@ const LeftSidebar2: React.FC = () => {
       initial={{ width: 256 }}
       animate={{ width: isCollapsed ? 80 : 256 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="leftsidebar hidden md:flex flex-col justify-between h-screen bg-gradient-to-r from-purple-600 to-indigo-600 border-r border-dark-4 overflow-hidden fixed left-0 top-16 shadow-xl"
+      className="leftsidebar flex flex-col justify-between h-screen bg-dark-2 border-r border-dark-4 overflow-hidden fixed left-0 top-16 shadow-xl"
     >
       <div className="flex flex-col">
         <div className="flex items-center justify-between p-4">
@@ -55,7 +55,7 @@ const LeftSidebar2: React.FC = () => {
             onClick={toggleCollapse}
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-primary-400 focus:outline-none"
+            className="text-light-1 hover:bg-dark-4 focus:outline-none"
             aria-label="Toggle Sidebar"
           >
             {isCollapsed ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
@@ -71,7 +71,7 @@ const LeftSidebar2: React.FC = () => {
                 `flex items-center gap-4 p-2 rounded-lg transition-all duration-200 ${
                   isActive
                     ? 'bg-primary-500 text-white shadow-md'
-                    : 'text-white hover:bg-primary-400 hover:shadow-lg'
+                    : 'text-light-2 hover:bg-dark-4 hover:text-light-1 hover:shadow-md'
                 }`
               }
             >

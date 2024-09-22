@@ -143,7 +143,7 @@ const ListStats: React.FC<ListStatsProps> = ({
           <Heart
             size={20}
             className={
-              checkIsLiked(likes, userId) ? "fill-primary-500 text-primary-500" : ""
+              checkIsLiked(likes, userId) ? "fill-yellow-500 text-yellow-500" : ""
             }
           />
           <span className={textSize}>{likes.length}</span>
