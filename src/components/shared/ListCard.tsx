@@ -9,7 +9,7 @@ import {
   Bookmark,
   Wand,
   X,
-  Trophy,
+  Crown,
   Heart,
   ChevronDown,
   ChevronUp,
@@ -145,7 +145,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           )} flex items-center justify-center font-bold mr-3`}
         >
           <span className="text-sm">{index + 1}</span>
-          {index === 0 && <Trophy size={12} className="ml-1" />}
+          {index === 0 && <Crown size={12} className="ml-1" />}
         </div>
         <span className="text-sm text-white truncate">
           {typeof item === "string" ? item : item.content || ""}

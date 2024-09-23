@@ -682,6 +682,23 @@ export async function likeComment(commentId: string, likesArray: string[]) {
     return null;
   }
 }
+export async function ReplyLike(commentId: string, likesArray: string[]) {
+  try {
+    const updatedComment = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      "66b22bc7003828cf45ab",
+      commentId,
+      {
+        Likes: likesArray
+      }
+    );
+    if (!updatedComment) throw new Error('Failed to like comment');
+    return updatedComment;
+  } catch (error) {
+    console.error('Error liking list:', error);
+    return null;
+  }
+}
 
 export async function saveList(userId: string, listId: string) {
   try {
@@ -1005,6 +1022,7 @@ export async function getReportedComments() {
     return null;
   }
 }
+
 export async function getCommentbyId(commentId: string) {
   try {
     const comment = await databases.getDocument(
@@ -1045,7 +1063,7 @@ export async function deleteReportedComment(commentId: string) {
       "66dc4454001a27643f2d",
       commentId
     );
-
+    
     if (!statusCode) throw new Error('Failed to delete comment');
 
     return { status: 'Ok' };

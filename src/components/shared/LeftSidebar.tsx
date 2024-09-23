@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { sidebarLinks } from '@/constants';
-import rightSidebarLinks from '@/constants';
 import { Button } from '@/components/ui/button';
 import { useSignOutAccount } from '@/lib/react-query/queries';
 import { useUserContext, INITIAL_USER } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, LogOut, Bell, Users, User, Settings, Bookmark, Contact, Crown, TrendingUp, Home, Compass, ChevronDown, ChevronUp } from 'lucide-react';
+import { 
+  ChevronLeft, ChevronRight, LogOut, Bell, Users, User, Settings, 
+  Bookmark, Contact, Crown, TrendingUp, Home, Compass, ChevronDown, ChevronUp 
+} from 'lucide-react';
 
 const LeftSidebar: React.FC = () => {
   const navigate = useNavigate();
@@ -14,7 +15,14 @@ const LeftSidebar: React.FC = () => {
   const { mutate: signOut } = useSignOutAccount();
   const { pathname } = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>('discover');
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Close all dropdowns when collapsing the sidebar
+    if (isCollapsed) {
+      setOpenDropdown(null);
+    }
+  }, [isCollapsed]);
 
   const handleSignOut = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -26,10 +34,10 @@ const LeftSidebar: React.FC = () => {
 
   const toggleCollapse = () => {
     setIsCollapsed((prev) => !prev);
-    setOpenDropdown(null);
   };
 
   const toggleDropdown = (label: string) => {
+    if (isCollapsed) return; // Don't toggle dropdowns when sidebar is collapsed
     setOpenDropdown(openDropdown === label ? null : label);
   };
 
@@ -50,9 +58,11 @@ const LeftSidebar: React.FC = () => {
   };
 
   const groupedLinks = {
-    main: [{ label: 'Home', route: '/' },
+    main: [
+      { label: 'Home', route: '/' },
       { label: 'Explore', route: '/explore' },
       { label: 'LeaderBoard', route: '/comprehensive-leaderboard' },
+      { label: 'Trending', route: '/trending' },
     ],
     social: [
       { label: 'Friends', route: '/listfromfriends' },
@@ -62,11 +72,10 @@ const LeftSidebar: React.FC = () => {
       { label: 'Bookmarks', route: '/saved' },
       { label: 'My Profile', route: '/profile/profile' },
     ],
+    ...(user.isAdmin ? {
+      admin: [{ label: 'Admin Panel', route: '/admin-panel' }]
+    } : {})
   };
-
-  if (user.isAdmin) {
-    groupedLinks.personal.push({ label: 'Admin Panel', route: '/admin-panel' });
-  }
 
   return (
     <motion.aside
@@ -112,60 +121,60 @@ const LeftSidebar: React.FC = () => {
         </div>
 
         <nav className="flex-grow flex flex-col gap-2 px-4 py-2 overflow-y-auto">
-          {Object.entries(groupedLinks).map(([group, links]) => (
-            <div key={group}>
-              {group !== 'main' && (
-                <button
-                  onClick={() => toggleDropdown(group)}
-                  className={`flex items-center justify-between w-full p-2 rounded-lg transition-all duration-200 ${
-                    openDropdown === group ? 'bg-dark-4 text-light-1' : 'text-light-2 hover:bg-dark-4 hover:text-light-1'
-                  }`}
+        {Object.entries(groupedLinks).map(([group, links]) => (
+          <div key={group}>
+            {group !== 'main' && !isCollapsed && (
+              <button
+                onClick={() => toggleDropdown(group)}
+                className={`flex items-center justify-between w-full p-2 rounded-lg transition-all duration-200 ${
+                  openDropdown === group ? 'bg-dark-4 text-light-1' : 'text-light-2 hover:bg-dark-4 hover:text-light-1'
+                }`}
+              >
+                <span className="capitalize">{group}</span>
+                {openDropdown === group ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+            )}
+            <AnimatePresence>
+              {(group === 'main' || openDropdown === group || isCollapsed) && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.2 }}
                 >
-                  <span className="capitalize">{group}</span>
-                  {openDropdown === group ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
+                  {links.map((link) => (
+                    <NavLink
+                      key={link.label}
+                      to={link.route}
+                      className={({ isActive }) =>
+                        `flex items-center gap-4 p-2 rounded-lg transition-all duration-200 ${
+                          isActive
+                            ? 'bg-primary-500 text-white shadow-md'
+                            : 'text-light-2 hover:bg-dark-4 hover:text-light-1 hover:shadow-md'
+                        } ${link.label === 'Admin Panel' ? 'text-yellow-400 font-semibold' : ''}`
+                      }
+                    >
+                      {getIcon(link.label)}
+                      <AnimatePresence>
+                        {!isCollapsed && (
+                          <motion.span
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: 'auto' }}
+                            exit={{ opacity: 0, width: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            {link.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </NavLink>
+                  ))}
+                </motion.div>
               )}
-              <AnimatePresence>
-                {(group === 'main' || openDropdown === group || isCollapsed) && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {links.map((link) => (
-                      <NavLink
-                        key={link.label}
-                        to={link.route}
-                        className={({ isActive }) =>
-                          `flex items-center gap-4 p-2 rounded-lg transition-all duration-200 ${
-                            isActive
-                              ? 'bg-primary-500 text-white shadow-md'
-                              : 'text-light-2 hover:bg-dark-4 hover:text-light-1 hover:shadow-md'
-                          }`
-                        }
-                      >
-                        {getIcon(link.label)}
-                        <AnimatePresence>
-                          {!isCollapsed && (
-                            <motion.span
-                              initial={{ opacity: 0, width: 0 }}
-                              animate={{ opacity: 1, width: 'auto' }}
-                              exit={{ opacity: 0, width: 0 }}
-                              transition={{ duration: 0.2 }}
-                            >
-                              {link.label}
-                            </motion.span>
-                          )}
-                        </AnimatePresence>
-                      </NavLink>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          ))}
-        </nav>
+            </AnimatePresence>
+          </div>
+        ))}
+      </nav>
       </div>
 
       <div className="p-4">

@@ -4,22 +4,63 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico" />
-    <title>Topfived</title>
-    <meta name="description" content="Topfived - Your Top 5 Lists" />
-    <meta name="keywords" content="Top 5, Lists, Ranking, Favorites" />
+    <title>Topfived - Create and Share Your Top 5 Lists | Ranking Platform</title>
+    <meta name="description" content="Topfived is the ultimate platform for creating, sharing, and discovering top 5 lists. Rank your favorites, debate with others, and explore trending topics across various categories." />
+    <meta name="keywords" content="Top 5, Lists, Ranking, Favorites, User-generated Content, Social Ranking, Debate Platform" />
     <meta name="author" content="Topfived Team" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.topfived.com/" />
+    <meta property="og:title" content="Topfived - Your Top 5 Lists Platform" />
+    <meta property="og:description" content="Create, share, and discover top 5 lists on Topfived. Join the community of rankers and debaters!" />
+    <meta property="og:image" content="https://www.topfived.com/assets/images/og-image.jpg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://www.topfived.com/" />
+    <meta property="twitter:title" content="Topfived - Your Top 5 Lists Platform" />
+    <meta property="twitter:description" content="Create, share, and discover top 5 lists on Topfived. Join the community of rankers and debaters!" />
+    <meta property="twitter:image" content="https://www.topfived.com/assets/images/twitter-image.jpg" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://www.topfived.com/" />
+
+    <!-- Fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Topfived",
+      "url": "https://www.topfived.com",
+      "description": "Create and share your top 5 lists on various topics. Engage in debates and discover trending rankings.",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.topfived.com/search?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="loader" style="display: flex; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: black; z-index: 9999;">
-      <img src="/assets/images/mobile.png" alt="Loading..." />
+      <img src="/assets/images/mobile.png" alt="Topfived is loading..." />
     </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Accessibility -->
+    <noscript>
+      <p>For the best experience on Topfived, please enable JavaScript in your browser.</p>
+    </noscript>
   </body>
-  
 </html>

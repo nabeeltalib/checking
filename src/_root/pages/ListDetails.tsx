@@ -264,32 +264,36 @@ const ListDetails: React.FC = () => {
       <div className="p-6">
           {/* Creator Info */}
           <motion.div 
-            className="flex items-center gap-4 mb-6"
+            className="flex items-center justify-between mb-6"
             initial={{ x: -20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            <img
-              src={listCreator.ImageUrl || "/assets/icons/profile-placeholder.svg"}
-              alt="creator"
-              className="w-16 h-16 rounded-full object-cover shadow-lg"
-            />
-            <div>
-              <Link to={`/profile/${listCreator.$id}`} className="text-xl font-semibold text-light-1 hover:text-primary-500 transition-colors">
-                {listCreator.Name}
-              </Link>
-              <p className="text-light-3">@{listCreator.Username}</p>
-              {listCreator.Public && !isCreator && (
-                <Button
-                  onClick={isFollowed ? handleUnFollow : handleFollow}
-                  disabled={isFollowLoading}
-                  className={`mt-2 ${isFollowed ? "bg-dark-4 text-gray-400" : "bg-primary-500 text-white"}`}
-                >
-                  {isFollowLoading ? <Loader /> : (isFollowed ? "Unfollow" : "Follow")}
-                </Button>
-              )}
+            <div className="flex items-center gap-4">
+              <img
+                src={listCreator.ImageUrl || "/assets/icons/profile-placeholder.svg"}
+                alt="creator"
+                className="w-16 h-16 rounded-full object-cover shadow-lg"
+              />
+              <div>
+                <Link to={`/profile/${listCreator.$id}`} className="text-xl font-semibold text-light-1 hover:text-primary-500 transition-colors">
+                  {listCreator.Name}
+                </Link>
+                <p className="text-light-3">@{listCreator.Username}</p>
+              </div>
             </div>
+
+            {listCreator.Public && !isCreator && (
+              <Button
+                onClick={isFollowed ? handleUnFollow : handleFollow}
+                disabled={isFollowLoading}
+                className={`ml-auto ${isFollowed ? "bg-dark-4 text-gray-400" : "bg-primary-500 text-white"}`}
+              >
+                {isFollowLoading ? <Loader /> : (isFollowed ? "Unfollow" : "Follow")}
+              </Button>
+            )}
           </motion.div>
+
   
           {/* Followed By */}
           {followedBy.length > 0 && (

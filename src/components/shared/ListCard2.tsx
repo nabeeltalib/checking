@@ -655,7 +655,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       </div>
 
       {/* Comments Section */}
-      <div className="bg-dark-3 p-6 border-t border-dark-4">
+      <div className="bg-gray-900 p-6 border-t border-dark-4">
         <h3 className="text-xs font-semibold mb-4">Comments</h3>
         {renderComments()}
 
