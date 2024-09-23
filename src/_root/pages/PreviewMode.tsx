@@ -70,12 +70,12 @@ const PreviewMode: React.FC = () => {
           <div className="text-2xl md:text-3xl text-blue-300 font-bold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
             <span>What's in Your Top Five??</span>
           </div>
-          <p className="text-base sm:text-xl text-thin text-blue-200 mt-8">Your World's Recommendations On Everything • Debate The Best</p>
+          <p className="text-base sm:text-xl font-thin text-blue-200 mt-8">Your World's Recommendations On Everything • Discover/Debate The Best</p>
         </div>
       </header>
 
       {/* Sticky Search Bar */}
-      <div className="sticky top-20 z-10 w-full bg-dark-1 shadow-md mt-6 mb-6">
+      <div className="sticky top-[calc(4rem)] z-10 w-full bg-dark-1 shadow-md my-4">
         <div className="max-w-2xl mx-auto px-4 py-3 flex flex-col md:flex-row gap-4 items-center">
           <div className="relative flex-grow">
             <input
@@ -83,7 +83,7 @@ const PreviewMode: React.FC = () => {
               placeholder="Search for better opinions..."
               value={searchTerm}
               onChange={handleSearchChange}
-              className="w-full bg-dark-4 text-light-1 pl-10 pr-4 py-2 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="w-full bg-gray-700 text-gray-200 pl-10 pr-4 py-2 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
           </div>

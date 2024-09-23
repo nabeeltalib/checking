@@ -96,22 +96,22 @@ const Home: React.FC = () => {
             </div>
           )}
           
-          <p className="text-base sm:text-xl text-thin text-blue-200 mt-8">Your World's Recommendations On Everything • Debate The Best</p>
+          <p className="text-base sm:text-xl font-thin text-blue-200 mt-8">Your World's Recommendations On Everything • Discover/Debate The Best</p>
         </div>
       </header>      
 
       {/* Content Wrapper */}
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Sticky Search Bar */}
-        <div className="sticky top-20 z-10 w-full bg-dark-1 shadow-md my-4">
-          <div className="max-w-3xl mx-auto px-4 py-3">
+        <div className="sticky top-[calc(4rem)] z-10 w-full bg-dark-1 shadow-md my-4">
+        <div className="max-w-3xl mx-auto px-4 py-3">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search rankings, titles, or tags ..."
                 value={searchTerm}
                 onChange={handleSearchChange}
-                className="w-full bg-dark-4 text-light-1 pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
+                className="w-full bg-gray-700 text-gray-200 pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
             </div>

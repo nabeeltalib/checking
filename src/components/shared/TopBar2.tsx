@@ -80,7 +80,7 @@ const Topbar2: React.FC = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-indigo-600 shadow-lg w-full"
+      className="fixed top-0 left-0 right-0 z-50 bg-dark-3 shadow-lg"
     >
       <div className="container mx-auto flex p-4 gap-4 items-center justify-between">
         <Link to="/" className="flex items-center gap-3">

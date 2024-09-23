@@ -440,8 +440,8 @@ export async function createList(list: any, userId: string): Promise<IList> {
         timespans: list.timespans,
         Public: list.Public,
         aiScore: list.aiScore || 0,
-        CreatedAt: list.CreatedAt,
-        UpdatedAt: list.UpdatedAt,
+        CreatedAt: list.CreatedAt || new Date().toISOString(),
+        UpdatedAt: list.UpdatedAt || new Date().toISOString(),
         creator: userId,
         users: [userId],
       }

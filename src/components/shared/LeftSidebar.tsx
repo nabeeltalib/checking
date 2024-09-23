@@ -14,7 +14,7 @@ const LeftSidebar: React.FC = () => {
   const { mutate: signOut } = useSignOutAccount();
   const { pathname } = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<string | null>('discover');
 
   const handleSignOut = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -50,10 +50,8 @@ const LeftSidebar: React.FC = () => {
   };
 
   const groupedLinks = {
-    main: [{ label: 'Home', route: '/' }],
-    discover: [
+    main: [{ label: 'Home', route: '/' },
       { label: 'Explore', route: '/explore' },
-      { label: 'Trending', route: '/trending' },
       { label: 'LeaderBoard', route: '/comprehensive-leaderboard' },
     ],
     social: [
@@ -78,7 +76,7 @@ const LeftSidebar: React.FC = () => {
       className="leftsidebar flex flex-col justify-between h-screen bg-dark-2 border-r border-dark-4 overflow-hidden fixed left-0 top-16 shadow-xl"
     >
       <div className="flex flex-col">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4 mb-7">
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div

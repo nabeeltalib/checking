@@ -1,5 +1,4 @@
 import { Outlet, Navigate } from "react-router-dom";
-
 import { useUserContext } from "@/context/AuthContext";
 
 export default function AuthLayout() {
@@ -10,17 +9,21 @@ export default function AuthLayout() {
       {isAuthenticated ? (
         <Navigate to="/" />
       ) : (
-        <>
-          <section className="bg-gray-900 flex flex-1 justify-center items-center flex-col py-10">
+        <div className="flex h-screen">
+          {/* Left Section with Form or Content */}
+          <section className="flex-1 flex justify-center items-center flex-col py-10 bg-gray-900">
             <Outlet />
           </section>
 
-          <img
-            src="/assets/images/side-img2.png"
-            alt="logo"
-            className="hidden xl:block h-screen w-1/2 object-cover bg-no-repeat"
-          />
-        </>
+          {/* Right Section with Image */}
+          <div className="hidden xl:flex flex-1">
+            <img
+              src="/assets/images/side-img2.png"
+              alt="logo"
+              className="h-full w-full object-cover"
+            />
+          </div>
+        </div>
       )}
     </>
   );

@@ -27,7 +27,7 @@ const LeftSidebar2: React.FC = () => {
       className="leftsidebar flex flex-col justify-between h-screen bg-dark-2 border-r border-dark-4 overflow-hidden fixed left-0 top-16 shadow-xl"
     >
       <div className="flex flex-col">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4 mb-6">
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div

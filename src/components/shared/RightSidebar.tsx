@@ -85,7 +85,7 @@ const RightSidebar: React.FC = () => {
         )}
 
         <button
-          className="mt-6 bg-primary-500 text-white py-2 px-4 rounded-lg shadow-lg hover:bg-primary-600 transition-all"
+          className="mt-6 text-blue-500 py-2 px-4 rounded-lg shadow-lg hover:bg-dark-4 transition-all"
           onClick={() => navigate('/trending')}
         >
           View More Trending
