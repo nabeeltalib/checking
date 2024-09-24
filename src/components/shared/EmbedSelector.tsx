@@ -5,7 +5,6 @@ import { checkIsLiked } from "@/lib/utils";
 import { likeList } from "@/lib/appwrite/config";
 import { useUserContext } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
-
 const EmbedSelector = () => {
   const [embedType, setEmbedType] = useState("top5");
   const [customTitle, setCustomTitle] = useState("My Top 5 List");
@@ -20,10 +19,8 @@ const EmbedSelector = () => {
       const resp = await getEmbededLists();
       setEmbedLists(resp);
     };
-
     fetchData();
   }, [refresh]);
-
   const generateEmbedCode = () => {
     const baseUrl = "https://topfived.com/embed";
     const params = new URLSearchParams({
@@ -135,7 +132,6 @@ const EmbedSelector = () => {
           </div>
         )}
       </div>
-
       <div className="mb-6">
         <h3 className="font-semibold mb-2">Embed Code</h3>
         <textarea
@@ -165,5 +161,4 @@ const EmbedSelector = () => {
     </div>
   );
 };
-
 export default EmbedSelector;

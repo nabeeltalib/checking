@@ -35,7 +35,7 @@
     "eslint-plugin-tailwindcss": "^3.13.0",
     "framer-motion": "^11.2.13",
     "js-yaml": "^4.1.0",
-    "lucide-react": "^0.279.0",
+    "lucide-react": "^0.445.0",
     "openai": "^4.52.1",
     "prettier": "^3.0.3",
     "react": "^18.2.0",

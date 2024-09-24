@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageSquare, LocateFixed } from 'lucide-react';
+import { Heart, MessageSquare, MapPinned } from 'lucide-react';
 import { getMostLikedLists } from "@/lib/appwrite/api";
 import { useGetComments } from "@/lib/react-query/queries";
 
@@ -31,7 +31,7 @@ const RightSidebar: React.FC = () => {
     if (allTrendingLists.length > 0) {
       const updateDisplayedLists = () => {
         const shuffled = [...allTrendingLists].sort(() => 0.5 - Math.random());
-        setDisplayedLists(shuffled.slice(0, 5));
+        setDisplayedLists(shuffled.slice(0, 3));
       };
 
       updateDisplayedLists();
@@ -56,7 +56,7 @@ const RightSidebar: React.FC = () => {
       <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-light-1 flex items-center">
-          <LocateFixed className="mr-2" />
+          <MapPinned className="mr-2" />
            In Your Area
         </h2>
         {/*<button onClick={handleRefresh} className="text-primary-500 hover:text-primary-600 transition-colors">
@@ -92,7 +92,7 @@ const RightSidebar: React.FC = () => {
         </button>
       </div>
 
-      <div className="text-xs text-gray-400 text-center absolute bottom-20 left-0 right-0 p-4">
+      <div className="text-xs text-gray-400 text-center absolute bottom-24 left-0 right-0 p-4">
         <NavLink to="/privacypolicy" className="hover:text-white transition-colors duration-200">
           Privacy Policy
         </NavLink>
@@ -133,7 +133,7 @@ const TrendingListItem: React.FC<{ list: any; navigate: Function }> = ({ list, n
 
 const LoadingSkeleton: React.FC = () => (
   <div className="space-y-4">
-    {[...Array(5)].map((_, index) => (
+    {[...Array(3)].map((_, index) => (
       <div key={index} className="bg-dark-3 rounded-lg p-4 shadow animate-pulse">
         <div className="h-4 bg-dark-4 rounded w-3/4 mb-2"></div>
         <div className="h-3 bg-dark-4 rounded w-1/2 mb-3"></div>

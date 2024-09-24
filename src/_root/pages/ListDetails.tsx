@@ -443,7 +443,7 @@ const ListDetails: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 1 }}
           >
-            <h2 className="text-xl font-bold text-light-1 mb-4">Embed This List</h2>
+            <h2 className="text-xl font-bold text-light-1 mb-4">Embed This Ranking</h2>
             <div className="flex justify-between mb-2">
               <div className="flex gap-2">
                 <button

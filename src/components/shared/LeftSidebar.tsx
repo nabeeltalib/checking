@@ -6,7 +6,7 @@ import { useUserContext, INITIAL_USER } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, ChevronRight, LogOut, Bell, Users, User, Settings, 
-  Bookmark, Contact, Crown, TrendingUp, Home, Compass, ChevronDown, ChevronUp 
+  Bookmark, Contact, Crown, TrendingUp, Home, Telescope, ChevronDown, ChevronUp 
 } from 'lucide-react';
 
 const LeftSidebar: React.FC = () => {
@@ -44,8 +44,8 @@ const LeftSidebar: React.FC = () => {
   const getIcon = (label: string) => {
     switch (label) {
       case 'Home': return <Home size={20} />;
-      case 'Explore': return <Compass size={20} />;
-      case 'Trending': return <TrendingUp size={20} />;
+      case 'Explore': return <Telescope size={20} />;
+      //case 'Trending': return <TrendingUp size={20} />;
       case 'LeaderBoard': return <Crown size={20} />;
       case 'Bookmarks': return <Bookmark size={20} />;
       case 'Notifications': return <Bell size={20} />;
@@ -62,7 +62,7 @@ const LeftSidebar: React.FC = () => {
       { label: 'Home', route: '/' },
       { label: 'Explore', route: '/explore' },
       { label: 'LeaderBoard', route: '/comprehensive-leaderboard' },
-      { label: 'Trending', route: '/trending' },
+      //{ label: 'Trending', route: '/trending' },
     ],
     social: [
       { label: 'Friends', route: '/listfromfriends' },
@@ -181,7 +181,7 @@ const LeftSidebar: React.FC = () => {
         <Button
           onClick={handleSignOut}
           variant="destructive"
-          className="w-full flex items-center justify-center gap-2 text-white bg-red-600 hover:bg-red-700 shadow-lg transition-all duration-200 hover:scale-105"
+          className="absolute bottom-24 w-full flex items-center justify-center gap-2 text-white bg-red-600 hover:bg-red-700 shadow-lg transition-all duration-200 hover:scale-105"
         >
           <LogOut size={20} />
           <AnimatePresence>

@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
 import { useUserContext } from "@/context/AuthContext";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { NotificationBell } from "./notifications/NotificationBell";
-import { Menu, X, User, HelpCircle, Mail, LogOut, ChevronRight, Home, Compass, Award, Bookmark, Users, PlusCircle, ChevronDown } from 'lucide-react';
+import { Menu, X, User, HelpCircle, Mail, LogOut, ChevronRight, Home, Telescope, Award, Bookmark, Users, PlusCircle, ChevronDown } from 'lucide-react';
 
 const DropdownMenuItem = ({ item, toggleOffCanvas }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,12 +47,28 @@ const Topbar: React.FC = () => {
   const { user } = useUserContext();
   const { mutate: signOut, isSuccess } = useSignOutAccount();
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleOffCanvas = () => setIsOffCanvasOpen((prev) => !prev);
+  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   useEffect(() => {
     if (isSuccess) navigate(0);
   }, [isSuccess, navigate]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleCreateList = () => {
     navigate("/create-list");
@@ -67,7 +83,7 @@ const Topbar: React.FC = () => {
   const mobileMenuItems = [
     { icon: Home, label: "Home", route: "/" },
     {
-      icon: Compass,
+      icon: Telescope,
       label: "Discover",
       subItems: [
         { label: "Explore", route: "/explore" },
@@ -145,18 +161,55 @@ const Topbar: React.FC = () => {
             <Link to="/notifications" className="text-white hover:text-gray-200 transition-colors duration-300">
               <NotificationBell />
             </Link>
-            <Button
-              variant="ghost"
-              className="text-white hover:text-gray-200 transition-colors duration-300"
-              onClick={handleSignOut}
-            >
-              <LogOut className="w-5 h-5 mr-2" />
-              Sign Out
-            </Button>
+            <div className="relative" ref={dropdownRef}>
+              <Button
+                className="flex items-center p-0 bg-transparent hover:bg-transparent"
+                onClick={toggleDropdown}
+              >
+                <img
+                  className="w-10 h-10 rounded-full object-cover shadow-lg"
+                  src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
+                  alt="Profile"
+                />
+              </Button>
+
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl overflow-hidden z-10"
+                  >
+                    {[
+                      { to: "/profile/profile", icon: User, text: "Profile" },
+                      { to: "/notifications", icon: NotificationBell, text: "Notifications" },
+                      { to: "/helpfaqpage", icon: HelpCircle, text: "Help/FAQ" },
+                      { to: "/contactpage", icon: Mail, text: "Contact Us" },
+                    ].map((item, index) => (
+                      <Link
+                        key={index}
+                        to={item.to}
+                        className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                      >
+                        <item.icon className="w-5 h-5" />
+                        {item.text}
+                      </Link>
+                    ))}
+                    <button
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 transition-all duration-200 w-full text-left"
+                      onClick={handleSignOut}
+                    >
+                      <LogOut className="w-5 h-5" />
+                      Logout
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </motion.header>
-
       {/* Mobile Off-Canvas Menu */}
       <AnimatePresence>
         {isOffCanvasOpen && (

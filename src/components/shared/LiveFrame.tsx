@@ -1,16 +1,20 @@
-import { ExternalLink, MessageCircle, Heart } from "lucide-react";
+import { MessageCircle, Heart, Share2, Info, Crown } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getListById } from "@/lib/appwrite/config";
 import { VoteOnItem } from "@/lib/appwrite/api";
 import { Button } from "../ui";
 import Loader from "./Loader";
+import { motion, AnimatePresence } from "framer-motion";
 
 const LiveFrame = () => {
   const { id } = useParams();
   const [list, setList] = useState<any>(null);
   const [refreshData, setRefreshData] = useState(false);
-  const [isVoting, setIsVoting] = useState<string | null>(null)
+  const [isVoting, setIsVoting] = useState<string | null>(null);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,102 +25,143 @@ const LiveFrame = () => {
     fetchData();
   }, [refreshData, id]);
 
-  function addToLocalStorageArray(newString:string) {
-    let array = JSON.parse(localStorage.getItem('myArray')) || [];
+  function addToLocalStorageArray(newString: string) {
+    let array = JSON.parse(localStorage.getItem('myArray') || '[]');
     array.push(newString);
     localStorage.setItem('myArray', JSON.stringify(array));
   }
 
-
-  const [embedType] = useState("top5");
-
-  const items = embedType === "top5" ? list?.item : list?.item;
+  const items = list?.item;
   let hasVoted = localStorage.getItem('myArray');
 
   const handleVote = async (id: any) => {
-    setIsVoting(id)
-      const UniqueId = () => {
-        const timestamp = new Date().toISOString().replace(/[-:.T]/g, '');
-        const random = Math.floor(Math.random() * 1000);
-        return `user${timestamp}:${random}`;
-      };
-      let UId = UniqueId();
-      addToLocalStorageArray(id);
-      await VoteOnItem(UniqueId, id)
-      console.log("asdad",UId)
-
+    setIsVoting(id);
+    const UniqueId = () => {
+      const timestamp = new Date().toISOString().replace(/[-:.T]/g, '');
+      const random = Math.floor(Math.random() * 1000);
+      return `user${timestamp}:${random}`;
+    };
+    let UId = UniqueId();
+    addToLocalStorageArray(id);
+    await VoteOnItem(UId, id);
     setRefreshData((prevState) => !prevState);
-    setIsVoting(null)
+    setIsVoting(null);
   };
-  const [showTooltip, setShowTooltip] = useState(false);
 
-  const navigate = useNavigate();
-  const handleCTAClick = () => {
-    navigate("/");
+  const handleCTAClick = () => navigate("/");
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    alert("Link copied to clipboard!");
   };
 
   return (
-    <div className="w-full min-h-screen bg-white text-black shadow-md overflow-hidden">
+    <div className="w-full min-h-screen bg-gradient-to-br from-purple-100 to-indigo-100 text-black shadow-md overflow-hidden">
       {list && (
-        <div>
-          <div className="p-6 bg-white">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">{list.Title}</h2>
-              <div
-                className="relative"
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}>
-                <button
-                  onClick={handleCTAClick}
-                  className="text-blue-500 hover:text-blue-600 transition-colors">
-                  <MessageCircle size={24} />
-                </button>
-                {showTooltip && (
-                  <div className="absolute right-0 w-48 px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg">
-                    Join the discussion on Topfived
-                  </div>
-                )}
-              </div>
+        <div className="p-6">
+          <div className="text-slate-300 text-center text-xl sm:text-xl font-thin px-4 rounded-t-lg mb-4"
+               style={{ fontFamily: "'Racing Sans One', sans-serif" }}>
+            Ranking For
+          </div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-indigo-800">{list.Title}</h2>
+            <div className="flex space-x-2">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleShare}
+                className="text-indigo-600 hover:text-indigo-800 transition-colors"
+              >
+                <Share2 size={20} />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setShowInfo(!showInfo)}
+                className="text-indigo-600 hover:text-indigo-800 transition-colors"
+              >
+                <Info size={20} />
+              </motion.button>
             </div>
-            <ul>
+          </div>
+
+          <AnimatePresence>
+            {showInfo && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-white p-4 rounded-lg mb-4 text-sm text-gray-700"
+              >
+                <p>Created by: {list.creator ? list.creator.Name : 'Unknown'}</p>
+                <p>Date: {new Date(list.$createdAt).toLocaleDateString()}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <ul className="space-y-3">
             {items.map((item: any, index: number) => {
               let isDisabled = hasVoted?.includes(item.$id);
               return (
-                <li
+                <motion.li
                   key={index}
-                  className="flex justify-between items-center mb-2">
-                  <span>
-                    {index + 1}. {item.content}
-                  </span>
-                  <span className="flex gap-2 items-center">
-                    <span className="font-semibold">
-                      {item.vote.length * 5 || 0} pts
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center"
+                >
+                  <div className="flex items-center space-x-3">
+                    <span className={`font-bold text-xl ${index === 0 ? "text-yellow-500" : "text-indigo-600"}`}>
+                      {index + 1}
+                      {index === 0 && <Crown size={16} className="inline ml-1" />}
                     </span>
-                    <span>
-                      <Button
-                        onClick={() => handleVote(item.$id)}
-                        disabled={isDisabled}>
-                        {isVoting === item.$id ? <Loader /> : <Heart size={20} />}
-                      </Button>
-                    </span>
-                  </span>
-                </li>
+                    <span className="text-pretty text-indigo-900">{item.content}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-semibold text-indigo-600">{item.vote.length * 5 || 0} pts</span>
+                    <Button
+                      onClick={() => handleVote(item.$id)}
+                      className="p-1 rounded-full bg-pink-100 hover:bg-pink-200"
+                      disabled={isDisabled || isVoting === item.$id}
+                    >
+                      {isVoting === item.$id ? <Loader /> : <Heart size={16} color={isDisabled ? 'hotpink' : 'gray'} />}
+                    </Button>
+                  </div>
+                </motion.li>
               );
             })}
           </ul>
-          </div>
-          <div className="fixed w-full bottom-0">
-            <div className="bg-gray-100 px-6 py-3 flex justify-between items-center">
-              <span className="text-sm text-gray-600">Powered by Topfived</span>
-              <button
+
+          <div className="mt-6 flex justify-between items-center">
+            <div
+              className="relative"
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
+              <Button
                 onClick={handleCTAClick}
-                className="text-blue-500 hover:text-blue-600 transition-colors flex items-center text-sm">
-                View on Topfived <ExternalLink size={16} className="ml-1" />
-              </button>
+                className="bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-indigo-600 transition-colors flex items-center space-x-1"
+              >
+                <MessageCircle size={16} />
+                <span>Join Discussion</span>
+              </Button>
+              {showTooltip && (
+                <div className="absolute left-0 w-48 px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg mt-2">
+                  Join the discussion on Topfived
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
+      <div className="bg-indigo-50 px-6 py-3 flex justify-between items-center fixed bottom-0 w-full">
+        <button
+          onClick={handleCTAClick}
+          className="text-indigo-500 hover:text-indigo-700 transition-colors flex items-center text-sm font-medium"
+        >
+          Powered by Topfived <Crown size={14} className="ml-1" />
+        </button>
+      </div>
     </div>
   );
 };

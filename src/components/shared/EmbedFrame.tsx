@@ -63,7 +63,7 @@ const EmbedFrame = () => {
         list={embedList}
         />
       }
-      
+
     </div>
   );
 };
