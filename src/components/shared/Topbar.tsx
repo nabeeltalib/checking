@@ -272,10 +272,10 @@ const Topbar: React.FC = () => {
 
               <div className="absolute bottom-8 left-4 right-4 text-xs text-gray-400">
                 <div className="flex justify-between mb-2">
-                  <NavLink to="/privacypolicy" className="hover:text-white transition-colors duration-200">
+                  <NavLink to="/privacypolicy" className="underline hover:text-white transition-colors duration-200">
                     Privacy Policy
                   </NavLink>
-                  <NavLink to="/termsandconditions" className="hover:text-white transition-colors duration-200">
+                  <NavLink to="/termsandconditions" className="underline hover:text-white transition-colors duration-200">
                     Terms & Conditions
                   </NavLink>
                 </div>

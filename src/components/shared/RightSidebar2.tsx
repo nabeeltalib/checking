@@ -115,13 +115,13 @@ const RightSidebar2: React.FC = () => {
         </div>
 
         <div className="text-xs text-gray-400 text-center absolute bottom-20 left-0 right-0 p-4">
-          <NavLink to="/privacypolicy" className="hover:text-white transition-colors duration-200">
+          <NavLink to="/privacypolicy" className="underline hover:text-white transition-colors duration-200">
             Privacy Policy
           </NavLink>
           <span className="mx-2">|</span>
           <NavLink
             to="/termsandconditions"
-            className="hover:text-white transition-colors duration-200"
+            className="underline hover:text-white transition-colors duration-200"
           >
             Terms & Conditions
           </NavLink>
