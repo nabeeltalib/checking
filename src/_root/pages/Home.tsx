@@ -132,8 +132,9 @@ const Home: React.FC = () => {
             </div>
           )}
           
-          <p className="text-base sm:text-xl font-thin text-blue-200 mt-8">Your World's Recommendations On Everything • Discover/Debate The Best</p>
-        </div>
+          <p className="text-base sm:text-xl font-light text-white mt-8">Your World's Recommendations On Everything </p>
+          <p className="text-base sm:text-xl font-thin text-white">Discover • Debate • Create</p>        
+          </div>
       </header>      
 
       {/* Content Wrapper */}

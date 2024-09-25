@@ -22,7 +22,7 @@ import {
   shareList,
   UnFollow,
 } from "@/lib/appwrite/api";
-import { Share2, ChevronLeft, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Code } from "lucide-react";
+import { Share2, ChevronLeft, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Code, Copy } from 'lucide-react';
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 
@@ -47,7 +47,8 @@ const ListDetails: React.FC = () => {
   const [showCreatorOptions, setShowCreatorOptions] = useState(false);
   const [showEmbedOptions, setShowEmbedOptions] = useState(false);
   const creatorOptionsRef = useRef<HTMLDivElement>(null);
-  
+  const [copiedEmbed, setCopiedEmbed] = useState(false);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (creatorOptionsRef.current && !creatorOptionsRef.current.contains(event.target as Node)) {
@@ -141,8 +142,39 @@ const ListDetails: React.FC = () => {
     }
   };
 
-  if (isLoading || isCreatorLoading) return <Loader />;
+  const LoadingSkeleton: React.FC = () => (
+    <div className="animate-pulse">
+      <div className="h-48 bg-dark-3 rounded-b-lg mb-4"></div>
+      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 bg-dark-2 p-6 rounded-lg shadow-lg -mt-20 mx-4 relative z-10">
+        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-dark-3"></div>
+        <div className="flex-grow space-y-4">
+          <div className="h-8 bg-dark-3 rounded w-3/4"></div>
+          <div className="h-4 bg-dark-3 rounded w-1/2"></div>
+          <div className="h-4 bg-dark-3 rounded w-full"></div>
+        </div>
+      </div>
+      <div className="mt-8 space-y-4 p-6">
+        <div className="h-8 bg-dark-3 rounded w-3/4"></div>
+        <div className="h-4 bg-dark-3 rounded w-full"></div>
+        <div className="h-4 bg-dark-3 rounded w-full"></div>
+        <div className="space-y-2">
+          {[...Array(5)].map((_, index) => (
+            <div key={index} className="h-10 bg-dark-3 rounded"></div>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2 my-4">
+          {[...Array(3)].map((_, index) => (
+            <div key={index} className="h-6 w-20 bg-dark-3 rounded-full"></div>
+          ))}
+        </div>
+        <div className="h-20 bg-dark-3 rounded"></div>
+      </div>
+    </div>
+  );
+
+  if (isLoading || isCreatorLoading) return <LoadingSkeleton />;
   if (!list || !listCreator) return <div className="text-center text-light-1">List not found</div>;
+
 
   const isOwnProfile = user.id === list.creator.$id;
   const isFollowed = connection?.follower?.some((follow: any) => follow.$id === user.id);
@@ -184,13 +216,19 @@ const ListDetails: React.FC = () => {
     ? `<iframe src="${import.meta.env.VITE_APP_DOMAIN}/staticframe/${list.$id}" width="50%" height="600"></iframe>`
     : `<iframe src="${import.meta.env.VITE_APP_DOMAIN}/liveframe/${list.$id}" width="50%" height="600"></iframe>`;
 
-    return (
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex flex-col w-full max-w-3xl mx-auto bg-gray-900 rounded-xl shadow-lg overflow-hidden"
-      >
+  const handleCopyEmbed = () => {
+    navigator.clipboard.writeText(embedLink);
+    setCopiedEmbed(true);
+    setTimeout(() => setCopiedEmbed(false), 2000);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="flex flex-col w-full max-w-3xl mx-auto bg-gray-900 rounded-xl shadow-lg overflow-hidden"
+    >
         {/* Header with Creator Options */}
         <motion.div 
           className="sticky top-0 z-10 bg-dark-3 p-4 border-b border-dark-4 flex justify-between items-center"
@@ -435,45 +473,51 @@ const ListDetails: React.FC = () => {
             )}
           </motion.div>
     
-        {/* Embed Section - Only visible to the creator */}
-        {showEmbedOptions && isCreator && (
-          <motion.div 
-            className="mt-6"
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1 }}
-          >
-            <h2 className="text-xl font-bold text-light-1 mb-4">Embed This Ranking</h2>
-            <div className="flex justify-between mb-2">
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsStatic(true)}
-                  className={`px-4 py-2 rounded ${isStatic ? "bg-primary-500 text-white" : "bg-dark-4 text-light-2"}`}
-                >
-                  Static
-                </button>
-                <button
-                  onClick={() => setIsStatic(false)}
-                  className={`px-4 py-2 rounded ${!isStatic ? "bg-primary-500 text-white" : "bg-dark-4 text-light-2"}`}
-                >
-                  Live
-                </button>
-              </div>
-              <Link to="#" className="text-sm underline text-primary-500">
-                What's the difference?
-              </Link>
-            </div>
-            <div className="bg-dark-4 p-4 rounded">
-              <code className="text-light-2 break-all">{embedLink}</code>
-            </div>
-            <Link 
-              to={`${import.meta.env.VITE_APP_DOMAIN}/embedpreview/${list.$id}`} 
-              className="text-primary-500 hover:underline mt-2 inline-block p-6"
+         {/* Embed Section - Only visible to the creator */}
+          {showEmbedOptions && isCreator && (
+            <motion.div 
+              className={`mt-6 p-4 rounded-lg ${showEmbedOptions ? 'bg-dark-1' : ''}`}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 1 }}
             >
-              See Preview
-            </Link>
-          </motion.div>
-        )}
+              <h2 className="text-lg font-bold text-gray-200 mb-4">Embed This Ranking</h2>
+              <div className="flex justify-between mb-2">
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsStatic(true)}
+                    className={`px-4 py-2 rounded ${isStatic ? "bg-dark-4 text-white" : "text-gray-300"}`}
+                  >
+                    Static
+                  </button>
+                  <button
+                    onClick={() => setIsStatic(false)}
+                    className={`px-4 py-2 rounded ${!isStatic ? "bg-dark-4 text-white" : " text-gray-300"}`}
+                  >
+                    Live
+                  </button>
+                </div>
+                <Link to="#" className="text-sm underline text-primary-500">
+                  What's the difference?
+                </Link>
+              </div>
+              <div className="bg-dark-4 p-4 rounded flex items-center justify-between">
+                <code className="text-gray-300 break-all flex-grow mr-2">{embedLink}</code>
+                <Button
+                  onClick={handleCopyEmbed}
+                  className="hover:bg-primary-600 text-white px-3 py-1 rounded flex items-center text-xs"
+                >
+                  {copiedEmbed ? 'Copied!' : <><Copy size={16} className="mr-1" /> </>}
+                </Button>
+              </div>
+              <Link 
+                to={`${import.meta.env.VITE_APP_DOMAIN}/embedpreview/${list.$id}`} 
+                className="text-primary-500 hover:underline inline-block mt-4"
+              >
+                See Embed Preview
+              </Link>
+            </motion.div>
+          )}
             {/* List Stats */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
@@ -493,22 +537,22 @@ const ListDetails: React.FC = () => {
       </div>
     
         {/* Related Lists */}
-        <motion.div 
-          className="p-6 bg-dark-3"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1.1 }}
-        >
-          <h3 className="text-2xl font-bold text-light-1 mb-6">Related Rankings</h3>
-          {isRelatedListsLoading ? (
-            <Loader />
-          ) : relatedLists && relatedLists.length > 0 ? (
-            <GridListList lists={relatedLists} />
-          ) : (
-            <p className="text-light-2">No related rankings found</p>
-          )}
-        </motion.div>
-        </motion.div>
+      <motion.div 
+        className="p-6 bg-dark-3"
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 1.1 }}
+      >
+        <h3 className="text-2xl font-bold text-light-1 mb-6">Related Rankings</h3>
+        {isRelatedListsLoading ? (
+          <LoadingSkeleton />
+        ) : relatedLists && relatedLists.length > 0 ? (
+          <GridListList lists={relatedLists} />
+        ) : (
+          <p className="text-light-2">No related rankings found</p>
+        )}
+      </motion.div>
+    </motion.div>
   );
 };
 

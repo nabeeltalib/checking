@@ -43,7 +43,7 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
             What's In Your Top Five?
           </h2>
           <h3 className="text-lg sm:text-lg font-semibold text-center text-gray-700 dark:text-white">
-            Join for full access
+            Join for full access. It's free!
           </h3>
           <p className="text-center text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-6 sm:mb-8">
             Discover and debate the best lists on any topic. Connect with like-minded friends and peers.
