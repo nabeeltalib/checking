@@ -16,9 +16,9 @@ const ComprehensiveLeaderboard = () => {
     const fetchData = async () => {
       try {
         const u = await getUsers();
-        setUsers(u?.slice(0, 5) || []); // Handle case if u is null
+        setUsers(u?.slice(0, 5) || []);
         const l = await getMostLikedLists();
-        setLists(l.slice(0, 5) || []); // Handle case if l is null
+        setLists(l.slice(0, 5) || []);
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -37,7 +37,7 @@ const ComprehensiveLeaderboard = () => {
         avatar: user?.ImageUrl || "/assets/icons/profile-placeholder.svg",
         listsCreated: user?.lists?.length || 0,
         totalLikes: user?.totalLikes || 0,
-        key: user?.$id || `user-${index}`, // Ensure unique keys
+        key: user?.$id || `user-${index}`,
       })),
     [users]
   );
@@ -51,7 +51,7 @@ const ComprehensiveLeaderboard = () => {
         creator: list?.creator?.Name || "Unknown",
         likes: list?.Likes?.length || 0,
         comments: list?.comments?.length || 0,
-        key: list?.$id || `list-${index}`, // Ensure unique keys
+        key: list?.$id || `list-${index}`,
       })),
     [lists]
   );
@@ -79,7 +79,7 @@ const ComprehensiveLeaderboard = () => {
           <tbody>
             {data.map((item: any) => (
               <motion.tr
-                key={item.key} // Ensure unique keys here
+                key={item.key}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: item.rank * 0.1 }}
@@ -104,29 +104,63 @@ const ComprehensiveLeaderboard = () => {
     </motion.div>
   );
 
+  const LoadingSkeleton: React.FC = () => (
+    <div className="space-y-8">
+      {[...Array(2)].map((_, sectionIndex) => (
+        <div key={sectionIndex} className="bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg">
+          <div className="h-8 bg-dark-3 rounded w-1/3 mb-4"></div>
+          <div className="space-y-4">
+            {[...Array(5)].map((_, rowIndex) => (
+              <div key={rowIndex} className="flex items-center space-x-4">
+                <motion.div
+                  className="h-6 bg-dark-3 rounded w-8"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                ></motion.div>
+                <motion.div
+                  className="h-6 bg-dark-3 rounded w-1/4"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 }}
+                ></motion.div>
+                <motion.div
+                  className="h-6 bg-dark-3 rounded w-1/6"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }}
+                ></motion.div>
+                <motion.div
+                  className="h-6 bg-dark-3 rounded w-1/6"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.3 }}
+                ></motion.div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-dark-1 text-light-1">
+      <div className="max-w-full sm:max-w-5xl mx-auto p-4 sm:p-8 bg-dark-1 rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl">
         <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="text-center"
-        >
-          <img
-            src="/assets/images/mobile.png"
-            width={150}
-            alt="Loading..."
-            className="mx-auto mb-4"
-          />
-          <motion.h1
+          className="h-10 bg-dark-3 rounded w-2/3 mx-auto mb-8"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+        ></motion.div>
+        <div className="flex justify-between mb-8">
+          <motion.div
+            className="h-8 bg-dark-3 rounded w-1/4"
             animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-            className="text-xl sm:text-2xl"
-          >
-            Loading Leaderboard...
-          </motion.h1>
-        </motion.div>
+            transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 }}
+          ></motion.div>
+          <motion.div
+            className="h-8 bg-dark-3 rounded w-1/4"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }}
+          ></motion.div>
+        </div>
+        <LoadingSkeleton />
       </div>
     );
   }

@@ -6,16 +6,16 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, LampDesk, X } from 'lucide-react';
 import MobileTrendingSlider from '@/components/shared/MobileTrendingSlider';
-import Bottombar2 from '@/components/shared/Bottombar2'; // Importing Bottombar2
+import Bottombar2 from '@/components/shared/Bottombar2';
 
 interface IList {
   $id: string;
-  [key: string]: any; // Adjust based on your list's shape
+  [key: string]: any;
 }
 
 const PreviewMode: React.FC = () => {
   const [publicLists, setPublicLists] = useState<IList[]>([]);
-  const [isContentLoaded, setIsContentLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const navigate = useNavigate();
@@ -25,39 +25,75 @@ const PreviewMode: React.FC = () => {
       try {
         const publicData = await getPublicLists();
         setPublicLists(publicData);
-        setIsContentLoaded(true);
+        setIsLoading(false);
       } catch (error) {
         console.error('Failed to fetch public lists:', error);
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (isContentLoaded) {
-      const loader = document.getElementById('loader');
-      if (loader) {
-        loader.style.display = 'none';
-      }
-    }
-  }, [isContentLoaded]);
-
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
     if (!isDialogOpen) {
-      setIsDialogOpen(true); // Only open the dialog if it's not already open
+      setIsDialogOpen(true);
     }
   };
 
   const handleDialogClose = () => setIsDialogOpen(false);
 
-  if (!isContentLoaded) {
+  const LoadingSkeleton: React.FC = () => (
+    <div className="space-y-8">
+      {[...Array(6)].map((_, index) => (
+        <div key={index} className="bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg">
+          <motion.div
+            className="h-8 bg-dark-3 rounded w-1/2 mb-4"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          ></motion.div>
+          <div className="space-y-4">
+            {[...Array(3)].map((_, rowIndex) => (
+              <div key={rowIndex} className="flex items-center space-x-4">
+                <motion.div
+                  className="h-6 bg-dark-3 rounded w-1/4"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 * rowIndex }}
+                ></motion.div>
+                <motion.div
+                  className="h-6 bg-dark-3 rounded w-1/2"
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 * rowIndex + 0.05 }}
+                ></motion.div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-black text-white">
-        <div className="text-center">
-          <img src="/assets/images/mobile.png" width={200} alt="Loading..." className="mx-auto mb-4" />
-          <h1 className="text-2xl flashing">Loading Organized Opinions...</h1>
+      <div className="mt-4 w-full items-center bg-dark-1 min-h-screen pb-20">
+        <header className="w-full bg-dark-1 py-4">
+          <div className="max-w-5xl mx-auto px-4 text-center">
+            <motion.div
+              className="h-8 bg-dark-3 rounded w-2/3 mx-auto mb-4"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+            ></motion.div>
+            <motion.div
+              className="h-4 bg-dark-3 rounded w-1/2 mx-auto"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 }}
+            ></motion.div>
+          </div>
+        </header>
+
+        <div className="max-w-5xl mx-auto px-4">
+          <LoadingSkeleton />
         </div>
       </div>
     );

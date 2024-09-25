@@ -427,3 +427,15 @@
 .custom-scrollbar::-webkit-scrollbar-track {
   background-color: #1a1a1a; /* Track color (matches the dark theme) */
 }
+@keyframes skeletonLoading {
+  0% {
+    background-color: hsl(200, 20%, 70%);
+  }
+  100% {
+    background-color: hsl(200, 20%, 95%);
+  }
+}
+
+.skeleton-loading {
+  animation: skeletonLoading 1s linear infinite alternate;
+}

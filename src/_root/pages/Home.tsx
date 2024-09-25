@@ -74,6 +74,42 @@ const Home: React.FC = () => {
     return null;
   }
 
+  const LoadingSkeleton: React.FC = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      {[...Array(6)].map((_, index) => (
+        <div key={index} className="bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg">
+          <motion.div
+            className="h-6 bg-dark-3 rounded w-3/4 mb-4"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          ></motion.div>
+          <div className="space-y-2">
+            {[...Array(5)].map((_, rowIndex) => (
+              <motion.div
+                key={rowIndex}
+                className="h-4 bg-dark-3 rounded w-full"
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 * rowIndex }}
+              ></motion.div>
+            ))}
+          </div>
+          <div className="flex justify-between mt-4">
+            <motion.div
+              className="h-8 bg-dark-3 rounded w-1/4"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+            ></motion.div>
+            <motion.div
+              className="h-8 bg-dark-3 rounded w-1/4"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }}
+            ></motion.div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="flex flex-col w-full items-center bg-dark-1 min-h-screen">
       {/* Header Section */}
@@ -126,7 +162,7 @@ const Home: React.FC = () => {
 
         {/* List Cards Section */}
         {isLoading && !lists ? (
-          <Loader />
+          <LoadingSkeleton />
         ) : (
           <AnimatePresence>
             <motion.div

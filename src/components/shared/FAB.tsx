@@ -13,7 +13,7 @@ const FAB: React.FC = () => {
   if (!isDesktop) return null; // Don't render anything on mobile
 
   return (
-    <div className="fixed bottom-16 left-16 group">
+    <div className="fixed bottom-28 right-20 group">
       <button
         className="bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 flex items-center justify-center"
         onClick={handleClick}

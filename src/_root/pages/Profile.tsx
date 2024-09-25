@@ -51,8 +51,9 @@ const Profile: React.FC = () => {
   const [followdBy, setFollowdBy] = useState<any>([]);
   const [showFollowers, setShowFollowers] = useState(false);
   const [userLikedLists, setUserLikedLists] = useState<any>([]);
+
   useEffect(() => {
-    console.log('Current User:', currentUser); // Add this to check the user data
+    console.log('Current User:', currentUser);
   }, [currentUser]);
   
   useEffect(() => {
@@ -103,7 +104,27 @@ const Profile: React.FC = () => {
   }, [id]);
 
   if (!id) return <div className="text-center text-light-1">User ID not found</div>;
-  if (isLoadingCurrentUser || isLoadingLists) return <Loader />;
+
+  const LoadingSkeleton: React.FC = () => (
+    <div className="animate-pulse">
+      <div className="h-48 sm:h-64 bg-dark-3 rounded-b-lg mb-4"></div>
+      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 bg-dark-2 p-6 rounded-lg shadow-lg -mt-20 mx-4 relative z-10">
+        <div className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full bg-dark-3"></div>
+        <div className="flex-grow space-y-4">
+          <div className="h-8 bg-dark-3 rounded w-3/4"></div>
+          <div className="h-4 bg-dark-3 rounded w-1/2"></div>
+          <div className="h-4 bg-dark-3 rounded w-full"></div>
+        </div>
+      </div>
+      <div className="mt-8 space-y-4">
+        <div className="h-10 bg-dark-3 rounded"></div>
+        <div className="h-40 bg-dark-3 rounded"></div>
+        <div className="h-40 bg-dark-3 rounded"></div>
+      </div>
+    </div>
+  );
+
+  if (isLoadingCurrentUser || isLoadingLists) return <LoadingSkeleton />;
   if (!currentUser) return <div className="text-center text-light-1">User not found</div>;
 
   const savedLists = currentUser?.save
@@ -288,7 +309,6 @@ const Profile: React.FC = () => {
       {currentUser.socialLinks && currentUser.socialLinks.length > 0 && (
         <div className="mt-4 flex space-x-4">
           {currentUser.socialLinks.map((link, index) => {
-            // You can parse the link to determine the platform
             let IconComponent = LinkIcon; // Default icon
             if (link.includes("twitter.com")) {
               IconComponent = FaTwitter;
@@ -348,9 +368,8 @@ const Profile: React.FC = () => {
         </Button>
       </div>
 
-
-     {/* Content based on selected tab */}
-     <AnimatePresence mode="wait">
+      {/* Content based on selected tab */}
+      <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
           initial={{ opacity: 0, y: 20 }}
@@ -540,27 +559,27 @@ const Profile: React.FC = () => {
     </motion.div>
     </div>
 
-{/* Bottom Tabs */}
-{isOwnProfile && (
-  <div className="fixed bottom-0 left-0 w-full">
-    <div className="flex justify-end p-4">
-      <Button
-        className="bg-primary-500 text-white rounded-full p-3 shadow-lg hover:bg-primary-600 transition-colors duration-300"
-        onClick={() => navigate(`/manage-list/${id}`)}
-      >
-        <Settings size={24} />
-      </Button>
-      <Button
-        className="bg-secondary-500 text-white rounded-full p-3 shadow-lg hover:bg-secondary-600 transition-colors duration-300 ml-2"
-        onClick={() => navigate("/userActivity")}
-      >
-        <Activity size={24} />
-      </Button>
-    </div>
+    {/* Bottom Tabs */}
+    {isOwnProfile && (
+      <div className="fixed bottom-0 left-0 w-full">
+        <div className="flex justify-end p-4">
+          <Button
+            className="bg-primary-500 text-white rounded-full p-3 shadow-lg hover:bg-primary-600 transition-colors duration-300"
+            onClick={() => navigate(`/manage-list/${id}`)}
+          >
+            <Settings size={24} />
+          </Button>
+          <Button
+            className="bg-secondary-500 text-white rounded-full p-3 shadow-lg hover:bg-secondary-600 transition-colors duration-300 ml-2"
+            onClick={() => navigate("/userActivity")}
+          >
+            <Activity size={24} />
+          </Button>
+        </div>
+      </div>
+    )}
   </div>
-)}
-</div>
-);
+  );
 };
 
 export default Profile;
