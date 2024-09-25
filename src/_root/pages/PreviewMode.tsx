@@ -1,48 +1,64 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { getPublicLists } from '@/lib/appwrite/api';
 import ListCard from '@/components/shared/ListCard';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, LampDesk, X } from 'lucide-react';
+import { Search, LampDesk } from 'lucide-react';
 import MobileTrendingSlider from '@/components/shared/MobileTrendingSlider';
 import Bottombar2 from '@/components/shared/Bottombar2';
+import SignInDialog from '@/components/shared/SignInDialog';
+import { useInView } from "react-intersection-observer";
+import { useInfiniteQuery } from '@tanstack/react-query';
 
 interface IList {
   $id: string;
   [key: string]: any;
 }
 
+const LISTS_PER_PAGE = 10;
+
 const PreviewMode: React.FC = () => {
-  const [publicLists, setPublicLists] = useState<IList[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
   const navigate = useNavigate();
+  const { ref, inView } = useInView();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const publicData = await getPublicLists();
-        setPublicLists(publicData);
-        setIsLoading(false);
-      } catch (error) {
-        console.error('Failed to fetch public lists:', error);
-        setIsLoading(false);
-      }
-    };
+  const {
+    data: lists,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+  } = useInfiniteQuery(
+    ['publicLists'],
+    async ({ pageParam = 0 }) => {
+      const start = pageParam * LISTS_PER_PAGE;
+      const end = start + LISTS_PER_PAGE;
+      const fetchedLists = await getPublicLists(start, end);
+      return fetchedLists;
+    },
+    {
+      getNextPageParam: (lastPage, allPages) => {
+        return lastPage.length === LISTS_PER_PAGE ? allPages.length : undefined;
+      },
+    }
+  );
 
-    fetchData();
-  }, []);
+  React.useEffect(() => {
+    if (inView && hasNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, fetchNextPage, hasNextPage]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    if (!isDialogOpen) {
-      setIsDialogOpen(true);
+    if (!isSignInDialogOpen) {
+      setIsSignInDialogOpen(true);
     }
   };
 
-  const handleDialogClose = () => setIsDialogOpen(false);
+  const handleDialogClose = () => setIsSignInDialogOpen(false);
 
   const LoadingSkeleton: React.FC = () => (
     <div className="space-y-8">
@@ -74,29 +90,8 @@ const PreviewMode: React.FC = () => {
     </div>
   );
 
-  if (isLoading) {
-    return (
-      <div className="mt-4 w-full items-center bg-dark-1 min-h-screen pb-20">
-        <header className="w-full bg-dark-1 py-4">
-          <div className="max-w-5xl mx-auto px-4 text-center">
-            <motion.div
-              className="h-8 bg-dark-3 rounded w-2/3 mx-auto mb-4"
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ repeat: Infinity, duration: 1.5 }}
-            ></motion.div>
-            <motion.div
-              className="h-4 bg-dark-3 rounded w-1/2 mx-auto"
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 }}
-            ></motion.div>
-          </div>
-        </header>
-
-        <div className="max-w-5xl mx-auto px-4">
-          <LoadingSkeleton />
-        </div>
-      </div>
-    );
+  if (isError) {
+    return <div>Error loading lists</div>;
   }
 
   return (
@@ -127,7 +122,7 @@ const PreviewMode: React.FC = () => {
       </div>
 
       {/* Mobile Trending Slider */}
-      <MobileTrendingSlider setIsDialogOpen={setIsDialogOpen} />
+      <MobileTrendingSlider setIsDialogOpen={setIsSignInDialogOpen} />
 
       <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center mt-8">
         <LampDesk className="mr-2" />
@@ -136,29 +131,43 @@ const PreviewMode: React.FC = () => {
 
       {/* Main Content */}
       <div className="flex flex-col gap-6 p-4 w-full items-center max-w-5xl mx-auto mt-6">
-        <AnimatePresence>
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            {publicLists.map((list: IList) => (
-              <motion.div
-                key={list.$id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ListCard list={list} />
-              </motion.div>
-            ))}
-          </motion.div>
-        </AnimatePresence>
+        {isLoading ? (
+          <LoadingSkeleton />
+        ) : (
+          <AnimatePresence>
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {lists?.pages.map((page, pageIndex) => (
+                <React.Fragment key={pageIndex}>
+                  {page.map((list: IList) => (
+                    <motion.div
+                      key={list.$id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ListCard list={list} />
+                    </motion.div>
+                  ))}
+                </React.Fragment>
+              ))}
+            </motion.div>
+          </AnimatePresence>
+        )}
+        
+        {hasNextPage && (
+          <div ref={ref} className="mt-8 flex justify-center">
+            <LoadingSkeleton />
+          </div>
+        )}
 
         <Button
-          onClick={() => navigate('/sign-in')}
+          onClick={() => setIsSignInDialogOpen(true)}
           className="w-full md:w-auto mx-auto bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out"
         >
           Sign Up/Sign In to Access More Features
@@ -168,60 +177,8 @@ const PreviewMode: React.FC = () => {
       {/* Bottombar2 Component */}
       <Bottombar2 />
 
-      {/* Dialog */}
-      <AnimatePresence>
-        {isDialogOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 sm:p-8"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg"
-            >
-              <button
-                onClick={handleDialogClose}
-                className="text-gray-500 hover:text-gray-700 absolute top-4 right-4"
-                aria-label="Close"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              <div className="text-center">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Unlock Full Access!</h3>
-                <p className="text-sm sm:text-base text-gray-600 mb-6">
-                  Sign up now to search, like, comment, save, and remix lists. Create your own rankings and join the community!
-                </p>
-              </div>
-              <div className="flex flex-col gap-4">
-                <Button
-                  type="button"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 sm:px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out"
-                  onClick={() => navigate("/sign-up")}
-                >
-                  Sign Up
-                </Button>
-                <Button
-                  className="flex items-center justify-center bg-white text-gray-700 border border-gray-300 px-4 sm:px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out hover:bg-gray-100"
-                  onClick={() => navigate("/sign-in")}
-                >
-                  <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
-                  Sign In with Google
-                </Button>
-                <Button
-                  className="text-indigo-600 hover:text-indigo-800 font-semibold"
-                  onClick={() => navigate("/sign-in")}
-                >
-                  Sign In with Email
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Sign-in Dialog */}
+      <SignInDialog isOpen={isSignInDialogOpen} onClose={handleDialogClose} />
     </div>
   );
 };

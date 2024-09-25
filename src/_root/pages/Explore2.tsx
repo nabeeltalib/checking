@@ -9,6 +9,7 @@ import { useUserContext } from '@/context/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import ListCard2 from '@/components/shared/ListCard2';
 import { Button } from '@/components/ui';
+import SignInDialog from '@/components/shared/SignInDialog';
 
 const Explore2: React.FC = () => {
   const { user } = useUserContext();
@@ -23,7 +24,7 @@ const Explore2: React.FC = () => {
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
   const [isRecentListsLoading, setIsRecentListsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
-  const [isSignUpDialogOpen, setIsSignUpDialogOpen] = useState(false);
+  const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
 
   // Fetch AI suggestions
   const {
@@ -84,12 +85,12 @@ const Explore2: React.FC = () => {
   const handleProtectedClick = (e: React.MouseEvent) => {
     if (!user?.isAuthenticated) {
       e.preventDefault();
-      setIsSignUpDialogOpen(true);
+      setIsSignInDialogOpen(true);
     }
   };
 
-  const closeSignUpDialog = () => {
-    setIsSignUpDialogOpen(false);
+  const closeSignInDialog = () => {
+    setIsSignInDialogOpen(false);
   };
 
   // Rendered lists with loading state
@@ -126,39 +127,6 @@ const Explore2: React.FC = () => {
 
   return (
     <div className="explore-container common-container w-full space-y-12">
-      {/* AI Suggested Lists 
-      <motion.section
-        key="ai-suggestions"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="mb-8 bg-gradient-to-r from-purple-900 to-blue-900 p-6 rounded-xl shadow-lg"
-      >
-        <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
-          <Sparkles className="mr-2" />
-          AI Suggested Lists
-        </h3>
-        {isLoadingAISuggestions ? (
-          <AISuggestionsSkeleton />
-        ) : aiSuggestions && aiSuggestions.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {aiSuggestions.map((suggestion, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="bg-white bg-opacity-10 p-4 rounded-lg backdrop-blur-sm hover:bg-opacity-20 transition-all duration-300"
-              >
-                <p className="text-light-1">{suggestion}</p>
-              </motion.div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-light-2">No AI suggestions available.</p>
-        )}
-      </motion.section>*/}
-
       {/* Popular Categories */}
       <motion.section
         key="popular-categories"
@@ -250,75 +218,8 @@ const Explore2: React.FC = () => {
         </div>
       </motion.section>
 
-      {/* Sign-up Dialog */}
-      {isSignUpDialogOpen && (
-        <div
-          className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 sm:p-8"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="signUpDialogTitle"
-          onClick={closeSignUpDialog}
-        >
-          <div
-            className="relative bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={closeSignUpDialog}
-              className="text-gray-500 hover:text-gray-700 absolute top-4 right-4"
-              aria-label="Close"
-            >
-              {/* Close icon */}
-            </button>
-            <div className="text-center">
-              <h3
-                id="signUpDialogTitle"
-                className="text-xl sm:text-2xl font-bold text-gray-800 mb-2"
-              >
-                Unlock Full Access!
-              </h3>
-              <p className="text-sm sm:text-sm text-gray-600 mb-6">
-                Sign up now to like, comment, save, and remix lists. Create your own rankings and join the community!
-              </p>
-            </div>
-            <div className="flex flex-col gap-4">
-              <Button
-                type="button"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 sm:px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out"
-                onClick={() => {
-                  closeSignUpDialog();
-                  navigate('/signup');
-                }}
-              >
-                Sign Up
-              </Button>
-              <Button
-                className="flex items-center justify-center bg-white text-gray-700 border border-gray-300 px-4 sm:px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out hover:bg-gray-100"
-                onClick={() => {
-                  closeSignUpDialog();
-                  navigate('/signin');
-                }}
-              >
-                <img
-                  src="/assets/icons/google.svg"
-                  alt="Google"
-                  className="mr-2 h-5 w-5"
-                />
-                Sign In with Google
-              </Button>
-              <Button
-                className="text-indigo-600 hover:text-indigo-800 font-semibold"
-                onClick={() => {
-                  closeSignUpDialog();
-                  navigate('/signin');
-                }}
-              >
-                Sign In with Email
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Sign-in Dialog */}
+      <SignInDialog isOpen={isSignInDialogOpen} onClose={closeSignInDialog} />
     </div>
   );
 };
@@ -326,19 +227,6 @@ const Explore2: React.FC = () => {
 export default Explore2;
 
 // Skeleton Components
-const AISuggestionsSkeleton: React.FC = () => (
-  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {[...Array(6)].map((_, index) => (
-      <div
-        key={index}
-        className="bg-white bg-opacity-10 p-4 rounded-lg backdrop-blur-sm animate-pulse"
-      >
-        <div className="h-6 bg-dark-4 rounded w-3/4 mb-2"></div>
-      </div>
-    ))}
-  </div>
-);
-
 const CategoriesSkeleton: React.FC = () => (
   <div className="flex gap-4 flex-wrap">
     {[...Array(8)].map((_, index) => (

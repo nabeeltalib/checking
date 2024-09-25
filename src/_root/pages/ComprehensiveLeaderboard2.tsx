@@ -7,6 +7,7 @@ import { useUserContext } from "@/context/AuthContext";
 import { Button } from "@/components/ui";
 import { useToast } from "@/components/ui/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import SignInDialog from '@/components/shared/SignInDialog';
 
 const ComprehensiveLeaderboard2 = () => {
   const { user } = useUserContext();
@@ -16,7 +17,7 @@ const ComprehensiveLeaderboard2 = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [lists, setLists] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSignUpDialogOpen, setIsSignUpDialogOpen] = useState(false);
+  const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,12 +43,12 @@ const ComprehensiveLeaderboard2 = () => {
   const handleProtectedLinkClick = (e: React.MouseEvent, path: string) => {
     if (!user.isAuthenticated) {
       e.preventDefault();
-      setIsSignUpDialogOpen(true);
+      setIsSignInDialogOpen(true);
     }
   };
 
-  const closeSignUpDialog = () => {
-    setIsSignUpDialogOpen(false);
+  const closeSignInDialog = () => {
+    setIsSignInDialogOpen(false);
   };
 
   const topUser = useMemo(
@@ -254,26 +255,6 @@ const ComprehensiveLeaderboard2 = () => {
           { header: <Heart size={16} className="mr-1 sm:mr-2 text-light-2" />, key: "totalLikes" },
         ]}
       />
-<LeaderboardSection
-        title="Top Users"
-        data={topUser}
-        columns={[
-          {
-            header: "User",
-            key: "name",
-            render: (item: any) => (
-              <div className="flex items-center">
-                <img src={item.avatar} alt={item.name} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-2 sm:mr-3 border-2 border-primary-500" />
-                <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-sm sm:text-base" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
-                  {item.name}
-                </Link>
-              </div>
-            ),
-          },
-          { header: <List size={16} className="mr-1 sm:mr-2 text-light-2" />, key: "listsCreated" },
-          { header: <Heart size={16} className="mr-1 sm:mr-2 text-light-2" />, key: "totalLikes" },
-        ]}
-      />
 
       <LeaderboardSection
         title="Top Lists"
@@ -296,59 +277,7 @@ const ComprehensiveLeaderboard2 = () => {
         ]}
       />
 
-      <AnimatePresence>
-        {isSignUpDialogOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 sm:p-8"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg"
-            >
-              <button
-                onClick={closeSignUpDialog}
-                className="text-black hover:text-light-1 absolute top-4 right-4 transition-colors duration-200"
-                aria-label="Close"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              <div className="text-center">
-                <h3 className="text-2xl font-bold text-black mb-2">Unlock Full Access!</h3>
-                <p className="text-black mb-6">Sign up now to like, comment, save, and remix lists. Create your own rankings and join the community!</p>
-              </div>
-              <div className="flex flex-col gap-4">
-                <Button
-                  type="button"
-                  className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out"
-                  onClick={() => { closeSignUpDialog(); /* Navigate to sign-up page */ }}
-                >
-                  Sign Up
-                </Button>
-                <Button
-                  className="flex items-center justify-center bg-dark-3 text-light-1 border border-dark-4 px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out hover:bg-dark-4"
-                  onClick={() => { closeSignUpDialog(); /* Navigate to sign-in page */ }}
-                >
-                  <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
-                  Sign In with Google
-                </Button>
-                <Button
-                  className="text-primary-500 hover:text-primary-600 font-semibold transition-colors duration-200"
-                  onClick={() => { closeSignUpDialog(); /* Navigate to sign-in page */ }}
-                >
-                  Sign In with Email
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <SignInDialog isOpen={isSignInDialogOpen} onClose={closeSignInDialog} />
     </div>
   );
 };

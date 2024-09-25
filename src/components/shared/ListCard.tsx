@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { IList } from "@/types";
 import { shareList } from "@/lib/appwrite/api";
 import {
@@ -8,7 +8,6 @@ import {
   MessageCircle,
   Bookmark,
   Wand,
-  X,
   Crown,
   Heart,
   ChevronDown,
@@ -20,9 +19,9 @@ import {
 } from "@/lib/react-query/queries";
 import Comment from "./Comment";
 import { Button } from "../ui";
-import Loader from "@/components/shared/Loader";
 import Tooltip from "@/components/ui/Tooltip";
 import { useToast } from "@/components/ui/use-toast";
+import SignInDialog from '@/components/shared/SignInDialog';
 
 type ListCardProps = {
   list: IList;
@@ -30,7 +29,7 @@ type ListCardProps = {
 
 const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const [isSharing, setIsSharing] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: comments } = useGetComments(list.$id);
   const navigate = useNavigate();
@@ -80,11 +79,11 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   };
 
   const handleDialogOpen = () => {
-    setIsDialogOpen(true);
+    setIsSignInDialogOpen(true);
   };
 
   const handleDialogClose = () => {
-    setIsDialogOpen(false);
+    setIsSignInDialogOpen(false);
   };
 
   const handleGoogleSignIn = () => {
@@ -265,8 +264,6 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           )}
         </div>
 
-      
-
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mb-4">
           {list.Tags?.slice(0, 3).map((tag: string, index: number) => (
@@ -343,80 +340,8 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         )}
       </div>
 
-      {/* Sign-up Dialog */}
-      <AnimatePresence>
-        {isDialogOpen && (
-          <motion.div
-            className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-75 z-50 p-4 sm:p-6"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="dialog-title"
-          >
-            <motion.div
-              className="bg-white p-6 sm:p-8 rounded-lg shadow-2xl w-full max-w-md relative"
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-            >
-              <button
-                onClick={handleDialogClose}
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors"
-                aria-label="Close"
-              >
-                <X size={24} />
-              </button>
-              <h3
-                id="dialog-title"
-                className="text-2xl font-bold text-gray-800 mb-4 text-center"
-              >
-                Unlock Full Access!
-              </h3>
-              <p className="text-gray-600 mb-6 text-center">
-                Sign up now to like, comment, save, and collaborate on lists.
-                Create your own rankings and join the community!
-              </p>
-              <div className="space-y-4">
-                <Button
-                  className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3 rounded-lg transition-colors"
-                  onClick={() => navigate("/sign-up")}
-                >
-                  Sign Up for Free
-                </Button>
-                <Button
-                  className="w-full flex items-center justify-center bg-white text-gray-700 border border-gray-300 py-3 rounded-lg hover:bg-gray-50 transition-colors"
-                  onClick={handleGoogleSignIn}
-                  disabled={isGoogleLoading}
-                >
-                  {isGoogleLoading ? (
-                    <Loader />
-                  ) : (
-                    <>
-                      <img
-                        src="/assets/icons/google.svg"
-                        alt="Google"
-                        className="mr-2 h-5 w-5"
-                      />
-                      Continue with Google
-                    </>
-                  )}
-                </Button>
-                <p className="text-center text-sm text-gray-500">
-                  Already have an account?{" "}
-                  <button
-                    className="text-primary-500 hover:underline font-semibold"
-                    onClick={() => navigate("/sign-in")}
-                  >
-                    Sign In
-                  </button>
-                </p>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Sign-in Dialog */}
+      <SignInDialog isOpen={isSignInDialogOpen} onClose={handleDialogClose} />
     </motion.div>
   );
 };

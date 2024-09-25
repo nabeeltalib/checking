@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useSearchLists } from "@/lib/react-query/queries";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { Search, Menu, X, User, HelpCircle, Mail, LogOut } from 'lucide-react';
+import SignInDialog from '@/components/shared/SignInDialog';
 
 const Topbar2: React.FC = () => {
   const navigate = useNavigate();
@@ -17,7 +18,7 @@ const Topbar2: React.FC = () => {
   const { data: searchResults, refetch: searchLists } = useSearchLists(searchQuery, user?.id);
   const [isOpen, setIsOpen] = useState(false);
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLFormElement>(null);
@@ -25,7 +26,8 @@ const Topbar2: React.FC = () => {
   const toggleDropdown = () => setIsOpen(!isOpen);
   const toggleOffCanvas = () => setIsOffCanvasOpen(!isOffCanvasOpen);
 
-  const handleDialogOpen = () => setIsDialogOpen(true);
+  const handleDialogOpen = () => setIsSignInDialogOpen(true);
+  const handleDialogClose = () => setIsSignInDialogOpen(false);
 
   const handleCreateList = () => {
     if (user?.isAuthenticated) {
@@ -98,54 +100,6 @@ const Topbar2: React.FC = () => {
             className="object-contain md:hidden"
           />
         </Link>
-
-       {/* <form onSubmit={handleSearch} ref={searchRef} className="flex-grow max-w-md mx-auto w-full relative">
-        <div className="flex justify-center items-center gap-2">
-            <Input
-              type="text"
-              placeholder="Search lists..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={handleSearchFocus}
-              className="w-full bg-gray-800 text-white border-none rounded-lg focus:ring-2 focus:ring-purple-400 transition-all duration-300"
-            />
-            <Button
-              type="submit"
-              className="p-2 bg-purple-500 rounded-full hover:bg-purple-700 transition-all duration-300"
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5 text-white" />
-            </Button>
-          </div>
-
-          <AnimatePresence>
-            {user?.isAuthenticated && searchResults?.pages?.length > 0 && (
-              <motion.ul
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="absolute bg-gray-700 text-white rounded-lg shadow-lg w-full max-h-60 overflow-y-auto mt-2 z-10"
-              >
-                {searchResults.pages.map((page, pageIndex) =>
-                  page.map((list: any, index: number) => (
-                    <motion.li
-                      key={`${pageIndex}-${index}`}
-                      whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                      className="border-b border-gray-600 last:border-b-0"
-                    >
-                      <Link
-                        to={`/lists/${list.id}`}
-                        className="block px-4 py-2 hover:bg-gray-600 transition-colors duration-200"
-                      >
-                        "{list.Title}"
-                      </Link>
-                    </motion.li>
-                  ))
-                )}
-              </motion.ul>
-            )}
-          </AnimatePresence>
-        </form>*/}
 
         <div className="flex items-center md:hidden">
           <Button onClick={toggleOffCanvas} className="text-white" aria-label="Open menu">
@@ -259,57 +213,7 @@ const Topbar2: React.FC = () => {
         </AnimatePresence>
       </div>
 
-      <AnimatePresence>
-        {isDialogOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 sm:p-8"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-white p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg"
-            >
-              <button
-                onClick={() => setIsDialogOpen(false)}
-                className="text-gray-500 hover:text-gray-700 absolute top-4 right-4"
-                aria-label="Close"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              <div className="text-center">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Unlock Full Access!</h3>
-                <p className="text-sm sm:text-base text-gray-600 mb-6">Sign up now to search, like, comment, save, and remix lists. Create your own rankings and join the community!</p>
-              </div>
-              <div className="flex flex-col gap-4">
-                <Button
-                  type="button"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 sm:px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out"
-                  onClick={() => navigate("/sign-up")}
-                >
-                  Sign Up
-                </Button>
-                <Button
-                  className="flex items-center justify-center bg-white text-gray-700 border border-gray-300 px-4 sm:px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out hover:bg-gray-100"
-                  onClick={() => navigate("/sign-in")}
-                >
-                  <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
-                  Sign In with Google
-                </Button>
-                <Button
-                  className="text-indigo-600 hover:text-indigo-800 font-semibold"
-                  onClick={() => navigate("/sign-in")}
-                >
-                  Sign In with Email
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <SignInDialog isOpen={isSignInDialogOpen} onClose={handleDialogClose} />
     </motion.section>
   );
 };

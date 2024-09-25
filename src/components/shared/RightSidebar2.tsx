@@ -1,17 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageSquare, MapPinned, X } from 'lucide-react'; // Make sure to import X
+import { Heart, MessageSquare, MapPinned } from 'lucide-react';
 import { getMostLikedLists } from '@/lib/appwrite/api';
 import { useGetComments } from '@/lib/react-query/queries';
 import { Button } from "@/components/ui/button";
+import SignInDialog from '@/components/shared/SignInDialog';
 
 const RightSidebar2: React.FC = () => {
   const navigate = useNavigate();
   const [allTrendingLists, setAllTrendingLists] = useState<any[]>([]);
   const [displayedLists, setDisplayedLists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
 
   // Assume you have an authentication context or state
   const isLoggedIn = false; // Replace with actual authentication logic
@@ -49,11 +50,11 @@ const RightSidebar2: React.FC = () => {
   }, [allTrendingLists]);
 
   const handleDialogOpen = () => {
-    setIsDialogOpen(true);
+    setIsSignInDialogOpen(true);
   };
 
   const handleDialogClose = () => {
-    setIsDialogOpen(false);
+    setIsSignInDialogOpen(false);
   };
 
   return (
@@ -70,9 +71,6 @@ const RightSidebar2: React.FC = () => {
               <MapPinned className="mr-2" />
               In Your Area
             </h2>
-            {/* <button onClick={handleRefresh} className="text-primary-500 hover:text-primary-600 transition-colors">
-              <RefreshCw size={20} />
-            </button> */}
           </div>
 
           {loading ? (
@@ -129,74 +127,8 @@ const RightSidebar2: React.FC = () => {
         </div>
       </motion.aside>
 
-      {/* Popup Component */}
-      <AnimatePresence>
-        {isDialogOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-4 sm:p-8"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-dark-2 p-6 sm:p-8 rounded-lg shadow-xl w-full max-w-md md:max-w-lg"
-            >
-              <button
-                onClick={handleDialogClose}
-                className="text-gray-400 hover:text-gray-200 absolute top-4 right-4 transition-colors duration-200"
-                aria-label="Close"
-              >
-                <X size={24} />
-              </button>
-              <div className="text-center">
-                <h3 className="text-2xl font-bold text-light-1 mb-2">Unlock Full Access!</h3>
-                <p className="text-sm text-light-2 mb-6">
-                  Sign up now to like, comment, save, and remix lists. Create your own rankings and
-                  join the community!
-                </p>
-              </div>
-              <div className="flex flex-col gap-4">
-                <Button
-                  type="button"
-                  className="bg-primary-500 hover:bg-primary-600 text-white px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out"
-                  onClick={() => {
-                    handleDialogClose();
-                    navigate('/signup');
-                  }}
-                >
-                  Sign Up
-                </Button>
-                <Button
-                  className="flex items-center justify-center bg-dark-3 text-light-1 border border-dark-4 px-6 py-3 rounded-full font-semibold transition duration-300 ease-in-out hover:bg-dark-4"
-                  onClick={() => {
-                    handleDialogClose();
-                    // Handle Google Sign-In
-                  }}
-                >
-                  <img
-                    src="/assets/icons/google.svg"
-                    alt="Google"
-                    className="mr-2 h-5 w-5"
-                  />
-                  Sign In with Google
-                </Button>
-                <Button
-                  className="text-primary-500 hover:text-primary-600 font-semibold transition-colors duration-200"
-                  onClick={() => {
-                    handleDialogClose();
-                    navigate('/signin');
-                  }}
-                >
-                  Sign In with Email
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Sign-in Dialog */}
+      <SignInDialog isOpen={isSignInDialogOpen} onClose={handleDialogClose} />
     </>
   );
 };
