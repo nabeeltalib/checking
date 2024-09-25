@@ -14,6 +14,8 @@ export type IUpdateUser = {
   imageId: string;
   imageUrl: URL | string;
   file: File[];
+  Public: boolean;
+  socialLinks?: string[];
 };
 
 export type INewList = Omit<
@@ -53,6 +55,14 @@ export interface IList extends Models.Document {
   Public: boolean;
 }
 
+export interface ISocialLinks {
+  twitter?: string;
+  facebook?: string;
+  instagram?: string;
+  linkedin?: string;
+  // Add more platforms as needed
+}
+
 export interface IUser extends Models.Document {
   name: string;
   username: string;
@@ -61,7 +71,9 @@ export interface IUser extends Models.Document {
   bio: string;
   curatedList: string[];
   save?: { list: IList }[];
-  $id: string;
+  $id: string;  
+  Public: boolean;
+  socialLinks?: string[]; // Adjusted to be a string array
 }
 
 export type INewUser = {

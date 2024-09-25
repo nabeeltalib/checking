@@ -25,7 +25,7 @@ const ListPreview: React.FC<ListPreviewProps> = ({ title, description, items, ca
           >
             Ranking For
           </div>
-      <h4 className="text-yellow-500 text-md font-bold mt-4 mb-3">{title || "Title"}</h4>
+      <h4 className="text-yellow-200 text-md font-bold mt-4 mb-3">{title || "Title"}</h4>
       {description && (
         <p className="text-light-2 text-xs mb-4">{description.length > 100 ? description.substring(0, 100) + '...' : description}</p>
       )}

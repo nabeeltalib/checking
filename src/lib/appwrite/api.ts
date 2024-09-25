@@ -818,12 +818,10 @@ export async function getUserById(userId: any) {
       appwriteConfig.userCollectionId,
       userId
     );
-
-    if (!user) throw new Error("User not found");
-
+    console.log('Fetched User:', user); // Add this for debugging
     return user;
   } catch (error) {
-    console.error("Error getting user by ID:", error);
+    console.error('Error getting user by ID:', error);
     return null;
   }
 }
@@ -854,12 +852,22 @@ export async function updateUser(user: any) {
       appwriteConfig.userCollectionId,
       user.userId,
       {
-        name: user.name,
-        bio: user.bio,
-        imageUrl: image.imageUrl,
-        imageId: image.imageId,
+        Name: user.Name,
+        Bio: user.Bio,
+        ImageUrl: image.imageUrl,
+        ImageId: image.imageId,
+        Public: user.Public,
+        socialLinks: user.socialLinks, // Ensure this field is included
       }
     );
+    console.log("Updating user with data:", {
+      Name: user.Name,
+      Bio: user.Bio,
+      ImageUrl: image.imageUrl,
+      ImageId: image.imageId,
+      Public: user.Public,
+      socialLinks: user.socialLinks,
+    });
 
     if (!updatedUser) {
       if (hasFileToUpdate) {

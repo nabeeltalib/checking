@@ -525,7 +525,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
             Ranking For
           </div>
 
-          <h2 className="text-yellow-500 text-xl font-bold mb-2">
+          <h2 className="text-yellow-200 text-xl font-bold mb-2">
             {list.Title}
           </h2>
           {list.Description && (

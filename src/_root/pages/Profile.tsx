@@ -23,6 +23,8 @@ import {
 } from "@/lib/appwrite/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, UserPlus, Settings, Activity, List, Heart, Users, ChevronDown, Lock, Edit } from "lucide-react";
+import { FaTwitter, FaFacebook, FaInstagram, FaLinkedin } from 'react-icons/fa';
+import { Link as LinkIcon } from 'lucide-react'; // Default icon
 
 const Profile: React.FC = () => {
   const { user } = useUserContext();
@@ -49,7 +51,10 @@ const Profile: React.FC = () => {
   const [followdBy, setFollowdBy] = useState<any>([]);
   const [showFollowers, setShowFollowers] = useState(false);
   const [userLikedLists, setUserLikedLists] = useState<any>([]);
-
+  useEffect(() => {
+    console.log('Current User:', currentUser); // Add this to check the user data
+  }, [currentUser]);
+  
   useEffect(() => {
     const fetchConnection = async () => {
       if (id) {
@@ -279,6 +284,30 @@ const Profile: React.FC = () => {
           )}
         </div>
       </div>
+      {/* Social Media Links */}
+      {currentUser.socialLinks && currentUser.socialLinks.length > 0 && (
+        <div className="mt-4 flex space-x-4">
+          {currentUser.socialLinks.map((link, index) => {
+            // You can parse the link to determine the platform
+            let IconComponent = LinkIcon; // Default icon
+            if (link.includes("twitter.com")) {
+              IconComponent = FaTwitter;
+            } else if (link.includes("facebook.com")) {
+              IconComponent = FaFacebook;
+            } else if (link.includes("instagram.com")) {
+              IconComponent = FaInstagram;
+            } else if (link.includes("linkedin.com")) {
+              IconComponent = FaLinkedin;
+            }
+
+            return (
+              <a key={index} href={link} target="_blank" rel="noopener noreferrer">
+                <IconComponent className="text-light-1 hover:text-primary-500" />
+              </a>
+            );
+          })}
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-8 mb-6 bg-dark-2 p-2 rounded-full w-full max-w-md sm:max-w-lg mx-auto">

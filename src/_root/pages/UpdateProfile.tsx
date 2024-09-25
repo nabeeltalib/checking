@@ -28,7 +28,8 @@ const formSchema = z.object({
   ImageUrl: z.string().max(256, "Image Url must be less than 256 characters").optional(),
   accountId: z.string().max(100, "accountId must be less than 100 characters"),
   file: z.instanceof(File).optional(),
-  Public: z.boolean()
+  Public: z.boolean(),
+  socialLinks: z.array(z.string().url("Invalid URL")).optional(),  
 });
 
 const UpdateProfile: React.FC = () => {
@@ -48,6 +49,7 @@ const UpdateProfile: React.FC = () => {
       ImageUrl: user.imageUrl || "",
       accountId: user.id || "",
       Public: user.Public || true,
+      socialLinks: user.socialLinks || [],
     },
   });
 
@@ -65,44 +67,38 @@ const UpdateProfile: React.FC = () => {
         ImageUrl: currentUser.ImageUrl || "",
         accountId: currentUser.accountId || "",
         Public: currentUser.Public,
+        socialLinks: currentUser.socialLinks || [],
       });
     }
   }, [currentUser, form]);
 
   const handleUpdate = async (data: z.infer<typeof formSchema>) => {
     try {
-      let updatedUser;
-      if (data.file) {
-        updatedUser = await updateUser({
-          userId: user.id,
-          Name: data.Name,
-          Bio: data.Bio,
-          file: [data.file], 
-          ImageUrl: data.ImageUrl,
-          Public: data.Public,
-        });
-      } else {
-        updatedUser = await updateUser({
-          userId: user.id,
-          Name: data.Name,
-          Bio: data.Bio,
-          file: [],
-          ImageUrl: data.ImageUrl,
-          Public: data.Public,
-        });
-      }
-
+      const payload = {
+        userId: user.id,
+        Name: data.Name,
+        Bio: data.Bio,
+        ImageUrl: data.ImageUrl,
+        Public: data.Public,
+        socialLinks: data.socialLinks || [], // Include social links as an array
+        file: data.file ? [data.file] : [],
+      };
+  
+      const updatedUser = await updateUser(payload);
+  
       if (!updatedUser) {
         throw new Error('Update user failed. Please try again.');
       }
-
+  
       setUser({
         ...user,
         Name: updatedUser.Name,
         Bio: updatedUser.Bio,
         ImageUrl: updatedUser.ImageUrl,
         Public: updatedUser.Public,
+        socialLinks: updatedUser.socialLinks, // Update user context
       });
+  
       toast({
         title: "Profile updated successfully!",
         description: "Your changes have been saved.",
@@ -116,7 +112,7 @@ const UpdateProfile: React.FC = () => {
         variant: "destructive",
       });
     }
-  }
+  };  
 
   if (isLoadingUser) {
     return (
@@ -284,6 +280,55 @@ const UpdateProfile: React.FC = () => {
                 </FormItem>
               )}
             />
+            {/* Social Media Links */}
+            <h3 className="text-lg font-semibold text-light-1 mt-6">Social Media Links</h3>
+
+            <FormField
+              control={form.control}
+              name="socialLinks"
+              render={({ field }) => (
+                <FormItem>
+                  {field.value.map((link, index) => (
+                    <div key={index} className="flex items-center mb-2">
+                      <FormControl>
+                        <Input
+                          type="url"
+                          placeholder="https://your-social-link.com"
+                          className="bg-dark-3 border-dark-4 text-light-1 flex-1"
+                          value={link}
+                          onChange={(e) => {
+                            const newLinks = [...field.value];
+                            newLinks[index] = e.target.value;
+                            field.onChange(newLinks);
+                          }}
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          const newLinks = [...field.value];
+                          newLinks.splice(index, 1);
+                          field.onChange(newLinks);
+                        }}
+                        className="ml-2"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    onClick={() => field.onChange([...field.value, ""])}
+                    className="mt-2"
+                  >
+                    Add Link
+                  </Button>
+                  <FormMessage className="text-red-500" />
+                </FormItem>
+              )}
+            />
+
+            {/* Add more platforms as needed */}
 
             <div className="flex gap-4 items-center justify-end mt-4">
               <Button

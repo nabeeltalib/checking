@@ -344,7 +344,7 @@ const ListDetails: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <h1 className="text-3xl font-bold mb-2 text-primary-500">{list.Title}</h1>
+            <h1 className="text-3xl font-bold mb-2 text-yellow-200">{list.Title}</h1>
             {list.Description && (
               <p className="text-light-2 mb-4">{list.Description}</p>
             )}

@@ -88,7 +88,7 @@ const GridListList: React.FC<GridListListProps> = ({
             to={`/lists/${item.$id}`}
             className="block p-4 hover:bg-dark-3 transition-colors duration-300 relative"
           >
-            <h3 className="text-md font-bold text-yellow-500 mb-2 line-clamp-1">
+            <h3 className="text-md font-bold text-yellow-200 mb-2 line-clamp-1">
               {item.Title}
             </h3>
             <ul className="mb-3 text-light-2 text-xs space-y-1">
