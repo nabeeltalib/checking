@@ -98,8 +98,8 @@ const PreviewMode: React.FC = () => {
     <div className="mt-4 w-full items-center bg-dark-1 min-h-screen pb-20">
       <header className="w-full bg-dark-1 py-4">
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <div className="text-2xl md:text-3xl text-blue-300 font-bold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-            <span>What's in Your Top Five??</span>
+          <div className="text-2xl md:text-4xl text-yellow-300 font-bold mb-2 mt-6">
+            <span>What's in Your Top Five?</span>
           </div>
           <p className="text-base sm:text-xl font-light text-white mt-8">Your World's Recommendations On Everything </p>
           <p className="text-base sm:text-xl font-thin text-white">Discover • Debate • Create</p>

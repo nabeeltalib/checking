@@ -115,7 +115,7 @@ const Home: React.FC = () => {
       {/* Header Section */}
       <header className="w-full bg-dark-1 py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-xl md:text-2xl text-blue-300 font-bold mb-2 mt-6" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+          <h2 className="text-xl md:text-4xl text-yellow-300 font-bold mb-2 mt-6">
            What's in your Top Five?
           </h2>
           <div>
