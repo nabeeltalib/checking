@@ -88,9 +88,11 @@ const OnboardingScreens = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
           >
-            <img src="/assets/images/logo.svg" alt="logo" className="mx-auto mb-8" />
-            <h2 className="text-3xl font-bold mb-6 text-center text-white">New to Topfived?</h2>
-            <p className="text-center text-gray-300 mb-8">Create your own lists, Discover trusted recommendations, Join discussions</p>
+                  <Link to="/" className="flex items-center gap-3">
+                    <img src="/assets/images/logo.svg" alt="logo" className="mx-auto mb-8" />
+                  </Link>
+            <h2 className="text-xl font-bold mb-6 text-center text-white">Your world's recommendations. What's in your Top Five?</h2>
+            <p className="text-center text-gray-300 mb-8">Create your own lists, Discover trusted recommendations, Join discussions.</p>
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="email">
                 Enter email address*

@@ -4,7 +4,7 @@ import { Mail, Lock, User } from 'lucide-react';
 import { useSignInAccount, useSignInWithGoogle } from "@/lib/react-query/queries";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "@/components/shared/Loader";
 
 const SigninForm = () => {
@@ -49,19 +49,24 @@ const SigninForm = () => {
         transition={{ duration: 0.5 }}
         className="bg-gray-800 bg-opacity-50 p-8 rounded-xl shadow-2xl max-w-md w-full"
       >
-        <motion.img
-          src="/assets/images/logo.svg"
-          alt="Topfived logo"
-          className="mx-auto mb-8"
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.5 }}
-        />
+        {/* Wrap the logo in a Link */}
+        <Link to="/">
+          <motion.img
+            src="/assets/images/logo.svg"
+            alt="Topfived logo"
+            className="mx-auto mb-8 cursor-pointer" // Add cursor-pointer for better UX
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.5 }}
+          />
+        </Link>
 
         <h2 className="text-3xl font-bold text-white text-center mb-6">Log in to your account</h2>
         <p className="text-gray-300 text-center mb-8">Unlock Full Access! Please enter your details.</p>
 
+        {/* Rest of the form and content */}
         <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Email and Password Fields */}
           <div className="relative">
             <Mail className="absolute top-3 left-3 text-gray-400" size={20} />
             <input
