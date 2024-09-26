@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getMostLikedLists } from "@/lib/appwrite/api";
-import { LocateFixed, Heart, MessageSquare } from "lucide-react";
+import { LocateFixed, ThumbsUp, MessageSquare } from "lucide-react";
 import { useGetComments } from "@/lib/react-query/queries";
 
 interface MobileTrendingSliderProps {
@@ -118,7 +118,7 @@ const TrendingCard: React.FC<{ list: any; navigate: Function; isAuthenticated: b
       <p className="text-xs text-gray-400 truncate">by {list.creator.Name}</p>
       <div className="flex items-center mt-2 space-x-4">
         <div className="flex items-center text-xs text-gray-400">
-          <Heart size={14} className="mr-1 text-red-500" />
+          <ThumbsUp size={14} className="mr-1 text-red-500" />
           {list.Likes?.length || 0}
         </div>
         <div className="flex items-center text-xs text-gray-400">

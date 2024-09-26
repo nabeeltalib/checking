@@ -22,7 +22,7 @@ import {
   UnFollow,
 } from "@/lib/appwrite/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, UserPlus, Settings, Activity, List, Heart, Users, ChevronDown, Lock, Edit } from "lucide-react";
+import { User, UserPlus, Settings, Activity, List, ThumbsUp, Users, ChevronDown, Lock, Edit } from "lucide-react";
 import { FaTwitter, FaFacebook, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import { Link as LinkIcon } from 'lucide-react'; // Default icon
 
@@ -351,7 +351,7 @@ const Profile: React.FC = () => {
               : "bg-transparent text-light-2 hover:bg-dark-3"
           }`}
         >
-          <Heart size={16} className="mr-1.5 sm:mr-2" />
+          <ThumbsUp size={16} className="mr-1.5 sm:mr-2" />
           <span className="text-sm sm:text-base">Liked Rankings</span>
         </Button>
 

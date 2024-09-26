@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, MessageSquare, MapPinned } from 'lucide-react';
+import { ThumbsUp, MessageSquare, MapPinned } from 'lucide-react';
 import { getMostLikedLists } from '@/lib/appwrite/api';
 import { useGetComments } from '@/lib/react-query/queries';
 import { Button } from "@/components/ui/button";
@@ -166,7 +166,7 @@ const TrendingListItem: React.FC<TrendingListItemProps> = ({
       <p className="text-xs text-gray-400 truncate">by {list.creator.Name}</p>
       <div className="flex items-center mt-2 space-x-4">
         <div className="flex items-center text-xs text-gray-400">
-          <Heart size={14} className="mr-1 text-red-500" />
+          <ThumbsUp size={14} className="mr-1 text-red-500" />
           {list.Likes?.length || 0}
         </div>
         <div className="flex items-center text-xs text-gray-400">

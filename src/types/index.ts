@@ -53,6 +53,8 @@ export interface IList extends Models.Document {
   aiScore?: number;
   suggestions?: ISuggestion[];
   Public: boolean;
+  Dislikes?: string[];
+  DislikesCount: number; // Add this line
 }
 
 export interface ISocialLinks {

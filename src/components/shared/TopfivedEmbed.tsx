@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Crown, MessageCircle, Heart, Share2, Info } from "lucide-react";
+import { Crown, MessageCircle, Heart, Share2, Info, ThumbsUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui";
 import { useUserContext } from "@/context/AuthContext";
@@ -156,7 +156,7 @@ export const TopfivedEmbed = ({ type, items, handleVote, isVoting, setRefresh, l
               <Loader />
             ) : (
               <>
-                <Heart size={22} />
+                <ThumbsUp size={22} />
                 <span>{list.Likes.length}</span>
               </>
             )}

@@ -23,12 +23,12 @@ const Bottombar: React.FC = () => {
             to={link.route}
             className={`flex flex-col items-center justify-center w-16 h-16 rounded-full transition-all duration-300 ${
               isActive
-                ? "bg-primary-500 text-white shadow-lg scale-110"
+                ? "bg-dark-4 text-white shadow-lg scale-110"
                 : "text-light-2 hover:bg-dark-4"
             }`}
           >
-            <link.icon size={24} className={isActive ? "stroke-white" : "stroke-light-2"} />
-            <p className={`text-xs mt-1 ${isActive ? "text-white font-medium" : "text-light-2"}`}>
+            <link.icon size={24} className={isActive ? "stroke-blue-500" : "stroke-light-2"} />
+            <p className={`text-xs mt-1 ${isActive ? "text-blue-500 font-medium" : "text-light-2"}`}>
               {link.label}
             </p>
           </Link>

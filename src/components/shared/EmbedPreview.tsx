@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MessageSquareHeart, RadioTower, Info } from 'lucide-react';
+import { Heart, RadioTower, Info } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { TopfivedEmbed } from './TopfivedEmbed';
 import { getListById, VoteOnItem } from '@/lib/appwrite/api';
@@ -65,7 +65,7 @@ const EmbedPreview = () => {
               : 'bg-zinc-200 dark:bg-zinc-800 text-black dark:text-white'
           }`}
         >
-          <MessageSquareHeart className="inline-block mr-2" /> Top 5 List
+          <Heart className="inline-block mr-2" /> Top 5 List
         </button>
         <button
           onClick={() => setEmbedType('leaderboard')}

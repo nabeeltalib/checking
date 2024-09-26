@@ -9,7 +9,8 @@ import {
   Bookmark,
   Wand,
   Crown,
-  Heart,
+  ThumbsUp,
+  ThumbsDown, 
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -292,12 +293,19 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         {/* Action Buttons */}
         <div className="px-6 py-4 flex justify-center items-center text-light-2 text-xs">
           <div className="flex space-x-2">
-            <ActionButton
-              icon={<Heart size={20} />}
-              label="Like this list"
+          <div className="flex items-center space-x-1">
+          <ActionButton
+              icon={<ThumbsUp size={20} />}
+              label="Love it"
               count={list.Likes?.length || 0}
               onClick={handleDialogOpen}
             />
+            <ActionButton
+              icon={<ThumbsDown size={20} />}
+              label="Boo"
+              onClick={handleDialogOpen}
+            />
+            </div>
             <ActionButton
               icon={<MessageCircle size={20} />}
               label="Comment on this list"

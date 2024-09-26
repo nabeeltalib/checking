@@ -496,14 +496,21 @@ export async function getInfiniteLists({ pageParam }: { pageParam: number }) {
   }
 }
 
-export async function getListById(listId: any): Promise<IList> {
+export async function getListById(listId: string, userId: string): Promise<IList> {
   try {
     const list = await databases.getDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
       listId
-    );
-    return list as IList;
+    ) as IList;
+
+    // Check if the user requesting the list is the creator
+    if (list.creator.$id !== userId) {
+      // If not the creator, remove the DislikesCount property
+      delete list.DislikesCount;
+    }
+
+    return list;
   } catch (error) {
     console.error("Error fetching list:", error);
     throw error;
@@ -538,6 +545,43 @@ export async function updateItem(item: any) {
     return resp;
   } catch (error) {
     console.error("Error fetching list:", error);
+    throw error;
+  }
+}
+
+export async function dislikeList(listId: string, userId: string) {
+  try {
+    const list = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      listId
+    );
+    
+    let newLikes = list.Likes || [];
+    let newDislikesCount = list.DislikesCount || 0;
+
+    if (newLikes.includes(userId)) {
+      // If the user previously liked the list, remove the like and add a dislike
+      newLikes = newLikes.filter((id: string) => id !== userId);
+      newDislikesCount++;
+    } else {
+      // Toggle dislike
+      newDislikesCount = newDislikesCount > 0 ? newDislikesCount - 1 : newDislikesCount + 1;
+    }
+
+    const updatedList = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      listId,
+      {
+        Likes: newLikes,
+        DislikesCount: newDislikesCount
+      }
+    );
+
+    return updatedList;
+  } catch (error) {
+    console.error("Error disliking list:", error);
     throw error;
   }
 }
@@ -643,23 +687,21 @@ export async function deleteList(listId?: string) {
   }
 }
 
-export async function likeList(listId: string, likesArray: string[]) {
+export async function likeList(
+  listId: string,
+  data: { Likes: string[]; Dislikes: string[] }
+) {
   try {
     const updatedList = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
       listId,
-      {
-        Likes: likesArray,
-      }
+      data
     );
-
-    if (!updatedList) throw new Error("Failed to like list");
-
     return updatedList;
   } catch (error) {
-    console.error("Error liking list:", error);
-    return null;
+    console.error("Error updating list reactions:", error);
+    throw error;
   }
 }
 

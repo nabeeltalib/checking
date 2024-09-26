@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUserContext } from '@/context/AuthContext';
 import { ReplyLike, reportReply } from '@/lib/appwrite/api';
 import { checkIsLiked } from '@/lib/utils';
-import { Heart, MoreVertical, Flag } from 'lucide-react';
+import { ThumbsUp, MoreVertical, Flag } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import Loader from './Loader';
 
@@ -100,7 +100,7 @@ const CommentReply: React.FC<CommentReplyProps> = ({ reply }) => {
             onClick={handleLikeComment}
             className="flex items-center gap-1 text-xs text-light-3 hover:text-red-500 transition-colors"
           >
-            <Heart
+            <ThumbsUp
               size={14}
               className={`${isLiked ? 'fill-yellow-500 text-yellow-500' : 'text-light-3'} transition-colors`}
             />

@@ -31,7 +31,7 @@ const ListDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useUserContext();
   const { toast } = useToast();
-  const { data: list, isLoading } = useGetListById(id || "");
+  const { data: list, isLoading } = useGetListById(id || "", user.id);
   const { mutateAsync: deleteList, isLoading: isDeleting } = useDeleteList();
   const { data: relatedLists, isLoading: isRelatedListsLoading } =
     useGetRelatedLists(id || "");
@@ -525,13 +525,14 @@ const ListDetails: React.FC = () => {
           transition={{ delay: 0.8 }}
         >
           <ListStats
-            list={list}
-            userId={user.id}
-            setIsEmbed={isCreator ? setShowEmbedOptions : undefined}
-            textSize="text-sm"
-            backgroundColor="bg-gray-900"
-            isCreator={isCreator}
-          />
+          list={list}
+          userId={user.id}
+          setIsEmbed={isCreator ? setShowEmbedOptions : undefined}
+          textSize="text-sm"
+          backgroundColor="bg-gray-900"
+          isCreator={isCreator}
+          dislikesCount={isCreator ? list.DislikesCount : undefined}
+        />
         </motion.div>
 
       </div>

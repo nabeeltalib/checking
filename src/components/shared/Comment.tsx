@@ -6,7 +6,7 @@ import Loader from './Loader';
 import { likeComment, reportComment } from '@/lib/appwrite/api';
 import { checkIsLiked } from '@/lib/utils';
 import CommentReply from './CommentReply';
-import { Heart, Flag, MessageCircle, MoreVertical } from 'lucide-react';
+import { ThumbsUp, Flag, MessageCircle, MoreVertical } from 'lucide-react';
 
 interface CommentProps {
   comment: any;
@@ -140,7 +140,7 @@ const Comment: React.FC<CommentProps> = ({ comment, setReply, show, setCommentId
               onClick={handleLikeComment}
               className="flex items-center gap-1 text-xs text-light-3 hover:text-red-500 transition-colors"
             >
-              <Heart
+              <ThumbsUp
                 size={16}
                 className={`${isLiked ? 'fill-yellow-500 text-yellow-500' : 'text-light-3'} transition-colors`}
               />

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Trophy, List, Heart, MessageCircle, Calendar, Filter } from "lucide-react";
+import { Trophy, List, ThumbsUp, MessageCircle, Calendar, Filter } from "lucide-react";
 import { getUsers } from "@/lib/appwrite/config";
 import { getMostLikedLists } from "@/lib/appwrite/api";
 import { Link } from "react-router-dom";
@@ -252,7 +252,7 @@ const ComprehensiveLeaderboard2 = () => {
             ),
           },
           { header: <List size={16} className="mr-1 sm:mr-2 text-light-2" />, key: "listsCreated" },
-          { header: <Heart size={16} className="mr-1 sm:mr-2 text-light-2" />, key: "totalLikes" },
+          { header: <ThumbsUp size={16} className="mr-1 sm:mr-2 text-light-2" />, key: "totalLikes" },
         ]}
       />
 
@@ -272,7 +272,7 @@ const ComprehensiveLeaderboard2 = () => {
             ),
           },
           { header: "Creator", key: "creator" },
-          { header: <Heart size={20} className="inline mr-1 text-light-2" />, key: "likes" },
+          { header: <ThumbsUp size={20} className="inline mr-1 text-light-2" />, key: "likes" },
           { header: <MessageCircle size={20} className="inline mr-1 text-light-2" />, key: "comments" },
         ]}
       />

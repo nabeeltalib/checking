@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Tag, Eye, Share2 } from "lucide-react";
+import { ThumbsUp, MessageCircle, Tag, Eye, Share2 } from "lucide-react";
 
 interface Creator {
   $id: string;
@@ -171,7 +171,7 @@ const GridListList: React.FC<GridListListProps> = ({
                   // Implement like functionality
                 }}
               >
-                <Heart size={18} className="mr-2" />
+                <ThumbsUp size={18} className="mr-2" />
                 {item.Likes?.length || 0}
               </motion.button>
               <motion.button

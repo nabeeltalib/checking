@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, MessageCircle, Crown, TrendingUp } from 'lucide-react';
+import { X, ThumbsUp, MessageCircle, Crown, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
@@ -50,7 +50,7 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
           </p>
           
           <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <Feature icon={<Heart className="text-pink-500" size={18} />} text="Like favorites" />
+            <Feature icon={<ThumbsUp className="text-pink-500" size={18} />} text="Like favorites" />
             <Feature icon={<MessageCircle className="text-blue-500" size={18} />} text="Debate rankings" />
             <Feature icon={<Crown className="text-purple-500" size={18} />} text="Challenge friends" />
             <Feature icon={<TrendingUp className="text-green-500" size={18} />} text="Discover trends" />

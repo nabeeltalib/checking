@@ -1,13 +1,16 @@
+// ListCard2.tsx
+
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Share2,
-  Heart,
+  ThumbsUp,
+  ThumbsDown,
   MessageCircle,
   Bookmark,
   MapPin,
-  Crown, 
+  Crown,
   Clock,
   ChevronDown,
   ChevronUp,
@@ -19,13 +22,12 @@ import {
   getConnection,
   shareList,
   UnFollow,
-  UpdateCommentReply,
+  likeList as likeListAPI,
 } from "@/lib/appwrite/api";
 import {
   useDeleteSavedList,
   useGetComments,
   useGetCurrentUser,
-  useLikeList,
   useSaveList,
   useCreateComment,
 } from "@/lib/react-query/queries";
@@ -33,9 +35,9 @@ import Comment from "./Comment";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
-import { Models } from "appwrite";
-import { checkIsLiked } from "@/lib/utils";
 import Loader from "./Loader";
+import Tooltip from "@/components/ui/Tooltip";
+
 interface User {
   $id: string;
   Name: string;
@@ -56,6 +58,7 @@ interface List {
   locations: string[];
   timespans: string[];
   Likes: string[];
+  Dislikes: string[]; // Ensure Dislikes is an array
 }
 
 interface ListCard2Props {
@@ -65,21 +68,18 @@ interface ListCard2Props {
 const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const [isSharing, setIsSharing] = useState(false);
   const navigate = useNavigate();
-  const { user } = useUserContext();
-  const { id } = user;
   const { data: currentUser } = useGetCurrentUser();
   const { mutate: deleteSaveList } = useDeleteSavedList();
   const { mutate: saveList } = useSaveList();
-  const { mutate: likeList } = useLikeList();
   const { toast } = useToast();
 
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [connection, setConnection] = useState<any>(undefined);
   const [followdBy, setFollowdBy] = useState<any>([]);
   const [likes, setLikes] = useState<string[]>([]);
+  const [dislikes, setDislikes] = useState<string[]>([]); // Added state for dislikes
   const [isSaved, setIsSaved] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [animatingButton, setAnimatingButton] = useState<string | null>(null);
 
   const [newComment, setNewComment] = useState("");
   const [isReply, setIsReply] = useState(false);
@@ -87,11 +87,20 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const { data: comments } = useGetComments(list?.$id);
   const { mutate: createComment } = useCreateComment();
 
+  const { user } = useUserContext();
+  const { id } = user;
+
+  // Initialize likes and dislikes
   useEffect(() => {
     if (list) {
       setLikes(list.Likes || []);
+      setDislikes(list.Dislikes || []);
     }
   }, [list]);
+
+  // Determine if the current user has liked or disliked the list
+  const hasLiked = useMemo(() => likes.includes(id), [likes, id]);
+  const hasDisliked = useMemo(() => dislikes.includes(id), [dislikes, id]);
 
   useEffect(() => {
     if (currentUser && list) {
@@ -103,6 +112,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     }
   }, [currentUser, list]);
 
+  // Fetch connections
   useEffect(() => {
     const fetchData = async () => {
       if (list?.creator?.$id) {
@@ -160,29 +170,84 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   );
 
   const handleLikeList = useCallback(async () => {
-    setAnimatingButton('like');
     if (!list) return;
-    const previousLikes = likes; // Store previous state in case of failure
-    let newLikes = likes.includes(id)
-      ? likes.filter((Id) => Id !== id)
-      : [...likes, id];
-    setLikes(newLikes);
+
+    let updatedLikes = [...likes];
+    let updatedDislikes = [...dislikes];
+
+    if (hasLiked) {
+      // User is removing their like
+      updatedLikes = updatedLikes.filter((userId) => userId !== id);
+    } else {
+      // User is liking the list
+      updatedLikes.push(id);
+      // Remove dislike if it exists
+      if (hasDisliked) {
+        updatedDislikes = updatedDislikes.filter((userId) => userId !== id);
+      }
+    }
+
+    setLikes(updatedLikes);
+    setDislikes(updatedDislikes);
+
     try {
-      await likeList({ listId: list.$id, likesArray: newLikes });
+      // Update the list on the server
+      await likeListAPI(list.$id, {
+        Likes: updatedLikes,
+        Dislikes: updatedDislikes,
+      });
     } catch (error) {
       console.error("Error liking list:", error);
-      setLikes(previousLikes); // Revert to previous likes if there's an error
+      setLikes(likes); // Revert to previous likes if there's an error
+      setDislikes(dislikes); // Revert to previous dislikes if there's an error
       toast({
         title: "Error",
-        description: "Failed to like the list. Please try again.",
+        description: "Failed to update like status. Please try again.",
         variant: "destructive",
       });
     }
-    setTimeout(() => setAnimatingButton(null), 300);
-  }, [likes, id, likeList, list, toast]);  
+  }, [likes, dislikes, id, list, hasLiked, hasDisliked, toast]);
+
+  const handleDislikeList = useCallback(async () => {
+    if (!list) return;
+
+    let updatedLikes = [...likes];
+    let updatedDislikes = [...dislikes];
+
+    if (hasDisliked) {
+      // User is removing their dislike
+      updatedDislikes = updatedDislikes.filter((userId) => userId !== id);
+    } else {
+      // User is disliking the list
+      updatedDislikes.push(id);
+      // Remove like if it exists
+      if (hasLiked) {
+        updatedLikes = updatedLikes.filter((userId) => userId !== id);
+      }
+    }
+
+    setLikes(updatedLikes);
+    setDislikes(updatedDislikes);
+
+    try {
+      // Update the list on the server
+      await likeListAPI(list.$id, {
+        Likes: updatedLikes,
+        Dislikes: updatedDislikes,
+      });
+    } catch (error) {
+      console.error("Error disliking list:", error);
+      setLikes(likes); // Revert to previous likes if there's an error
+      setDislikes(dislikes); // Revert to previous dislikes if there's an error
+      toast({
+        title: "Error",
+        description: "Failed to update dislike status. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [likes, dislikes, id, list, hasLiked, hasDisliked, toast]);
 
   const handleSaveList = useCallback(async () => {
-    setAnimatingButton('save');
     if (!list || !currentUser) return;
     try {
       if (isSaved) {
@@ -204,21 +269,8 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         variant: "destructive",
       });
     }
-    setTimeout(() => setAnimatingButton(null), 300);
   }, [isSaved, currentUser, list, deleteSaveList, saveList, id, toast]);
 
-  const handleRemix = () => {
-    setAnimatingButton('remix');
-    navigate(`/remix/${list.$id}`);
-    setTimeout(() => setAnimatingButton(null), 300);
-  };
-
-  const handleCommentNavigate = () => {
-    setAnimatingButton('comment');
-    navigate(`/lists/${list.$id}`);
-    setTimeout(() => setAnimatingButton(null), 300);
-  };
-  
   const handleFollow = useCallback(async () => {
     if (!list?.creator?.$id) return;
     setIsFollowLoading(true);
@@ -301,9 +353,9 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
 
   const renderListItems = useMemo(() => {
     if (!list || !list.items) return null;
-  
+
     let items: Array<any> = [];
-  
+
     if (Array.isArray(list.items)) {
       items = list.items;
     } else if (typeof list.items === "string") {
@@ -313,24 +365,24 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     }
 
     return items
-    .slice(0, isExpanded ? items.length : 5)
-    .map((item, index) => (
-      <motion.li
-        key={index}
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: index * 0.1 }}
-        className="flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300"
-      >
-        <span className="text-lg font-bold text-yellow-200 mr-4">
-          {index === 0 ? <Crown size={20} className="text-yellow-200" /> : index + 1}
-        </span>
-        <span className="text-sm text-white truncate">
-          {typeof item === "string" ? item : item.content || ""}
-        </span>
-      </motion.li>
-    ));
-}, [list?.items, isExpanded]);
+      .slice(0, isExpanded ? items.length : 5)
+      .map((item, index) => (
+        <motion.li
+          key={index}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: index * 0.1 }}
+          className="flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300"
+        >
+          <span className="text-lg font-bold text-yellow-200 mr-4">
+            {index === 0 ? <Crown size={20} className="text-yellow-200" /> : index + 1}
+          </span>
+          <span className="text-sm text-white truncate">
+            {typeof item === "string" ? item : item.content || ""}
+          </span>
+        </motion.li>
+      ));
+  }, [list?.items, isExpanded]);
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -477,9 +529,8 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
             </div>
           </div>
         )}
-
-        {/* Followed By */}
-        {followdBy.length > 0 && (
+ {/* Followed By */}
+ {followdBy.length > 0 && (
           <div className="mb-4 text-xs text-light-3">
             {followdBy.length > 2 ? (
               <span>
@@ -515,10 +566,9 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
             )}
           </div>
         )}
-
         {/* List Title and Description */}
         <div className="mb-6">
-        <div
+          <div
             className="text-slate-700 text-center text-xl sm:text-xl font-thin px-4 py-2 rounded-t-lg"
             style={{ fontFamily: "'Racing Sans One', sans-serif" }}
           >
@@ -612,50 +662,68 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       </div>
 
       {/* Actions */}
-      <div className=" px-6 py-4 flex justify-between items-center text-light-2 text-xs">
-        <Button
-          onClick={handleLikeList}
-          className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
-        >
-          <Heart
-            size={20}
-            className={
-              checkIsLiked(likes, id) ? "fill-yellow-500 text-yellow-500" : ""
-            }
-          />
-          <span>{likes.length} </span>
-        </Button>
+      <div className="px-6 py-4 flex justify-between items-center text-light-2 text-xs">
+        <div className="flex items-center space-x-1">
+          <Tooltip content={hasLiked ? "Love it" : "Love it"}>
+            <Button
+              onClick={handleLikeList}
+              className={`p-1 rounded-full transition-colors duration-300 ${
+                hasLiked ? "bg" : "hover:bg-gray-700"
+              }`}
+            >
+              <ThumbsUp
+                size={20}
+                className={hasLiked ? "fill-yellow-500 text-yellow-500" : "text-white"}
+              />
+            </Button>
+          </Tooltip>
+          <span className="mx-1">{likes.length}</span>
+          <Tooltip
+            content={hasDisliked ? "Boo anonymously" : "Boo anonymously"}
+          >
+            <Button
+              onClick={handleDislikeList}
+              className={`p-3 rounded-full transition-colors duration-300 ${
+                hasDisliked ? "bg-" : "hover:bg-gray-700"
+              }`}
+            >
+              <ThumbsDown
+                size={20}
+                className={hasDisliked ? "fill-yellow-500 text-yellow-500" : "text-white"}
+              />
+            </Button>
+          </Tooltip>
+        </div>
 
         <Button
           onClick={handleSaveList}
-          className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
+          className="text-xs flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
         >
           <Bookmark
             size={20}
             className={isSaved ? "fill-yellow-500 text-yellow-500" : ""}
           />
-          <span>{isSaved ? " " : " "}</span>
+          <span>{isSaved ? "Saved" : "Save"}</span>
         </Button>
         <Button
           onClick={() => navigate(`/lists/${list.$id}`)}
           className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
         >
           <MessageCircle size={20} />
-          <span>{comments?.length || 0} </span>
+          <span>{comments?.length || 0}</span>
         </Button>
         <Button
           onClick={() => navigate(`/remix/${list.$id}`)}
-          className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
+          className="text-xs flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
         >
           <Wand size={20} />
           <span>Remix</span>
         </Button>
-
-        
       </div>
 
-      {/* Comments Section */}
-      <div className="bg-gray-900 p-6 border-t border-dark-4">
+     
+  {/* Comments Section */}
+  <div className="bg-gray-900 p-6 border-t border-dark-4">
         <h3 className="text-xs font-semibold mb-4">Comments</h3>
         {renderComments()}
 
@@ -685,7 +753,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
             )}
           </div>
         </form>
-      </div>
+       </div>
     </motion.div>
   );
 };

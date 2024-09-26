@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronRight, Heart, Save, MessageCircle, Search, List } from 'lucide-react';
+import { ChevronRight, ThumbsUp, Save, MessageCircle, Search, List } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const OnboardingPage = () => {
@@ -7,7 +7,7 @@ const OnboardingPage = () => {
   const navigate = useNavigate()
 
   const features = [
-    { icon: <Heart />, title: "Like", description: "Show appreciation for great lists" },
+    { icon: <ThumbsUp />, title: "Like", description: "Show appreciation for great lists" },
     { icon: <Save />, title: "Save", description: "Bookmark lists for later" },
     { icon: <MessageCircle />, title: "Comment", description: "Engage in discussions" },
     { icon: <Search />, title: "Search", description: "Discover lists on any topic" },
@@ -48,7 +48,7 @@ const OnboardingPage = () => {
           <div key={index} className="border-b py-3 flex justify-between items-center">
             <span className="font-medium">{list.title}</span>
             <div className="text-sm text-gray-500">
-              <span className="mr-3"><Heart size={16} className="inline mr-1" />{list.likes}</span>
+              <span className="mr-3"><ThumbsUp size={16} className="inline mr-1" />{list.likes}</span>
               <span><MessageCircle size={16} className="inline mr-1" />{list.comments}</span>
             </div>
           </div>

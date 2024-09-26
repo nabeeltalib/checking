@@ -167,14 +167,11 @@ export const useCreateList = (userId: string) => {
   });
 };
 
-export const useGetListById = (listId: string) => {
+export const useGetListById = (listId: string, userId: string) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.GET_LIST_BY_ID, listId],
-    queryFn: () => getListById(listId),
-    enabled: !!listId,
-    onError: (error) => {
-      console.error('Error fetching list:', error);
-    },
+    queryKey: [QUERY_KEYS.GET_LIST_BY_ID, listId, userId],
+    queryFn: () => getListById(listId, userId),
+    enabled: !!listId && !!userId,
   });
 };
 

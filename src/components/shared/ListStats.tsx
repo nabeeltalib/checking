@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+// ListStats.tsx
+
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip";
-import { UpdateCommentReply } from "@/lib/appwrite/api";
-import { useQueryClient } from "@tanstack/react-query";
 import {
-  useLikeList,
+  UpdateCommentReply,
+  likeList as likeListAPI,
+} from "@/lib/appwrite/api";
+import {
   useSaveList,
   useDeleteSavedList,
   useGetComments,
@@ -16,9 +18,17 @@ import {
 import { useUserContext } from "@/context/AuthContext";
 import { toast } from "../ui";
 import Comment from "./Comment";
-import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
-import { Heart, Bookmark, MessageSquare, Wand, Code, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
-import { checkIsLiked } from "@/lib/utils";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  Bookmark,
+  MessageSquare,
+  Wand,
+  Code,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+} from "lucide-react";
 
 interface ListStatsProps {
   setIsEmbed: (value: boolean) => void;
@@ -35,15 +45,14 @@ const ListStats: React.FC<ListStatsProps> = ({
   userId,
   textSize = "text-base",
   backgroundColor = "bg-dark-3",
-  isCreator
+  isCreator,
 }) => {
   const navigate = useNavigate();
   const [likes, setLikes] = useState<string[]>(list?.Likes || []);
+  const [dislikes, setDislikes] = useState<string[]>(list?.Dislikes || []);
   const [isSaved, setIsSaved] = useState(false);
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(true);
   const [areAllCommentsVisible, setAreAllCommentsVisible] = useState(false);
-  const { mutate: likeList } = useLikeList();
-  const { mutate: saveList } = useSaveList();
   const { user } = useUserContext();
   const { id } = user;
   const { mutate: deleteSaveList } = useDeleteSavedList();
@@ -55,8 +64,17 @@ const ListStats: React.FC<ListStatsProps> = ({
   const [isReply, setIsReply] = useState(false);
   const [commentId, setCommentId] = useState("");
 
+  // Determine if the user has liked or disliked the list
+  const hasLiked = useMemo(() => likes.includes(userId), [likes, userId]);
+  const hasDisliked = useMemo(
+    () => dislikes.includes(userId),
+    [dislikes, userId]
+  );
+
   useEffect(() => {
-    setVisibleComments(areAllCommentsVisible ? comments : (comments?.slice(0, 3) || []));
+    setVisibleComments(
+      areAllCommentsVisible ? comments : comments?.slice(0, 3) || []
+    );
   }, [comments, areAllCommentsVisible]);
 
   useEffect(() => {
@@ -68,12 +86,78 @@ const ListStats: React.FC<ListStatsProps> = ({
     }
   }, [currentUser, list.$id]);
 
-  const handleLikeList = () => {
-    const newLikes = likes.includes(userId)
-      ? likes.filter((Id) => Id !== userId)
-      : [...likes, userId];
-    setLikes(newLikes);
-    likeList({ listId: list.$id, likesArray: newLikes });
+  const handleLikeList = async () => {
+    let updatedLikes = [...likes];
+    let updatedDislikes = [...dislikes];
+
+    if (hasLiked) {
+      // Remove like
+      updatedLikes = updatedLikes.filter((Id) => Id !== userId);
+    } else {
+      // Add like
+      updatedLikes.push(userId);
+      // Remove dislike if exists
+      if (hasDisliked) {
+        updatedDislikes = updatedDislikes.filter((Id) => Id !== userId);
+      }
+    }
+
+    setLikes(updatedLikes);
+    setDislikes(updatedDislikes);
+
+    try {
+      await likeListAPI(list.$id, {
+        Likes: updatedLikes,
+        Dislikes: updatedDislikes,
+      });
+    } catch (error) {
+      console.error("Error liking list:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update like status. Please try again.",
+        variant: "destructive",
+      });
+      // Revert state changes on error
+      setLikes(likes);
+      setDislikes(dislikes);
+    }
+  };
+
+  const handleDislikeList = async () => {
+    let updatedLikes = [...likes];
+    let updatedDislikes = [...dislikes];
+
+    if (hasDisliked) {
+      // Remove dislike
+      updatedDislikes = updatedDislikes.filter((Id) => Id !== userId);
+    } else {
+      // Add dislike
+      updatedDislikes.push(userId);
+      // Remove like if exists
+      if (hasLiked) {
+        updatedLikes = updatedLikes.filter((Id) => Id !== userId);
+      }
+    }
+
+    setLikes(updatedLikes);
+    setDislikes(updatedDislikes);
+
+    try {
+      await likeListAPI(list.$id, {
+        Likes: updatedLikes,
+        Dislikes: updatedDislikes,
+      });
+    } catch (error) {
+      console.error("Error disliking list:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update dislike status. Please try again.",
+        variant: "destructive",
+      });
+      // Revert state changes on error
+      setLikes(likes);
+      setDislikes(dislikes);
+    }
   };
 
   const handleSaveList = () => {
@@ -114,7 +198,9 @@ const ListStats: React.FC<ListStatsProps> = ({
       refetchComments();
       toast({
         title: "Success",
-        description: isReply ? "Reply added successfully" : "Comment posted successfully",
+        description: isReply
+          ? "Reply added successfully"
+          : "Comment posted successfully",
       });
     } catch (error) {
       console.error("Failed to post comment:", error);
@@ -125,39 +211,68 @@ const ListStats: React.FC<ListStatsProps> = ({
       });
     }
   };
+
   const toggleCommentVisibility = () => {
     setAreAllCommentsVisible(!areAllCommentsVisible);
   };
+
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className={`${backgroundColor} p-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl`}
     >
       <div className="flex flex-wrap justify-between gap-4 mb-6">
+      <div className="flex items-center space-x-1">      
+      {/* Like Button */}
         <Button
           variant="ghost"
           className="flex-1 flex items-center justify-center space-x-2"
           onClick={handleLikeList}
         >
-          <Heart
+          <ThumbsUp
             size={20}
             className={
-              checkIsLiked(likes, userId) ? "fill-yellow-500 text-yellow-500" : ""
+              hasLiked ? "fill-yellow-500 text-yellow-500" : "text-gray-400"
             }
           />
           <span className={textSize}>{likes.length}</span>
         </Button>
 
+        {/* Dislike Button */}
+        <Button
+          variant="ghost"
+          className="flex-1 flex items-center justify-center space-x-2"
+          onClick={handleDislikeList}
+        >
+          <ThumbsDown
+            size={20}
+            className={
+              hasDisliked ? "fill-yellow-500 text-yellow-500" : "text-gray-400"
+            }
+          />
+          {/*<span className={textSize}>{dislikes.length}</span>*/}
+        </Button>
+        </div>
+
+        {/* Save Button */}
         <Button
           variant="ghost"
           className="flex-1 flex items-center justify-center space-x-2"
           onClick={handleSaveList}
         >
-          <Bookmark size={20} className={isSaved ? "text-yellow-500 fill-yellow-500" : "text-gray-400"} />
+          <Bookmark
+            size={20}
+            className={
+              isSaved
+                ? "text-yellow-500 fill-yellow-500"
+                : "text-gray-400 fill-none"
+            }
+          />
           <span className={textSize}>{isSaved ? "Saved" : "Save"}</span>
         </Button>
 
+        {/* Comments Button */}
         <Button
           variant="ghost"
           className="flex-1 flex items-center justify-center space-x-2"
@@ -167,6 +282,7 @@ const ListStats: React.FC<ListStatsProps> = ({
           <span className={textSize}>{comments?.length || 0}</span>
         </Button>
 
+        {/* Remix Button */}
         <Button
           variant="ghost"
           className="flex-1 flex items-center justify-center space-x-2"
@@ -176,31 +292,33 @@ const ListStats: React.FC<ListStatsProps> = ({
           <span className={textSize}>Remix</span>
         </Button>
 
+        {/* Embed Button */}
         {isCreator ? (
-        <Button
-          variant="ghost"
-          className="flex-1 flex items-center justify-center space-x-2"
-          onClick={() => setIsEmbed((prev) => !prev)}
-        >
-          <Code size={20} className="text-gray-400" />
-          <span className={textSize}>Embed</span>
-        </Button>
-      ) : (
-        <div 
-          className="flex-1 flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed"
-          title="Only the creator can embed this list"
-        >
-          <Code size={20} className="text-gray-400" />
-          <span className={textSize}>Embed</span>
-        </div>
-      )}
+          <Button
+            variant="ghost"
+            className="flex-1 flex items-center justify-center space-x-2"
+            onClick={() => setIsEmbed((prev) => !prev)}
+          >
+            <Code size={20} className="text-gray-400" />
+            <span className={textSize}>Embed</span>
+          </Button>
+        ) : (
+          <div
+            className="flex-1 flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed"
+            title="Only the creator can embed this list"
+          >
+            <Code size={20} className="text-gray-400" />
+            <span className={textSize}>Embed</span>
+          </div>
+        )}
       </div>
 
+      {/* Comments Section */}
       <AnimatePresence>
         {isCommentsExpanded && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="mt-6"
           >
@@ -240,19 +358,25 @@ const ListStats: React.FC<ListStatsProps> = ({
                       onClick={() => navigate(`/lists/${list.$id}`)}
                       className="text-blue-300 flex items-center"
                     >
-                      View all comments <ExternalLink className="ml-2" size={16} />
+                      View all comments{" "}
+                      <ExternalLink className="ml-2" size={16} />
                     </Button>
                   </div>
                 )}
               </div>
             ) : (
-              <p className={`${textSize} text-gray-500`}>No comments yet. Be the first to comment!</p>
+              <p className={`${textSize} text-gray-500`}>
+                No comments yet. Be the first to comment!
+              </p>
             )}
+            {/* Comment Input */}
             <form onSubmit={handleCommentSubmit} className="mt-6">
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder={isReply ? "Write a reply..." : "Write a comment..."}
+                placeholder={
+                  isReply ? "Write a reply..." : "Write a comment..."
+                }
                 className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
                 rows={1}
               />
