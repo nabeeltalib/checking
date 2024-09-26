@@ -28,14 +28,15 @@ const LeftSidebar2: React.FC = () => {
     >
       <div className="flex flex-col">
         <div className="flex items-center justify-between p-4 mb-6">
-          <AnimatePresence>
-            {!isCollapsed && (
+        <AnimatePresence>
+          {!isCollapsed && (
+            <NavLink to="/sign-in">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
-                className="flex items-center gap-3 p-2 rounded-lg bg-dark-4"
+                className="flex items-center gap-3 p-2 rounded-lg bg-dark-4 cursor-pointer"
               >
                 <img
                   src={'/assets/icons/profile-placeholder.svg'}
@@ -44,13 +45,15 @@ const LeftSidebar2: React.FC = () => {
                 />
                 <div>
                   <p className="text-light-1 font-semibold">Guest</p>
-                  <NavLink to="/sign-in" className="text-light-2 text-sm hover:text-light-1 transition-colors">
+                  <p className="text-light-2 text-sm hover:text-light-1 transition-colors">
                     Sign In / Up
-                  </NavLink>
+                  </p>
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </NavLink>
+          )}
+        </AnimatePresence>
+
           <Button
             onClick={toggleCollapse}
             variant="ghost"
