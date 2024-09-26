@@ -153,8 +153,7 @@ const PreviewMode: React.FC = () => {
           <div className="text-2xl md:text-4xl text-yellow-300 font-bold mb-2 mt-6">
             <span>What's in Your Top Five?</span>
           </div>
-          <p className="text-base sm:text-xl font-light text-white mt-8">Your World's Recommendations On Everything </p>
-          <p className="text-base sm:text-xl font-thin text-white">Discover • Debate • Create</p>
+          <p className="text-base sm:text-xl font-light text-white mt-8">Discover and Debate Best Opinions On Everything</p>
         </div>
       </header>
 
@@ -177,7 +176,7 @@ const PreviewMode: React.FC = () => {
       {/* Mobile Trending Slider */}
       <MobileTrendingSlider setIsDialogOpen={setIsSignInDialogOpen} />
 
-      <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center mt-8">
+      <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center ml-4 mt-8">
         <LampDesk className="mr-2" />
         Home Feed
       </h3>

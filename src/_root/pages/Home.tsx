@@ -132,8 +132,7 @@ const Home: React.FC = () => {
             </div>
           )}
           
-          <p className="text-base sm:text-xl font-light text-white mt-8">Your World's Recommendations On Everything </p>
-          <p className="text-base sm:text-xl font-thin text-white">Discover • Debate • Create</p>        
+          <p className="text-base sm:text-xl font-light text-white mt-8">Discover and Debate Best Opinions On Everything</p>
           </div>
       </header>      
 
@@ -156,7 +155,7 @@ const Home: React.FC = () => {
         </div>        
         {/* Mobile Trending Slider */}
         <MobileTrendingSlider />
-        <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center mt-8">
+        <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center ml-4 mt-8">
           <LampDesk className="mr-2" />
           Home Feed
         </h3>
