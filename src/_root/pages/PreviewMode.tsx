@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getPublicLists } from '@/lib/appwrite/api';
 import ListCard from '@/components/shared/ListCard';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,88 @@ interface IList {
 }
 
 const LISTS_PER_PAGE = 10;
+
+const LoadingSkeleton: React.FC = () => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full">
+    {[...Array(6)].map((_, index) => (
+      <motion.div
+        key={index}
+        className="bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: index * 0.1 }}
+      >
+        {/* Creator Info Skeleton */}
+        <div className="flex items-center mb-4">
+          <motion.div
+            className="w-10 h-10 rounded-full bg-dark-3"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+          />
+          <div className="ml-3">
+            <motion.div
+              className="h-4 bg-dark-3 rounded w-24 mb-2"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 }}
+            />
+            <motion.div
+              className="h-3 bg-dark-3 rounded w-20"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }}
+            />
+          </div>
+        </div>
+
+        {/* List Title Skeleton */}
+        <motion.div
+          className="h-6 bg-dark-3 rounded w-3/4 mb-4"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ repeat: Infinity, duration: 1.5, delay: 0.3 }}
+        />
+
+        {/* List Items Skeleton */}
+        {[...Array(5)].map((_, itemIndex) => (
+          <div key={itemIndex} className="flex items-center mb-2">
+            <motion.div
+              className="w-6 h-6 rounded-full bg-dark-3 mr-3"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 * itemIndex }}
+            />
+            <motion.div
+              className="h-4 bg-dark-3 rounded w-full"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 * itemIndex + 0.05 }}
+            />
+          </div>
+        ))}
+
+        {/* Tags Skeleton */}
+        <div className="flex flex-wrap gap-2 mt-4">
+          {[...Array(3)].map((_, tagIndex) => (
+            <motion.div
+              key={tagIndex}
+              className="h-6 bg-dark-3 rounded-full w-16"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 * tagIndex }}
+            />
+          ))}
+        </div>
+
+        {/* Action Buttons Skeleton */}
+        <div className="flex justify-between items-center mt-4">
+          {[...Array(4)].map((_, buttonIndex) => (
+            <motion.div
+              key={buttonIndex}
+              className="w-8 h-8 bg-dark-3 rounded-full"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 * buttonIndex }}
+            />
+          ))}
+        </div>
+      </motion.div>
+    ))}
+  </div>
+);
 
 const PreviewMode: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,7 +127,7 @@ const PreviewMode: React.FC = () => {
     }
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (inView && hasNextPage) {
       fetchNextPage();
     }
@@ -60,36 +142,6 @@ const PreviewMode: React.FC = () => {
 
   const handleDialogClose = () => setIsSignInDialogOpen(false);
 
-  const LoadingSkeleton: React.FC = () => (
-    <div className="space-y-8">
-      {[...Array(6)].map((_, index) => (
-        <div key={index} className="bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg">
-          <motion.div
-            className="h-8 bg-dark-3 rounded w-1/2 mb-4"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-          ></motion.div>
-          <div className="space-y-4">
-            {[...Array(3)].map((_, rowIndex) => (
-              <div key={rowIndex} className="flex items-center space-x-4">
-                <motion.div
-                  className="h-6 bg-dark-3 rounded w-1/4"
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 * rowIndex }}
-                ></motion.div>
-                <motion.div
-                  className="h-6 bg-dark-3 rounded w-1/2"
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 * rowIndex + 0.05 }}
-                ></motion.div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
   if (isError) {
     return <div>Error loading lists</div>;
   }
@@ -103,7 +155,6 @@ const PreviewMode: React.FC = () => {
           </div>
           <p className="text-base sm:text-xl font-light text-white mt-8">Your World's Recommendations On Everything </p>
           <p className="text-base sm:text-xl font-thin text-white">Discover • Debate • Create</p>
-
         </div>
       </header>
 
@@ -163,7 +214,7 @@ const PreviewMode: React.FC = () => {
         )}
         
         {hasNextPage && (
-          <div ref={ref} className="mt-8 flex justify-center">
+          <div ref={ref} className="mt-8 w-full">
             <LoadingSkeleton />
           </div>
         )}
@@ -174,10 +225,7 @@ const PreviewMode: React.FC = () => {
         >
           Sign Up/Sign In to Access More Features
         </Button>
-      </div>
-
-      {/* Bottombar2 Component */}
-      <Bottombar2 />
+      </div>     
 
       {/* Sign-in Dialog */}
       <SignInDialog isOpen={isSignInDialogOpen} onClose={handleDialogClose} />
