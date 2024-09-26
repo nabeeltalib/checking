@@ -190,7 +190,7 @@ const HelpFAQPage: React.FC = () => {
           Still Need Help?
         </h2>
         <p className="mb-6 text-gray-300">If you couldn't find the answer you were looking for, please don't hesitate to reach out to our support team.</p>
-        <Link to="/contact">
+        <Link to="/contactpage">
           <motion.button 
             className="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors"
             whileHover={{ scale: 1.05 }}
