@@ -148,9 +148,9 @@ const PreviewMode: React.FC = () => {
       <header className="w-full bg-dark-1 py-4">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <div className="text-2xl md:text-4xl text-yellow-300 font-bold mb-2 mt-6">
-            <span>What's in Your Top Five?</span>
+            <span>What's In Your Top Five?</span>
           </div>
-          <p className="text-base sm:text-xl font-light text-white mt-8">Where your world's best opinions are challenged.</p>
+          <p className="text-base sm:text-xl font-light text-white mt-8">Where your world's opinions get organized and challenged.</p>
           <p className="text-base sm:text-xl font-semibold text-white mt-8">Connect • Debate • Create</p>
         </div>
       </header>

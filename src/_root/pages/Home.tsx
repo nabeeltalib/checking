@@ -123,7 +123,7 @@ const Home: React.FC = () => {
       <header className="w-full bg-dark-1 py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl md:text-4xl text-yellow-300 font-bold mb-8 mt-6">
-           What's in your Top Five?
+           What's In your Top Five?
           </h2>
           <div>
             <NavLink to={`/profile/profile`} className="text-3xl md:text-3xl text-blue-500 font-semibold mb-2 mt-6 hover:text-blue-700 transition-colors" style={{ fontFamily: "'Permanent Marker', cursive" }}>
@@ -139,7 +139,7 @@ const Home: React.FC = () => {
             </div>
           )}
           
-          <p className="text-base sm:text-xl font-light text-white mt-8">Where your world's best opinions are challenged.</p>
+          <p className="text-base sm:text-xl font-light text-white mt-8">Where your world's opinions get organized and challenged.</p>
           <p className="text-base sm:text-xl font-semibold text-white mt-8">Connect • Debate • Create</p>          
           </div>
       </header>      
