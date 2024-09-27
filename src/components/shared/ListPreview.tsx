@@ -18,7 +18,6 @@ const ListPreview: React.FC<ListPreviewProps> = ({ title, description, items, ca
 
   return (
     <div className="text-slate-600 p-6 bg-gray-900 rounded-lg shadow-md">
-      <p className="text-right text-blue-200 font-thin text-xs mb-4">PREVIEW</p>
       <div
             className="text-slate-700 text-center text-xl sm:text-xl font-thin px-4 py-2 rounded-t-lg"
             style={{ fontFamily: "'Racing Sans One', sans-serif" }}

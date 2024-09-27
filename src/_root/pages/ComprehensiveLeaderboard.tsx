@@ -28,6 +28,11 @@ const ComprehensiveLeaderboard = () => {
     fetchData();
   }, []);
 
+   // Scroll to top when component mounts or when user navigates to the page
+   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+  
   const topUser = useMemo(
     () =>
       users.map((user: any, index: number) => ({

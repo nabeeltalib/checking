@@ -1,5 +1,3 @@
-// ListCard2.tsx
-
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -58,7 +56,7 @@ interface List {
   locations: string[];
   timespans: string[];
   Likes: string[];
-  Dislikes: string[]; // Ensure Dislikes is an array
+  Dislikes: string[];
 }
 
 interface ListCard2Props {
@@ -77,7 +75,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const [connection, setConnection] = useState<any>(undefined);
   const [followdBy, setFollowdBy] = useState<any>([]);
   const [likes, setLikes] = useState<string[]>([]);
-  const [dislikes, setDislikes] = useState<string[]>([]); // Added state for dislikes
+  const [dislikes, setDislikes] = useState<string[]>([]);
   const [isSaved, setIsSaved] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -90,7 +88,6 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const { user } = useUserContext();
   const { id } = user;
 
-  // Initialize likes and dislikes
   useEffect(() => {
     if (list) {
       setLikes(list.Likes || []);
@@ -98,7 +95,6 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     }
   }, [list]);
 
-  // Determine if the current user has liked or disliked the list
   const hasLiked = useMemo(() => likes.includes(id), [likes, id]);
   const hasDisliked = useMemo(() => dislikes.includes(id), [dislikes, id]);
 
@@ -112,26 +108,21 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     }
   }, [currentUser, list]);
 
-  // Fetch connections
   useEffect(() => {
     const fetchData = async () => {
       if (list?.creator?.$id) {
         try {
-          const [ProfileConnection, ProfileViewerConnection] =
-            await Promise.all([
-              getConnection(list.creator.$id),
-              getConnection(user.id),
-            ]);
+          const [ProfileConnection, ProfileViewerConnection] = await Promise.all([
+            getConnection(list.creator.$id),
+            getConnection(user.id),
+          ]);
           setConnection(ProfileConnection[0] || undefined);
 
           let commonConnection: any[] = [],
             remainingConnection: any[] = [],
             displayConnection: any[] = [];
 
-          if (
-            ProfileConnection?.length > 0 &&
-            ProfileViewerConnection?.length > 0
-          ) {
+          if (ProfileConnection?.length > 0 && ProfileViewerConnection?.length > 0) {
             commonConnection = ProfileConnection[0]?.follower.filter(
               (user: any) =>
                 ProfileViewerConnection[0]?.following.includes(user.$id)
@@ -148,10 +139,9 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
               ...remainingConnection,
             ];
           } else {
-            displayConnection =
-              ProfileConnection.length > 0
-                ? ProfileConnection[0].follower
-                : [];
+            displayConnection = ProfileConnection.length > 0
+              ? ProfileConnection[0].follower
+              : [];
           }
 
           setFollowdBy(displayConnection);
@@ -176,12 +166,9 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     let updatedDislikes = [...dislikes];
 
     if (hasLiked) {
-      // User is removing their like
       updatedLikes = updatedLikes.filter((userId) => userId !== id);
     } else {
-      // User is liking the list
       updatedLikes.push(id);
-      // Remove dislike if it exists
       if (hasDisliked) {
         updatedDislikes = updatedDislikes.filter((userId) => userId !== id);
       }
@@ -191,15 +178,14 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     setDislikes(updatedDislikes);
 
     try {
-      // Update the list on the server
       await likeListAPI(list.$id, {
         Likes: updatedLikes,
         Dislikes: updatedDislikes,
       });
     } catch (error) {
       console.error("Error liking list:", error);
-      setLikes(likes); // Revert to previous likes if there's an error
-      setDislikes(dislikes); // Revert to previous dislikes if there's an error
+      setLikes(likes);
+      setDislikes(dislikes);
       toast({
         title: "Error",
         description: "Failed to update like status. Please try again.",
@@ -215,12 +201,9 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     let updatedDislikes = [...dislikes];
 
     if (hasDisliked) {
-      // User is removing their dislike
       updatedDislikes = updatedDislikes.filter((userId) => userId !== id);
     } else {
-      // User is disliking the list
       updatedDislikes.push(id);
-      // Remove like if it exists
       if (hasLiked) {
         updatedLikes = updatedLikes.filter((userId) => userId !== id);
       }
@@ -230,15 +213,14 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     setDislikes(updatedDislikes);
 
     try {
-      // Update the list on the server
       await likeListAPI(list.$id, {
         Likes: updatedLikes,
         Dislikes: updatedDislikes,
       });
     } catch (error) {
       console.error("Error disliking list:", error);
-      setLikes(likes); // Revert to previous likes if there's an error
-      setDislikes(dislikes); // Revert to previous dislikes if there's an error
+      setLikes(likes);
+      setDislikes(dislikes);
       toast({
         title: "Error",
         description: "Failed to update dislike status. Please try again.",
@@ -372,7 +354,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.1 }}
-          className="flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300"
+          className="flex items-center mb-1 bg-gray-800 rounded-md p-2 hover:bg-gray-700 transition-colors duration-300"
         >
           <span className="text-lg font-bold text-yellow-200 mr-4">
             {index === 0 ? <Crown size={20} className="text-yellow-200" /> : index + 1}
@@ -529,8 +511,8 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
             </div>
           </div>
         )}
- {/* Followed By */}
- {followdBy.length > 0 && (
+        {/* Followed By */}
+        {followdBy.length > 0 && (
           <div className="mb-4 text-xs text-light-3">
             {followdBy.length > 2 ? (
               <span>
@@ -586,7 +568,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         {/* List Items */}
         <Link to={`/lists/${list.$id}`} className="block mb-6">
           <AnimatePresence>
-            <motion.ol className="list-none space-y-3">
+            <motion.ol className="list-none space-y-2">
               {renderListItems}
             </motion.ol>
           </AnimatePresence>
@@ -678,9 +660,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
             </Button>
           </Tooltip>
           <span className="mx-1">{likes.length}</span>
-          <Tooltip
-            content={hasDisliked ? "Boo anonymously" : "Boo anonymously"}
-          >
+          <Tooltip content={hasDisliked ? "Boo anonymously" : "Boo anonymously"}>
             <Button
               onClick={handleDislikeList}
               className={`p-3 rounded-full transition-colors duration-300 ${
@@ -721,9 +701,8 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         </Button>
       </div>
 
-     
-  {/* Comments Section */}
-  <div className="bg-gray-900 p-6 border-t border-dark-4">
+      {/* Comments Section */}
+      <div className="bg-gray-900 p-6 border-t border-dark-4">
         <h3 className="text-xs font-semibold mb-4">Comments</h3>
         {renderComments()}
 
@@ -731,10 +710,9 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         <form onSubmit={handleCommentSubmit} className="text-xs mt-4">
           <textarea
             value={newComment}
+            spellCheck={true} // Enable spellcheck here
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder={
-              isReply ? "Write a reply..." : "Write a comment..."
-            }
+            placeholder={isReply ? "Write a reply..." : "Write a comment..."}
             className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
             rows={1}
           />
@@ -753,7 +731,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
             )}
           </div>
         </form>
-       </div>
+      </div>
     </motion.div>
   );
 };

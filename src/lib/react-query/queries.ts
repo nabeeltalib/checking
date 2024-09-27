@@ -44,7 +44,7 @@ import {
   deleteNotification,
   getUserById,
   createComment,
-  getComments,
+  getComments,       
   createSuggestion,
   getSuggestions,
   updateSuggestion,
@@ -563,10 +563,19 @@ export const useSendFriendRequest = () => {
 };
 
 export const useGetPublicLists = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.GET_PUBLIC_LISTS],
-    queryFn: getPublicLists,
-  });
+  return useInfiniteQuery(
+    [QUERY_KEYS.GET_PUBLIC_LISTS],
+    async ({ pageParam = 0 }) => {
+      const start = pageParam * 10;  // Assuming page size is 10
+      const end = start + 10;
+      return await getPublicLists(start, end);  // Call the randomizing getPublicLists function
+    },
+    {
+      getNextPageParam: (lastPage, allPages) => {
+        return lastPage.length === 10 ? allPages.length : undefined;
+      },
+    }
+  );
 };
 
 export const useGetPopularLists = () => {

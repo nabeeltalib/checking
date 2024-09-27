@@ -126,7 +126,8 @@ const ContactPage: React.FC = () => {
                 value={formData.message}
                 onChange={handleChange}
                 required
-                rows={4}
+                rows={4}                                
+                spellCheck={true} // Enable spellcheck here
                 className="w-full px-4 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
               ></textarea>
             </motion.div>

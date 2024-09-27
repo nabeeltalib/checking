@@ -13,6 +13,15 @@ import { getConnection } from '@/lib/appwrite/api';
 import { Search, LampDesk } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
+// Fisher-Yates Shuffle function
+function shuffleArray(array: any[]) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 const Home: React.FC = () => {
   const { user } = useUserContext();
   const { ref, inView } = useInView();
@@ -29,7 +38,13 @@ const Home: React.FC = () => {
   const [listIdea, setListIdea] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [connection, setConnection] = useState<any>(undefined);
-  
+
+  // Scroll to top when component mounts or when user navigates to the page
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Fetch user connection data
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -45,25 +60,17 @@ const Home: React.FC = () => {
     }
   }, [user?.id]);
 
+  // Infinite scroll logic
   useEffect(() => {
     if (inView && hasNextPage) {
       fetchNextPage();
     }
   }, [inView, hasNextPage, fetchNextPage]);
 
-  const handleGenerateIdea = () => {
-    setListIdea("");
-    generateListIdea("Generate a random list idea", {
-      onSuccess: (idea) => setListIdea(idea),
-    });
-  };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
-
+  // Shuffle lists before displaying them
   const filterLists = useCallback((lists: Models.Document[]) => {
-    return lists.filter((list: IList) => 
+    // Randomize the lists before rendering
+    return shuffleArray(lists).filter((list: IList) =>
       list.Title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       list.Tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
     );
@@ -146,7 +153,8 @@ const Home: React.FC = () => {
                 type="text"
                 placeholder="Search rankings, titles, or tags ..."
                 value={searchTerm}
-                onChange={handleSearchChange}
+                spellCheck={true} // Enable spellcheck here
+                onChange={e => setSearchTerm(e.target.value)}
                 className="w-full bg-gray-700 text-gray-200 pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />

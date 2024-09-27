@@ -16,7 +16,7 @@ interface IList {
   [key: string]: any;
 }
 
-const LISTS_PER_PAGE = 10;
+const LISTS_PER_PAGE = 20;
 
 const LoadingSkeleton: React.FC = () => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full">
@@ -28,7 +28,7 @@ const LoadingSkeleton: React.FC = () => (
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.1 }}
       >
-        {/* Creator Info Skeleton */}
+        {/* Skeleton Content */}
         <div className="flex items-center mb-4">
           <motion.div
             className="w-10 h-10 rounded-full bg-dark-3"
@@ -48,15 +48,11 @@ const LoadingSkeleton: React.FC = () => (
             />
           </div>
         </div>
-
-        {/* List Title Skeleton */}
         <motion.div
           className="h-6 bg-dark-3 rounded w-3/4 mb-4"
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ repeat: Infinity, duration: 1.5, delay: 0.3 }}
         />
-
-        {/* List Items Skeleton */}
         {[...Array(5)].map((_, itemIndex) => (
           <div key={itemIndex} className="flex items-center mb-2">
             <motion.div
@@ -71,8 +67,6 @@ const LoadingSkeleton: React.FC = () => (
             />
           </div>
         ))}
-
-        {/* Tags Skeleton */}
         <div className="flex flex-wrap gap-2 mt-4">
           {[...Array(3)].map((_, tagIndex) => (
             <motion.div
@@ -83,8 +77,6 @@ const LoadingSkeleton: React.FC = () => (
             />
           ))}
         </div>
-
-        {/* Action Buttons Skeleton */}
         <div className="flex justify-between items-center mt-4">
           {[...Array(4)].map((_, buttonIndex) => (
             <motion.div
@@ -126,6 +118,11 @@ const PreviewMode: React.FC = () => {
       },
     }
   );
+
+  useEffect(() => {
+    // Scroll to the top of the page when the component is mounted
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     if (inView && hasNextPage) {

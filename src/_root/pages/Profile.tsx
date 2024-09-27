@@ -84,6 +84,11 @@ const Profile: React.FC = () => {
     fetchConnection();
   }, [id, user.id]);
 
+  // Scroll to top when component mounts or when user navigates to the page
+ useEffect(() => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}, []);
+
   useEffect(() => {
     const fetchSentRequests = async () => {
       const res = await getSentRequests();

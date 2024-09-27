@@ -127,7 +127,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     return displayItems.map((item, index) => (
       <motion.li
         key={index}
-        className="flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300"
+        className="flex items-center mb-2 bg-gray-800 rounded-md p-2 hover:bg-gray-700 transition-colors duration-300"
         onClick={() => {
           if (!isAuthenticated) {
             handleDialogOpen();
@@ -241,7 +241,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         )}
         {/* List Items */}
         <div onClick={handleDialogOpen} className="mb-4">
-          <ol className="list-none space-y-3">{renderListItems()}</ol>
+          <ol className="list-none space-y-2">{renderListItems()}</ol>
           {list.items && list.items.length > 3 && (
             <motion.button
               className="w-full text-primary-500 font-semibold text-sm mt-2 flex items-center justify-center"

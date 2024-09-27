@@ -1710,14 +1710,31 @@ export async function UnFollow(userId: string, followingId: string) {
   }
 }
 
-// New functions for public lists
-export async function getPublicLists() {
+// Function to shuffle an array (Fisher-Yates Shuffle)
+function shuffleArray(array: any[]) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+export async function getPublicLists(start: number, end: number) {
   try {
+    // Fetch the documents with pagination
     const result = await databases.listDocuments(
       appwriteConfig.databaseId,
-      appwriteConfig.listCollectionId
+      appwriteConfig.listCollectionId,
+      [
+        Query.limit(end - start),  // Limit the number of documents returned
+        Query.offset(start),       // Start fetching documents from this index
+      ]
     );
-    return result.documents;
+
+    // Randomize the fetched lists
+    const randomizedLists = shuffleArray(result.documents);
+
+    return randomizedLists;
   } catch (error) {
     console.error("Error getting public lists:", error);
     throw error;

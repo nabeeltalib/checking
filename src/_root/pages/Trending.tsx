@@ -25,6 +25,11 @@ const Trending: React.FC = () => {
 
     fetchData();
   }, []);
+ 
+  // Scroll to top when component mounts or when user navigates to the page
+ useEffect(() => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}, []);
 
   const LoadingSkeleton: React.FC = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 max-w-4xl mx-auto mt-5">

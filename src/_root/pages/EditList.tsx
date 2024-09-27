@@ -20,6 +20,11 @@ const EditList: React.FC = () => {
       navigate(`/lists/${id}`);
     }
   }, [list, user, id, navigate]);
+ 
+  // Scroll to top when component mounts or when user navigates to the page
+ useEffect(() => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}, []);
 
   const handleUpdateList = async (updatedListData: IList) => {
     if (!id) return;

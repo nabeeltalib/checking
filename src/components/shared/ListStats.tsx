@@ -1,5 +1,3 @@
-// ListStats.tsx
-
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -223,36 +221,36 @@ const ListStats: React.FC<ListStatsProps> = ({
       className={`${backgroundColor} p-6 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl`}
     >
       <div className="flex flex-wrap justify-between gap-4 mb-6">
-      <div className="flex items-center space-x-1">      
-      {/* Like Button */}
-        <Button
-          variant="ghost"
-          className="flex-1 flex items-center justify-center space-x-2"
-          onClick={handleLikeList}
-        >
-          <ThumbsUp
-            size={20}
-            className={
-              hasLiked ? "fill-yellow-500 text-yellow-500" : "text-gray-400"
-            }
-          />
-          <span className={textSize}>{likes.length}</span>
-        </Button>
+        <div className="flex items-center space-x-1">
+          {/* Like Button */}
+          <Button
+            variant="ghost"
+            className="flex-1 flex items-center justify-center space-x-2"
+            onClick={handleLikeList}
+          >
+            <ThumbsUp
+              size={20}
+              className={
+                hasLiked ? "fill-yellow-500 text-yellow-500" : "text-gray-400"
+              }
+            />
+            <span className={textSize}>{likes.length}</span>
+          </Button>
 
-        {/* Dislike Button */}
-        <Button
-          variant="ghost"
-          className="flex-1 flex items-center justify-center space-x-2"
-          onClick={handleDislikeList}
-        >
-          <ThumbsDown
-            size={20}
-            className={
-              hasDisliked ? "fill-yellow-500 text-yellow-500" : "text-gray-400"
-            }
-          />
-          {/*<span className={textSize}>{dislikes.length}</span>*/}
-        </Button>
+          {/* Dislike Button */}
+          <Button
+            variant="ghost"
+            className="flex-1 flex items-center justify-center space-x-2"
+            onClick={handleDislikeList}
+          >
+            <ThumbsDown
+              size={20}
+              className={
+                hasDisliked ? "fill-yellow-500 text-yellow-500" : "text-gray-400"
+              }
+            />
+            {/*<span className={textSize}>{dislikes.length}</span>*/}
+          </Button>
         </div>
 
         {/* Save Button */}
@@ -373,6 +371,7 @@ const ListStats: React.FC<ListStatsProps> = ({
             <form onSubmit={handleCommentSubmit} className="mt-6">
               <textarea
                 value={newComment}
+                spellCheck={true} // Enable spellcheck here
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder={
                   isReply ? "Write a reply..." : "Write a comment..."

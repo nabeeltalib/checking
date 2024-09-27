@@ -104,6 +104,7 @@ const HelpFAQPage: React.FC = () => {
             type="text"
             placeholder="Search FAQs..."
             value={searchTerm}
+            spellCheck={true} // Enable spellcheck here
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full p-3 pl-10 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
