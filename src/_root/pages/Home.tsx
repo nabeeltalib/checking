@@ -122,7 +122,7 @@ const Home: React.FC = () => {
       {/* Header Section */}
       <header className="w-full bg-dark-1 py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl md:text-4xl text-yellow-300 font-bold mb-8 mt-6">
+          <h2 className="text-2xl md:text-4xl text-orange-600 font-bold mb-8 mt-6">
            What's In your Top Five?
           </h2>
           <div>

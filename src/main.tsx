@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
@@ -13,6 +13,8 @@ import App from "./App";
 import './globals.css';
 
 const AppWrapper: React.FC = () => {
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const hideLoader = () => {
       const loader = document.getElementById('loader');
@@ -20,17 +22,19 @@ const AppWrapper: React.FC = () => {
         loader.classList.add('fade-out');
         setTimeout(() => {
           loader.style.display = 'none';
+          setIsLoading(false);
         }, 500); // Match this to the transition time in CSS
       }
     };
 
-    // Simulate loading time (remove this in production and trigger hideLoader when your app is ready)
+    // In production, you'd want to trigger hideLoader when your app is ready
+    // For now, we'll use a timeout to simulate loading time
     const timer = setTimeout(hideLoader, 2000);
 
     return () => clearTimeout(timer);
   }, []);
 
-  return <App />;
+  return <App isInitialLoading={isLoading} />;
 };
 
 const root = ReactDOM.createRoot(document.getElementById("root")!);

@@ -20,6 +20,7 @@ import {
   getConnection,
   shareList,
   UnFollow,
+  updateCommentWithReply, 
   likeList as likeListAPI,
 } from "@/lib/appwrite/api";
 import {
@@ -366,40 +367,26 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       ));
   }, [list?.items, isExpanded]);
 
-  const handleCommentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim() === "") return;
-
+  const handleCommentSubmit = async (commentContent: string) => {
     try {
-      if (isReply) {
-        await UpdateCommentReply({
-          userId: id,
-          Content: newComment,
-          commentId: commentId,
-        });
-      } else {
-        await createComment({
-          listId: list.$id,
-          userId: id,
-          Content: newComment,
-        });
-      }
-
-      setNewComment("");
-      setIsReply(false);
-      toast({
-        title: "Success",
-        description: isReply
-          ? "Reply added successfully"
-          : "Comment posted successfully",
+      const newComment = await createComment({
+        listId: list.$id,
+        userId: user.id,
+        Content: commentContent,
       });
+
+      if (newComment) {
+        // Update the list of comments
+        setComments(prevComments => [...prevComments, newComment]);
+        
+        // Clear the comment input
+        setNewComment('');
+        
+        toast({ title: "Comment Posted", description: "Your comment has been added successfully." });
+      }
     } catch (error) {
       console.error("Failed to post comment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to post comment or reply.",
-        variant: "destructive",
-      });
+      toast({ title: "Comment Failed", description: "Unable to post comment. Please try again.", variant: "destructive" });
     }
   };
 

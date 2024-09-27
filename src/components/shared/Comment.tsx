@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUserContext } from '@/context/AuthContext';
 import { useToast } from '../ui/use-toast';
 import Loader from './Loader';
-import { likeComment, reportComment } from '@/lib/appwrite/api';
+import { likeComment, reportComment, createReply, updateCommentWithReply } from '@/lib/appwrite/api';
 import { checkIsLiked } from '@/lib/utils';
 import CommentReply from './CommentReply';
 import { ThumbsUp, Flag, MessageCircle, MoreVertical } from 'lucide-react';
@@ -22,6 +22,9 @@ const Comment: React.FC<CommentProps> = ({ comment, setReply, show, setCommentId
   const [likes, setLikes] = useState<string[]>(comment?.Likes || []);
   const [isLiked, setIsLiked] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [replyContent, setReplyContent] = useState('');
+  const [localComment, setLocalComment] = useState(comment);
+  const [showReplyField, setShowReplyField] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,7 +62,7 @@ const Comment: React.FC<CommentProps> = ({ comment, setReply, show, setCommentId
   };
 
   const handleReply = () => {
-    setReply(true);
+    setShowReplyField(!showReplyField);
     setCommentId(comment.$id);
   };
 
@@ -76,6 +79,35 @@ const Comment: React.FC<CommentProps> = ({ comment, setReply, show, setCommentId
       toast({ title: "Like Failed", description: "Unable to like comment. Please try again.", variant: "destructive" });
       setLikes(likes);
       setIsLiked(!isLiked);
+    }
+  };
+
+  const handleCreateReply = async () => {
+    if (!user || !replyContent.trim()) return;
+
+    setIsLoading(true);
+    try {
+      const newReply = await createReply({
+        userId: user.id,
+        Content: replyContent.trim(),
+      });
+
+      if (newReply) {
+        await updateCommentWithReply(comment.$id, newReply.$id);
+        
+        setLocalComment(prev => ({
+          ...prev,
+          Reply: [...(prev.Reply || []), newReply]
+        }));
+        setReplyContent('');
+        setShowReplyField(false);
+        toast({ title: "Reply Posted", description: "Your reply has been added successfully." });
+      }
+    } catch (error) {
+      console.error("Error creating reply:", error);
+      toast({ title: "Reply Failed", description: "Unable to post reply. Please try again.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -160,7 +192,36 @@ const Comment: React.FC<CommentProps> = ({ comment, setReply, show, setCommentId
       </div>
 
       <AnimatePresence>
-        {comment.Reply && comment.Reply.length > 0 && (
+        {showReplyField && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className="mt-4 ml-12"
+          >
+            <textarea
+              value={replyContent}
+              onChange={(e) => setReplyContent(e.target.value)}
+              placeholder="Write a reply..."
+              className="w-full p-2 bg-dark-4 text-light-1 rounded-md resize-none"
+              rows={2}
+            />
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleCreateReply}
+              disabled={isLoading || !replyContent.trim()}
+              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
+            >
+              {isLoading ? <Loader /> : "Post Reply"}
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {localComment.Reply && localComment.Reply.length > 0 && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -168,7 +229,7 @@ const Comment: React.FC<CommentProps> = ({ comment, setReply, show, setCommentId
             transition={{ duration: 0.3 }}
             className="ml-12 mt-4 space-y-3"
           >
-            {comment.Reply.map((reply: any) => (
+            {localComment.Reply.map((reply: any) => (
               <CommentReply reply={reply} key={reply.$id} />
             ))}
           </motion.div>

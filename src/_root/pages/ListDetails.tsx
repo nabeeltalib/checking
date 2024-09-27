@@ -21,6 +21,8 @@ import {
   getListById,
   shareList,
   UnFollow,
+  createReply,
+  updateCommentWithReply,
 } from "@/lib/appwrite/api";
 import { Share2, ChevronLeft, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Code, Copy } from 'lucide-react';
 import { useQueryClient } from "@tanstack/react-query";
@@ -48,6 +50,8 @@ const ListDetails: React.FC = () => {
   const [showEmbedOptions, setShowEmbedOptions] = useState(false);
   const creatorOptionsRef = useRef<HTMLDivElement>(null);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
+  const [isReply, setIsReply] = useState(false);
+  const [commentId, setCommentId] = useState("");
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -518,13 +522,13 @@ const ListDetails: React.FC = () => {
               </Link>
             </motion.div>
           )}
-            {/* List Stats */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.8 }}
-        >
-          <ListStats
+         {/* List Stats */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.8 }}
+      >
+        <ListStats
           list={list}
           userId={user.id}
           setIsEmbed={isCreator ? setShowEmbedOptions : undefined}
@@ -533,7 +537,7 @@ const ListDetails: React.FC = () => {
           isCreator={isCreator}
           dislikesCount={isCreator ? list.DislikesCount : undefined}
         />
-        </motion.div>
+      </motion.div>
 
       </div>
     

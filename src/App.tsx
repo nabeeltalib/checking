@@ -52,21 +52,25 @@ import StaticFrame from "./components/shared/StaticFrame";
 import LiveFrame from "./components/shared/LiveFrame";
 import OnboardingScreens from "./_root/pages/OnboardingScreens";
 import AuthCallback from './_root/pages/AuthCallback'
+interface AppProps {
+  isInitialLoading: boolean;
+}
 
-const App = () => {
-
-  const { user } = useUserContext();
-  const { checkAuthUser } = useUserContext();
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+const App: React.FC<AppProps> = ({ isInitialLoading }) => {
+  const { user, checkAuthUser } = useUserContext();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
-  const fetchUser = async ()=>{
-    const isLoggedIn = await checkAuthUser();
-    setIsLoggedIn(isLoggedIn);
-  }  
+    const checkAuth = async () => {
+      await checkAuthUser();
+      setIsCheckingAuth(false);
+    };
+    checkAuth();
+  }, []);
 
-  fetchUser();
-  }, [])
+  if (isInitialLoading || isCheckingAuth) {
+    return null; // or return a loading spinner if you want
+  }
 
   return (
    <>
@@ -84,12 +88,10 @@ const App = () => {
     </main>
     </>
 
-    {(user.id || isLoggedIn ) ?
-    <main className="flex">
-      <Routes>
-        {/* Public Routes */}
-        {/* Private Routes */}
-        <Route element={<RootLayout />}>
+    {user.id ? (
+        <main className="flex">
+          <Routes>
+            <Route element={<RootLayout />}>
         <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/embed" element={<EmbedSelector />} />
@@ -130,9 +132,8 @@ const App = () => {
      
       <Toaster />
     </main> 
-    : 
-    <div>
-    <Routes>
+    ) : (
+      <Routes>
     <Route element={<RootLayout2 />}>
     <Route path="/" element={<PreviewMode />} />
     <Route path="/home" element={<Home />} />
@@ -150,9 +151,12 @@ const App = () => {
     <Route path="/cookiepolicy" element={<CookiePolicy />} />
 
     </Route>
-    </Routes>
-    </div>}
-    </>);
+        </Routes>
+      )}
+
+      <Toaster />
+    </>
+  );
 };
 
 export default App;

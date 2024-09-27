@@ -991,9 +991,12 @@ export async function createComment(comment: {
   }
 }
 
-export async function createReply(reply: any) {
+export async function createReply(reply: {
+  userId: string;
+  Content: string;
+}) {
   try {
-    const newComment = await databases.createDocument(
+    const newReply = await databases.createDocument(
       appwriteConfig.databaseId,
       "66b22bc7003828cf45ab",
       ID.unique(),
@@ -1003,14 +1006,40 @@ export async function createReply(reply: any) {
       }
     );
 
-    if (!newComment) {
+    if (!newReply) {
       throw new Error("Failed to create reply");
     }
 
-    return newComment;
+    return newReply;
   } catch (error) {
     console.error("Error creating reply:", error);
-    return null;
+    throw error;
+  }
+}
+
+export async function updateCommentWithReply(commentId: string, replyId: string) {
+  try {
+    const comment = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      commentId
+    );
+
+    const updatedReplies = comment.Reply ? [...comment.Reply, replyId] : [replyId];
+
+    const updatedComment = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      commentId,
+      {
+        Reply: updatedReplies
+      }
+    );
+
+    return updatedComment;
+  } catch (error) {
+    console.error("Error updating comment with reply:", error);
+    throw error;
   }
 }
 

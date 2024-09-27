@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
-  UpdateCommentReply,
+  createReply,
+  updateCommentWithReply,
   likeList as likeListAPI,
 } from "@/lib/appwrite/api";
 import {
@@ -178,11 +179,13 @@ const ListStats: React.FC<ListStatsProps> = ({
 
     try {
       if (isReply) {
-        await UpdateCommentReply({
+        const newReply = await createReply({
           userId: id,
           Content: newComment,
-          commentId: commentId,
         });
+        if (newReply) {
+          await updateCommentWithReply(commentId, newReply.$id);
+        }
       } else {
         await createComment({
           listId: list.$id,
@@ -321,17 +324,17 @@ const ListStats: React.FC<ListStatsProps> = ({
             className="mt-6"
           >
             <h3 className="text-xl font-semibold mb-4">Comments</h3>
-            {comments?.length > 0 ? (
-              <div className="space-y-4">
-                {visibleComments.map((comment: any, index: number) => (
-                  <Comment
-                    key={index}
-                    comment={comment}
-                    setReply={setIsReply}
-                    show="show"
-                    setCommentId={setCommentId}
-                  />
-                ))}
+          {comments?.length > 0 ? (
+            <div className="space-y-4">
+              {visibleComments.map((comment: any) => (
+                <Comment
+                  key={comment.$id}
+                  comment={comment}
+                  setReply={setIsReply}
+                  show={true}
+                  setCommentId={setCommentId}
+                />
+              ))}
                 {comments.length > 3 && (
                   <div className="flex justify-between items-center mt-2">
                     <Button
@@ -345,10 +348,9 @@ const ListStats: React.FC<ListStatsProps> = ({
                           Show less
                         </>
                       ) : (
-                        <>
-                          <ChevronDown className="mr-2" size={16} />
-                          View {comments.length - 3} more comments
-                        </>
+                        <p className={`${textSize} text-gray-500`}>
+                          No comments yet. Be the first to comment!
+                        </p>
                       )}
                     </Button>
                     <Button

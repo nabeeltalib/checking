@@ -39,13 +39,13 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
             <X size={24} />
           </button>
           
-          <h2 className="text-2xl sm:text-2xl font-bold text-center mb-4 sm:mb-6 text-gray-900 dark:text-white">
+          <h2 className="text-xl sm:text-3xl font-bold text-center mb-4 sm:mb-6 text-orange-800 dark:text-white">
             What's In Your Top Five?
           </h2>
-          <h3 className="text-lg sm:text-lg font-semibold text-center text-gray-700 dark:text-white">
+          <h3 className="text-md sm:text-lg font-semibold text-center text-gray-700 dark:text-white">
             Join for full access. It's free!
           </h3>
-          <p className="text-center text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-6 sm:mb-8">
+          <p className="text-center text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-6 sm:mb-8">
             Where your world's opinions get organized and challenged. Connect with like-minded know-it-alls.
           </p>
           
