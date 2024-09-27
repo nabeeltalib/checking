@@ -462,6 +462,9 @@ export const usePopularCategories = () => {
   return useQuery({
     queryKey: ['popularCategories'],
     queryFn: getPopularCategories,
+    staleTime: 1000 * 60 * 5, // Cache data for 5 minutes to reduce reloads
+    refetchOnWindowFocus: false, // Prevents refetching when window refocuses
+    retry: 2, // Retry twice if fetching fails
   });
 };
 

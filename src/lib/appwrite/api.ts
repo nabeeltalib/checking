@@ -314,12 +314,41 @@ export async function getPopularCategories() {
     const categories = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.categoryCollectionId,
-      [Query.orderDesc("$createdAt"), Query.limit(10)] // Remove usageCount if it doesn't exist
+      [
+        Query.orderDesc("usageCount"), // Order by the usageCount in descending order
+        Query.limit(10) // Limit the result to the top 10 categories
+      ]
     );
     return categories.documents;
   } catch (error) {
     console.error("Error fetching popular categories:", error);
     throw error;
+  }
+}
+export async function updateCategoryUsageCount(categoryName: string, increment: number) {
+  try {
+    const category = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.categoryCollectionId,
+      [Query.equal("name", categoryName)]
+    );
+
+    if (category.documents.length > 0) {
+      const categoryId = category.documents[0].$id;
+      const currentUsageCount = category.documents[0].usageCount || 0;
+
+      // Increment the usage count
+      await databases.updateDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.categoryCollectionId,
+        categoryId,
+        {
+          usageCount: currentUsageCount + increment,
+        }
+      );
+    }
+  } catch (error) {
+    console.error("Error updating category usage count:", error);
   }
 }
 

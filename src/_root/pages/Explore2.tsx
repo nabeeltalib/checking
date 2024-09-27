@@ -18,7 +18,7 @@ const Explore2: React.FC = () => {
 
   // State variables
   const [trendingTags, setTrendingTags] = useState<string[]>([]);
-  const [popularCategories, setPopularCategories] = useState<string[]>([]);
+  const [popularCategories, setPopularCategories] = useState([]);
   const [recentListsData, setRecentListsData] = useState<any[]>([]);
   const [isTagsLoading, setIsTagsLoading] = useState(true);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);

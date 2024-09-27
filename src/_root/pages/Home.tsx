@@ -132,7 +132,7 @@ const Home: React.FC = () => {
           </div>
 
           {user && (
-            <div className="text-sm text-gray-300 mt-5 flex justify-center space-x-4">
+            <div className="text-sm text-gray-400 mt-5 flex justify-center space-x-4">
               <span>{connection?.follower?.length || 0} followers</span>
               <span className="mx-2">|</span>
               <span>{connection?.following?.length || 0} following</span>

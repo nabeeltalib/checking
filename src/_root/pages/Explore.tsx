@@ -85,7 +85,7 @@ const Explore: React.FC = () => {
       >
         <h3 className="text-2xl font-bold text-white mb-4 flex items-center">
           <Sparkles className="mr-2" />
-          AI Suggested Lists
+          Potential Lists For You To Create
         </h3>
         {isLoadingAISuggestions ? (
           // Show LoadingSkeleton while AI suggestions are loading

@@ -30,7 +30,7 @@ import {
   useUpdateList,
 } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
-import { CollaborateOnList, createNotification, getCategories } from "@/lib/appwrite/api";
+import { CollaborateOnList, createNotification, getCategories, updateCategoryUsageCount } from "@/lib/appwrite/api";
 import {
   DndContext,
   closestCenter,
@@ -188,23 +188,31 @@ const ListForm = ({ list, action, initialData }: any) => {
   const handleSubmit = async (value: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     try {
+      let newList;
       if (action === "Update") {
         // Update logic here
       } else {
-        const newList = await createList({
+        newList = await createList({
           ...value,
           userId: user.id,
           CreatedAt: new Date(),
           UpdatedAt: new Date(),
           originalListId: action === "Remix" ? list?.$id : undefined,
         });
-
+  
         if (!newList) {
           toast({ title: `${action} list failed. Please try again.` });
-        } else {
-          await indexList(newList);
-          navigate(`/lists/${newList.$id}`);
+          return;
         }
+  
+        // Update usageCount for selected categories
+        const selectedCategories = value.Categories;
+        for (const category of selectedCategories) {
+          await updateCategoryUsageCount(category, 1);  // Increment usageCount by 1 for each selected category
+        }
+  
+        await indexList(newList);
+        navigate(`/lists/${newList.$id}`);
       }
     } catch (error) {
       console.error(`Error ${action.toLowerCase()}ing list:`, error);
@@ -216,6 +224,7 @@ const ListForm = ({ list, action, initialData }: any) => {
       setIsSubmitting(false);
     }
   };
+  
 
   const handleGenerateListItems = () => {
     const title = form.getValues("Title");
@@ -927,7 +936,7 @@ const FormSection: React.FC<{
 };
 
 const Chip: React.FC<{ label: string; onRemove: () => void }> = ({ label, onRemove }) => (
-  <div className="bg-primary-500 text-white px-3 py-1 rounded-full flex items-center text-sm">
+  <div className="bg-gray-800 text-white px-3 py-1 rounded-full flex items-center text-sm">
     {label}
     <button
       type="button"

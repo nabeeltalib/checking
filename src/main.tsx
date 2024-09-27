@@ -17,11 +17,15 @@ const AppWrapper: React.FC = () => {
     const hideLoader = () => {
       const loader = document.getElementById('loader');
       if (loader) {
-        loader.style.display = 'none';
+        loader.classList.add('fade-out');
+        setTimeout(() => {
+          loader.style.display = 'none';
+        }, 500); // Match this to the transition time in CSS
       }
     };
 
-    const timer = setTimeout(hideLoader, 1000); // Adjust the delay as needed
+    // Simulate loading time (remove this in production and trigger hideLoader when your app is ready)
+    const timer = setTimeout(hideLoader, 2000);
 
     return () => clearTimeout(timer);
   }, []);
