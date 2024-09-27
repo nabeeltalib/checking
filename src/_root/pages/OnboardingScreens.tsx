@@ -91,8 +91,9 @@ const OnboardingScreens = () => {
                   <Link to="/" className="flex items-center gap-3">
                     <img src="/assets/images/logo.svg" alt="logo" className="mx-auto mb-8" />
                   </Link>
-            <h2 className="text-xl font-bold mb-6 text-center text-white">Your world's recommendations. What's in your Top Five?</h2>
-            <p className="text-center text-gray-300 mb-8">Create your own lists, Discover trusted recommendations, Join discussions.</p>
+            <h2 className="text-2xl font-bold mb-2 text-center text-white">What's in your Top Five?</h2>
+            <h2 className="text-lg font-normal mb-6 text-center text-white">Where your world's best opinions are challenged. </h2>
+            <p className="text-center text-gray-300 mb-8">Join our community of know-it-alls.</p>
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-300 mb-2" htmlFor="email">
                 Enter email address*

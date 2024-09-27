@@ -27,7 +27,7 @@ const Bottombar: React.FC = () => {
                 : "rounded-xl text-light-2 hover:bg-dark-3"
             }`}
           >
-            <link.icon size={24} className={isActive ? "stroke-blue-500" : "stroke-light-2"} />
+            <link.icon size={18} className={isActive ? "stroke-blue-500" : "stroke-light-2"} />
             <p className={`text-xs mt-1 ${isActive ? "text-blue-500 font-medium" : "text-light-2"}`}>
               {link.label}
             </p>

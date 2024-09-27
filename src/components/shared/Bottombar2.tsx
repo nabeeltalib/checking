@@ -18,8 +18,9 @@ const Bottombar2: React.FC = () => {
   const bottombarLinks = [
     { icon: Home, label: "Home", route: "/" },
     { icon: Telescope, label: "Explore", route: "/explore2" },
-    { icon: PlusCircle, label: "Create", onClick: handleCreateClick }, // Use onClick instead of route for the "Create" tab
-    { icon: Crown, label: "Leaderboard", route: "/comprehensive-leaderboard2" },
+      { icon: Crown, label: "Leaderboard", route: "/comprehensive-leaderboard2" },
+      { icon: PlusCircle, label: "Create", onClick: handleCreateClick }, // Use onClick instead of route for the "Create" tab
+  
   ];
 
   return (
@@ -39,7 +40,7 @@ const Bottombar2: React.FC = () => {
                   : "rounded-xl text-light-2 hover:bg-dark-3"
               }`}
             >
-              <link.icon size={24} className={isActive ? "stroke-blue-500" : "stroke-light-2"} />
+              <link.icon size={18} className={isActive ? "stroke-blue-500" : "stroke-light-2"} />
               <p className={`text-xs mt-1 ${isActive ? "text-blue-500 font-medium" : "text-light-2"}`}>
                 {link.label}
               </p>
@@ -58,7 +59,7 @@ const Bottombar2: React.FC = () => {
                 : "rounded-xl text-light-2 hover:bg-dark-3"
             }`}
           >
-            <link.icon size={24} className={isActive ? "stroke-blue-500" : "stroke-light-2"} />
+            <link.icon size={18} className={isActive ? "stroke-blue-500" : "stroke-light-2"} />
             <p className={`text-xs mt-1 ${isActive ? "text-blue-500 font-medium" : "text-light-2"}`}>
               {link.label}
             </p>

@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ThumbsUp, MessageCircle, Crown, TrendingUp } from 'lucide-react';
+import { X, ThumbsUp, MessageCircle, Crown, Wand } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
@@ -39,21 +39,21 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
             <X size={24} />
           </button>
           
-          <h2 className="text-2xl sm:text-2xl font-bold text-center mb-4 sm:mb-6 text-gray-800 dark:text-white">
+          <h2 className="text-2xl sm:text-2xl font-bold text-center mb-4 sm:mb-6 text-gray-900 dark:text-white">
             What's In Your Top Five?
           </h2>
           <h3 className="text-lg sm:text-lg font-semibold text-center text-gray-700 dark:text-white">
             Join for full access. It's free!
           </h3>
           <p className="text-center text-sm sm:text-base text-gray-600 dark:text-gray-300 mb-6 sm:mb-8">
-            Discover and debate the best lists on any topic. Connect with like-minded friends and peers.
+            Where the best opinions are challenged. Connect with like-minded know-it-alls.
           </p>
           
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <Feature icon={<ThumbsUp className="text-pink-500" size={18} />} text="Like favorites" />
-            <Feature icon={<MessageCircle className="text-blue-500" size={18} />} text="Debate rankings" />
-            <Feature icon={<Crown className="text-purple-500" size={18} />} text="Challenge friends" />
-            <Feature icon={<TrendingUp className="text-green-500" size={18} />} text="Discover trends" />
+          <div className="grid grid-cols-2 gap-2 sm:gap-2 mb-4 sm:mb-6">
+            <Feature icon={<ThumbsUp className="text-pink-500" size={18} />} text="Like " />
+            <Feature icon={<MessageCircle className="text-blue-500" size={18} />} text="Debate " />
+            <Feature icon={<Crown className="text-purple-500" size={18} />} text="Challenge " />
+            <Feature icon={<Wand className="text-green-500" size={18} />} text="Create" />
           </div>
           
           <div className="space-y-3 sm:space-y-4">

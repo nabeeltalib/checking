@@ -25,9 +25,9 @@ const OnboardingPage = () => {
       <h1 className="text-3xl font-bold mb-6 text-center">Welcome to Topfived</h1>
       
       <div className="mb-10">
-        <h2 className="text-2xl font-semibold mb-4">Discover, Create, and Share Top 5 Lists</h2>
+        <h2 className="text-2xl font-semibold mb-4">Connect, Create, and Share The Best</h2>
         <p className="text-gray-600">
-          Join our community of list enthusiasts. Create, vote, and discuss 
+          Join our community of know it alls. Create, vote, and discuss 
           top 5 lists on any topic imaginable!
         </p>
       </div>

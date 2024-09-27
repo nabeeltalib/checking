@@ -139,7 +139,8 @@ const Home: React.FC = () => {
             </div>
           )}
           
-          <p className="text-base sm:text-xl font-light text-white mt-8">Discover and Debate Best Opinions On Everything</p>
+          <p className="text-base sm:text-xl font-light text-white mt-8">Where your world's best opinions are challenged.</p>
+          <p className="text-base sm:text-xl font-semibold text-white mt-8">Connect • Debate • Create</p>          
           </div>
       </header>      
 
