@@ -46,7 +46,7 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
             Join for full access. It's free!
           </h3>
           <p className="text-center text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-6 sm:mb-8">
-            Where your world's opinions get organized and challenged. Connect with like-minded know-it-alls.
+            Where your world's opinions get organized and challenged. Find Your Tribe: Follow Fellow Rankers
           </p>
           
           <div className="grid grid-cols-2 gap-2 sm:gap-2 mb-4 sm:mb-6">

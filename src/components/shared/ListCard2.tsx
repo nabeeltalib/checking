@@ -699,7 +699,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
             value={newComment}
             spellCheck={true} // Enable spellcheck here
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder={isReply ? "Write a reply..." : "Write a comment..."}
+            placeholder={isReply ? "Write a reply..." : "Agree? Disagree? Share your take!"}
             className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
             rows={1}
           />

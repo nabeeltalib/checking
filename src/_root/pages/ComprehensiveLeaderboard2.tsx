@@ -205,14 +205,14 @@ const ComprehensiveLeaderboard2 = () => {
         animate={{ opacity: 1, y: 0 }}
         className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-8 text-center text-light-1"
       >
-        Topfived Leaderboard
-      </motion.h1>
+       Climb the LeaderBoard: Where Your Rankings Reign Supreme
+       </motion.h1>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
-        className="flex flex-col sm:flex-row justify-between mb-4 sm:mb-8 gap-4"
+        className="flex flex-col sm:flex-row justify-between mb-4 sm:mb-8 gap-4 text-xs"
       >
         <div className="flex items-center bg-dark-2 rounded-lg p-2">
           <Calendar className="text-light-2 mr-2" />
@@ -270,7 +270,7 @@ const ComprehensiveLeaderboard2 = () => {
             key: "title",
             render: (item: any) => (
               <div className="flex items-center">
-                <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-sm sm:text-base" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
+                <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-xs sm:text-base" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
                   {item.title}
                 </Link>
               </div>

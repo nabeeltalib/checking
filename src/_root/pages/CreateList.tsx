@@ -17,7 +17,7 @@ const CreateList: React.FC = () => {
   const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user.id);
   const [listIdea, setListIdea] = useState<string | null>(null);
 
-  const handleCreateList = async (listData: IList) => {
+  const handleCreateList = async (listData: Omit<IList, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
       const transformedListData = {
         ...listData,
@@ -44,7 +44,7 @@ const CreateList: React.FC = () => {
       console.error('Error creating list:', error);
       toast({
         title: 'Error creating list',
-        description: 'An error occurred while creating the list. Please try again.',
+        description: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
         variant: 'destructive',
       });
     }
@@ -53,6 +53,13 @@ const CreateList: React.FC = () => {
   const handleGenerateIdea = () => {
     generateListIdea('Generate a list idea', {
       onSuccess: (idea) => setListIdea(idea),
+      onError: (error) => {
+        toast({
+          title: 'Error generating idea',
+          description: 'Failed to generate a list idea. Please try again.',
+          variant: 'destructive',
+        });
+      },
     });
   };
 
@@ -63,7 +70,7 @@ const CreateList: React.FC = () => {
       <div className="max-w-4x2 w-full bg-dark-1 rounded-xl p-4 shadow-lg space-y-6">
         <div>
           <h2 className="text-orange-300 font-extralight text-3xl text-left w-full mt-1" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-            Create your ranking, for anything!
+          Every List Sparks a Conversation. What's Your Next Top 5?
           </h2>
           <p className="text-base mt-2">
             Your opinion could be the best or most trusted, on any topic.
@@ -86,9 +93,8 @@ const CreateList: React.FC = () => {
             {isGeneratingIdea ? 'Generating Idea...' : 'Generate Title Ideas'}
           </button>
         </div>
-
         <ListForm
-          ontSubmit={handleCreateList}
+          onSubmit={handleCreateList}
           action="Create"
           initialIdea={listIdea}
         />

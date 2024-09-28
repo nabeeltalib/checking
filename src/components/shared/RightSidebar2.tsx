@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ThumbsUp, MessageSquare, MapPinned } from 'lucide-react';
-import { getMostLikedLists } from '@/lib/appwrite/api';
+import { ThumbsUp, MessageSquare, Lollipop } from 'lucide-react';
+import { getMostLikedLists, getPopularCategories } from '@/lib/appwrite/api';
 import { useGetComments } from '@/lib/react-query/queries';
 import { Button } from "@/components/ui/button";
 import SignInDialog from '@/components/shared/SignInDialog';
@@ -13,6 +13,8 @@ const RightSidebar2: React.FC = () => {
   const [displayedLists, setDisplayedLists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
+  const [popularCategories, setPopularCategories] = useState<any[]>([]);
+  const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
 
   // Assume you have an authentication context or state
   const isLoggedIn = false; // Replace with actual authentication logic
@@ -31,9 +33,21 @@ const RightSidebar2: React.FC = () => {
     }
   }, []);
 
+  const fetchPopularCategories = useCallback(async () => {
+    try {
+      const categories = await getPopularCategories();
+      setPopularCategories(categories);
+      setIsCategoriesLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch popular categories:', error);
+      setIsCategoriesLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchTrendingLists();
-  }, [fetchTrendingLists]);
+    fetchPopularCategories();
+  }, [fetchTrendingLists, fetchPopularCategories]);
 
   useEffect(() => {
     if (allTrendingLists.length > 0) {
@@ -66,50 +80,101 @@ const RightSidebar2: React.FC = () => {
         className="rightsidebar hidden lg:flex flex-col justify-between w-64 h-screen p-6 bg-dark-2 border-l border-dark-4 fixed right-0 top-20 shadow-xl overflow-y-auto"
       >
         <div className="flex flex-col gap-4">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-light-1 flex items-center">
-              <MapPinned className="mr-2" />
-              In Your Area
+          {/* Trending Lists Section */}
+          <div>
+            <h2 className="text-lg font-bold text-light-1 flex items-center mb-4">
+              Trending Near You: Join the Debate!
             </h2>
+            {loading ? (
+              <LoadingSkeleton />
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.ul
+                  key={displayedLists.map((list) => list.$id).join(',')}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="space-y-4"
+                >
+                  {displayedLists.map((list) => (
+                    <TrendingListItem
+                      key={list.$id}
+                      list={list}
+                      navigate={navigate}
+                      isLoggedIn={isLoggedIn}
+                      handleDialogOpen={handleDialogOpen}
+                    />
+                  ))}
+                </motion.ul>
+              </AnimatePresence>
+            )}
+            <button
+              className="text-md mt-6 text-blue-500 py-2 px-4 rounded-lg shadow-lg hover:bg-dark-4 transition-all w-full text-center"
+              onClick={() => {
+                if (isLoggedIn) {
+                  navigate('/trending');
+                } else {
+                  handleDialogOpen();
+                }
+              }}
+            >
+              View More Trending
+            </button>
           </div>
 
-          {loading ? (
-            <LoadingSkeleton />
-          ) : (
-            <AnimatePresence mode="wait">
-              <motion.ul
-                key={displayedLists.map((list) => list.$id).join(',')}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="space-y-4"
-              >
-                {displayedLists.map((list) => (
-                  <TrendingListItem
-                    key={list.$id}
-                    list={list}
-                    navigate={navigate}
-                    isLoggedIn={isLoggedIn}
-                    handleDialogOpen={handleDialogOpen}
-                  />
-                ))}
-              </motion.ul>
-            </AnimatePresence>
-          )}
-
-          <button
-            className="mt-6 text-blue-500 py-2 px-4 rounded-lg shadow-lg hover:bg-dark-4 transition-all"
-            onClick={() => {
-              if (isLoggedIn) {
-                navigate('/trending');
-              } else {
-                handleDialogOpen();
-              }
-            }}
-          >
-            View More Trending
-          </button>
+          {/* Popular Categories Section */}
+          <div className="mt-8">
+            <h2 className="text-lg font-bold text-light-1 flex items-center mb-4">
+              Popular Categories
+            </h2>
+            {isCategoriesLoading ? (
+              <CategoriesSkeleton />
+            ) : (
+              <AnimatePresence>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="flex flex-wrap gap-2"
+                >
+                  {popularCategories.slice(0, 2).map((category, index) => (
+                    <motion.div
+                      key={index}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        className="text-xs bg-dark-4 text-light-2 hover:bg-primary-500 hover:text-light-1 transition-all duration-300"
+                        onClick={() => {
+                          if (isLoggedIn) {
+                            navigate(`/categories/${category.name}`);
+                          } else {
+                            handleDialogOpen();
+                          }
+                        }}
+                      >
+                        {category.name}
+                      </Button>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            )}
+            <button
+              className="text-md mt-4 text-blue-500 py-2 px-4 rounded-lg shadow-lg hover:bg-dark-4 transition-all w-full text-center"
+              onClick={() => {
+                if (isLoggedIn) {
+                  navigate('/categories');
+                } else {
+                  handleDialogOpen();
+                }
+              }}
+            >
+              Explore All Categories
+            </button>
+          </div>
         </div>
 
         <div className="text-xs text-gray-400 text-center absolute bottom-20 left-0 right-0 p-4">
@@ -189,6 +254,17 @@ const LoadingSkeleton: React.FC = () => (
           <div className="h-3 bg-dark-4 rounded w-1/4"></div>
         </div>
       </div>
+    ))}
+  </div>
+);
+
+const CategoriesSkeleton: React.FC = () => (
+  <div className="flex flex-wrap gap-2">
+    {[...Array(4)].map((_, index) => (
+      <div
+        key={index}
+        className="h-8 w-24 bg-dark-3 rounded-full animate-pulse"
+      ></div>
     ))}
   </div>
 );

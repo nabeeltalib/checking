@@ -175,15 +175,15 @@ const ComprehensiveLeaderboard = () => {
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-8 text-center text-light-1"
+        className="text-xl sm:text-4xl font-bold mb-7 sm:mb-8 text-center text-light-1"
       >
-        Topfived Leaderboard
+       Climb the LeaderBoard: Where Your Rankings Reign Supreme
       </motion.h1>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row justify-between mb-4 sm:mb-8 gap-4"
+        className="flex flex-col sm:flex-row justify-between mb-4 sm:mb-8 gap-4 text-xs"
       >
         <div className="flex items-center">
           <label className="mr-2 font-semibold text-light-2">Time Frame:</label>

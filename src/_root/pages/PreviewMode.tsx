@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { getPublicLists } from '@/lib/appwrite/api';
 import ListCard from '@/components/shared/ListCard';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, LampDesk } from 'lucide-react';
+import { Search, LampDesk, Sparkles } from 'lucide-react';
 import MobileTrendingSlider from '@/components/shared/MobileTrendingSlider';
 import Bottombar2 from '@/components/shared/Bottombar2';
 import SignInDialog from '@/components/shared/SignInDialog';
@@ -97,6 +97,15 @@ const PreviewMode: React.FC = () => {
   const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { ref, inView } = useInView();
+  const [searchPrompt, setSearchPrompt] = useState<string>("");
+
+  const prompts = useMemo(() => [
+    "Movies That Changed Your Life?",
+    "Best Pizza Toppings of All Time?",
+    "Your Bucket List Destinations?",
+    "Most Influential Books You've Read?",
+    "Tech Gadgets You Can't Live Without?",
+  ], []);
 
   const {
     data: lists,
@@ -120,7 +129,6 @@ const PreviewMode: React.FC = () => {
   );
 
   useEffect(() => {
-    // Scroll to the top of the page when the component is mounted
     window.scrollTo(0, 0);
   }, []);
 
@@ -129,6 +137,18 @@ const PreviewMode: React.FC = () => {
       fetchNextPage();
     }
   }, [inView, fetchNextPage, hasNextPage]);
+
+  useEffect(() => {
+    const rotatePrompts = () => {
+      const randomIndex = Math.floor(Math.random() * prompts.length);
+      setSearchPrompt(prompts[randomIndex]);
+    };
+
+    rotatePrompts(); // Set initial prompt
+    const intervalId = setInterval(rotatePrompts, 5000); // Change every 5 seconds
+
+    return () => clearInterval(intervalId);
+  }, [prompts]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -147,27 +167,44 @@ const PreviewMode: React.FC = () => {
     <div className="mt-4 w-full items-center bg-dark-1 min-h-screen pb-20">
       <header className="w-full bg-dark-1 py-4">
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <div className="text-2xl md:text-4xl text-orange-600 font-bold mb-2 mt-6">
+          <div className="text-2xl md:text-4xl text-orange-300 font-bold mb-2 mt-6">
             <span>What's In Your Top Five?</span>
           </div>
           <p className="text-base sm:text-xl font-light text-white mt-8">Where your world's opinions get organized and challenged.</p>
-          <p className="text-base sm:text-xl font-semibold text-white mt-8">Connect • Debate • Create</p>
+          <p className="text-base sm:text-xl font-semibold text-white mt-8">Connect • Share • Debate</p>
         </div>
       </header>
 
-      {/* Sticky Search Bar */}
+      {/* Redesigned Sticky Search Bar */}
       <div className="sticky top-[calc(4rem)] z-10 w-full bg-dark-1 shadow-md my-4">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative flex-grow">
-            <input
-              type="text"
-              placeholder="Search for better opinions..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              className="w-full bg-gray-700 text-gray-200 pl-10 pr-4 py-2 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-            />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
+        <div className="max-w-3xl mx-auto px-4 py-3">
+          <div className="bg-gray-800 rounded-full overflow-hidden shadow-lg mb-2">
+            <div className="flex items-center px-4 py-2">
+              <Search className="text-gray-400 mr-3" size={20} />
+              <input
+                type="text"
+                placeholder="Search rankings, titles, or tags ..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="bg-transparent text-gray-200 w-full focus:outline-none"
+              />
+            </div>
           </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={searchPrompt}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.5 }}
+              className="flex items-center justify-center space-x-2 h-6" // Fixed height to prevent layout shift
+            >
+              <Sparkles className="text-yellow-400" size={16} />
+              <p className="text-primary-500 text-sm font-medium">
+                What's Your Top 5: {searchPrompt}
+              </p>
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 

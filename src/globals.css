@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 @import url('https://fonts.googleapis.com/css2?family=Racing+Sans+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
 
 @tailwind base;
@@ -426,4 +427,12 @@
 
 .custom-scrollbar::-webkit-scrollbar-track {
   background-color: #1a1a1a; /* Track color (matches the dark theme) */
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+input::placeholder {
+  color: #9CA3AF;
 }
