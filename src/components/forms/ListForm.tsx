@@ -112,6 +112,9 @@ const MultiSelect: React.FC<{
 }> = ({ options, selected, onChange, onAdd, placeholder }) => {
   const [inputValue, setInputValue] = useState("");
 
+  // Ensure options are unique
+  const uniqueOptions = Array.from(new Set(options));
+
   const handleSelect = (e: React.MouseEvent, item: string) => {
     e.preventDefault(); // Prevent form submission
     if (selected.includes(item)) {
@@ -123,7 +126,7 @@ const MultiSelect: React.FC<{
 
   const handleAddNew = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent form submission
-    if (inputValue && !options.includes(inputValue)) {
+    if (inputValue && !uniqueOptions.includes(inputValue)) {
       onAdd(inputValue);
       onChange([...selected, inputValue]);
       setInputValue("");
@@ -133,9 +136,9 @@ const MultiSelect: React.FC<{
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2 p-2 bg-dark-3 rounded-md min-h-[100px]">
-        {options.map((item) => (
+        {uniqueOptions.map((item, index) => (
           <motion.button
-            key={item}
+            key={`${item}-${index}`} // Ensure unique key by combining item and index
             onClick={(e) => handleSelect(e, item)}
             type="button" // Explicitly set button type to "button"
             className={`px-3 py-1 rounded-full text-sm ${
@@ -155,12 +158,12 @@ const MultiSelect: React.FC<{
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder={placeholder}
-          className="flex-grow bg-dark-2 text-light-1 border-none"
+          className="flex-grow bg-dark-4 text-light-1 border-none"
         />
         <Button
           type="button" // Explicitly set button type to "button"
           onClick={handleAddNew}
-          className="bg-primary-500 text-white hover:bg-primary-600"
+          className="text-xs bg-primary-500 text-white hover:bg-primary-600"
         >
           Add New
         </Button>
@@ -168,6 +171,7 @@ const MultiSelect: React.FC<{
     </div>
   );
 };
+
 
 const ListForm = ({ list, action, initialData }: any) => {
   const { user } = useUserContext();
@@ -263,19 +267,19 @@ const ListForm = ({ list, action, initialData }: any) => {
     const fetchData = async () => {
       try {
         const fetchedCategories = await getCategories();
-        const sortedCategories = fetchedCategories
-          .map((cat) => cat.name)
-          .sort();
-        setCategories(sortedCategories);
+        // Extract category names
+        const categoryNames = fetchedCategories.map((cat) => cat.name);
+        // Remove duplicates using a Set
+        const uniqueCategories = Array.from(new Set(categoryNames)).sort();
+        setCategories(uniqueCategories);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("Failed to fetch data. Please try again later.");
       }
     };
-
+  
     fetchData();
   }, []);
-
   const handleSubmit = async (value: z.infer<typeof formSchema>) => {
     // Check if the form is actually ready to be submitted
     if (!value.Title || value.items.length < 3) {
@@ -456,7 +460,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                 name="Title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-lg font-semibold">What's your title?</FormLabel>
+                    <FormLabel className="text-lg font-light">What's your title?</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter a title e.g. Chicago HS Basketball Players, Innovations That Will Shape the Future"
@@ -482,7 +486,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                 name="timespans"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-lg font-semibold">Any time frame?</FormLabel>
+                    <FormLabel className="text-lg font-light">Any time frame?</FormLabel>
                     <FormControl>
                       <MultiSelect
                         options={timespans}
@@ -505,7 +509,7 @@ const ListForm = ({ list, action, initialData }: any) => {
               name="locations"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-lg font-semibold">Any location?</FormLabel>
+                  <FormLabel className="text-lg font-light">Any location?</FormLabel>
                   <FormControl>
                     <MultiSelect
                       options={locations}
@@ -527,114 +531,113 @@ const ListForm = ({ list, action, initialData }: any) => {
 
           {/* List Items Section */}
           <FormSection
-            title="List Items*"
-            tooltip="Add your ranked items here. You can drag and drop to reorder them. The more specific and unique your items, the better!"
-          >
-            <FormItem>
-              <FormLabel className="text-lg font-semibold">How long is your ranking?</FormLabel>
-              <div className="flex gap-2">
-                {[3, 5, 10].map((count) => (
-                  <Button
-                    key={count}
-                    type="button"
-                    onClick={() => handleItemCountChange(count.toString())}
-                    className={`text-sm px-4 py-2 rounded-md ${
-                      form.getValues("items").length === count
-                        ? "bg-blue-800 text-white"
-                        : "bg-dark-4 text-light-2 hover:bg-dark-3"
-                    }`}
-                  >
-                    Top {count}
-                  </Button>
-                ))}
-              </div>
-            </FormItem>
-
-            <div className="flex justify-between items-center mt-4">
-              <span className="text-sm text-light-2">Based on your title, time frame, or location details</span>
-              <Button
-                type="button"
-                onClick={handleGenerateListItems}
-                disabled={isGeneratingItems}
-                className="bg-primary-500 text-white hover:bg-primary-600 text-sm px-4 py-2 rounded-md"
-              >
-                {isGeneratingItems ? "Generating..." : "Get AI Item Suggestions"}
-              </Button>
+          title="List Items*"
+          tooltip="Add your ranked items here. You can drag and drop to reorder them. The more specific and unique your items, the better!"
+        >
+          <FormItem>
+            <FormLabel className="text-lg font-light">What's the length of your knowledge?</FormLabel>
+            <div className="flex gap-2">
+              {[3, 5, 10].map((count) => (
+                <Button
+                  key={count}
+                  type="button"
+                  onClick={() => handleItemCountChange(count.toString())}
+                  className={`text-sm px-4 py-2 rounded-md ${
+                    form.getValues("items").length === count
+                      ? "bg-blue-800 text-white"
+                      : "bg-dark-4 text-light-2 hover:bg-dark-3"
+                  }`}
+                >
+                  Top {count}
+                </Button>
+              ))}
             </div>
+          </FormItem>
 
-            {showUndoButton && (
-              <Button
-                type="button"
-                onClick={handleUndo}
-                className="w-full mt-2 bg-dark-4 text-light-1 hover:bg-dark-3"
-              >
-                Undo Generated Items
-              </Button>
-            )}
-
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
+          <div className="flex justify-between items-center mt-4">
+            <span className="text-sm text-gray-400">Based on your title, time frame, or location details</span>
+            <Button
+              type="button"
+              onClick={handleGenerateListItems}
+              disabled={isGeneratingItems}
+              className="bg-primary-500 text-white hover:bg-primary-600 text-sm px-4 py-2 rounded-md"
             >
-              <SortableContext
-                items={fields.map((field) => field.id)}
-                strategy={verticalListSortingStrategy}
-              >
-                {fields.map((field, index) => (
-                  <SortableItem key={field.id} id={field.id}>
-                    <div className="flex items-center mb-2 bg-dark-3 p-3 rounded-md">
-                      <GripVertical className="mr-2 text-light-3" size={20} />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.content`}
-                        render={({ field }) => (
-                          <FormItem className="flex-grow mr-2">
-                            <FormControl>
-                              <Input
-                                placeholder={`Enter #${index + 1} ranked item`}
-                                {...field}
-                                className="text-sm w-full bg-dark-2 text-light-1 border-none"
-                                spellCheck={true}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name={`items.${index}.isVisible`}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <input
-                                type="checkbox"
-                                {...field}
-                                checked={field.value}
-                                className="mr-2"
-                                aria-label={`Make item ${index + 1} visible`}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </SortableItem>
-                ))}
-              </SortableContext>
-            </DndContext>
+              {isGeneratingItems ? "Generating..." : "Get AI Item Suggestions"}
+            </Button>
+          </div>
 
-            {fields.length < 10 && (
-              <Button
-                type="button"
-                onClick={() => append({ content: "", isVisible: true, id: "", creator: "" })}
-                aria-label="Add new item"
-                className="mt-4 bg-dark-4 text-light-1 hover:bg-dark-3"
-              >
-                Add Row
-              </Button>
-            )}
-          </FormSection>
+          {showUndoButton && (
+            <Button
+              type="button"
+              onClick={handleUndo}
+              className="w-full mt-2 bg-dark-4 text-light-1 hover:bg-dark-3"
+            >
+              Undo Generated Items
+            </Button>
+          )}
+
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={fields.map((field) => field.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {fields.map((field, index) => (
+              <SortableItem key={field.id} id={field.id} onDelete={() => remove(index)}>
+                <div className="flex-grow flex items-center">
+                  <FormField
+                    control={form.control}
+                    name={`items.${index}.content`}
+                    render={({ field }) => (
+                      <FormItem className="flex-grow mr-2">
+                        <FormControl>
+                          <Input
+                            placeholder={`Enter #${index + 1} ranked item`}
+                            {...field}
+                            className="text-sm w-full bg-dark-2 text-light-1 border-none"
+                            spellCheck={true}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`items.${index}.isVisible`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <input
+                            type="checkbox"
+                            {...field}
+                            checked={field.value}
+                            className="mr-2"
+                            aria-label={`Make item ${index + 1} visible`}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </SortableItem>
+              ))}
+            </SortableContext>
+          </DndContext>
+
+          {fields.length < 10 && (
+            <Button
+              type="button"
+              onClick={() => append({ content: "", isVisible: true, id: "", creator: "" })}
+              aria-label="Add new item"
+              className="mt-4 bg-dark-4 text-light-1 hover:bg-dark-3"
+            >
+              Add Row
+            </Button>
+          )}
+        </FormSection>       
 
           {/* Additional Details Section */}
           <FormSection
