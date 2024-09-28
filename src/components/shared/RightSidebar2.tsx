@@ -110,7 +110,7 @@ const RightSidebar2: React.FC = () => {
               </AnimatePresence>
             )}
             <button
-              className="text-md mt-6 text-blue-500 py-2 px-4 rounded-lg shadow-lg hover:bg-dark-4 transition-all w-full text-center"
+              className="text-sm text-blue-500 py-2 rounded-lg shadow-lg hover:bg-dark-4 transition-all w-full text-left"
               onClick={() => {
                 if (isLoggedIn) {
                   navigate('/trending');
@@ -124,7 +124,7 @@ const RightSidebar2: React.FC = () => {
           </div>
 
           {/* Popular Categories Section */}
-          <div className="mt-8">
+          <div className="mt-14">
             <h2 className="text-lg font-bold text-light-1 flex items-center mb-4">
               Popular Categories
             </h2>
@@ -139,14 +139,14 @@ const RightSidebar2: React.FC = () => {
                   transition={{ duration: 0.5 }}
                   className="flex flex-wrap gap-2"
                 >
-                  {popularCategories.slice(0, 2).map((category, index) => (
+                  {popularCategories.slice(0, 5).map((category, index) => (
                     <motion.div
                       key={index}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       <Button
-                        className="text-xs bg-dark-4 text-light-2 hover:bg-primary-500 hover:text-light-1 transition-all duration-300"
+                        className="text-[10px] bg-dark-4 text-light-2 hover:bg-primary-500 hover:text-light-1 transition-all duration-300"
                         onClick={() => {
                           if (isLoggedIn) {
                             navigate(`/categories/${category.name}`);
@@ -163,7 +163,7 @@ const RightSidebar2: React.FC = () => {
               </AnimatePresence>
             )}
             <button
-              className="text-md mt-4 text-blue-500 py-2 px-4 rounded-lg shadow-lg hover:bg-dark-4 transition-all w-full text-center"
+              className="text-sm mt-4 text-blue-500 py-2 px- rounded-lg shadow-lg hover:bg-dark-4 transition-all w-full text-left"
               onClick={() => {
                 if (isLoggedIn) {
                   navigate('/categories');
@@ -223,12 +223,12 @@ const TrendingListItem: React.FC<TrendingListItemProps> = ({
 
   return (
     <motion.li
-      className="bg-dark-3 rounded-lg p-4 shadow hover:bg-dark-4 transition-all cursor-pointer"
+      className="bg-dark-3 rounded-lg p-2 shadow hover:bg-dark-4 transition-all cursor-pointer"
       whileHover={{ y: -3 }}
       onClick={handleClick}
     >
-      <h3 className="text-yellow-200 text-sm font-semibold truncate">{list.Title}</h3>
-      <p className="text-xs text-gray-400 truncate">by {list.creator.Name}</p>
+      <h3 className="text-yellow-200 text-xs font-semibold truncate">{list.Title}</h3>
+      <p className="text-[10px] text-gray-400 truncate">by {list.creator.Name}</p>
       <div className="flex items-center mt-2 space-x-4">
         <div className="flex items-center text-xs text-gray-400">
           <ThumbsUp size={14} className="mr-1 text-red-500" />

@@ -100,11 +100,16 @@ const PreviewMode: React.FC = () => {
   const [searchPrompt, setSearchPrompt] = useState<string>("");
 
   const prompts = useMemo(() => [
-    "Movies That Changed Your Life?",
-    "Best Pizza Toppings of All Time?",
-    "Your Bucket List Destinations?",
-    "Most Influential Books You've Read?",
-    "Tech Gadgets You Can't Live Without?",
+    "Movies that Changed my life?",
+    "Best pizza in the bay area?",
+    "Bucket list destinations in asia?",
+    "Most influential books of this year?",
+    "Athletes at Westminster high school?",
+    "Concerts in Chicago?",
+    "Street foods in Bangkok's night markets?",
+    "Hikes in the Pacific Northwest?",
+    "Artists shaping Austin's music scene?",
+    "Hidden gems at the Dogwood Festival?",
   ], []);
 
   const {
@@ -145,7 +150,7 @@ const PreviewMode: React.FC = () => {
     };
 
     rotatePrompts(); // Set initial prompt
-    const intervalId = setInterval(rotatePrompts, 5000); // Change every 5 seconds
+    const intervalId = setInterval(rotatePrompts, 2000); // Change every 5 seconds
 
     return () => clearInterval(intervalId);
   }, [prompts]);
@@ -170,6 +175,20 @@ const PreviewMode: React.FC = () => {
           <div className="text-2xl md:text-4xl text-orange-300 font-bold mb-2 mt-6">
             <span>What's In Your Top Five?</span>
           </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={searchPrompt}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.5 }}
+              className="flex items-center justify-center space-x-2 h-6" // Fixed height to prevent layout shift
+            >
+              <p className="text-primary-500 text-sm font-medium">
+                {searchPrompt}
+              </p>
+            </motion.div>
+          </AnimatePresence>
           <p className="text-base sm:text-xl font-light text-white mt-8">Where your world's opinions get organized and challenged.</p>
           <p className="text-base sm:text-xl font-semibold text-white mt-8">Connect • Share • Debate</p>
         </div>
@@ -190,21 +209,7 @@ const PreviewMode: React.FC = () => {
               />
             </div>
           </div>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={searchPrompt}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.5 }}
-              className="flex items-center justify-center space-x-2 h-6" // Fixed height to prevent layout shift
-            >
-              <Sparkles className="text-yellow-400" size={16} />
-              <p className="text-primary-500 text-sm font-medium">
-                What's Your Top 5: {searchPrompt}
-              </p>
-            </motion.div>
-          </AnimatePresence>
+          
         </div>
       </div>
 
