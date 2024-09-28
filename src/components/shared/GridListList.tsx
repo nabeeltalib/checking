@@ -32,7 +32,10 @@ const GridListList: React.FC<GridListListProps> = ({
 }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  if (!lists || lists.length === 0) {
+  // Filter out lists that no longer exist (assuming the list is undefined when removed from the database)
+  const filteredLists = lists.filter((item) => item && item.$id);
+
+  if (!filteredLists || filteredLists.length === 0) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -40,9 +43,7 @@ const GridListList: React.FC<GridListListProps> = ({
         transition={{ duration: 0.5 }}
         className="text-center p-8 bg-dark-4 rounded-lg shadow-md"
       >
-        <p className="text-light-2 mb-4">
-          You haven't created any lists yet.
-        </p>
+        <p className="text-light-2 mb-4">You haven't created any lists yet.</p>
         <Link
           to="/create-list"
           className="inline-block bg-primary-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-600 transition-colors duration-300"
@@ -55,9 +56,9 @@ const GridListList: React.FC<GridListListProps> = ({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-      {lists.map((item) => (
+      {filteredLists.map((item) => (
         <motion.div
-          key={item.$id}
+          key={item.$id} // Ensure each item has a unique key based on its ID
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -92,33 +93,34 @@ const GridListList: React.FC<GridListListProps> = ({
               {item.Title}
             </h3>
             <ul className="mb-3 text-light-2 text-xs space-y-1">
-              {item.items.slice(0, 3).map((listItem, index) => (
-                <li key={index} className="flex items-center">
+              {(item.items || []).slice(0, 3).map((listItem, index) => (
+                <li key={listItem.id || index} className="flex items-center">
                   <span className="mr-2 text-yellow-500 font-semibold">
                     {index + 1}
                   </span>
                   <span className="line-clamp-1">
-                    {typeof listItem === "string" ? listItem : listItem.content}
+                    {typeof listItem === "string"
+                      ? listItem
+                      : listItem.content}
                   </span>
                 </li>
               ))}
             </ul>
-            {item.items.length > 3 && (
+            {item.items && item.items.length > 3 && (
               <p className="text-primary-500 text-xs font-semibold">
                 +{item.items.length - 3} more items
               </p>
             )}
-            <div className="flex flex-wrap gap-2 mt-3 ">
-              {item.Tags &&
-                item.Tags.slice(0, 3).map((tag, index) => (
-                  <span
-                    key={`${tag}-${index}`}
-                    className="flex items-center text-blue-300 rounded-full px-3 py-1 text-xs"
-                  >
-                    <Tag size={12} className="mr-1" />
-                    {tag}
-                  </span>
-                ))}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {(item.Tags || []).slice(0, 3).map((tag, index) => (
+                <span
+                  key={`${tag}-${index}`}
+                  className="flex items-center text-blue-300 rounded-full px-3 py-1 text-xs"
+                >
+                  <Tag size={12} className="mr-1" />
+                  {tag}
+                </span>
+              ))}
               {item.Tags && item.Tags.length > 3 && (
                 <span className="text-light-1 rounded-full px-3 py-1 text-xs">
                   +{item.Tags.length - 3}
@@ -157,9 +159,9 @@ const GridListList: React.FC<GridListListProps> = ({
                   </motion.button>
                 </motion.div>
               )}
-            </AnimatePresence>          
-            </Link>
-          
+            </AnimatePresence>
+          </Link>
+
           {showStats && (
             <div className="px-4 py-3 bg-dark-4 flex justify-between items-center border-t border-dark-2">
               <motion.button

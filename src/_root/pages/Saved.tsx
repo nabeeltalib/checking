@@ -8,8 +8,9 @@ import { Bookmark, AlertCircle, Frown } from 'lucide-react';
 const Saved: React.FC = () => {
   const { data: currentUser, isLoading, error } = useGetCurrentUser();
 
+  // Filter out any saved lists that are null or no longer exist
   const savedLists = useMemo(
-    () => currentUser?.save?.map((savedItem: any) => savedItem?.list || {}) || [],
+    () => currentUser?.save?.filter((savedItem: any) => savedItem?.list && savedItem.list.$id) || [],
     [currentUser?.save]
   );
 
@@ -105,14 +106,14 @@ const Saved: React.FC = () => {
               className="grid grid-cols-1 md:grid-cols-2 gap-6"
               variants={containerVariants}
             >
-              {savedLists.map((list: any) => (
+              {savedLists.map((savedItem: any) => (
                 <motion.div
-                  key={list.$id}
+                  key={savedItem.list.$id}  // Moved the comment above the key prop
                   variants={itemVariants}
                   className="bg-dark-2 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
-                  whileHover={{ y: -5 }}
+                  whileHover={{ y: -5 }}  // Properly placed whileHover prop
                 >
-                  <ListCard2 list={list} />
+                  <ListCard2 list={savedItem.list} />
                 </motion.div>
               ))}
             </motion.div>
