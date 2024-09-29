@@ -140,9 +140,9 @@ const UpdateProfile: React.FC = () => {
       <div className="common-container max-w-3xl mx-auto">
         <div className="flex-start gap-3 justify-start w-full mb-8">
           <User size={36} className="text-primary-500" />
-          <h2 className="h3-bold md:h2-bold text-left w-full text-light-1">Edit Your Profile</h2>         
+          <h2 className="h3-bold md:h2-bold text-left w-full text-light-1">Welcome to Topfived! Let's Set Up Your Profile</h2>         
         </div>
-        <p className="text-light-2 text-center mb-8">Complete your profile to get the most out of your experience.</p>
+        <p className="text-light-2 text-center mb-8">Personalize your profile to connect with like-minded rankers and start sharing your top picks!</p>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleUpdate)}
@@ -171,7 +171,7 @@ const UpdateProfile: React.FC = () => {
                 <FormItem>
                   <FormLabel className="text-light-2 flex items-center">
                     <User size={18} className="mr-2" />
-                    Name
+                    What should we call you?
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -194,7 +194,7 @@ const UpdateProfile: React.FC = () => {
                 <FormItem>
                   <FormLabel className="text-light-2 flex items-center">
                     <AtSign size={18} className="mr-2" />
-                    Username
+                    Choose a unique @handle for your rankings
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -240,7 +240,7 @@ const UpdateProfile: React.FC = () => {
                 <FormItem>
                   <FormLabel className="text-light-2 flex items-center">
                     <FileText size={18} className="mr-2" />
-                    Bio
+                    Tell the community what you're passionate about ranking (150 characters max)
                   </FormLabel>
                   <FormControl>
                     <Textarea

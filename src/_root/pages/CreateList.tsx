@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+// src/components/CreateList.tsx
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCreateList, useGenerateListIdea } from '@/lib/react-query/queries';
 import { useToast } from '@/components/ui/use-toast';
@@ -16,6 +18,11 @@ const CreateList: React.FC = () => {
   const { mutateAsync: createList, isLoading } = useCreateList(user.id);
   const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user.id);
   const [listIdea, setListIdea] = useState<string | null>(null);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleCreateList = async (listData: Omit<IList, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
@@ -70,7 +77,7 @@ const CreateList: React.FC = () => {
       <div className="max-w-4x2 w-full bg-dark-1 rounded-xl p-4 shadow-lg space-y-6">
         <div>
           <h2 className="text-orange-300 font-extralight text-3xl text-left w-full mt-1" style={{ fontFamily: "'Permanent Marker', cursive" }}>
-          Every List Sparks a Conversation. What's Your Next Top 5?
+            Every List Sparks a Conversation. What's Your Next Top 5?
           </h2>
           <p className="text-base mt-2">
             Your opinion could be the best or most trusted, on any topic.
@@ -84,7 +91,7 @@ const CreateList: React.FC = () => {
         )}
           
         <div className="text-right space-y-2">
-          <p className="italic text-base text-blue-300">Need inspiration?</p>
+          <p className="italic text-base text-blue-300">Stuck? Click for trending topics and ideas!</p>
           <button
             className="bg-primary-500 text-xs text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors"
             onClick={handleGenerateIdea}

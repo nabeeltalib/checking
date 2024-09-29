@@ -225,7 +225,7 @@ const Profile: React.FC = () => {
                     <p className="text-yellow-500 text-sm mt-1">Private Profile</p>
                   )}
                   <p className="text-light-2 mt-2 max-w-md">
-                    {currentUser.Bio || "No bio available"}
+                    {currentUser.Bio || "Add a bio to tell the world about yourself"}
                   </p>
                 </div>
                 <div className="flex gap-2 mt-4 sm:mt-0">
@@ -394,7 +394,7 @@ const Profile: React.FC = () => {
                       className="text-2xl font-bold text-light-1 mb-4 cursor-pointer flex items-center"
                       onClick={() => setCuratedExpanded(!isCuratedExpanded)}
                     >
-                      Rankings
+                      My Rankings
                       <ChevronDown 
                         size={24}
                         className={`ml-2 transition-transform duration-300 ${isCuratedExpanded ? 'rotate-180' : ''}`}
@@ -436,7 +436,7 @@ const Profile: React.FC = () => {
                         transition={{ duration: 0.3 }}
                       >
                         {savedLists.length === 0 ? (
-                          <p className="text-light-4">No saved rankings</p>
+                          <p className="text-light-4">Save interesting rankings here for quick access</p>
                         ) : (
                           <GridListList lists={savedLists} showStats={false} />
                         )}

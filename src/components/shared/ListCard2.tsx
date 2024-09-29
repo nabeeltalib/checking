@@ -1,3 +1,5 @@
+// src/components/ListCard2.tsx
+
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -84,7 +86,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const [isReply, setIsReply] = useState(false);
   const [commentId, setCommentId] = useState("");
   const { data: comments } = useGetComments(list?.$id);
-  const { mutate: createComment } = useCreateComment();
+  const { mutate: createComment, isLoading: isSubmittingComment } = useCreateComment();
 
   const { user } = useUserContext();
   const { id } = user;
@@ -120,8 +122,8 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
           setConnection(ProfileConnection[0] || undefined);
 
           let commonConnection: any[] = [],
-            remainingConnection: any[] = [],
-            displayConnection: any[] = [];
+              remainingConnection: any[] = [],
+              displayConnection: any[] = [];
 
           if (ProfileConnection?.length > 0 && ProfileViewerConnection?.length > 0) {
             commonConnection = ProfileConnection[0]?.follower.filter(
@@ -235,7 +237,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     try {
       if (isSaved) {
         const savedListRecord = currentUser.save?.find(
-          (record: Models.Document) => record.list?.$id === list.$id
+          (record: any) => record.list?.$id === list.$id
         );
         if (savedListRecord) {
           await deleteSaveList(savedListRecord.$id);
@@ -367,30 +369,37 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       ));
   }, [list?.items, isExpanded]);
 
-  const handleCommentSubmit = async (commentContent: string) => {
+  const handleCommentSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newComment.trim() === "") return;
+
     try {
-      const newComment = await createComment({
+      const newCommentData = await createComment({
         listId: list.$id,
         userId: user.id,
-        Content: commentContent,
+        Content: newComment,
       });
 
-      if (newComment) {
-        // Update the list of comments
-        setComments(prevComments => [...prevComments, newComment]);
-        
-        // Clear the comment input
-        setNewComment('');
-        
-        toast({ title: "Comment Posted", description: "Your comment has been added successfully." });
+      if (newCommentData) {
+        // Optionally, you can optimistically update comments if desired
+        setNewComment("");
+        toast({
+          title: "Comment Posted",
+          description: "Your comment has been added successfully.",
+          variant: "default",
+        });
       }
     } catch (error) {
       console.error("Failed to post comment:", error);
-      toast({ title: "Comment Failed", description: "Unable to post comment. Please try again.", variant: "destructive" });
+      toast({
+        title: "Comment Failed",
+        description: "Unable to post comment. Please try again.",
+        variant: "destructive",
+      });
     }
-  };
+  }, [createComment, list.$id, user.id, newComment, toast]);
 
-  const renderComments = () => {
+  const renderComments = useCallback(() => {
     if (!comments || comments.length === 0) {
       return (
         <p className="text-light-3 text-xs">
@@ -430,7 +439,8 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         )}
       </>
     );
-  };
+  }, [comments, navigate, list.$id]);
+
   if (!list) return null;
 
   return (
@@ -633,7 +643,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       {/* Actions */}
       <div className="px-6 py-4 flex justify-between items-center text-light-2 text-xs">
         <div className="flex items-center space-x-1">
-          <Tooltip content={hasLiked ? "Love it" : "Love it"}>
+        <Tooltip content={hasLiked ? "Love it" : "Love it"}>
             <Button
               onClick={handleLikeList}
               className={`p-1 rounded-full transition-colors duration-300 ${
@@ -702,10 +712,11 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
             placeholder={isReply ? "Write a reply..." : "Agree? Disagree? Share your take!"}
             className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
             rows={1}
+            disabled={isSubmittingComment} // Disable textarea while submitting
           />
           <div className="mt-2 flex items-center">
-            <Button type="submit" variant="default">
-              {isReply ? "Post Reply" : "Post Comment"}
+            <Button type="submit" className="flex items-center" disabled={isSubmittingComment}>
+              {isSubmittingComment ? <Loader size="small" /> : "Post Comment"}
             </Button>
             {isReply && (
               <Button

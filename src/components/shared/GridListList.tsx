@@ -43,7 +43,7 @@ const GridListList: React.FC<GridListListProps> = ({
         transition={{ duration: 0.5 }}
         className="text-center p-8 bg-dark-4 rounded-lg shadow-md"
       >
-        <p className="text-light-2 mb-4">You haven't created any lists yet.</p>
+        <p className="text-light-2 mb-4">Your ranking journey starts here! What's your first top 5?</p>
         <Link
           to="/create-list"
           className="inline-block bg-primary-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-600 transition-colors duration-300"

@@ -452,7 +452,7 @@ const ListForm = ({ list, action, initialData }: any) => {
           <div className="space-y-8">
             {/* Basic Info Section */}
             <FormSection
-              title="Basic Info*"
+              title="Let's Start Your List*"
               tooltip="Enter a catchy title for your list. Make it descriptive and engaging to attract more viewers!"
             >
               <FormField
@@ -463,7 +463,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                     <FormLabel className="text-lg font-light">What's your title?</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="Enter a title e.g. Chicago HS Basketball Players, Innovations That Will Shape the Future"
+                        placeholder="e.g., Top 5 Pizza Spots in Chicago, Most Underrated 90s Movies"
                         {...field}
                         className="text-md w-full bg-dark-4 text-light-1 border-none p-3"
                         spellCheck={true}
@@ -477,7 +477,7 @@ const ListForm = ({ list, action, initialData }: any) => {
 
             {/* Time & Location Section */}
             <FormSection
-              title="Time & Location"
+              title="Set the Scene (optional)"
               tooltip="Specify when and where your list is relevant. This helps contextualize your ranking and makes it more discoverable."
               isExpandable
             >
@@ -486,7 +486,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                 name="timespans"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-lg font-light">Any time frame?</FormLabel>
+                    <FormLabel className="text-lg font-light">When does this list apply?</FormLabel>
                     <FormControl>
                       <MultiSelect
                         options={timespans}
@@ -509,7 +509,7 @@ const ListForm = ({ list, action, initialData }: any) => {
               name="locations"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-lg font-light">Any location?</FormLabel>
+                  <FormLabel className="text-lg font-light">Where does this list focus on?</FormLabel>
                   <FormControl>
                     <MultiSelect
                       options={locations}
@@ -531,11 +531,11 @@ const ListForm = ({ list, action, initialData }: any) => {
 
           {/* List Items Section */}
           <FormSection
-          title="List Items*"
+          title="Rank Your Top Picks*"
           tooltip="Add your ranked items here. You can drag and drop to reorder them. The more specific and unique your items, the better!"
         >
           <FormItem>
-            <FormLabel className="text-lg font-light">What's the length of your knowledge?</FormLabel>
+            <FormLabel className="text-lg font-light">How deep does your ranking go?</FormLabel>
             <div className="flex gap-2">
               {[3, 5, 10].map((count) => (
                 <Button
@@ -554,15 +554,15 @@ const ListForm = ({ list, action, initialData }: any) => {
             </div>
           </FormItem>
 
-          <div className="flex justify-between items-center mt-4">
-            <span className="text-sm text-gray-400">Based on your title, time frame, or location details</span>
+          <div className="flex justify-between items-center mt-8 mb-8">
+            <span className="text-sm text-gray-400 ml-8">Need ideas? Get AI-powered suggestions for list items based on your title, time frame, or location details</span>
             <Button
               type="button"
               onClick={handleGenerateListItems}
               disabled={isGeneratingItems}
               className="bg-primary-500 text-white hover:bg-primary-600 text-sm px-4 py-2 rounded-md"
             >
-              {isGeneratingItems ? "Generating..." : "Get AI Item Suggestions"}
+              {isGeneratingItems ? "Generating..." : "AI-powered suggestions"}
             </Button>
           </div>
 
@@ -641,7 +641,7 @@ const ListForm = ({ list, action, initialData }: any) => {
 
           {/* Additional Details Section */}
           <FormSection
-            title="Additional Details"
+            title="Fine-tune Your List"
             tooltip="Tags: Add relevant keywords to help others find your list. Categories: Choose or create a general topic for your list. Public/Private: Decide who can see your list."
             isExpandable
           >
@@ -650,7 +650,7 @@ const ListForm = ({ list, action, initialData }: any) => {
               name="Tags"
               render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-lg font-semibold">Tags</FormLabel>
+                <FormLabel className="text-lg font-semibold">Add keywords to help others discover your list</FormLabel>
                 <FormControl>
                   <TagInput
                     tags={field.value}
@@ -670,7 +670,7 @@ const ListForm = ({ list, action, initialData }: any) => {
               name="Categories"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-lg font-semibold">Categories</FormLabel>
+                  <FormLabel className="text-lg font-semibold">Choose the perfect category for your list</FormLabel>
                   <FormControl>
                     <MultiSelect
                       options={categories}
@@ -702,7 +702,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                     />
                   </FormControl>
                   <div>
-                    <FormLabel className="text-lg font-semibold">Public</FormLabel>
+                    <FormLabel className="text-lg font-semibold">Share with the world or keep it personal</FormLabel>
                     <FormDescription className="text-light-3">
                       Uncheck this if you want to make your list private
                     </FormDescription>
@@ -714,7 +714,7 @@ const ListForm = ({ list, action, initialData }: any) => {
 
           {/* Description Section */}
           <FormSection
-            title="Description"
+            title="Tell the Story Behind Your Ranking (optional)"
             tooltip="Provide more context about your list. Explain your ranking criteria or add interesting facts about your chosen topic."
             isExpandable
           >
@@ -744,7 +744,7 @@ const ListForm = ({ list, action, initialData }: any) => {
         {/* Preview Section */}
         <div className="space-y-8">
           <div className="sticky top-4">
-            <h2 className="text-2xl font-bold text-light-1 mb-4">List Preview</h2>
+            <h2 className="text-2xl font-bold text-light-1 mb-4">See how your list will look to others</h2>
             <div className="bg-dark-3 p-6 rounded-lg shadow-lg">
               <ListPreview
                 title={form.watch("Title")}
@@ -766,6 +766,8 @@ const ListForm = ({ list, action, initialData }: any) => {
 
       {/* Submit Section */}
       <div className="flex justify-end gap-4 mt-8">
+      <p className="italic text-md font-thin text-blue-300 mb-4">Remember, there are no wrong answers – just opinions waiting to be challenged!</p>
+
         <Button
           type="button"
           className="bg-dark-4 text-light-1 hover:bg-dark-3"
