@@ -23,8 +23,8 @@ import {
 } from "@/lib/appwrite/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserPlus, Settings, Activity, List, ThumbsUp, Users, ChevronDown, Lock, Edit } from "lucide-react";
-import { FaTwitter, FaFacebook, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import { Link as LinkIcon } from 'lucide-react';
+import { FaSquareXTwitter, FaInstagram, FaFacebook, FaLinkedin, FaReddit, FaTwitch } from "react-icons/fa6";
 
 const Profile: React.FC = () => {
   const { user } = useUserContext();
@@ -311,22 +311,29 @@ const Profile: React.FC = () => {
 
           {/* Social Media Links */}
           {currentUser.socialLinks && currentUser.socialLinks.length > 0 && (
-            <div className="mt-4 flex space-x-4">
+            <div className="mt-4 ml-7 flex space-x-4">
               {currentUser.socialLinks.map((link, index) => {
                 let IconComponent = LinkIcon; // Default icon
-                if (link.includes("twitter.com")) {
-                  IconComponent = FaTwitter;
+                if (link.includes("x.com")) {
+                  IconComponent = FaSquareXTwitter;
                 } else if (link.includes("facebook.com")) {
                   IconComponent = FaFacebook;
                 } else if (link.includes("instagram.com")) {
                   IconComponent = FaInstagram;
                 } else if (link.includes("linkedin.com")) {
                   IconComponent = FaLinkedin;
+                } else if (link.includes("reddit.com")) {
+                  IconComponent = FaReddit ;
+                } else if (link.includes("twitch.com")) {
+                  IconComponent = FaTwitch ;
                 }
 
                 return (
                   <a key={index} href={link} target="_blank" rel="noopener noreferrer">
-                    <IconComponent className="text-light-1 hover:text-primary-500" />
+                    <IconComponent
+                      size={24} // You can control the icon size here
+                      className="text-blue-400 hover:text-blue-200"
+                    />
                   </a>
                 );
               })}

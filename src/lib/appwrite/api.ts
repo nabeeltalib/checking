@@ -889,7 +889,7 @@ export async function getUserById(userId: any) {
       appwriteConfig.userCollectionId,
       userId
     );
-    console.log('Fetched User:', user); // Add this for debugging
+    console.log('Fetched User:', user); // Check if socialLinks is present
     return user;
   } catch (error) {
     console.error('Error getting user by ID:', error);
@@ -937,7 +937,7 @@ export async function updateUser(user: any) {
       ImageUrl: image.imageUrl,
       ImageId: image.imageId,
       Public: user.Public,
-      socialLinks: user.socialLinks,
+      socialLinks: user.socialLinks, // Ensure this field is included
     });
 
     if (!updatedUser) {

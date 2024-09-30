@@ -590,7 +590,8 @@ export async function updateUser(user: any) {
         Bio: user.Bio,
         ImageUrl: image.ImageUrl,
         ImageId: image.ImageId,
-        Public: user.Public
+        Public: user.Public,
+        socialLinks: user.socialLinks // Ensure this field is included
       }
     );
 

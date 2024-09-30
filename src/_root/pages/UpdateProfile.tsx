@@ -281,7 +281,7 @@ const UpdateProfile: React.FC = () => {
               )}
             />
             {/* Social Media Links */}
-            <h3 className="text-lg font-semibold text-light-1 mt-6">Social Media Links</h3>
+            <h3 className="text-lg font-semibold text-light-1 mt-6">you can add your social media links here</h3>
 
             <FormField
               control={form.control}
@@ -319,7 +319,7 @@ const UpdateProfile: React.FC = () => {
                   <Button
                     type="button"
                     onClick={() => field.onChange([...field.value, ""])}
-                    className="mt-2"
+                    className="mt-2 text-blue-500"
                   >
                     Add Link
                   </Button>
