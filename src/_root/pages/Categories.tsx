@@ -154,7 +154,7 @@ const Categories = () => {
                     </motion.div>
                   ))
                 ) : (
-                  <p className="text-light-2 col-span-2 text-center">No lists found matching your criteria.</p>
+                  <p className="text-light-2 col-span-2 text-center">No lists found matching that.</p>
                 )}
               </motion.div>
             </AnimatePresence>

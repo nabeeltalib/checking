@@ -139,8 +139,8 @@ const Home: React.FC = () => {
             </div>
           )}
           
-          <p className="text-base sm:text-xl font-light text-white mt-8">Where your world's opinions get organized and challenged.</p>
-          <p className="text-base sm:text-xl font-semibold text-white mt-8">Connect • Share • Debate</p>          
+          <p className="text-base sm:text-xl font-light text-white mt-8">Where Your World's Opinions Are Organized</p>
+          <p className="text-xs sm:text-sm font-semibold text-white mt-8">Connect • Debate • Challenge</p>          
           </div>
       </header>      
 

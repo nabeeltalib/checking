@@ -175,7 +175,7 @@ const PreviewMode: React.FC = () => {
           <div className="text-2xl md:text-4xl text-orange-300 font-bold mb-2 mt-6">
             <span>What's In Your Top Five?</span>
           </div>
-          <AnimatePresence mode="wait">
+          {/*<AnimatePresence mode="wait">
             <motion.div
               key={searchPrompt}
               initial={{ opacity: 0, y: 10 }}
@@ -188,9 +188,9 @@ const PreviewMode: React.FC = () => {
                 {searchPrompt}
               </p>
             </motion.div>
-          </AnimatePresence>
-          <p className="text-base sm:text-xl font-light text-white mt-8">Where your world's opinions get organized and challenged.</p>
-          <p className="text-base sm:text-xl font-semibold text-white mt-8">Connect • Share • Debate</p>
+          </AnimatePresence>*/}
+          <p className="text-base sm:text-xl font-light text-white mt-8">Where Your World's Opinions Are Organized</p>
+          <p className="text-xs sm:text-sm font-semibold text-white mt-8">Connect • Debate • Challenge</p>
         </div>
       </header>
 
