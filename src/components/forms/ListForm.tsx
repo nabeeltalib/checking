@@ -555,7 +555,7 @@ const ListForm = ({ list, action, initialData }: any) => {
           </FormItem>
 
           <div className="flex justify-between items-center mt-8 mb-8">
-            <span className="text-sm text-gray-400 ml-8">Need ideas? Get AI-powered suggestions for list items based on your title, time frame, or location details</span>
+            <span className="text-pretty text-[11px] text-gray-400 ml-8">Need ideas? Get AI-powered suggestions for list items based on your title, time frame, or location details</span>
             <Button
               type="button"
               onClick={handleGenerateListItems}
@@ -597,7 +597,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                           <Input
                             placeholder={`Enter #${index + 1} ranked item`}
                             {...field}
-                            className="text-sm w-full bg-dark-2 text-light-1 border-none"
+                            className="text-sm w-full bg-dark-2 text-light-1 border-none "
                             spellCheck={true}
                           />
                         </FormControl>

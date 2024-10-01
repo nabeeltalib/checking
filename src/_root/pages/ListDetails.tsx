@@ -53,6 +53,11 @@ const ListDetails: React.FC = () => {
   const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [isReply, setIsReply] = useState(false);
   const [commentId, setCommentId] = useState("");
+ 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
