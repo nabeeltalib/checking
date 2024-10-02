@@ -1447,8 +1447,9 @@ export const shareList = async (listId: string): Promise<string> => {
       sharedLinkId = newSharedLink.$id;
     }
 
-    // Construct and return the full shareable URL
-    return `${import.meta.env.VITE_APP_DOMAIN}/shared/${sharedLinkId}`;
+    // Use the VITE_APP_DOMAIN environment variable for the domain
+    const appDomain = import.meta.env.VITE_APP_DOMAIN || 'http://localhost:3000';
+    return `${appDomain}/shared/${sharedLinkId}`;
   } catch (error) {
     console.error("Error creating shared link:", error);
     throw new Error("Failed to create or retrieve shared link");
