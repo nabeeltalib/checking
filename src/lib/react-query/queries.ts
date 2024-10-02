@@ -98,8 +98,9 @@ export const useSignInWithGoogle = () => {
   return useMutation({
     mutationFn: signInWithGoogle,
     onSuccess: (data) => {
-      console.log("Success sigin in with google: ", data)
-      navigate("http://localhost:3000");
+      console.log("Success signing in with Google: ", data);
+      // Use the VITE_APP_URL environment variable for redirection
+      navigate(import.meta.env.VITE_APP_URL || '/');
     },
   });
 };
