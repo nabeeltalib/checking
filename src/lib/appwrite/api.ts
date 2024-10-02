@@ -1417,27 +1417,42 @@ export async function searchLists(
   }
 }
 
-export const shareList = async (listId: any): Promise<string> => {
+export const shareList = async (listId: string): Promise<string> => {
   try {
-    return `${import.meta.env.VITE_APP_DOMAIN}/lists/${listId}`;
+    // Check if a shared link already exists for this list
+    const existingLinks = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.sharedLinksCollectionId,
+      [
+        Query.equal("listId", listId),
+        Query.greaterThan("expiresAt", new Date().toISOString())
+      ]
+    );
 
-    // const sharedLink = await databases.createDocument(
-    //   appwriteConfig.databaseId,
-    //   appwriteConfig.sharedLinksCollectionId,
-    //   ID.unique(),
-    //   {
-    //     listId: listId,
-    //     createdAt: new Date().toISOString(),
-    //     expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-    //   }
-    // );
+    if (existingLinks.documents.length > 0) {
+      // Return the existing link if it's valid
+      return `${import.meta.env.VITE_APP_DOMAIN}/shared/${existingLinks.documents[0].$id}`;
+    }
 
-    // return `${appwriteConfig.url}/shared/${sharedLink.$id}`;
+    // No valid shared link, create a new one
+    const sharedLink = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.sharedLinksCollectionId,
+      ID.unique(),
+      {
+        listId: listId,
+        createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Expires in 30 days
+      }
+    );
+
+    return `${import.meta.env.VITE_APP_DOMAIN}/shared/${sharedLink.$id}`;
   } catch (error) {
     console.error("Error creating shared link:", error);
-    throw new Error("Failed to create shared link");
+    throw new Error("Failed to create or retrieve shared link");
   }
 };
+
 
 // Fetch user's friends
 export const getUserFriends = async (userId: string) => {

@@ -866,11 +866,11 @@ export const shareList = async (listId: string): Promise<string> => {
     );
 
     if (existingLinks.documents.length > 0) {
-      // If a valid shared link exists, return it
-      return `https://yourapp.com/shared/${existingLinks.documents[0].$id}`;
+      // Return the existing link if it's valid
+      return `${import.meta.env.VITE_APP_DOMAIN}/shared/${existingLinks.documents[0].$id}`;
     }
 
-    // If no valid shared link exists, create a new one
+    // No valid shared link, create a new one
     const sharedLink = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.sharedLinksCollectionId,
@@ -882,12 +882,13 @@ export const shareList = async (listId: string): Promise<string> => {
       }
     );
 
-    return `https://yourapp.com/shared/${sharedLink.$id}`;
+    return `${import.meta.env.VITE_APP_DOMAIN}/shared/${sharedLink.$id}`;
   } catch (error) {
     console.error("Error creating shared link:", error);
-    throw new Error("Failed to create shared link");
+    throw new Error("Failed to create or retrieve shared link");
   }
 };
+
 
 // Fetch user's friends
 export const getUserFriends = async (userId: string) => {
