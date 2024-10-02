@@ -89,10 +89,10 @@ const GridListList: React.FC<GridListListProps> = ({
             to={`/lists/${item.$id}`}
             className="block p-4 hover:bg-dark-3 transition-colors duration-300 relative"
           >
-            <h3 className="text-md font-bold text-yellow-200 mb-2 line-clamp-1">
+            <h3 className="text-sm font-bold text-yellow-200 mb-2 line-clamp-1">
               {item.Title}
             </h3>
-            <ul className="mb-3 text-light-2 text-xs space-y-1">
+            <ul className="mb-3 text-light-2 text-[10px] space-y-1">
               {(item.items || []).slice(0, 3).map((listItem, index) => (
                 <li key={listItem.id || index} className="flex items-center">
                   <span className="mr-2 text-yellow-500 font-semibold">
@@ -107,7 +107,7 @@ const GridListList: React.FC<GridListListProps> = ({
               ))}
             </ul>
             {item.items && item.items.length > 3 && (
-              <p className="text-primary-500 text-xs font-semibold">
+              <p className="text-primary-500 text-[10px] font-semibold">
                 +{item.items.length - 3} more items
               </p>
             )}
@@ -115,14 +115,14 @@ const GridListList: React.FC<GridListListProps> = ({
               {(item.Tags || []).slice(0, 3).map((tag, index) => (
                 <span
                   key={`${tag}-${index}`}
-                  className="flex items-center text-blue-300 rounded-full px-3 py-1 text-xs"
+                  className="flex items-center text-light-3 rounded-full px-3 py-1 text-xs"
                 >
                   <Tag size={12} className="mr-1" />
                   {tag}
                 </span>
               ))}
               {item.Tags && item.Tags.length > 3 && (
-                <span className="text-light-1 rounded-full px-3 py-1 text-xs">
+                <span className="text-light-1 rounded-full px-3 py-1 text-[10px]">
                   +{item.Tags.length - 3}
                 </span>
               )}

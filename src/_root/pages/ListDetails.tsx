@@ -24,7 +24,7 @@ import {
   createReply,
   updateCommentWithReply,
 } from "@/lib/appwrite/api";
-import { Share2, ChevronLeft, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Code, Copy } from 'lucide-react';
+import { Share2, ChevronLeft, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Code, Copy, MapPin, Clock } from 'lucide-react';
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 import LoaderOverlay from "@/components/shared/LoaderOverlay"; // Import the LoaderOverlay component
@@ -419,7 +419,7 @@ const ListDetails: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className="flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300"
+                  className="flex items-center mb-2 bg-gray-900 rounded-md p-2 hover:bg-gray-700 transition-colors duration-300"
                 >
                   <span className="text-lg font-bold text-yellow-500 mr-4">{index + 1}</span>
                   <span className="text-light-1">{item?.content || item}</span>
@@ -458,7 +458,7 @@ const ListDetails: React.FC = () => {
               <span
                 key={`${tag}${index}`}
                 onClick={() => navigate(`/categories/${tag}`)}
-                className="bg-primary-500 text-white px-3 py-1 rounded-full text-xs cursor-pointer hover:bg-primary-600 transition-colors duration-300"
+                className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs cursor-pointer hover:bg-primary-600 transition-colors duration-300"
               >
                 #{tag}
               </span>
@@ -474,19 +474,22 @@ const ListDetails: React.FC = () => {
           >
             <p>Created {formatDistanceToNow(new Date(list.$createdAt), { addSuffix: true })}</p>
             
-            {list.locations.length > 0 && (
-              <div className="mt-2">
-                <strong>Locations: </strong>
-                {list.locations.join(", ")}
-              </div>
-            )}
-    
-            {list.timespans.length > 0 && (
-              <div className="mt-2">
-                <strong>Timespans: </strong>
-                {list.timespans.join(", ")}
-              </div>
-            )}
+            <div>
+          {/* Locations and Timespans */}
+          {list.locations && list.locations.length > 0 && (
+            <div className="flex items-center text-light-2 text-sm mb-2">
+              <MapPin size={16} className="mr-2" />
+              {list.locations.join(", ")}
+            </div>
+          )}
+
+          {list.timespans && list.timespans.length > 0 && (
+            <div className="flex items-center text-light-2 text-sm">
+              <Clock size={16} className="mr-2" />
+              {list.timespans.join(", ")}
+            </div>
+          )}
+        </div>
           </motion.div>
     
          {/* Embed Section - Only visible to the creator */}

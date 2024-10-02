@@ -67,7 +67,7 @@ const RightSidebar: React.FC = () => {
         {/* Trending Lists Section */}
         <div>
           <h2 className="text-lg font-bold text-light-1 flex items-center mb-4">
-            Trending Near You: Join the Debate!
+            Trending Near You
           </h2>
           {loading ? (
             <LoadingSkeleton />

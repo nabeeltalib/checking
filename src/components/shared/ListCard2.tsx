@@ -357,7 +357,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.1 }}
-          className="flex items-center mb-1 bg-gray-800 rounded-md p-2 hover:bg-gray-700 transition-colors duration-300"
+          className="flex items-center mb-1 bg-gray-900 rounded-md p-1 hover:bg-gray-700 transition-colors duration-300"
         >
           <span className="text-lg font-bold text-yellow-200 mr-4">
             {index === 0 ? <Crown size={20} className="text-yellow-200" /> : index + 1}
@@ -617,7 +617,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
               <span
                 key={`${tag}${index}`}
                 onClick={() => navigate(`/categories/${tag}`)}
-                className="bg-primary-500 text-white px-3 py-1 rounded-full text-xs cursor-pointer hover:bg-primary-600 transition-colors duration-300"
+                className="bg-gray-800 text-white px-3 py-1 rounded-full text-xs cursor-pointer hover:bg-primary-600 transition-colors duration-300"
               >
                 #{tag}
               </span>

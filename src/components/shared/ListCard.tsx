@@ -8,6 +8,8 @@ import {
   MessageCircle,
   Bookmark,
   Wand,
+  MapPin, 
+  Clock,
   Crown,
   ThumbsUp,
   ThumbsDown, 
@@ -127,7 +129,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     return displayItems.map((item, index) => (
       <motion.li
         key={index}
-        className="flex items-center mb-2 bg-gray-800 rounded-md p-2 hover:bg-gray-700 transition-colors duration-300"
+        className="flex items-center mb-2 bg-gray-900 rounded-md p-1 hover:bg-gray-700 transition-colors duration-300"
         onClick={() => {
           if (!isAuthenticated) {
             handleDialogOpen();
@@ -270,7 +272,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           {list.Tags?.slice(0, 3).map((tag: string, index: number) => (
             <motion.span
               key={`${tag}${index}`}
-              className="bg-blue-800 text-blue-200 px-3 py-1 rounded-full text-xs cursor-pointer shadow-md hover:bg-blue-700 transition-colors"
+              className="bg-gray-800 text-blue-200 px-3 py-1 rounded-full text-xs cursor-pointer shadow-md hover:bg-blue-700 transition-colors"
               onClick={handleDialogOpen}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -288,8 +290,24 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               +{list.Tags.length - 3} more tags
             </motion.span>
           )}
+          
         </div>
+        <div>
+          {/* Locations and Timespans */}
+          {list.locations && list.locations.length > 0 && (
+            <div className="flex items-center text-light-3 text-sm mb-2">
+              <MapPin size={16} className="mr-2" />
+              {list.locations.join(", ")}
+            </div>
+          )}
 
+          {list.timespans && list.timespans.length > 0 && (
+            <div className="flex items-center text-light-3 text-sm">
+              <Clock size={16} className="mr-2" />
+              {list.timespans.join(", ")}
+            </div>
+          )}
+        </div>
         {/* Action Buttons */}
         <div className="px-6 py-4 flex justify-center items-center text-light-2 text-xs">
           <div className="flex space-x-2">
