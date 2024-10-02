@@ -32,7 +32,7 @@ const SharedListView: React.FC = () => {
         if (new Date(sharedLink.expiresAt) < new Date()) {
           throw new Error('This shared link has expired');
         }
-
+    
         const listData = await databases.getDocument(
           appwriteConfig.databaseId,
           appwriteConfig.listCollectionId,
@@ -52,7 +52,7 @@ const SharedListView: React.FC = () => {
         setLoading(false);
       }
     };
-
+    
     fetchSharedList();
   }, [sharedId, navigate]);
 

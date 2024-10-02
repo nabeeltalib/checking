@@ -149,6 +149,7 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
     <Route path="/privacypolicy" element={<PrivacyPolicy />} />
     <Route path="/termsandconditions" element={<TermsAndConditions />} />
     <Route path="/cookiepolicy" element={<CookiePolicy />} />
+    <Route path="/shared/:sharedId" element={<SharedListView />} />
 
     </Route>
         </Routes>

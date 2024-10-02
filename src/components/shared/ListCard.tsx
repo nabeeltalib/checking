@@ -61,11 +61,16 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           text: `Check out this list: ${list.Title}`,
           url: shareableLink,
         });
+        toast({
+          title: "List shared successfully!",
+          description: "The list has been shared via your device's share menu.",
+          variant: "success",
+        });
       } else {
         await navigator.clipboard.writeText(shareableLink);
         toast({
-          title: "Link copied",
-          description: "The shareable link has been copied to your clipboard.",
+          title: "Link copied to clipboard!",
+          description: "You can now paste the link to share the list.",
           variant: "success",
         });
       }

@@ -1429,24 +1429,26 @@ export const shareList = async (listId: string): Promise<string> => {
       ]
     );
 
+    let sharedLinkId;
     if (existingLinks.documents.length > 0) {
-      // Return the existing link if it's valid
-      return `${import.meta.env.VITE_APP_DOMAIN}/shared/${existingLinks.documents[0].$id}`;
+      sharedLinkId = existingLinks.documents[0].$id;
+    } else {
+      // No valid shared link, create a new one
+      const newSharedLink = await databases.createDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.sharedLinksCollectionId,
+        ID.unique(),
+        {
+          listId: listId,
+          createdAt: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Expires in 30 days
+        }
+      );
+      sharedLinkId = newSharedLink.$id;
     }
 
-    // No valid shared link, create a new one
-    const sharedLink = await databases.createDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.sharedLinksCollectionId,
-      ID.unique(),
-      {
-        listId: listId,
-        createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // Expires in 30 days
-      }
-    );
-
-    return `${import.meta.env.VITE_APP_DOMAIN}/shared/${sharedLink.$id}`;
+    // Construct and return the full shareable URL
+    return `${import.meta.env.VITE_APP_DOMAIN}/shared/${sharedLinkId}`;
   } catch (error) {
     console.error("Error creating shared link:", error);
     throw new Error("Failed to create or retrieve shared link");
