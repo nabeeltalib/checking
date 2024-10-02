@@ -39,7 +39,7 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
             <X size={24} />
           </button>
           
-          <h2 className="text-xl sm:text-3xl font-bold text-center mb-4 sm:mb-6 text-orange-800 dark:text-white">
+          <h2 className="text-xl sm:text-3xl font-light text-center mb-4 sm:mb-6 text-gray-800 dark:text-white">
             What's In Your Top Five?
           </h2>
           <h3 className="text-md sm:text-lg font-semibold text-center text-gray-700 dark:text-white">
@@ -49,12 +49,7 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
             Where your world's opinions get organized and challenged. Find Your Tribe: Follow Fellow Rankers
           </p>
           
-          <div className="grid grid-cols-2 gap-2 sm:gap-2 mb-4 sm:mb-6">
-            <Feature icon={<ThumbsUp className="text-pink-500" size={18} />} text="Like " />
-            <Feature icon={<MessageCircle className="text-blue-500" size={18} />} text="Debate " />
-            <Feature icon={<Crown className="text-purple-500" size={18} />} text="Challenge " />
-            <Feature icon={<Wand className="text-green-500" size={18} />} text="Create" />
-          </div>
+          
           
           <div className="space-y-3 sm:space-y-4">
             <Button
