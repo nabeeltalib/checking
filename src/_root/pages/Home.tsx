@@ -118,7 +118,23 @@ const Home: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col w-full items-center bg-dark-1 min-h-screen">
+    <div className="flex flex-col w-full items-center bg-dark-1 min-h-screen"> 
+    {/* Sticky Search Bar */}
+    <div className="sticky top-[calc(4rem)] z-10 w-full bg-dark-1 shadow-md my-4">
+    <div className="max-w-3xl mx-auto px-4 py-3">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search rankings, titles, or tags ..."
+            value={searchTerm}
+            spellCheck={true} // Enable spellcheck here
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full bg-gray-300 text-gray-900 pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
+        </div>
+      </div>
+    </div>        
       {/* Header Section */}
       <header className="w-full bg-dark-1 py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -146,22 +162,7 @@ const Home: React.FC = () => {
 
       {/* Content Wrapper */}
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Sticky Search Bar */}
-        <div className="sticky top-[calc(4rem)] z-10 w-full bg-dark-1 shadow-md my-4">
-        <div className="max-w-3xl mx-auto px-4 py-3">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search rankings, titles, or tags ..."
-                value={searchTerm}
-                spellCheck={true} // Enable spellcheck here
-                onChange={e => setSearchTerm(e.target.value)}
-                className="w-full bg-gray-700 text-gray-200 pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
-            </div>
-          </div>
-        </div>        
+       
         {/* Mobile Trending Slider */}
         <MobileTrendingSlider />
         <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center ml-4 mt-8">

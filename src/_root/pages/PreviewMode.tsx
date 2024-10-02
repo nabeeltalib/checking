@@ -170,6 +170,24 @@ const PreviewMode: React.FC = () => {
 
   return (
     <div className="mt-4 w-full items-center bg-dark-1 min-h-screen pb-20">
+      {/* Redesigned Sticky Search Bar */}
+      <div className="sticky top-[calc(4rem)] z-10 w-full bg-dark-1 shadow-md my-4">
+        <div className="max-w-3xl mx-auto px-4 py-3">
+          <div className="bg-gray-300 rounded-full overflow-hidden shadow-lg mb-2">
+            <div className="flex items-center px-4 py-2">
+              <Search className="text-gray-800 mr-3" size={20} />
+              <input
+                type="text"
+                placeholder="Search rankings, titles, or tags ..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+                className="bg-transparent text-gray-900 w-full focus:outline-none"
+              />
+            </div>
+          </div>
+          
+        </div>
+      </div>
       <header className="w-full bg-dark-1 py-4">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <div className="text-2xl md:text-4xl text-orange-300 font-bold mb-2 mt-6">
@@ -190,28 +208,9 @@ const PreviewMode: React.FC = () => {
             </motion.div>
           </AnimatePresence>*/}
           <p className="text-base sm:text-xl font-light text-white mt-8">Where Your World's Opinions Are Organized</p>
-          <p className="text-xs sm:text-sm font-semibold text-white mt-8">Connect • Debate • Challenge</p>
+          <p className="text-xs sm:text-sm font-semibold text-white mt-8 mb-5">Connect • Debate • Challenge</p>
         </div>
-      </header>
-
-      {/* Redesigned Sticky Search Bar */}
-      <div className="sticky top-[calc(4rem)] z-10 w-full bg-dark-1 shadow-md my-4">
-        <div className="max-w-3xl mx-auto px-4 py-3">
-          <div className="bg-gray-800 rounded-full overflow-hidden shadow-lg mb-2">
-            <div className="flex items-center px-4 py-2">
-              <Search className="text-gray-400 mr-3" size={20} />
-              <input
-                type="text"
-                placeholder="Search rankings, titles, or tags ..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="bg-transparent text-gray-200 w-full focus:outline-none"
-              />
-            </div>
-          </div>
-          
-        </div>
-      </div>
+      </header>      
 
       {/* Mobile Trending Slider */}
       <MobileTrendingSlider setIsDialogOpen={setIsSignInDialogOpen} />

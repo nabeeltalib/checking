@@ -160,7 +160,7 @@ const TrendingListItem: React.FC<{ list: any; navigate: Function }> = ({ list, n
       whileHover={{ y: -3 }}
       onClick={() => navigate(`/lists/${list.$id}`)}
     >
-      <h3 className="text-yellow-200 text-sm font-semibold truncate">{list.Title}</h3>
+      <h3 className="text-yellow-200 text-xs font-semibold truncate">{list.Title}</h3>
       <p className="text-[10px] text-gray-400 truncate">by {list.creator.Name}</p>
       <div className="flex items-center mt-2 space-x-4">
         <div className="flex items-center text-xs text-gray-400">

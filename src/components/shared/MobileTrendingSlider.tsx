@@ -53,8 +53,8 @@ const MobileTrendingSlider: React.FC<MobileTrendingSliderProps> = ({ isAuthentic
   };
 
   return (
-    <div className="lg:hidden bg-dark-3 p-4 shadow-lg">
-      <h2 className="text-xl font-bold text-light-1 flex items-center mb-4">
+    <div className="lg:hidden bg-dark-1 p-2 shadow-lg">
+      <h2 className="text-lg font-bold text-light-1 flex items-center mb-2">
         <LocateFixed className="mr-2" />
         Trending In Your Area
       </h2>
@@ -114,7 +114,7 @@ const TrendingCard: React.FC<{ list: any; navigate: Function; isAuthenticated: b
       whileTap={{ scale: 0.95 }}
       onClick={handleClick}
     >
-      <h3 className="text-yellow-200 text-sm font-semibold truncate">{list.Title}</h3>
+      <h3 className="text-yellow-200 text-xs font-semibold truncate">{list.Title}</h3>
       <p className="text-xs text-gray-400 truncate">by {list.creator.Name}</p>
       <div className="flex items-center mt-2 space-x-4">
         <div className="flex items-center text-xs text-gray-400">
