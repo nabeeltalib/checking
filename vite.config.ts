@@ -3,7 +3,9 @@ import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd());
+  // Load env file based on `mode` in the current working directory.
+  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  const env = loadEnv(mode, process.cwd(), '')
 
   return {
     plugins: [react()],
@@ -24,12 +26,14 @@ export default defineConfig(({ mode }) => {
       },
     },
     define: {
-      'process.env': {
-        ...env,
-      },
+      // Expose all env variables to the client side
+      'process.env': env
     },
     build: {
       sourcemap: mode === 'development',
     },
+    // Add environment directory and prefix
+    envDir: '.',
+    envPrefix: 'VITE_',
   };
 });
