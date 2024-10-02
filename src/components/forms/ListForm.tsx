@@ -452,7 +452,7 @@ const ListForm = ({ list, action, initialData }: any) => {
           <div className="space-y-8">
             {/* Basic Info Section */}
             <FormSection
-              title="Let's Start Your List*"
+              title="Step 1: Let's Start Your List*"
               tooltip="Enter a catchy title for your list. Make it descriptive and engaging to attract more viewers!"
             >
               <FormField
@@ -477,7 +477,7 @@ const ListForm = ({ list, action, initialData }: any) => {
 
             {/* Time & Location Section */}
             <FormSection
-              title="Set the Scene (optional)"
+              title="Step 2: Set the Scene (optional)"
               tooltip="Specify when and where your list is relevant. This helps contextualize your ranking and makes it more discoverable."
               isExpandable
             >
@@ -531,7 +531,7 @@ const ListForm = ({ list, action, initialData }: any) => {
 
           {/* List Items Section */}
           <FormSection
-          title="Rank Your Top Picks*"
+          title="Step 3: Rank Your Top Picks*"
           tooltip="Add your ranked items here. You can drag and drop to reorder them. The more specific and unique your items, the better!"
         >
           <FormItem>
@@ -544,7 +544,7 @@ const ListForm = ({ list, action, initialData }: any) => {
                   onClick={() => handleItemCountChange(count.toString())}
                   className={`text-sm px-4 py-2 rounded-md ${
                     form.getValues("items").length === count
-                      ? "bg-blue-800 text-white"
+                      ? "bg-gray-500 text-white"
                       : "bg-dark-4 text-light-2 hover:bg-dark-3"
                   }`}
                 >
@@ -552,18 +552,19 @@ const ListForm = ({ list, action, initialData }: any) => {
                 </Button>
               ))}
             </div>
-          </FormItem>
-
+          </FormItem>         
           <div className="flex justify-between items-center mt-8 mb-8">
-            <span className="text-pretty text-[11px] text-gray-400 ml-8">Need ideas? Get AI-powered suggestions for list items based on your title, time frame, or location details</span>
+            {/*<span className="text-pretty text-[11px] text-gray-400 ml-8">Need ideas? Get AI-powered suggestions for list items based on your title, time frame, or location details</span>*/}
             <Button
               type="button"
               onClick={handleGenerateListItems}
               disabled={isGeneratingItems}
               className="bg-primary-500 text-white hover:bg-primary-600 text-sm px-4 py-2 rounded-md"
             >
-              {isGeneratingItems ? "Generating..." : "AI-powered suggestions"}
-            </Button>
+              {isGeneratingItems ? "Generating..." : "Get item suggestions"}
+            </Button>         
+            <p className="text-xs  ml-5 text-gray-400 mb-4">Based on your title, timespan or location.</p>
+
           </div>
 
           {showUndoButton && (
@@ -641,7 +642,7 @@ const ListForm = ({ list, action, initialData }: any) => {
 
           {/* Additional Details Section */}
           <FormSection
-            title="Fine-tune Your List"
+            title="Step 4: Fine-tune Your List"
             tooltip="Tags: Add relevant keywords to help others find your list. Categories: Choose or create a general topic for your list. Public/Private: Decide who can see your list."
             isExpandable
           >
@@ -744,7 +745,7 @@ const ListForm = ({ list, action, initialData }: any) => {
         {/* Preview Section */}
         <div className="space-y-8">
           <div className="sticky top-4">
-            <h2 className="text-2xl font-bold text-light-1 mb-4">See how your list will look to others</h2>
+            <h2 className="text-xl font-thin text-gray-400 mb-4">Your Preview</h2>
             <div className="bg-dark-3 p-6 rounded-lg shadow-lg">
               <ListPreview
                 title={form.watch("Title")}
@@ -766,7 +767,7 @@ const ListForm = ({ list, action, initialData }: any) => {
 
       {/* Submit Section */}
       <div className="flex justify-end gap-4 mt-8">
-      <p className="italic text-md font-thin text-blue-300 mb-4">Remember, there are no wrong answers – just opinions waiting to be challenged!</p>
+      {/*<p className="italic text-md font-thin text-blue-300 mb-4">Remember, there are no wrong answers – just opinions waiting to be challenged!</p>*/}
 
         <Button
           type="button"
@@ -891,7 +892,7 @@ return (
       onClick={toggleExpand}
     >
       <Tooltip content={tooltip}>
-        <h2 className="text-xl font-bold text-light-1 flex items-center">
+        <h2 className="text-xl font-thin text-light-1 flex items-center">
           {title}
           <Info size={16} className="ml-2 text-light-3" />
         </h2>

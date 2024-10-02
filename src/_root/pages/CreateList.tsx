@@ -79,7 +79,7 @@ const CreateList: React.FC = () => {
           <h2 className="text-orange-300 font-extralight text-3xl text-left w-full mt-1" style={{ fontFamily: "'Permanent Marker', cursive" }}>
             Every List Sparks a Conversation. What's Your Next Top 5?
           </h2>
-          <p className="text-base mt-2">
+          <p className="text-base mt-2 mb-11">
             Your opinion could be the best or most trusted, on any topic.
           </p>
         </div>
@@ -90,7 +90,7 @@ const CreateList: React.FC = () => {
           </div>
         )}
           
-        <div className="text-right space-y-2">
+        {/*<div className="text-right space-y-2">
           <p className="italic text-base text-blue-300">Stuck? Click for trending topics and ideas!</p>
           <button
             className="bg-primary-500 text-xs text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors"
@@ -99,7 +99,7 @@ const CreateList: React.FC = () => {
           >
             {isGeneratingIdea ? 'Generating Idea...' : 'Generate Title Ideas'}
           </button>
-        </div>
+        </div>*/}
         <ListForm
           onSubmit={handleCreateList}
           action="Create"

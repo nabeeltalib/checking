@@ -118,7 +118,7 @@ const RightSidebar: React.FC = () => {
                     whileTap={{ scale: 0.95 }}
                   >
                     <Button
-                      className="text-[10px] bg-dark-4 text-light-2 hover:bg-primary-500 hover:text-light-1 transition-all duration-300"
+                      className="text-[10px] bg-dark-2 text-light-2 hover:bg-primary-500 hover:text-light-1 transition-all duration-300"
                       onClick={() => navigate(`/categories/${category.name}`)}
                     >
                       {category.name}
