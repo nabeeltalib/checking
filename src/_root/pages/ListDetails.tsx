@@ -28,6 +28,8 @@ import { Share2, ChevronLeft, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 import LoaderOverlay from "@/components/shared/LoaderOverlay"; // Import the LoaderOverlay component
+import ShareDialog from '@/components/shared/ShareDialog'; // New import
+import { useShareDialog } from '@/components/shared/ShareDialogContext';
 
 const ListDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -53,7 +55,11 @@ const ListDetails: React.FC = () => {
   const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [isReply, setIsReply] = useState(false);
   const [commentId, setCommentId] = useState("");
- 
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false); // New state
+  const [shareUrl, setShareUrl] = useState("");
+  const [isHovered, setIsHovered] = useState(false);
+  const { openShareDialog } = useShareDialog();
+  
   // Scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -132,24 +138,16 @@ const ListDetails: React.FC = () => {
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsSharing(true);
     try {
-      const shareableLink = await shareList(id);
-      if (navigator.share) {
-        await navigator.share({
-          title: list?.Title,
-          text: `Check out this list: ${list?.Title}`,
-          url: shareableLink,
-        });
-      } else {
-        await navigator.clipboard.writeText(shareableLink);
-        toast({ title: "Link copied to clipboard!" });
-      }
+      const shareableLink = await shareList(list.$id);
+      openShareDialog(shareableLink, list.Title);
     } catch (error) {
       console.error("Error sharing list:", error);
-      toast({ title: "Failed to share list. Please try again.", variant: "destructive" });
-    } finally {
-      setIsSharing(false);
+      toast({
+        title: "Error",
+        description: "Failed to generate shareable link. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -260,13 +258,13 @@ const ListDetails: React.FC = () => {
           Back
         </Button>
         <div className="flex items-center">
-          <Button
-            onClick={handleShare}
-            className="text-light-2 hover:text-primary-500 transition-colors mr-2"
-            disabled={isSharing}
-          >
-            <Share2 size={24} />
-          </Button>
+        <button
+                onClick={handleShare}
+                className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
+                aria-label="Share this list"
+              >
+                <Share2 size={24} />
+              </button>
           {isCreator && (
             <div className="relative" ref={creatorOptionsRef}>
               <Button
@@ -572,6 +570,12 @@ const ListDetails: React.FC = () => {
           <p className="text-light-2">No related rankings found</p>
         )}
       </motion.div>
+      <ShareDialog
+        isOpen={isShareDialogOpen}
+        onClose={() => setIsShareDialogOpen(false)}
+        shareUrl={`${window.location.origin}/lists/${list.$id}`}
+        title={list.Title}
+      />
     </motion.div>
   );
 };

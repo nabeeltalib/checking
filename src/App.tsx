@@ -53,6 +53,8 @@ import StaticFrame from "./components/shared/StaticFrame";
 import LiveFrame from "./components/shared/LiveFrame";
 
 import { useUserContext } from "./context/AuthContext";
+import { ShareDialogProvider } from './components/shared/ShareDialogContext';
+import ShareDialog from './components/shared/ShareDialog';
 
 interface AppProps {
   isInitialLoading: boolean;
@@ -76,6 +78,8 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
 
   return (
     <main className="flex">
+    <ShareDialogProvider>
+
       <Routes>
         {/* Public Routes */}
         <Route element={<AuthLayout />}>
@@ -151,7 +155,9 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
         {/* Catch-all route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
-      <Toaster />
+      <ShareDialog />
+      <Toaster />      
+    </ShareDialogProvider>
     </main>
   );
 };

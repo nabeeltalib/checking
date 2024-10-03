@@ -215,7 +215,7 @@ const SharedListView: React.FC = () => {
 
       <div className="flex justify-between items-center mb-6">
         <h1 
-          className="text-2xl font-bold text-yellow-200 cursor-pointer hover:text-yellow-300 transition-colors"
+          className="text-xl md:text-2xl font-bold text-yellow-200 cursor-pointer hover:text-yellow-300 transition-colors"
           onClick={handleItemClick}
         >
           {list?.Title}

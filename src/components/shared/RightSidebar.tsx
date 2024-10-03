@@ -118,7 +118,7 @@ const RightSidebar: React.FC = () => {
                     whileTap={{ scale: 0.95 }}
                   >
                     <Button
-                      className="text-[10px] bg-dark-2 text-light-2 hover:bg-primary-500 hover:text-light-1 transition-all duration-300"
+                      className="text-[11px] bg-dark-2 text-light-2 hover:bg-primary-500 hover:text-light-1 transition-all duration-300"
                       onClick={() => navigate(`/categories/${category.name}`)}
                     >
                       {category.name}
@@ -161,7 +161,7 @@ const TrendingListItem: React.FC<{ list: any; navigate: Function }> = ({ list, n
       onClick={() => navigate(`/lists/${list.$id}`)}
     >
       <h3 className="text-yellow-200 text-xs font-semibold truncate">{list.Title}</h3>
-      <p className="text-[10px] text-gray-400 truncate">by {list.creator.Name}</p>
+      <p className="text-[11px] text-gray-400 truncate">by {list.creator.Name}</p>
       <div className="flex items-center mt-2 space-x-4">
         <div className="flex items-center text-xs text-gray-400">
           <ThumbsUp size={14} className="mr-1 text-red-500" />
