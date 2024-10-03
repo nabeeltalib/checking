@@ -5,40 +5,71 @@ import { Button } from "../ui";
 import { useUserContext } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { checkIsLiked } from "@/lib/utils";
-import { likeList } from "@/lib/appwrite/config";
+import { likeList } from "@/lib/appwrite/api";
 import Loader from "./Loader";
+import { useToast } from "@/components/ui/use-toast";
+import { IList, IListItem } from "@/types";
+import { shareList } from "@/lib/appwrite/api";
 
-export const TopfivedEmbed = ({ type, items, handleVote, isVoting, setRefresh, list }: any) => {
+interface TopfivedEmbedProps {
+  type: 'top5' | 'leaderboard';
+  items: IListItem[];
+  handleVote: (itemId: string) => void;
+  isVoting: string | null;
+  setRefresh: React.Dispatch<React.SetStateAction<boolean>>;
+  list: IList;
+}
+
+export const TopfivedEmbed: React.FC<TopfivedEmbedProps> = ({ type, items, handleVote, isVoting, setRefresh, list }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [selectedHearts, setSelectedHearts] = useState<string[]>([]);
   const [isLiking, setIsLiking] = useState(false);
   const { user } = useUserContext();
-  const userId = user.id;
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
-    const initialSelectedHearts = items
-      .filter((item: any) => item.vote.some((v: any) => v.$id === userId))
-      .map((item: any) => item.$id);
-    setSelectedHearts(initialSelectedHearts);
-  }, [items, userId]);
+    if (user && user.id) {
+      const initialSelectedHearts = items
+  .filter((item) => item.vote?.some((v) => v.$id === user.id)) // Use optional chaining here
+  .map((item) => item.$id);
 
-  const handleCTAClick = () => navigate("/");
+      setSelectedHearts(initialSelectedHearts);
+    }
+  }, [items, user]);
 
-  const handleLikeList = async (list: any) => {
+  const handleLikeList = async () => {
+    if (!user || !user.id) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to like lists.",
+        variant: "destructive",
+      });
+      return;
+    }
     setIsLiking(true);
-    let newLikes = list.Likes.includes(userId)
-      ? list.Likes.filter((Id: any) => Id !== userId)
-      : [...list.Likes, userId];
-    await likeList(list.$id, newLikes);
-    setRefresh((prevState: any) => !prevState);
-    setIsLiking(false);
-  };
-
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    alert("Link copied to clipboard!");
+    try {
+      const newLikes = checkIsLiked(list.Likes, user.id)
+        ? list.Likes.filter((id) => id !== user.id)
+        : [...list.Likes, user.id];
+      await likeList(list.$id, newLikes);
+      setRefresh((prev) => !prev);
+      toast({
+        title: "Success",
+        description: checkIsLiked(list.Likes, user.id) ? "List unliked." : "List liked!",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error liking list:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update list like status. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLiking(false);
+    }
   };
 
   const handleHeartClick = (itemId: string) => {
@@ -49,12 +80,38 @@ export const TopfivedEmbed = ({ type, items, handleVote, isVoting, setRefresh, l
         : [...prev, itemId]
     );
   };
-
+  const handleCTAClick = async () => {
+    if (list?.$id) {
+      try {
+        const shareableLink = await shareList(list.$id); // Reusing the same function from ListCard
+        window.open(shareableLink, '_blank'); // Opens the shareable link in a new tab
+      } catch (err) {
+        console.error("Error generating shareable link:", err);
+      }
+    } else {
+      console.error("List ID not found");
+    }
+  };
+  
+  
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast({
+      title: "Link copied",
+      description: "The list link has been copied to your clipboard.",
+      variant: "default",
+    });
+  };
   const getRankColor = (index: number) => {
-    const colors = ["text-yellow-500", "text-gray-400", "text-orange-500", "text-blue-500", "text-green-500"];
+    const colors = [
+      "text-yellow-500",
+      "text-gray-400",
+      "text-orange-500",
+      "text-blue-500",
+      "text-green-500",
+    ];
     return index < colors.length ? colors[index] : "text-purple-500";
   };
-
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -63,23 +120,10 @@ export const TopfivedEmbed = ({ type, items, handleVote, isVoting, setRefresh, l
       className="max-w-md mx-auto bg-gradient-to-br from-purple-100 to-indigo-100 rounded-xl shadow-lg overflow-hidden border border-purple-200"
     >
       <div className="p-6">
-        <div
-          className="text-slate-300 text-center text-xl sm:text-xl font-thin px-4 rounded-t-lg mb-4"
-          style={{ fontFamily: "'Racing Sans One', sans-serif" }}
-        >
-          Ranking For
-        </div>
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-indigo-800">{list.Title}</h2>
           <div className="flex space-x-2">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleShare}
-              className="text-indigo-600 hover:text-indigo-800 transition-colors"
-            >
-              <Share2 size={20} />
-            </motion.button>
+            
             <motion.button
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -106,7 +150,7 @@ export const TopfivedEmbed = ({ type, items, handleVote, isVoting, setRefresh, l
         </AnimatePresence>
 
         <ul className="space-y-3">
-          {items.map((item: any, index: number) => (
+          {items.map((item, index) => (
             <motion.li
               key={index}
               initial={{ opacity: 0, x: -20 }}
@@ -145,34 +189,35 @@ export const TopfivedEmbed = ({ type, items, handleVote, isVoting, setRefresh, l
         </ul>
 
         <div className="mt-6 flex justify-between items-center">
-          <Button
-            onClick={() => handleLikeList(list)}
-            className={`flex items-center space-x-1 ${
-              checkIsLiked(list.Likes, userId) ? 'bg-pink-100 text-pink-600' : 'bg-gray-100 text-gray-600'
-            } px-3 py-1 rounded-full transition-colors`}
-            disabled={isLiking}
-          >
-            {isLiking ? (
-              <Loader />
-            ) : (
-              <>
-                <ThumbsUp size={22} />
-                <span>{list.Likes.length}</span>
-              </>
-            )}
-          </Button>
+        <Button
+          onClick={handleLikeList}
+          className={`flex items-center space-x-1 ${
+            checkIsLiked(list.Likes, user?.id) ? 'bg-pink-100 text-pink-600' : 'bg-gray-100 text-gray-600'
+          } px-3 py-1 rounded-full transition-colors`}
+          disabled={isLiking}
+        >
+          {isLiking ? (
+            <Loader />
+          ) : (
+            <>
+              <ThumbsUp size={22} />
+              <span>{list.Likes.length}</span>
+            </>
+          )}
+        </Button>
           <div
             className="relative"
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
           >
-            <Button
-              onClick={handleCTAClick}
-              className="bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-indigo-600 transition-colors flex items-center space-x-1"
-            >
-              <MessageCircle size={16} />
-              <span>Join Discussion</span>
-            </Button>
+           <Button
+            onClick={handleCTAClick}
+            className="bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-indigo-600 transition-colors flex items-center space-x-1"
+          >
+            <MessageCircle size={16} />
+            <span>Join Discussion</span>
+          </Button>
+
             {showTooltip && (
               <div className="absolute right-0 w-48 px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg mt-2">
                 Join the discussion on Topfived

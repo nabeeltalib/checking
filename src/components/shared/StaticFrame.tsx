@@ -1,40 +1,68 @@
+import React, { useEffect, useState } from "react";
 import { MessageCircle, Heart, Share2, Info, Crown } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getListById } from "@/lib/appwrite/config";
+import { getListById } from "@/lib/appwrite/api";
 import { Button } from "../ui";
-import Loader from "./Loader";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/components/ui/use-toast";
+import { IList } from "@/types";
+import { shareList } from "@/lib/appwrite/api";
 
-const StaticFrame = () => {
-  const { id } = useParams();
-  const [list, setList] = useState<any>(null);
-  const [refreshData, setRefreshData] = useState(false);
-  const [isLiking, setIsLiking] = useState(false);
+const StaticFrame: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const [list, setList] = useState<IList | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getListById(id);
-      setList(data);
+      if (!id) return;
+      try {
+        const data = await getListById(id);
+        setList(data);
+      } catch (error) {
+        console.error("Error fetching list:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch list data. Please try again.",
+          variant: "destructive",
+        });
+      }
     };
 
     fetchData();
-  }, [refreshData, id]);
-
-  const items = list?.item;
-
-  const handleCTAClick = () => navigate("/");
+  }, [id, toast]);
 
   const handleLikeList = () => {
-    alert("In order to Like, please visit https://topfived.com");
+    toast({
+      title: "Action not available",
+      description: "To like this list, please visit https://topfived.com",
+      variant: "default",
+    });
   };
-
+ 
+  const handleCTAClick = async () => {
+    if (list?.$id) {
+      try {
+        const shareableLink = await shareList(list.$id); // Reusing the same function from ListCard
+        window.open(shareableLink, '_blank'); // Opens the shareable link in a new tab
+      } catch (err) {
+        console.error("Error generating shareable link:", err);
+      }
+    } else {
+      console.error("List ID not found");
+    }
+  };
+  
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    alert("Link copied to clipboard!");
+    toast({
+      title: "Link copied",
+      description: "The list link has been copied to your clipboard.",
+      variant: "default",
+    });
   };
 
   return (
@@ -47,15 +75,7 @@ const StaticFrame = () => {
           </div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-indigo-800">{list.Title}</h2>
-            <div className="flex space-x-2">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={handleShare}
-                className="text-indigo-600 hover:text-indigo-800 transition-colors"
-              >
-                <Share2 size={20} />
-              </motion.button>
+            <div className="flex space-x-2">              
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -121,13 +141,14 @@ const StaticFrame = () => {
               onMouseEnter={() => setShowTooltip(true)}
               onMouseLeave={() => setShowTooltip(false)}
             >
-              <Button
-                onClick={handleCTAClick}
-                className="bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-indigo-600 transition-colors flex items-center space-x-1"
-              >
-                <MessageCircle size={16} />
-                <span>Join Discussion</span>
-              </Button>
+             <Button
+              onClick={handleCTAClick}
+              className="bg-indigo-500 text-white px-4 py-2 rounded-full hover:bg-indigo-600 transition-colors flex items-center space-x-1"
+            >
+              <MessageCircle size={16} />
+              <span>Join Discussion</span>
+            </Button>
+
               {showTooltip && (
                 <div className="absolute right-0 w-48 px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg mt-2">
                   Join the discussion on Topfived

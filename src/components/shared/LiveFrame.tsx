@@ -1,58 +1,77 @@
+import React, { useEffect, useState } from "react";
 import { MessageCircle, Heart, Share2, Info, Crown } from "lucide-react";
-import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getListById } from "@/lib/appwrite/config";
-import { VoteOnItem } from "@/lib/appwrite/api";
+import { getListById, VoteOnItem } from "@/lib/appwrite/api";
 import { Button } from "../ui";
 import Loader from "./Loader";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/components/ui/use-toast";
+import { IList, IListItem } from "@/types";
+import { shareList } from "@/lib/appwrite/api";
 
-const LiveFrame = () => {
-  const { id } = useParams();
-  const [list, setList] = useState<any>(null);
+const LiveFrame: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const [list, setList] = useState<IList | null>(null);
   const [refreshData, setRefreshData] = useState(false);
   const [isVoting, setIsVoting] = useState<string | null>(null);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
-      const data = await getListById(id);
-      setList(data);
+      if (!id) return;
+      try {
+        const data = await getListById(id);
+        setList(data);
+      } catch (error) {
+        console.error("Error fetching list:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch list data. Please try again.",
+          variant: "destructive",
+        });
+      }
     };
 
     fetchData();
-  }, [refreshData, id]);
+  }, [refreshData, id, toast]);
 
-  function addToLocalStorageArray(newString: string) {
-    let array = JSON.parse(localStorage.getItem('myArray') || '[]');
-    array.push(newString);
-    localStorage.setItem('myArray', JSON.stringify(array));
-  }
-
-  const items = list?.item;
-  let hasVoted = localStorage.getItem('myArray');
-
-  const handleVote = async (id: any) => {
-    setIsVoting(id);
-    const UniqueId = () => {
-      const timestamp = new Date().toISOString().replace(/[-:.T]/g, '');
-      const random = Math.floor(Math.random() * 1000);
-      return `user${timestamp}:${random}`;
-    };
-    let UId = UniqueId();
-    addToLocalStorageArray(id);
-    await VoteOnItem(UId, id);
-    setRefreshData((prevState) => !prevState);
-    setIsVoting(null);
+  const handleVote = async (itemId: string) => {
+    setIsVoting(itemId);
+    const uniqueId = `user${Date.now()}:${Math.random().toString(36).substring(2, 15)}`;
+    try {
+      await VoteOnItem(uniqueId, itemId);
+      setRefreshData(prev => !prev);
+      toast({
+        title: "Vote recorded",
+        description: "Your vote has been successfully recorded.",
+        variant: "default",
+      });
+    } catch (error) {
+      console.error("Error voting:", error);
+      toast({
+        title: "Error",
+        description: "Failed to record your vote. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVoting(null);
+    }
   };
 
-  const handleCTAClick = () => navigate("/");
-
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    alert("Link copied to clipboard!");
+  const handleCTAClick = async () => {
+    if (list?.$id) {
+      try {
+        const shareableLink = await shareList(list.$id); // Reusing the same function from ListCard
+        window.open(shareableLink, '_blank'); // Opens the shareable link in a new tab
+      } catch (err) {
+        console.error("Error generating shareable link:", err);
+      }
+    } else {
+      console.error("List ID not found");
+    }
   };
 
   return (
@@ -66,14 +85,7 @@ const LiveFrame = () => {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-indigo-800">{list.Title}</h2>
             <div className="flex space-x-2">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={handleShare}
-                className="text-indigo-600 hover:text-indigo-800 transition-colors"
-              >
-                <Share2 size={20} />
-              </motion.button>
+              
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -145,6 +157,7 @@ const LiveFrame = () => {
                 <MessageCircle size={16} />
                 <span>Join Discussion</span>
               </Button>
+
               {showTooltip && (
                 <div className="absolute left-0 w-48 px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg mt-2">
                   Join the discussion on Topfived

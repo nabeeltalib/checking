@@ -127,6 +127,8 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
           <Route path="/explore2" element={<Explore2 />} />
           <Route path="/admin-panel" element={<AdminPanel />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/sharedlistview/:id" element={<SharedListView />} />
+
         </Route>
       </Routes>
      
@@ -150,6 +152,7 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
     <Route path="/termsandconditions" element={<TermsAndConditions />} />
     <Route path="/cookiepolicy" element={<CookiePolicy />} />
     <Route path="/shared/:sharedId" element={<SharedListView />} />
+    <Route path="/sharedlistview/:id" element={<SharedListView />} />
 
     </Route>
         </Routes>

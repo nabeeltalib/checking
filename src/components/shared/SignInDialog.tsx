@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ThumbsUp, MessageCircle, Crown, Wand } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
@@ -22,14 +22,14 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4"
-        onClick={onClose}
+        onClick={onClose} // Close dialog when clicking outside
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           className="relative bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-md mx-auto"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()} // Prevent clicks inside the dialog from closing it
         >
           <button
             onClick={onClose}
@@ -38,7 +38,7 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
           >
             <X size={24} />
           </button>
-          
+
           <h2 className="text-xl sm:text-3xl font-light text-center mb-4 sm:mb-6 text-gray-800 dark:text-white">
             What's In Your Top Five?
           </h2>
@@ -48,9 +48,7 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
           <p className="text-center text-xs sm:text-sm text-gray-600 dark:text-gray-300 mb-6 sm:mb-8">
             Where your world's opinions get organized and challenged. Find Your Tribe: Follow Fellow Rankers
           </p>
-          
-          
-          
+
           <div className="space-y-3 sm:space-y-4">
             <Button
               onClick={() => navigate("/sign-up")}
@@ -58,14 +56,14 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
             >
               Sign Up
             </Button>
-            
+
             <Button
               onClick={() => navigate("/sign-in")}
               className="w-full bg-white hover:bg-gray-100 text-blue-600 border-2 border-blue-600 py-2 sm:py-3 rounded-lg text-base sm:text-lg font-semibold transition duration-300"
             >
               Log In
             </Button>
-            
+
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
@@ -74,16 +72,19 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
                 <span className="px-2 bg-white dark:bg-gray-800 text-gray-500">Or continue with</span>
               </div>
             </div>
-            
+
             <Button
-              onClick={() => {/* Handle Google Sign In */}}
+              onClick={() => {
+                // Handle Google Sign In
+                console.log("Google Sign In Clicked");
+              }}
               className="w-full flex items-center justify-center bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 py-2 sm:py-3 rounded-lg text-base sm:text-lg font-semibold transition duration-300"
             >
               <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
               Google
             </Button>
           </div>
-          
+
           <p className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             By signing up, you agree to our{' '}
             <a href="/terms" className="text-blue-600 hover:underline">Terms</a> and{' '}
@@ -95,12 +96,5 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
     document.body
   );
 };
-
-const Feature: React.FC<{ icon: React.ReactNode; text: string }> = ({ icon, text }) => (
-  <div className="flex items-center space-x-2">
-    {icon}
-    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">{text}</span>
-  </div>
-);
 
 export default SignInDialog;

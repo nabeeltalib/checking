@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { databases, appwriteConfig } from '@/lib/appwrite/config';
 import { Loader } from '@/components/shared';
-import { IList, IListItem } from '@/types';
+import { IList } from '@/types';
 import { AppwriteException } from 'appwrite';
 import { motion } from 'framer-motion';
 import { Share2, ThumbsUp, ThumbsDown, MessageCircle, Bookmark, Wand, MapPin, Clock, Crown, ChevronDown, ChevronUp } from 'lucide-react';
@@ -29,14 +29,14 @@ const SharedListView: React.FC = () => {
         setLoading(false);
         return;
       }
-      
+
       try {
         const sharedLink = await databases.getDocument(
           appwriteConfig.databaseId,
           appwriteConfig.sharedLinksCollectionId,
           sharedId
         );
-        
+
         if (new Date(sharedLink.expiresAt) < new Date()) {
           throw new Error('This shared link has expired');
         }
@@ -60,12 +60,12 @@ const SharedListView: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     fetchSharedList();
   }, [sharedId]);
 
   const handleAuthRequiredAction = () => {
-    if (user.id) {
+    if (user?.id) {
       navigate(`/lists/${list?.$id}`);
     } else {
       setIsSignInDialogOpen(true);
@@ -93,7 +93,7 @@ const SharedListView: React.FC = () => {
   };
 
   const handleItemClick = () => {
-    if (user.id) {
+    if (user?.id) {
       navigate(`/lists/${list?.$id}`);
     } else {
       setIsSignInDialogOpen(true);
@@ -157,13 +157,13 @@ const SharedListView: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <img
-            src={list.creator.ImageUrl || "/assets/icons/profile-placeholder.svg"}
-            alt={list.creator.Name}
+            src={list?.creator?.ImageUrl || "/assets/icons/profile-placeholder.svg"}
+            alt={list?.creator?.Name}
             className="w-12 h-12 rounded-full mr-4"
           />
           <div>
-            <h2 className="text-lg font-semibold text-light-1">{list.creator.Name}</h2>
-            <p className="text-sm text-light-3">@{list.creator.Username}</p>
+            <h2 className="text-lg font-semibold text-light-1">{list?.creator?.Name}</h2>
+            <p className="text-sm text-light-3">@{list?.creator?.Username}</p>
           </div>
         </div>
         <Button onClick={handleAuthRequiredAction} className="bg-primary-500 rounded-xl text-white">
@@ -176,7 +176,7 @@ const SharedListView: React.FC = () => {
           className="text-2xl font-bold text-yellow-200 cursor-pointer hover:text-yellow-300 transition-colors"
           onClick={handleItemClick}
         >
-          {list.Title}
+          {list?.Title}
         </h1>
         <button 
           onClick={handleShare}
@@ -186,13 +186,13 @@ const SharedListView: React.FC = () => {
         </button>
       </div>
 
-      {list.Description && (
+      {list?.Description && (
         <p className="mb-6 text-light-2 text-xs">{list.Description}</p>
       )}
 
       <div className="mb-4">
         <ol className="list-none space-y-2">{renderListItems()}</ol>
-        {list.items && list.items.length > 5 && (
+        {list?.items?.length > 5 && (
           <motion.button
             className="w-full text-primary-500 font-semibold text-sm mt-2 flex items-center justify-center"
             onClick={(e) => {
@@ -215,7 +215,7 @@ const SharedListView: React.FC = () => {
         )}
       </div>
       
-      {list.Tags && list.Tags.length > 0 && (
+      {list?.Tags && list?.Tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
           {list.Tags.map((tag, index) => (
             <span key={index} className="bg-gray-700 text-light-2 px-3 py-1 rounded-full text-xs">
@@ -224,15 +224,15 @@ const SharedListView: React.FC = () => {
           ))}
         </div>
       )}
-      
+
       <div className="mb-4">
-        {list.locations && list.locations.length > 0 && (
+        {list?.locations?.length > 0 && (
           <div className="flex items-center text-light-3 text-sm mb-2">
             <MapPin size={16} className="mr-2" />
             {list.locations.join(", ")}
           </div>
         )}
-        {list.timespans && list.timespans.length > 0 && (
+        {list?.timespans?.length > 0 && (
           <div className="flex items-center text-light-3 text-sm">
             <Clock size={16} className="mr-2" />
             {list.timespans.join(", ")}
@@ -243,14 +243,14 @@ const SharedListView: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <Button onClick={handleAuthRequiredAction} className="flex items-center gap-2">
           <ThumbsUp size={20} />
-          <span>{list.Likes?.length || 0}</span>
+          <span>{list?.Likes?.length || 0}</span>
         </Button>
         <Button onClick={handleAuthRequiredAction} className="flex items-center gap-2">
           <ThumbsDown size={20} />
         </Button>
         <Button onClick={handleAuthRequiredAction} className="flex items-center gap-2">
           <MessageCircle size={20} />
-          <span>{list.comments?.length || 0}</span>
+          <span>{list?.comments?.length || 0}</span>
         </Button>
         <Button onClick={handleAuthRequiredAction} className="flex items-center gap-2">
           <Bookmark size={20} />
@@ -264,7 +264,7 @@ const SharedListView: React.FC = () => {
       {/* Comments Section */}
       <div className="mt-8">
         <h3 className="text-xl font-semibold text-light-1 mb-4">Comments</h3>
-        {list.comments && list.comments.length > 0 ? (
+        {list?.comments?.length > 0 ? (
           list.comments.slice(0, 3).map((comment, index) => (
             <div key={index} className="bg-dark-3 p-4 rounded-lg mb-4">
               <p className="text-light-2">{comment.content}</p>
@@ -274,7 +274,7 @@ const SharedListView: React.FC = () => {
         ) : (
           <p className="text-light-3">No comments yet.</p>
         )}
-        {list.comments && list.comments.length > 3 && (
+        {list?.comments?.length > 3 && (
           <Button onClick={handleAuthRequiredAction} className="mt-4">
             View all comments
           </Button>

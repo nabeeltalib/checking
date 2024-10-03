@@ -310,26 +310,18 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     e.stopPropagation();
     setIsSharing(true);
     try {
-      const sharedLinkId = await shareList(list.$id);
-      const shareableLink = `${import.meta.env.VITE_APP_DOMAIN}/shared/${sharedLinkId}`;
-      
+      const shareableLink = await shareList(list.$id);
       if (navigator.share) {
         await navigator.share({
           title: list.Title,
           text: `Check out this list: ${list.Title}`,
           url: shareableLink,
         });
-        toast({
-          title: "List shared successfully!",
-          description: "The list has been shared via your device's share menu.",
-          duration: 3000,
-        });
       } else {
         await navigator.clipboard.writeText(shareableLink);
         toast({
           title: "Link copied to clipboard!",
-          description: "You can now paste the link to share the list.",
-          duration: 3000,
+          variant: "default",
         });
       }
     } catch (error) {

@@ -142,7 +142,7 @@ const Home: React.FC = () => {
            What's In your Top Five?
           </h2>
           <div>
-            <NavLink to={`/profile/profile`} className="text-3xl md:text-3xl text-blue-500 font-semibold mb-2 mt-6 hover:text-blue-700 transition-colors" style={{ fontFamily: "'Permanent Marker', cursive" }}>
+            <NavLink to={`/profile/profile`} className="text-3xl md:text-3xl text-blue-500 font-light mb-2 mt-6 hover:text-blue-700 transition-colors">
               @{user.username}
             </NavLink>
           </div>
