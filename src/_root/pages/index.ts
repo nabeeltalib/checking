@@ -30,7 +30,6 @@ export { default as OnboardingScreens } from "./OnboardingScreens";
 export { default as AdminPanel } from "./AdminPanel";
 export { default as Userlist } from "./Userlist";
 export { default as ManageList } from "./ManageList";
-export { default as ListFromFriends } from "./ListFromFriends";
 export { default as SegmentedLeaderboardPage } from "./SegmentedLeaderboardPage";
 export { default as Recomended } from "./Recomended";
 export { default as UserActivity } from "./UserActivity";

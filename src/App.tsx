@@ -27,7 +27,6 @@ import {
   Recomended,
   UserActivity,
   ManageList,
-  ListFromFriends,
   SegmentedLeaderboardPage,
   ProfileScreen,
   ComprehensiveLeaderboard,
@@ -45,6 +44,8 @@ import Notifications from "./components/shared/Notifications";
 import AuthCallback from './_root/pages/AuthCallback';
 import NotFound from "./_root/pages/NotFound";
 import { Toaster } from "@/components/ui/toaster";
+import ListFromFriends from "./_root/pages/ListFromFriends";
+
 import "./globals.css";
 
 import StaticFrame from "./components/shared/StaticFrame";
