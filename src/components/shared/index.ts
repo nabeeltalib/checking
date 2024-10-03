@@ -12,4 +12,7 @@ export { default as FriendsList } from "./FriendsList";
 export { default as FriendsLists } from "./FriendsLists";
 export { default as RightSidebar } from "./RightSidebar";
 export { default as SearchBar } from "./SearchBar";
+export { default as EmbedPreview } from "./EmbedPreview";
+export { default as EmbedSelector } from "./EmbedSelector";
+export { default as OnboardingPage } from "./OnboardingPage";
 export { default as FriendRequests } from "./FriendRequests";
