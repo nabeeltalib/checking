@@ -98,7 +98,7 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/categories/:value" element={<Categories />} />
                 <Route path="/collaborations" element={<Collaborations />} />
-                <Route path="/listfromfriends" element={<ListFromFriends />} />
+                import ListFromFriends from "./_root/pages/listFromFriends";
                 <Route path="/userlists" element={<Userlist />} />
                 <Route path="/trending" element={<Trending />} />
                 <Route path="/recommended" element={<Recomended />} />
