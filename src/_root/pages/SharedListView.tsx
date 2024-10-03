@@ -10,6 +10,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import SignInDialog from '@/components/shared/SignInDialog';
 import { useUserContext } from "@/context/AuthContext";
+import { useGetComments } from "@/lib/react-query/queries";
+import Comment from '@/components/shared/Comment';
 
 const SharedListView: React.FC = () => {
   const { sharedId } = useParams<{ sharedId: string }>();
@@ -21,6 +23,9 @@ const SharedListView: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useUserContext();
+
+  // Fetch comments for the list
+  const { data: comments, isLoading: commentsLoading } = useGetComments(list?.$id);
 
   useEffect(() => {
     const fetchSharedList = async () => {
@@ -142,6 +147,43 @@ const SharedListView: React.FC = () => {
     return index < colors.length ? colors[index] : "text-purple-500";
   };
 
+  const renderComments = () => {
+    if (commentsLoading) return <Loader />;
+    if (!comments || comments.length === 0) return <p className="text-light-3">No comments yet.</p>;
+
+    return (
+      <div className="space-y-4">
+        <div 
+          className="cursor-pointer" 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleAuthRequiredAction();
+          }}
+        >
+          <Comment
+            comment={comments[0]}
+            setReply={() => {}}
+            show={false}
+            setCommentId={() => {}}
+          />
+        </div>
+        {comments.length > 1 && (
+          <Button 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAuthRequiredAction();
+            }} 
+            className="mt-2 text-primary-500 hover:underline"
+          >
+            View all {comments.length} comments
+          </Button>
+        )}
+      </div>
+    );
+  };
+
   if (loading) return <Loader />;
   if (error) return <div className="text-red-500 p-4 text-center">{error}</div>;
   if (!list) return <div className="text-light-1 p-4 text-center">List not found</div>;
@@ -196,7 +238,7 @@ const SharedListView: React.FC = () => {
           <motion.button
             className="w-full text-primary-500 font-semibold text-sm mt-2 flex items-center justify-center"
             onClick={(e) => {
-              e.stopPropagation(); // Prevent triggering the handleItemClick
+              e.stopPropagation();
               setIsExpanded(!isExpanded);
             }}
             whileHover={{ scale: 1.05 }}
@@ -214,7 +256,7 @@ const SharedListView: React.FC = () => {
           </motion.button>
         )}
       </div>
-      
+
       {list?.Tags && list?.Tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-4">
           {list.Tags.map((tag, index) => (
@@ -250,7 +292,7 @@ const SharedListView: React.FC = () => {
         </Button>
         <Button onClick={handleAuthRequiredAction} className="flex items-center gap-2">
           <MessageCircle size={20} />
-          <span>{list?.comments?.length || 0}</span>
+          <span>{comments?.length || 0}</span>
         </Button>
         <Button onClick={handleAuthRequiredAction} className="flex items-center gap-2">
           <Bookmark size={20} />
@@ -261,29 +303,15 @@ const SharedListView: React.FC = () => {
         </Button>
       </div>
 
-      {/* Comments Section */}
-      <div className="mt-8">
-        <h3 className="text-xl font-semibold text-light-1 mb-4">Comments</h3>
-        {list?.comments?.length > 0 ? (
-          list.comments.slice(0, 3).map((comment, index) => (
-            <div key={index} className="bg-dark-3 p-4 rounded-lg mb-4">
-              <p className="text-light-2">{comment.content}</p>
-              <p className="text-sm text-light-3 mt-2">By {comment.user.name}</p>
-            </div>
-          ))
-        ) : (
-          <p className="text-light-3">No comments yet.</p>
-        )}
-        {list?.comments?.length > 3 && (
-          <Button onClick={handleAuthRequiredAction} className="mt-4">
-            View all comments
-          </Button>
-        )}
-      </div>
+       {/* Comments Section */}
+    <div className="mt-8">
+      <h3 className="text-xl font-semibold text-light-1 mb-4">Comments</h3>
+      {renderComments()}
+    </div>
 
-      <SignInDialog isOpen={isSignInDialogOpen} onClose={() => setIsSignInDialogOpen(false)} />
-    </motion.div>
-  );
+    <SignInDialog isOpen={isSignInDialogOpen} onClose={() => setIsSignInDialogOpen(false)} />
+  </motion.div>
+);
 };
 
 export default SharedListView;

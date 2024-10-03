@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useSignInWithGoogle } from "@/lib/react-query/queries"; // Import Google Sign-in logic
+import { useToast } from "@/components/ui/use-toast"; // Optional for showing success/failure messages
 
 interface SignInDialogProps {
   isOpen: boolean;
@@ -12,6 +14,18 @@ interface SignInDialogProps {
 
 const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const { mutateAsync: signInWithGoogle, isLoading: isGoogleLoading } = useSignInWithGoogle(); // Using the hook
+  const { toast } = useToast(); // Optional: for showing success/failure messages
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle(); // Trigger Google sign-in
+      toast({ title: "Signed in successfully with Google!" }); // Show success toast (optional)
+    } catch (error) {
+      console.error("Google sign-in failed", error);
+      toast({ title: "Google sign-in failed", description: "Please try again.", variant: "error" }); // Show error toast (optional)
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -74,21 +88,25 @@ const SignInDialog: React.FC<SignInDialogProps> = ({ isOpen, onClose }) => {
             </div>
 
             <Button
-              onClick={() => {
-                // Handle Google Sign In
-                console.log("Google Sign In Clicked");
-              }}
+              onClick={handleGoogleSignIn} // Handle Google Sign-In
               className="w-full flex items-center justify-center bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 py-2 sm:py-3 rounded-lg text-base sm:text-lg font-semibold transition duration-300"
+              disabled={isGoogleLoading} // Disable button when loading
             >
-              <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
-              Google
+              {isGoogleLoading ? (
+                <span>Loading...</span>
+              ) : (
+                <>
+                  <img src="/assets/icons/google.svg" alt="Google" className="mr-2 h-5 w-5" />
+                  Google
+                </>
+              )}
             </Button>
           </div>
 
           <p className="mt-4 sm:mt-6 text-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
             By signing up, you agree to our{' '}
-            <a href="/terms" className="text-blue-600 hover:underline">Terms</a> and{' '}
-            <a href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</a>.
+            <a href="/termsandconditions" className="text-blue-600 hover:underline">Terms</a> and{' '}
+            <a href="/privacypolicy" className="text-blue-600 hover:underline">Privacy Policy</a>.
           </p>
         </motion.div>
       </motion.div>

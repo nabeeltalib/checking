@@ -189,7 +189,7 @@ const Explore: React.FC = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.6 }}
-        className="w-full bg-dark-2 p-6 rounded-xl shadow-lg"
+        className="w-full bg-dark-2 rounded-xl shadow-lg"
       >
         <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center">
           <Clock className="mr-2" />
