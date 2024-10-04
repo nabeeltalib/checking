@@ -9,10 +9,10 @@ import { IList, IListItem } from "@/types";
 
 const EditList: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { data: list, isLoading, isError } = useGetListById(id);
-  const { user } = useUserContext();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useUserContext();
+  const { data: list, isLoading, isError } = useGetListById(id || '', user?.id || '');
   const { mutateAsync: updateList, isLoading: isUpdating } = useUpdateList();
 
   useEffect(() => {
@@ -20,11 +20,10 @@ const EditList: React.FC = () => {
       navigate(`/lists/${id}`);
     }
   }, [list, user, id, navigate]);
- 
-  // Scroll to top when component mounts or when user navigates to the page
- useEffect(() => {
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}, []);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const handleUpdateList = async (updatedListData: IList) => {
     if (!id) return;

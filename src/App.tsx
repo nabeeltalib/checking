@@ -24,7 +24,7 @@ import {
   CookiePolicy,
   SharedListView,
 } from "@/_root/pages";
-import RemixList from "@/components/shared/list/RemixList";
+import RemixList from "@/components/shared/list/RemixList"; // New import
 import AuthLayout from "@/_auth/AuthLayout";
 import RootLayout from "@/_root/RootLayout";
 import SigninForm from "@/_auth/forms/SigninForm";
