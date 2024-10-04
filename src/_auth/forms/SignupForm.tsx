@@ -94,7 +94,7 @@ const SignupForm = () => {
         className="bg-gray-800 bg-opacity-50 p-8 rounded-xl shadow-2xl max-w-md w-full"
       >
         <motion.img
-          src="/assets/images/logo.svg"
+          src="/assets/images/logo3.svg"
           alt="Topfived logo"
           className="mx-auto mb-8"
           initial={{ scale: 0.8 }}

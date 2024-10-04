@@ -129,14 +129,14 @@ const Topbar: React.FC = () => {
         <div className="container mx-auto flex p-4 items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
             <img
-              src="/assets/images/logo.svg"
+              src="/assets/images/logo3.svg"
               alt="Topfived logo"
               width={130}
               height={32}
               className="object-contain hidden md:block"
             />
             <img
-              src="/assets/images/logo.svg"
+              src="/assets/images/logo3.svg"
               alt="Topfived logo"
               width={130}
               className="object-contain md:hidden"

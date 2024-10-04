@@ -52,7 +52,7 @@ const SigninForm = () => {
         {/* Wrap the logo in a Link */}
         <Link to="/">
           <motion.img
-            src="/assets/images/logo.svg"
+            src="/assets/images/logo3.svg"
             alt="Topfived logo"
             className="mx-auto mb-8 cursor-pointer" // Add cursor-pointer for better UX
             initial={{ scale: 0.8 }}

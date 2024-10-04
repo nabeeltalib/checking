@@ -89,7 +89,7 @@ const OnboardingScreens = () => {
             exit={{ opacity: 0, x: -50 }}
           >
                   <Link to="/" className="flex items-center gap-3">
-                    <img src="/assets/images/logo.svg" alt="logo" className="mx-auto mb-8" />
+                    <img src="/assets/images/logo3.svg" alt="logo" className="mx-auto mb-8" />
                   </Link>
             <h2 className="text-2xl font-bold mb-2 text-center text-white">What's in your Top Five?</h2>
             <h2 className="text-lg font-normal mb-6 text-center text-white">Where your world's best opinions are challenged. </h2>
