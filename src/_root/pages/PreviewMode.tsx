@@ -173,7 +173,7 @@ const PreviewMode: React.FC = () => {
       {/* Redesigned Sticky Search Bar */}
       <div className="sticky top-[calc(4rem)] z-10 w-full bg-dark-1 shadow-md my-4">
         <div className="max-w-3xl mx-auto px-4 py-3">
-          <div className="bg-gray-300 rounded-full overflow-hidden shadow-lg mb-2">
+          <div className="bg-gray-800 rounded-full overflow-hidden shadow-lg mb-2">
             <div className="flex items-center px-4 py-2">
               <Search className="text-gray-800 mr-3" size={20} />
               <input

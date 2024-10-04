@@ -22,7 +22,7 @@ import {
   ThumbsDown,
   Bookmark,
   MessageSquare,
-  Wand,
+  Redo2,
   Code,
   ChevronDown,
   ChevronUp,
@@ -289,7 +289,7 @@ const ListStats: React.FC<ListStatsProps> = ({
           className="flex-1 flex items-center justify-center space-x-2"
           onClick={() => navigate(`/remix/${list.$id}`)}
         >
-          <Wand size={20} className="text-gray-400" />
+          <Redo2 size={20} className="text-gray-400" />
           <span className={textSize}>Remix</span>
         </Button>
 

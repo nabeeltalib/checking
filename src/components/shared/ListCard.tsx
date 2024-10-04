@@ -7,7 +7,7 @@ import {
   Share2,
   MessageCircle,
   Bookmark,
-  Wand,
+  Redo2,
   MapPin, 
   Clock,
   Crown,
@@ -125,7 +125,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     return displayItems.map((item, index) => (
       <motion.li
         key={index}
-        className="flex items-center mb-2 bg-gray-900 rounded-md p-1 hover:bg-gray-700 transition-colors duration-300"
+        className="flex items-center mb-2 bg-gray-900 rounded-md p-0 hover:bg-gray-700 transition-colors duration-300"
         onClick={() => {
           if (!isAuthenticated) {
             handleDialogOpen();
@@ -335,7 +335,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
                 onClick={handleDialogOpen}
                 className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 px-3 py-2 rounded-lg"
               >
-                <Wand size={20} />
+                <Redo2 size={20} />
                 <span>Remix</span>
               </Button>
             </Tooltip>

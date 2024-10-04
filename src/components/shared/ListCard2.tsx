@@ -13,7 +13,7 @@ import {
   ChevronDown,
   ChevronUp,
   ChevronRight,
-  Wand,
+  Redo2,
 } from "lucide-react";
 import {
   followUser,
@@ -351,7 +351,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: index * 0.1 }}
-          className="flex items-center mb-1 bg-gray-900 rounded-md p-1 hover:bg-gray-700 transition-colors duration-300"
+          className="flex items-center mb-1 bg-gray-900 rounded-md p-0 hover:bg-gray-700 transition-colors duration-300"
         >
           <span className="text-lg font-bold text-yellow-200 mr-4">
             {index === 0 ? <Crown size={20} className="text-yellow-200" /> : index + 1}
@@ -687,7 +687,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
           onClick={() => navigate(`/remix/${list.$id}`)}
           className="text-xs flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
         >
-          <Wand size={20} />
+          <Redo2 size={20} />
           <span>Remix</span>
         </Button>
       </div>
