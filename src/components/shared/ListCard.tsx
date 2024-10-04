@@ -41,7 +41,9 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     mutateAsync: signInWithGoogle,
     isLoading: isGoogleLoading,
   } = useSignInWithGoogle();
-
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
   // Assume the user is not authenticated for this example
   const isAuthenticated = false;
 
@@ -51,21 +53,29 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
 
   const { openShareDialog } = useShareDialog();
 
-const handleShare = async (e: React.MouseEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
-  try {
-    const shareableLink = await shareList(list.$id);
-    openShareDialog(shareableLink, list.Title);
-  } catch (error) {
-    console.error("Error sharing list:", error);
-    toast({
-      title: "Error",
-      description: "Failed to generate shareable link. Please try again.",
-      variant: "destructive",
-    });
-  }
-};
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const shareableLink = await shareList(list.$id);
+      if (isMobile() && navigator.share) {
+        await navigator.share({
+          title: list.Title,
+          text: `Check out this list: ${list.Title}`,
+          url: shareableLink,
+        });
+      } else {
+        openShareDialog(shareableLink, list.Title);
+      }
+    } catch (error) {
+      console.error("Error sharing list:", error);
+      toast({
+        title: "Error",
+        description: "Failed to share list. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleDialogOpen = () => {
     setIsSignInDialogOpen(true);

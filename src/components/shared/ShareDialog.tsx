@@ -35,6 +35,7 @@ const ShareDialog: React.FC = () => {
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 9999,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // 50% opacity black background
     //backdropFilter: 'blur(1px)', // This adds a slight blur effect to the background
   }}
   onClick={closeShareDialog}

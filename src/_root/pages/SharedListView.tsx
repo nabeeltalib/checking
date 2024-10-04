@@ -25,7 +25,9 @@ const SharedListView: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
   const { openShareDialog } = useShareDialog();
-
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
   // Fetch comments for the list
   const { data: comments, isLoading: commentsLoading } = useGetComments(list?.$id);
 
@@ -80,19 +82,25 @@ const SharedListView: React.FC = () => {
   };
 
   const handleShare = async () => {
-  try {
     const shareableLink = window.location.href;
-    openShareDialog(shareableLink, list?.Title || 'Shared List');
-  } catch (error) {
-    console.error('Error sharing:', error);
-    toast({
-      title: "Error",
-      description: "Failed to share the list. Please try again.",
-      variant: "destructive",
-    });
-  }
-};
-
+    const shareTitle = list?.Title || 'Shared List';
+  
+    if (isMobile() && navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: 'Check out this list!',
+          url: shareableLink
+        });
+      } catch (error) {
+        console.error('Error sharing:', error);
+        openShareDialog(shareableLink, shareTitle);
+      }
+    } else {
+      openShareDialog(shareableLink, shareTitle);
+    }
+  };
+  
   const handleItemClick = () => {
     if (user?.id) {
       navigate(`/lists/${list?.$id}`);

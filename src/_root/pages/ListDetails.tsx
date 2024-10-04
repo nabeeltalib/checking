@@ -55,7 +55,9 @@ const ListDetails: React.FC = () => {
   const [isReply, setIsReply] = useState(false);
   const [commentId, setCommentId] = useState("");
   const { openShareDialog } = useShareDialog();
-
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
   // Scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -129,20 +131,28 @@ const ListDetails: React.FC = () => {
   };
 
   const handleShare = async (e: React.MouseEvent) => {
-  e.preventDefault();
-  e.stopPropagation();
-  try {
-    const shareableLink = await shareList(id);
-    openShareDialog(shareableLink, list?.Title || 'Shared List');
-  } catch (error) {
-    console.error("Error sharing list:", error);
-    toast({ 
-      title: "Error", 
-      description: "Failed to generate shareable link. Please try again.", 
-      variant: "destructive" 
-    });
-  }
-};
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const shareableLink = await shareList(id);
+      if (isMobile() && navigator.share) {
+        await navigator.share({
+          title: list?.Title || 'Shared List',
+          text: `Check out this list: ${list?.Title}`,
+          url: shareableLink,
+        });
+      } else {
+        openShareDialog(shareableLink, list?.Title || 'Shared List');
+      }
+    } catch (error) {
+      console.error("Error sharing list:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to generate shareable link. Please try again.", 
+        variant: "destructive" 
+      });
+    }
+  };
 
   const LoadingSkeleton: React.FC = () => (
     <div className="animate-pulse">

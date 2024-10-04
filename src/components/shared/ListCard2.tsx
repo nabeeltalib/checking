@@ -86,7 +86,9 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const { data: comments } = useGetComments(list?.$id);
   const { mutate: createComment, isLoading: isSubmittingComment } = useCreateComment();
   const { openShareDialog } = useShareDialog();
-
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
   const { user } = useUserContext();
   const { id } = user;
 
@@ -304,21 +306,29 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   }, [list?.creator, user.id, toast]);
 
   const handleShare = async (e: React.MouseEvent) => {
-  if (!list) return;
-  e.preventDefault();
-  e.stopPropagation();
-  try {
-    const shareableLink = await shareList(list.$id);
-    openShareDialog(shareableLink, list.Title);
-  } catch (error) {
-    console.error("Error sharing list:", error);
-    toast({
-      title: "Error",
-      description: "Failed to generate shareable link. Please try again.",
-      variant: "destructive",
-    });
-  }
-};
+    if (!list) return;
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const shareableLink = await shareList(list.$id);
+      if (isMobile() && navigator.share) {
+        await navigator.share({
+          title: list.Title,
+          text: `Check out this list: ${list.Title}`,
+          url: shareableLink,
+        });
+      } else {
+        openShareDialog(shareableLink, list.Title);
+      }
+    } catch (error) {
+      console.error("Error sharing list:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate shareable link. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const renderListItems = useMemo(() => {
     if (!list || !list.items) return null;
