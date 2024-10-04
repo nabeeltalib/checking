@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { IList } from "@/types";
@@ -25,8 +25,6 @@ import { Button } from "../ui";
 import Tooltip from "@/components/ui/Tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import SignInDialog from '@/components/shared/SignInDialog';
-import ShareDialog from '@/components/shared/ShareDialog'; // New import
-import { useShareDialog } from './ShareDialogContext';
 
 type ListCardProps = {
   list: IList;
@@ -35,7 +33,6 @@ type ListCardProps = {
 const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const [isSharing, setIsSharing] = useState(false);
   const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
-  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false); // New state
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: comments } = useGetComments(list.$id);
   const navigate = useNavigate();
@@ -52,26 +49,35 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const isFollowed = false;
   const isFollowLoading = false;
 
-  const [shareUrl, setShareUrl] = useState("");
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseEnter = useCallback(() => setIsHovered(true), []);
-  const handleMouseLeave = useCallback(() => setIsHovered(false), []);
-  const { openShareDialog } = useShareDialog();
-
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    setIsSharing(true);
     try {
       const shareableLink = await shareList(list.$id);
-      openShareDialog(shareableLink, list.Title);
+      if (navigator.share) {
+        await navigator.share({
+          title: list.Title,
+          text: `Check out this list: ${list.Title}`,
+          url: shareableLink,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareableLink);
+        toast({
+          title: "Link copied",
+          description: "The shareable link has been copied to your clipboard.",
+          variant: "success",
+        });
+      }
     } catch (error) {
       console.error("Error sharing list:", error);
       toast({
         title: "Error",
-        description: "Failed to generate shareable link. Please try again.",
+        description: "Failed to share list. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -164,10 +170,11 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
 
   return (
     <motion.div
-    className="bg-gray-900 rounded-xl overflow-hidden transition-all duration-300 mb-4"
-    animate={isHovered ? { y: -5 } : { y: 0 }}
-    onMouseEnter={handleMouseEnter}
-    onMouseLeave={handleMouseLeave}
+      className="bg-gray-900 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 mb-4"
+      whileHover={{ y: -5 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
       <div className="p-4">
         {/* Creator Info */}
@@ -209,6 +216,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               <button
                 onClick={handleShare}
                 className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
+                disabled={isSharing}
                 aria-label="Share this list"
               >
                 <Share2 size={24} />
@@ -357,12 +365,6 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           </div>
         )}
       </div>
-      <ShareDialog
-        isOpen={isShareDialogOpen}
-        onClose={() => setIsShareDialogOpen(false)}
-        shareUrl={`${window.location.origin}/lists/${list.$id}`}
-        title={list.Title}
-      />
 
       {/* Sign-in Dialog */}
       <SignInDialog isOpen={isSignInDialogOpen} onClose={handleDialogClose} />
