@@ -25,13 +25,13 @@ import { Button } from "../ui";
 import Tooltip from "@/components/ui/Tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import SignInDialog from '@/components/shared/SignInDialog';
+import { useShareDialog } from '@/components/shared/ShareDialogContext';
 
 type ListCardProps = {
   list: IList;
 };
 
 const ListCard: React.FC<ListCardProps> = ({ list }) => {
-  const [isSharing, setIsSharing] = useState(false);
   const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: comments } = useGetComments(list.$id);
@@ -49,37 +49,23 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const isFollowed = false;
   const isFollowLoading = false;
 
-  const handleShare = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsSharing(true);
-    try {
-      const shareableLink = await shareList(list.$id);
-      if (navigator.share) {
-        await navigator.share({
-          title: list.Title,
-          text: `Check out this list: ${list.Title}`,
-          url: shareableLink,
-        });
-      } else {
-        await navigator.clipboard.writeText(shareableLink);
-        toast({
-          title: "Link copied",
-          description: "The shareable link has been copied to your clipboard.",
-          variant: "success",
-        });
-      }
-    } catch (error) {
-      console.error("Error sharing list:", error);
-      toast({
-        title: "Error",
-        description: "Failed to share list. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSharing(false);
-    }
-  };
+  const { openShareDialog } = useShareDialog();
+
+const handleShare = async (e: React.MouseEvent) => {
+  e.preventDefault();
+  e.stopPropagation();
+  try {
+    const shareableLink = await shareList(list.$id);
+    openShareDialog(shareableLink, list.Title);
+  } catch (error) {
+    console.error("Error sharing list:", error);
+    toast({
+      title: "Error",
+      description: "Failed to generate shareable link. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
 
   const handleDialogOpen = () => {
     setIsSignInDialogOpen(true);
@@ -216,7 +202,6 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               <button
                 onClick={handleShare}
                 className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
-                disabled={isSharing}
                 aria-label="Share this list"
               >
                 <Share2 size={24} />

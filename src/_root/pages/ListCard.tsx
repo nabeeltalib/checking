@@ -87,7 +87,6 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
             className={`text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3 ${
               isSharing ? "cursor-not-allowed" : ""
             }`}
-            disabled={isSharing}
             aria-label="Share this list"
           >
             <Share2 size={24} />
