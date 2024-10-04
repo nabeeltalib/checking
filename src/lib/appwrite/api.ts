@@ -1841,9 +1841,14 @@ export async function getMostLikedLists() {
     return result.documents;
   } catch (error) {
     console.error("Error getting popular lists:", error);
-    throw error;
+    if (error instanceof AppwriteException) {
+      console.error("Appwrite error details:", error.message, error.code);
+    }
+    // Return an empty array instead of throwing
+    return [];
   }
 }
+
 export const likeReply = async (replyId: string, likesArray: string[]) => {
   try {
     await databases.updateDocument(

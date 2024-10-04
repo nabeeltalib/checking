@@ -12,6 +12,7 @@ import SignInDialog from '@/components/shared/SignInDialog';
 import { useUserContext } from "@/context/AuthContext";
 import { useGetComments } from "@/lib/react-query/queries";
 import Comment from '@/components/shared/Comment';
+import { useShareDialog } from '@/components/shared/ShareDialogContext';
 
 const SharedListView: React.FC = () => {
   const { sharedId } = useParams<{ sharedId: string }>();
@@ -23,6 +24,7 @@ const SharedListView: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useUserContext();
+  const { openShareDialog } = useShareDialog();
 
   // Fetch comments for the list
   const { data: comments, isLoading: commentsLoading } = useGetComments(list?.$id);
@@ -78,24 +80,18 @@ const SharedListView: React.FC = () => {
   };
 
   const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: list?.Title || 'Shared List',
-          text: 'Check out this list!',
-          url: window.location.href
-        });
-      } catch (err) {
-        console.error('Error sharing:', err);
-      }
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Link copied!",
-        description: "The list link has been copied to your clipboard.",
-      });
-    }
-  };
+  try {
+    const shareableLink = window.location.href;
+    openShareDialog(shareableLink, list?.Title || 'Shared List');
+  } catch (error) {
+    console.error('Error sharing:', error);
+    toast({
+      title: "Error",
+      description: "Failed to share the list. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
 
   const handleItemClick = () => {
     if (user?.id) {
@@ -223,6 +219,7 @@ const SharedListView: React.FC = () => {
         <button 
           onClick={handleShare}
           className="text-white p-2 rounded-full hover:bg-primary-600 transition-colors"
+          aria-label="Share this list"
         >
           <Share2 size={20} />
         </button>

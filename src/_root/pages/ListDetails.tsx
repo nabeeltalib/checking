@@ -28,6 +28,7 @@ import { Share2, ChevronLeft, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 import LoaderOverlay from "@/components/shared/LoaderOverlay"; // Import the LoaderOverlay component
+import { useShareDialog } from '@/components/shared/ShareDialogContext';
 
 const ListDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -53,7 +54,8 @@ const ListDetails: React.FC = () => {
   const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [isReply, setIsReply] = useState(false);
   const [commentId, setCommentId] = useState("");
- 
+  const { openShareDialog } = useShareDialog();
+
   // Scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -126,32 +128,21 @@ const ListDetails: React.FC = () => {
     }
   };
 
-
-  const [isSharing, setIsSharing] = useState(false);
-
   const handleShare = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsSharing(true);
-    try {
-      const shareableLink = await shareList(id);
-      if (navigator.share) {
-        await navigator.share({
-          title: list?.Title,
-          text: `Check out this list: ${list?.Title}`,
-          url: shareableLink,
-        });
-      } else {
-        await navigator.clipboard.writeText(shareableLink);
-        toast({ title: "Link copied to clipboard!" });
-      }
-    } catch (error) {
-      console.error("Error sharing list:", error);
-      toast({ title: "Failed to share list. Please try again.", variant: "destructive" });
-    } finally {
-      setIsSharing(false);
-    }
-  };
+  e.preventDefault();
+  e.stopPropagation();
+  try {
+    const shareableLink = await shareList(id);
+    openShareDialog(shareableLink, list?.Title || 'Shared List');
+  } catch (error) {
+    console.error("Error sharing list:", error);
+    toast({ 
+      title: "Error", 
+      description: "Failed to generate shareable link. Please try again.", 
+      variant: "destructive" 
+    });
+  }
+};
 
   const LoadingSkeleton: React.FC = () => (
     <div className="animate-pulse">
@@ -263,7 +254,7 @@ const ListDetails: React.FC = () => {
           <Button
             onClick={handleShare}
             className="text-light-2 hover:text-primary-500 transition-colors mr-2"
-            disabled={isSharing}
+            aria-label="Share this list"
           >
             <Share2 size={24} />
           </Button>
