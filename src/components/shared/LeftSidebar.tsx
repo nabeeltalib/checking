@@ -18,10 +18,7 @@ const LeftSidebar: React.FC = () => {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   useEffect(() => {
-    // Close all dropdowns when collapsing the sidebar
-    if (isCollapsed) {
-      setOpenDropdown(null);
-    }
+    if (isCollapsed) setOpenDropdown(null);
   }, [isCollapsed]);
 
   const handleSignOut = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -32,28 +29,20 @@ const LeftSidebar: React.FC = () => {
     navigate('/sign-in');
   };
 
-  const toggleCollapse = () => {
-    setIsCollapsed((prev) => !prev);
-  };
-
+  const toggleCollapse = () => setIsCollapsed(prev => !prev);
   const toggleDropdown = (label: string) => {
-    if (isCollapsed) return; // Don't toggle dropdowns when sidebar is collapsed
+    if (isCollapsed) return;
     setOpenDropdown(openDropdown === label ? null : label);
   };
 
   const getIcon = (label: string) => {
-    switch (label) {
-      case 'Home': return <Home size={20} />;
-      case 'Explore': return <Telescope size={20} />;
-      case 'LeaderBoard': return <Crown size={20} />;
-      case 'Bookmarks': return <Bookmark size={20} />;
-      case 'Notifications': return <Bell size={20} />;
-      case 'Friends': return <Contact size={20} />;
-      case 'Collaboration': return <Users size={20} />;
-      case 'My Profile': return <User size={20} />;
-      case 'Admin Panel': return <Settings size={20} />;
-      default: return null;
-    }
+    const icons = {
+      Home: Home, Explore: Telescope, LeaderBoard: Crown, Bookmarks: Bookmark,
+      Notifications: Bell, Friends: Contact, Collaboration: Users,
+      'My Profile': User, 'Admin Panel': Settings
+    };
+    const IconComponent = icons[label as keyof typeof icons];
+    return IconComponent ? <IconComponent size={20} /> : null;
   };
 
   const groupedLinks = {
@@ -77,10 +66,10 @@ const LeftSidebar: React.FC = () => {
 
   return (
     <motion.aside
-      initial={{ width: 256 }}
-      animate={{ width: isCollapsed ? 80 : 256 }}
+      initial={{ width: 280 }}
+      animate={{ width: isCollapsed ? 80 : 280 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="leftsidebar flex flex-col justify-between h-screen bg-dark-2 border-r border-dark-4 overflow-hidden fixed left-0 top-16 shadow-xl"
+      className="leftsidebar flex flex-col justify-between h-screen bg-dark-2/80 backdrop-blur-md border-r border-dark-4/30 overflow-hidden fixed left-0 top-16 shadow-2xl"
     >
       <div className="flex flex-col">
         <div className="flex items-center justify-between p-4 mb-7">
@@ -91,7 +80,7 @@ const LeftSidebar: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
-                className="flex items-center gap-3 p-2 rounded-lg bg-dark-4"
+                className="flex items-center gap-3 p-2 rounded-lg bg-dark-4/50 hover:bg-dark-4/70 transition-all duration-300"
               >
                 <img
                   src={user.imageUrl || '/assets/icons/profile-placeholder.svg'}
@@ -100,7 +89,7 @@ const LeftSidebar: React.FC = () => {
                 />
                 <div>
                   <p className="text-light-1 font-semibold">{user.username || 'User'}</p>
-                  <NavLink to="/profile/profile" className="text-light-2 text-sm hover:text-light-1 transition-colors">
+                  <NavLink to="/profile/profile" className="text-light-2 text-sm hover:text-primary-500 transition-colors">
                     View Profile
                   </NavLink>
                 </div>
@@ -111,7 +100,7 @@ const LeftSidebar: React.FC = () => {
             onClick={toggleCollapse}
             variant="ghost"
             size="icon"
-            className="text-light-1 hover:bg-dark-4 focus:outline-none"
+            className="text-light-1 hover:bg-dark-4/50 focus:outline-none transition-all duration-300"
             aria-label="Toggle Sidebar"
           >
             {isCollapsed ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
@@ -119,67 +108,69 @@ const LeftSidebar: React.FC = () => {
         </div>
 
         <nav className="flex-grow flex flex-col gap-2 px-4 py-2 overflow-y-auto">
-        {Object.entries(groupedLinks).map(([group, links]) => (
-          <div key={group}>
-            {group !== 'main' && !isCollapsed && (
-              <button
-                onClick={() => toggleDropdown(group)}
-                className={`flex items-center justify-between w-full p-2 rounded-lg transition-all duration-200 ${
-                  openDropdown === group ? 'bg-dark-4 text-light-1' : 'text-light-2 hover:bg-dark-4 hover:text-light-1'
-                }`}
-              >
-                <span className="capitalize">{group}</span>
-                {openDropdown === group ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-            )}
-            <AnimatePresence>
-              {(group === 'main' || openDropdown === group || isCollapsed) && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
+          {Object.entries(groupedLinks).map(([group, links]) => (
+            <div key={group} className="mb-4">
+              {group !== 'main' && !isCollapsed && (
+                <button
+                  onClick={() => toggleDropdown(group)}
+                  className={`flex items-center justify-between w-full p-2 rounded-lg transition-all duration-300 ${
+                    openDropdown === group ? 'bg-dark-4/70 text-primary-500' : 'text-light-2 hover:bg-dark-4/50 hover:text-light-1'
+                  }`}
                 >
-                  {links.map((link) => (
-                    <NavLink
-                      key={link.label}
-                      to={link.route}
-                      className={({ isActive }) =>
-                        `flex items-center gap-4 p-2 rounded-lg transition-all duration-200 ${
-                          isActive
-                            ? 'bg-primary-500 text-white shadow-md'
-                            : 'text-light-2 hover:bg-dark-4 hover:text-light-1 hover:shadow-md'
-                        } ${link.label === 'Admin Panel' ? 'text-yellow-400 font-semibold' : ''}`
-                      }
-                    >
-                      {getIcon(link.label)}
-                      <AnimatePresence>
-                        {!isCollapsed && (
-                          <motion.span
-                            initial={{ opacity: 0, width: 0 }}
-                            animate={{ opacity: 1, width: 'auto' }}
-                            exit={{ opacity: 0, width: 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            {link.label}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </NavLink>
-                  ))}
-                </motion.div>
+                  <span className="capitalize font-medium">{group}</span>
+                  {openDropdown === group ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
               )}
-            </AnimatePresence>
-          </div>
-        ))}
-      </nav>
+              <AnimatePresence>
+                {(group === 'main' || openDropdown === group || isCollapsed) && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {links.map((link) => (
+                      <NavLink
+                        key={link.label}
+                        to={link.route}
+                        className={({ isActive }) =>
+                          `flex items-center gap-4 p-2 rounded-lg transition-all duration-300 ${
+                            isActive
+                              ? 'bg-gradient-to-r from-primary-500/70 to-primary-600/70 text-white shadow-md'
+                              : 'text-light-2 hover:bg-dark-4/50 hover:text-primary-500 hover:shadow-md'
+                          } ${link.label === 'Admin Panel' ? 'text-yellow-400 font-semibold' : ''}`
+                        }
+                      >
+                        <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
+                          {getIcon(link.label)}
+                        </motion.div>
+                        <AnimatePresence>
+                          {!isCollapsed && (
+                            <motion.span
+                              initial={{ opacity: 0, width: 0 }}
+                              animate={{ opacity: 1, width: 'auto' }}
+                              exit={{ opacity: 0, width: 0 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              {link.label}
+                            </motion.span>
+                          )}
+                        </AnimatePresence>
+                      </NavLink>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))}
+        </nav>
       </div>
            
-      <div className="p-1">
+      <div className="p-4">
         <Button
           onClick={handleSignOut}
           variant="destructive"
-          className="absolute bottom-24 w-full flex items-center justify-center gap-2 text-white bg-red-600 hover:bg-red-700 shadow-lg transition-all duration-200 hover:scale-105"
+          className="w-full flex items-center justify-center gap-2 text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 shadow-lg transition-all duration-300 hover:scale-105"
         >
           <LogOut size={20} />
           <AnimatePresence>

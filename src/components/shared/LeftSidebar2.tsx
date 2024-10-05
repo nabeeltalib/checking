@@ -21,44 +21,44 @@ const LeftSidebar2: React.FC = () => {
 
   return (
     <motion.aside
-      initial={{ width: 256 }}
-      animate={{ width: isCollapsed ? 80 : 256 }}
+      initial={{ width: 280 }}
+      animate={{ width: isCollapsed ? 80 : 280 }}
       transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="leftsidebar flex flex-col justify-between h-screen bg-dark-2 border-r border-dark-4 overflow-hidden fixed left-0 top-16 shadow-xl"
+      className="leftsidebar flex flex-col justify-between h-screen bg-dark-2/30 backdrop-blur-md border-r border-dark-4/50 overflow-hidden fixed left-0 top-16 shadow-2xl"
     >
       <div className="flex flex-col">
         <div className="flex items-center justify-between p-4 mb-6">
-        <AnimatePresence>
-          {!isCollapsed && (
-            <NavLink to="/sign-in">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center gap-3 p-2 rounded-lg bg-dark-4 cursor-pointer"
-              >
-                <img
-                  src={'/assets/icons/profile-placeholder.svg'}
-                  alt="User Profile"
-                  className="w-10 h-10 rounded-full object-cover shadow-md"
-                />
-                <div>
-                  <p className="text-light-1 font-semibold">Guest</p>
-                  <p className="text-light-2 text-sm hover:text-light-1 transition-colors">
-                    Sign In / Up
-                  </p>
-                </div>
-              </motion.div>
-            </NavLink>
-          )}
-        </AnimatePresence>
+          <AnimatePresence>
+            {!isCollapsed && (
+              <NavLink to="/sign-in">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center gap-3 p-2 rounded-lg bg-dark-4/50 cursor-pointer hover:bg-dark-4/70 transition-all duration-300"
+                >
+                  <img
+                    src={'/assets/icons/profile-placeholder.svg'}
+                    alt="User Profile"
+                    className="w-10 h-10 rounded-full object-cover shadow-md"
+                  />
+                  <div>
+                    <p className="text-light-1 font-semibold">Guest</p>
+                    <p className="text-light-2 text-sm hover:text-light-1 transition-colors">
+                      Sign In / Up
+                    </p>
+                  </div>
+                </motion.div>
+              </NavLink>
+            )}
+          </AnimatePresence>
 
           <Button
             onClick={toggleCollapse}
             variant="ghost"
             size="icon"
-            className="text-light-1 hover:bg-dark-4 focus:outline-none"
+            className="text-light-1 hover:bg-dark-4/50 focus:outline-none transition-all duration-300"
             aria-label="Toggle Sidebar"
           >
             {isCollapsed ? <ChevronRight size={24} /> : <ChevronLeft size={24} />}
@@ -71,17 +71,19 @@ const LeftSidebar2: React.FC = () => {
               key={link.label}
               to={link.route}
               className={({ isActive }) =>
-                `flex items-center gap-4 p-2 rounded-lg transition-all duration-200 ${
+                `flex items-center gap-4 p-3 rounded-lg transition-all duration-300 ${
                   isActive
-                    ? 'bg-primary-500 text-white shadow-md'
-                    : 'text-light-2 hover:bg-dark-4 hover:text-light-1 hover:shadow-md'
+                    ? 'bg-primary-500/70 text-white shadow-lg'
+                    : 'text-light-2 hover:bg-dark-4/50 hover:text-light-1 hover:shadow-md'
                 }`
               }
             >
-              <img
+              <motion.img
                 src={link.icon}
                 alt={link.label}
                 className="w-6 h-6 filter invert brightness-0"
+                whileHover={{ scale: 1.1 }}
+                transition={{ duration: 0.2 }}
               />
               <AnimatePresence>
                 {!isCollapsed && (
@@ -104,7 +106,7 @@ const LeftSidebar2: React.FC = () => {
         <Button
           onClick={handleSignIn}
           variant="default"
-          className="w-full flex items-center justify-center gap-2 text-white bg-green-600 hover:bg-green-700 shadow-lg transition-all duration-200 hover:scale-105"
+          className="w-full flex items-center justify-center gap-2 text-white bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 shadow-lg transition-all duration-300 hover:scale-105"
         >
           <LogIn size={20} />
           <AnimatePresence>
