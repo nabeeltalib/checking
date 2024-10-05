@@ -177,7 +177,7 @@ const ComprehensiveLeaderboard = () => {
         animate={{ opacity: 1, y: 0 }}
         className="text-xl sm:text-4xl font-bold mb-7 sm:mb-8 text-center text-light-1"
       >
-       Climb the LeaderBoard: Where Your Rankings Reign Supreme
+       LeaderBoard
       </motion.h1>
 
       <motion.div

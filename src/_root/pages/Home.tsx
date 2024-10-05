@@ -157,8 +157,8 @@ const Home: React.FC = () => {
       {/* Header Section */}
       <header className="w-full bg-dark-1 py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl md:text-4xl text-orange-300 font-bold mb-8 mt-6">
-           What's In your Top Five?
+          <h2 className="text-2xl md:text-4xl text-orange-500 font-bold mb-8 mt-6">
+           What's In Your Top Five?
           </h2>
           <div>
             <NavLink to={`/profile/profile`} className="text-3xl md:text-3xl text-blue-500 font-light mb-2 mt-6 hover:text-blue-700 transition-colors">
@@ -174,8 +174,8 @@ const Home: React.FC = () => {
             </div>
           )}
           
-          <p className="text-base sm:text-xl font-light text-white mt-8">Where Your World's Opinions Are Organized</p>
-          <p className="text-xs sm:text-sm font-semibold text-white mt-8">Connect • Debate • Challenge</p>          
+          <p className="text-base sm:text-xl font-light text-white mt-8">Your World's Opinions, Organized</p>
+          <p className="text-xs sm:text-sm font-semibold text-white mt-8">Discover • Debate • Challenge</p>          
         </div>
       </header>      
 
@@ -187,10 +187,7 @@ const Home: React.FC = () => {
           <MobileTrendingSlider isAuthenticated={!!user} />
         </div>
         
-        <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center ml-4 mt-8">
-          <LampDesk className="mr-2" />
-          Home Feed
-        </h3>
+       
 
         {/* List Cards Section */}
         {isLoading ? (

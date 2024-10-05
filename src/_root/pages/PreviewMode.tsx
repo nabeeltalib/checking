@@ -228,23 +228,18 @@ const PreviewMode: React.FC = () => {
       
       <header className="w-full bg-dark-1 py-4">
         <div className="max-w-5xl mx-auto px-4 text-center">
-          <div className="text-2xl md:text-4xl text-orange-300 font-bold mb-2 mt-6">
+          <div className="text-2xl md:text-4xl text-orange-500 font-bold mb-2 mt-6">
             <span>What's In Your Top Five?</span>
           </div>
-          <p className="text-base sm:text-xl font-light text-white mt-8">Where Your World's Opinions Are Organized</p>
-          <p className="text-xs sm:text-sm font-semibold text-white mt-8 mb-5">Connect • Debate • Challenge</p>
+          <p className="text-base sm:text-xl font-light text-white mt-8">Your World's Opinions, Organized</p>
+          <p className="text-xs sm:text-sm font-semibold text-white mt-8 mb-5">Discover • Debate • Challenge</p>
         </div>
       </header>      
 
       {/* Mobile Trending Slider - Only visible on mobile */}
       <div className="md:hidden">
         <MobileTrendingSlider setIsDialogOpen={setIsSignInDialogOpen} />
-      </div>
-
-      <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center ml-4 mt-8">
-        <LampDesk className="mr-2" />
-        Home Feed
-      </h3>
+      </div>     
 
       {/* Main Content */}
       <div className="flex flex-col gap-6 p-4 w-full items-center max-w-5xl mx-auto mt-6">
