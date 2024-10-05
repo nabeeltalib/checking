@@ -1,27 +1,25 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getMostLikedLists } from "@/lib/appwrite/api";
-import { LocateFixed, ThumbsUp, MessageSquare } from "lucide-react";
+import { TrendingUp, ThumbsUp, MessageSquare } from "lucide-react";
 import { useGetComments } from "@/lib/react-query/queries";
+import SignInDialog from '@/components/shared/SignInDialog';
 
 interface MobileTrendingSliderProps {
-  isAuthenticated: boolean; // New prop to check authentication
-  setIsDialogOpen: (open: boolean) => void; // Function to open the popup
+  isAuthenticated: boolean;
 }
 
-const MobileTrendingSlider: React.FC<MobileTrendingSliderProps> = ({ isAuthenticated, setIsDialogOpen }) => {
+const MobileTrendingSlider: React.FC<MobileTrendingSliderProps> = ({ isAuthenticated }) => {
   const [trendingLists, setTrendingLists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const navigate = useNavigate();
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
 
   const fetchTrendingLists = useCallback(async () => {
     try {
       const data = await getMostLikedLists();
       const filteredLists = data.filter((list: any) => !list.isDeleted && list.Title && list.creator);
-      setTrendingLists(filteredLists.slice(0, 7));
+      setTrendingLists(filteredLists.slice(0, 5));
       setLoading(false);
     } catch (error) {
       console.error("Failed to fetch trending lists:", error);
@@ -33,130 +31,99 @@ const MobileTrendingSlider: React.FC<MobileTrendingSliderProps> = ({ isAuthentic
     fetchTrendingLists();
   }, [fetchTrendingLists]);
 
-  const handleScroll = () => {
-    if (sliderRef.current) {
-      const scrollPosition = sliderRef.current.scrollLeft;
-      const cardWidth = sliderRef.current.offsetWidth;
-      const newIndex = Math.round(scrollPosition / cardWidth);
-      setCurrentIndex(newIndex);
-    }
+  const handleDialogOpen = () => {
+    setIsSignInDialogOpen(true);
   };
 
-  const scrollToCard = (index: number) => {
-    if (sliderRef.current) {
-      const cardWidth = sliderRef.current.offsetWidth;
-      sliderRef.current.scrollTo({
-        left: cardWidth * index,
-        behavior: "smooth",
-      });
-    }
+  const handleDialogClose = () => {
+    setIsSignInDialogOpen(false);
   };
 
   return (
-    <div className="lg:hidden bg-dark-1 p-2 shadow-lg">
-      <h2 className="text-lg font-bold text-light-1 flex items-center mb-2">
-        <LocateFixed className="mr-2" />
-        Trending In Your Area
-      </h2>
-      <div className="relative w-full overflow-hidden">
+    <>
+      <div className="bg-dark-2 p-4 rounded-lg shadow-lg">
+        <h2 className="text-lg font-bold text-light-1 flex items-center mb-4">
+          <TrendingUp className="mr-2" size={20} />
+          Trending
+        </h2>
         {loading ? (
           <LoadingSkeleton />
         ) : (
-          <div
-            ref={sliderRef}
-            className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
-            style={{
-              scrollSnapType: "x mandatory",
-              WebkitOverflowScrolling: "touch",
-            }}
-            onScroll={handleScroll}
-          >
-            {trendingLists.map((list, index) => (
+          <div className="space-y-3">
+            {trendingLists.map((list) => (
               <TrendingCard
-                key={list.$id || index}
+                key={list.$id}
                 list={list}
-                navigate={navigate}
                 isAuthenticated={isAuthenticated}
-                setIsDialogOpen={setIsDialogOpen}
+                handleDialogOpen={handleDialogOpen}
               />
             ))}
           </div>
         )}
       </div>
-      {!loading && (
-        <SliderIndicator total={trendingLists.length} current={currentIndex} onIndicatorClick={scrollToCard} />
-      )}
-    </div>
+      <SignInDialog isOpen={isSignInDialogOpen} onClose={handleDialogClose} />
+    </>
   );
 };
 
-const TrendingCard: React.FC<{ list: any; navigate: Function; isAuthenticated: boolean; setIsDialogOpen: (open: boolean) => void }> = ({
+interface TrendingCardProps {
+  list: any;
+  isAuthenticated: boolean;
+  handleDialogOpen: () => void;
+}
+
+const TrendingCard: React.FC<TrendingCardProps> = ({
   list,
-  navigate,
   isAuthenticated,
-  setIsDialogOpen,
+  handleDialogOpen,
 }) => {
+  const navigate = useNavigate();
   const { data: comments } = useGetComments(list.$id);
 
   const handleClick = () => {
-    if (!isAuthenticated) {
-      setIsDialogOpen(true); // Open the popup for unauthenticated users
+    if (isAuthenticated) {
+      navigate(`/lists/${list.$id}`);
     } else {
-      navigate(`/lists/${list.$id}`); // Navigate if the user is authenticated
+      handleDialogOpen();
     }
   };
 
   return (
     <motion.div
-      className="bg-opacity-10 p-4 rounded-lg shadow-lg hover:bg-opacity-20 transition-all duration-300 w-full flex flex-col justify-between backdrop-blur-sm"
-      style={{ minWidth: "60%", scrollSnapAlign: "start" }}
-      whileHover={{ scale: 1.05, y: -5 }}
-      whileTap={{ scale: 0.95 }}
+      className="bg-dark-3 p-3 rounded-md cursor-pointer"
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
       onClick={handleClick}
     >
-      <h3 className="text-yellow-200 text-xs font-semibold truncate">{list.Title}</h3>
-      <p className="text-xs text-gray-400 truncate">by {list.creator.Name}</p>
-      <div className="flex items-center mt-2 space-x-4">
-        <div className="flex items-center text-xs text-gray-400">
-          <ThumbsUp size={14} className="mr-1 text-red-500" />
-          {list.Likes?.length || 0}
-        </div>
-        <div className="flex items-center text-xs text-gray-400">
-          <MessageSquare size={14} className="mr-1 text-blue-500" />
-          {comments?.length || 0}
+      <h3 className="text-light-1 text-sm font-semibold truncate">{list.Title}</h3>
+      <div className="flex items-center justify-between mt-2 text-xs text-light-3">
+        <span>{list.creator.Name}</span>
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center">
+            <ThumbsUp size={12} className="mr-1" />
+            {list.Likes?.length || 0}
+          </div>
+          <div className="flex items-center">
+            <MessageSquare size={12} className="mr-1" />
+            {comments?.length || 0}
+          </div>
         </div>
       </div>
     </motion.div>
   );
 };
 
-const SliderIndicator: React.FC<{ total: number; current: number; onIndicatorClick: (index: number) => void }> = ({
-  total,
-  current,
-  onIndicatorClick,
-}) => {
-  return (
-    <div className="flex justify-center space-x-2 mt-4">
-      {[...Array(total)].map((_, index) => (
-        <div
-          key={index}
-          className={`h-2 w-2 rounded-full ${index === current ? "bg-primary-500" : "bg-gray-400"} cursor-pointer`}
-          onClick={() => onIndicatorClick(index)}
-        />
-      ))}
-    </div>
-  );
-};
-
 const LoadingSkeleton: React.FC = () => (
-  <div className="flex overflow-x-auto">
-    {[...Array(3)].map((_, index) => (
-      <div key={index} className="flex-shrink-0 bg-dark-3 rounded-lg p-4 shadow animate-pulse w-full">
+  <div className="space-y-3">
+    {[...Array(5)].map((_, index) => (
+      <div key={index} className="bg-dark-3 p-3 rounded-md animate-pulse">
         <div className="h-4 bg-dark-4 rounded w-3/4 mb-2"></div>
-        <div className="h-3 bg-dark-4 rounded w-1/2 mb-3"></div>
-        <div className="flex items-center space-x-4">
+        <div className="flex justify-between">
           <div className="h-3 bg-dark-4 rounded w-1/4"></div>
-          <div className="h-3 bg-dark-4 rounded w-1/4"></div>
+          <div className="flex space-x-3">
+            <div className="h-3 bg-dark-4 rounded w-6"></div>
+            <div className="h-3 bg-dark-4 rounded w-6"></div>
+          </div>
         </div>
       </div>
     ))}

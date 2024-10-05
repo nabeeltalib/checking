@@ -13,10 +13,22 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 
 interface IList {
   $id: string;
+  Title: string;
+  Tags?: string[];
   [key: string]: any;
 }
 
 const LISTS_PER_PAGE = 20;
+
+// Fisher-Yates shuffle function
+function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+}
 
 const LoadingSkeleton: React.FC = () => (
   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full">
@@ -98,6 +110,7 @@ const PreviewMode: React.FC = () => {
   const navigate = useNavigate();
   const { ref, inView } = useInView();
   const [searchPrompt, setSearchPrompt] = useState<string>("");
+  const [shuffledListIds, setShuffledListIds] = useState<string[]>([]);
 
   const prompts = useMemo(() => [
     "Movies that Changed my life?",
@@ -150,10 +163,20 @@ const PreviewMode: React.FC = () => {
     };
 
     rotatePrompts(); // Set initial prompt
-    const intervalId = setInterval(rotatePrompts, 2000); // Change every 5 seconds
+    const intervalId = setInterval(rotatePrompts, 2000); // Change every 2 seconds
 
     return () => clearInterval(intervalId);
   }, [prompts]);
+
+  // Shuffle list IDs when new data is loaded
+  useEffect(() => {
+    if (lists?.pages) {
+      const allListIds = lists.pages.flatMap(page => 
+        page.map((list: IList) => list.$id)
+      );
+      setShuffledListIds(shuffleArray(allListIds));
+    }
+  }, [lists]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -163,6 +186,21 @@ const PreviewMode: React.FC = () => {
   };
 
   const handleDialogClose = () => setIsSignInDialogOpen(false);
+
+  // Filter and sort lists based on shuffled IDs and search term
+  const filteredAndSortedLists = useMemo(() => {
+    if (!lists?.pages) return [];
+    
+    const allLists = lists.pages.flatMap(page => page);
+    return shuffledListIds
+      .map(id => allLists.find((list: IList) => list.$id === id))
+      .filter((list: IList | undefined): list is IList => 
+        !!list && (
+          list.Title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          list.Tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
+      );
+  }, [lists, shuffledListIds, searchTerm]);
 
   if (isError) {
     return <div>Error loading lists</div>;
@@ -185,35 +223,23 @@ const PreviewMode: React.FC = () => {
               />
             </div>
           </div>
-          
         </div>
       </div>
+      
       <header className="w-full bg-dark-1 py-4">
         <div className="max-w-5xl mx-auto px-4 text-center">
           <div className="text-2xl md:text-4xl text-orange-300 font-bold mb-2 mt-6">
             <span>What's In Your Top Five?</span>
           </div>
-          {/*<AnimatePresence mode="wait">
-            <motion.div
-              key={searchPrompt}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.5 }}
-              className="flex items-center justify-center space-x-2 h-6" // Fixed height to prevent layout shift
-            >
-              <p className="text-primary-500 text-sm font-medium">
-                {searchPrompt}
-              </p>
-            </motion.div>
-          </AnimatePresence>*/}
           <p className="text-base sm:text-xl font-light text-white mt-8">Where Your World's Opinions Are Organized</p>
           <p className="text-xs sm:text-sm font-semibold text-white mt-8 mb-5">Connect • Debate • Challenge</p>
         </div>
       </header>      
 
-      {/* Mobile Trending Slider */}
-      <MobileTrendingSlider setIsDialogOpen={setIsSignInDialogOpen} />
+      {/* Mobile Trending Slider - Only visible on mobile */}
+      <div className="md:hidden">
+        <MobileTrendingSlider setIsDialogOpen={setIsSignInDialogOpen} />
+      </div>
 
       <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center ml-4 mt-8">
         <LampDesk className="mr-2" />
@@ -232,20 +258,16 @@ const PreviewMode: React.FC = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              {lists?.pages.map((page, pageIndex) => (
-                <React.Fragment key={pageIndex}>
-                  {page.map((list: IList) => (
-                    <motion.div
-                      key={list.$id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ListCard list={list} />
-                    </motion.div>
-                  ))}
-                </React.Fragment>
+              {filteredAndSortedLists.map((list: IList) => (
+                <motion.div
+                  key={list.$id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ListCard list={list} />
+                </motion.div>
               ))}
             </motion.div>
           </AnimatePresence>

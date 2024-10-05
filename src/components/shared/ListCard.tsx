@@ -304,38 +304,51 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           )}
         </div>
         {/* Action Buttons */}
-        <div className="px-6 py-4 flex justify-center items-center text-light-2 text-xs">
-          <div className="flex space-x-2">
-          <div className="flex items-center space-x-1">
-          <ActionButton
-              icon={<ThumbsUp size={20} />}
-              label="Love it"
-              count={list.Likes?.length || 0}
-              onClick={handleDialogOpen}
-            />
-            <ActionButton
-              icon={<ThumbsDown size={20} />}
-              label="Boo"
-              onClick={handleDialogOpen}
-            />
-            </div>
-            <ActionButton
-              icon={<MessageCircle size={20} />}
-              label="Comment on this list"
-              count={comments?.length || 0}
-              onClick={handleDialogOpen}
-            />
-            <ActionButton
-              icon={<Bookmark size={20} />}
-              label="Save this list"
-              onClick={handleDialogOpen}
-            />
+        <div className="flex justify-between items-center mt-4 text-sm px-5">
+          <div className="flex items-center space-x-4">
+            <Tooltip content="Love it">
+              <Button
+                onClick={handleDialogOpen}
+                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+              >
+                <ThumbsUp size={18} />
+                <span>{list.Likes?.length || 0}</span>
+              </Button>
+            </Tooltip>
+            <Tooltip content="Boo anonymously">
+              <Button
+                onClick={handleDialogOpen}
+                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+              >
+                <ThumbsDown size={18} />
+                <span>{list.Dislikes?.length || 0}</span>
+              </Button>
+            </Tooltip>
+            <Tooltip content="Comment on this list">
+              <Button
+                onClick={handleDialogOpen}
+                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+              >
+                <MessageCircle size={18} />
+                <span>{comments?.length || 0}</span>
+              </Button>
+            </Tooltip>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Tooltip content="Save this list">
+              <Button
+                onClick={handleDialogOpen}
+                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+              >
+                <Bookmark size={18} />
+              </Button>
+            </Tooltip>
             <Tooltip content="Remix this list">
               <Button
                 onClick={handleDialogOpen}
-                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 px-3 py-2 rounded-lg"
+                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
               >
-                <Redo2 size={20} />
+                <Redo2 size={18} />
                 <span>Remix</span>
               </Button>
             </Tooltip>

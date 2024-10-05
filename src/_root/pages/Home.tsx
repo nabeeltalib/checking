@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useUserContext } from "@/context/AuthContext";
 import { useGenerateListIdea, useGetInfiniteLists } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
@@ -14,12 +14,13 @@ import { Search, LampDesk } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 // Fisher-Yates Shuffle function
-function shuffleArray(array: any[]) {
-  for (let i = array.length - 1; i > 0; i--) {
+function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
   }
-  return array;
+  return newArray;
 }
 
 const Home: React.FC = () => {
@@ -38,6 +39,7 @@ const Home: React.FC = () => {
   const [listIdea, setListIdea] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [connection, setConnection] = useState<any>(undefined);
+  const [shuffledListIds, setShuffledListIds] = useState<string[]>([]);
 
   // Scroll to top when component mounts or when user navigates to the page
   useEffect(() => {
@@ -60,6 +62,16 @@ const Home: React.FC = () => {
     }
   }, [user?.id]);
 
+  // Shuffle list IDs when new data is loaded
+  useEffect(() => {
+    if (lists?.pages) {
+      const allListIds = lists.pages.flatMap(page => 
+        page.documents.map((list: IList) => list.$id)
+      );
+      setShuffledListIds(shuffleArray(allListIds));
+    }
+  }, [lists]);
+
   // Infinite scroll logic
   useEffect(() => {
     if (inView && hasNextPage) {
@@ -67,14 +79,20 @@ const Home: React.FC = () => {
     }
   }, [inView, hasNextPage, fetchNextPage]);
 
-  // Shuffle lists before displaying them
-  const filterLists = useCallback((lists: Models.Document[]) => {
-    // Randomize the lists before rendering
-    return shuffleArray(lists).filter((list: IList) =>
-      list.Title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      list.Tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-  }, [searchTerm]);
+  // Filter and sort lists based on shuffled IDs and search term
+  const filteredAndSortedLists = useMemo(() => {
+    if (!lists?.pages) return [];
+    
+    const allLists = lists.pages.flatMap(page => page.documents);
+    return shuffledListIds
+      .map(id => allLists.find((list: IList) => list.$id === id))
+      .filter((list: IList | undefined): list is IList => 
+        !!list && (
+          list.Title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          list.Tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+        )
+      );
+  }, [lists, shuffledListIds, searchTerm]);
 
   if (isErrorLists) {
     toast({ title: "Something went wrong.", variant: "destructive" });
@@ -119,22 +137,23 @@ const Home: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full items-center bg-dark-1 min-h-screen"> 
-    {/* Sticky Search Bar */}
-    <div className="sticky top-[calc(4rem)] z-10 w-full bg-dark-1 shadow-md my-4">
-    <div className="max-w-3xl mx-auto px-4 py-3">
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search rankings, titles, or tags ..."
-            value={searchTerm}
-            spellCheck={true} // Enable spellcheck here
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full bg-gray-800 text-gray-900 pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
-          />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
+      {/* Sticky Search Bar */}
+      <div className="sticky top-[calc(4rem)] z-10 w-full bg-dark-1 shadow-md my-4">
+        <div className="max-w-3xl mx-auto px-4 py-3">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search rankings, titles, or tags ..."
+              value={searchTerm}
+              spellCheck={true}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full bg-gray-800 text-gray-900 pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-light-3" />
+          </div>
         </div>
-      </div>
-    </div>        
+      </div>        
+      
       {/* Header Section */}
       <header className="w-full bg-dark-1 py-8">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -157,21 +176,24 @@ const Home: React.FC = () => {
           
           <p className="text-base sm:text-xl font-light text-white mt-8">Where Your World's Opinions Are Organized</p>
           <p className="text-xs sm:text-sm font-semibold text-white mt-8">Connect • Debate • Challenge</p>          
-          </div>
+        </div>
       </header>      
 
       {/* Content Wrapper */}
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
        
         {/* Mobile Trending Slider */}
-        <MobileTrendingSlider />
+        <div className="md:hidden">
+          <MobileTrendingSlider isAuthenticated={!!user} />
+        </div>
+        
         <h3 className="text-2xl font-bold text-light-1 mb-4 flex items-center ml-4 mt-8">
           <LampDesk className="mr-2" />
           Home Feed
         </h3>
 
         {/* List Cards Section */}
-        {isLoading && !lists ? (
+        {isLoading ? (
           <LoadingSkeleton />
         ) : (
           <AnimatePresence>
@@ -181,20 +203,16 @@ const Home: React.FC = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              {lists?.pages.map((page, pageIndex) => (
-                <React.Fragment key={pageIndex}>
-                  {filterLists(page.documents).map((list: IList) => (
-                    <motion.div
-                      key={list.$id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <ListCard2 list={list} />
-                    </motion.div>
-                  ))}
-                </React.Fragment>
+              {filteredAndSortedLists.map((list: IList) => (
+                <motion.div
+                  key={list.$id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ListCard2 list={list} />
+                </motion.div>
               ))}
             </motion.div>
           </AnimatePresence>

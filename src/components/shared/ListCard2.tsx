@@ -634,64 +634,40 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         )}
       </div>
 
-      {/* Actions */}
-      <div className="px-6 py-4 flex justify-between items-center text-light-2 text-xs">
-        <div className="flex items-center space-x-1">
-        <Tooltip content={hasLiked ? "Love it" : "Love it"}>
-            <Button
-              onClick={handleLikeList}
-              className={`p-1 rounded-full transition-colors duration-300 ${
-                hasLiked ? "bg" : "hover:bg-gray-700"
-              }`}
-            >
-              <ThumbsUp
-                size={20}
-                className={hasLiked ? "fill-yellow-500 text-yellow-500" : "text-white"}
-              />
+      {/* Actions */}      
+      <div className="flex justify-between items-center mt-4 text-sm ml-5 mr-5">
+        <div className="flex items-center space-x-4">
+          <Tooltip content={hasLiked ? "Unlike" : "Like"}>
+            <Button variant="ghost" onClick={handleLikeList} className="p-1">
+              <ThumbsUp size={18} className={hasLiked ? "fill-yellow-500 text-yellow-500" : "text-white"} />
+              <span className="ml-1">{likes.length}</span>
             </Button>
           </Tooltip>
-          <span className="mx-1">{likes.length}</span>
-          <Tooltip content={hasDisliked ? "Boo anonymously" : "Boo anonymously"}>
-            <Button
-              onClick={handleDislikeList}
-              className={`p-3 rounded-full transition-colors duration-300 ${
-                hasDisliked ? "bg-" : "hover:bg-gray-700"
-              }`}
-            >
-              <ThumbsDown
-                size={20}
-                className={hasDisliked ? "fill-yellow-500 text-yellow-500" : "text-white"}
-              />
+          <Tooltip content={hasDisliked ? "Remove dislike" : "Dislike"}>
+            <Button variant="ghost" onClick={handleDislikeList} className="p-1">
+              <ThumbsDown size={18} className={hasDisliked ? "fill-yellow-500 text-yellow-500" : "text-white"} />
+              <span className="ml-1">{dislikes.length}</span>
+            </Button>
+          </Tooltip>
+          <Button variant="ghost" onClick={() => setShowComments(!showComments)} className="p-1">
+            <MessageCircle size={18} className="text-gray-500" />
+            <span className="ml-1">{comments?.length || 0}</span>
+          </Button>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Tooltip content={isSaved ? "Unsave" : "Save"}>
+            <Button  onClick={handleSaveList} className="p-1">
+              <Bookmark size={18} className={isSaved ? "fill-yellow-500 text-yellow-500" : ""} />
+            </Button>
+          </Tooltip>
+          
+          <Tooltip content="Remix">
+            <Button variant="ghost" onClick={() => navigate(`/remix/${list.$id}`)} className="p-1">
+              <Redo2 size={18} className="text-gray-200" />
             </Button>
           </Tooltip>
         </div>
-
-        <Button
-          onClick={handleSaveList}
-          className="text-xs flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
-        >
-          <Bookmark
-            size={20}
-            className={isSaved ? "fill-yellow-500 text-yellow-500" : ""}
-          />
-          <span>{isSaved ? "Saved" : "Save"}</span>
-        </Button>
-        <Button
-          onClick={() => navigate(`/lists/${list.$id}`)}
-          className="flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
-        >
-          <MessageCircle size={20} />
-          <span>{comments?.length || 0}</span>
-        </Button>
-        <Button
-          onClick={() => navigate(`/remix/${list.$id}`)}
-          className="text-xs flex items-center gap-2 hover:text-primary-500 transition-colors duration-300"
-        >
-          <Redo2 size={20} />
-          <span>Remix</span>
-        </Button>
       </div>
-
       {/* Comments Section */}
       <div className="bg-gray-900 p-6 border-t border-dark-4">
         <h3 className="text-xs font-semibold mb-4">Comments</h3>
