@@ -306,52 +306,54 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         {/* Action Buttons */}
         <div className="flex justify-between items-center mt-4 text-sm px-5">
           <div className="flex items-center space-x-4">
-            <Tooltip content="Love it">
-              <Button
-                onClick={handleDialogOpen}
-                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-              >
-                <ThumbsUp size={18} />
-                <span>{list.Likes?.length || 0}</span>
-              </Button>
-            </Tooltip>
-            <Tooltip content="Boo anonymously">
-              <Button
-                onClick={handleDialogOpen}
-                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-              >
-                <ThumbsDown size={18} />
-                <span>{list.Dislikes?.length || 0}</span>
-              </Button>
-            </Tooltip>
-            <Tooltip content="Comment on this list">
-              <Button
-                onClick={handleDialogOpen}
-                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-              >
-                <MessageCircle size={18} />
-                <span>{comments?.length || 0}</span>
-              </Button>
-            </Tooltip>
+          <Tooltip content="Love it">
+            <Button
+              onClick={handleDialogOpen}
+              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+            >
+              <ThumbsUp size={18} />
+              <span>{list.Likes?.length || 0}</span>
+            </Button>
+          </Tooltip>
+
+          <Tooltip content="Dislike">
+            <Button
+              onClick={handleDialogOpen}
+              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+            >
+              <ThumbsDown size={18} />
+              <span>{list.Dislikes?.length || 0}</span>
+            </Button>
+          </Tooltip>
+
+          <Tooltip content="Comment on this list">
+            <Button
+              onClick={handleDialogOpen}
+              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+            >
+              <MessageCircle size={18} />
+              <span>{comments?.length || 0}</span>
+            </Button>
+          </Tooltip>
           </div>
           <div className="flex items-center space-x-4">
-            <Tooltip content="Save this list">
-              <Button
-                onClick={handleDialogOpen}
-                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-              >
-                <Bookmark size={18} />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Remix this list">
-              <Button
-                onClick={handleDialogOpen}
-                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-              >
-                <Redo2 size={18} />
-                <span>Remix</span>
-              </Button>
-            </Tooltip>
+          <Tooltip content="Save this list">
+            <Button
+              onClick={handleDialogOpen}
+              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+            >
+              <Bookmark size={18} />
+            </Button>
+          </Tooltip>
+
+          <Tooltip content="Remix this list">
+            <Button
+              onClick={handleDialogOpen}
+              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+            >
+              <Redo2 size={18} />
+            </Button>
+          </Tooltip>
           </div>
         </div>
 
