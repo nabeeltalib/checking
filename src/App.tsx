@@ -22,6 +22,7 @@ import {
   PrivacyPolicy,
   TermsAndConditions,
   CookiePolicy,
+  MyRankings,
   SharedListView,
 } from "@/_root/pages";
 import RemixList from "@/components/shared/list/RemixList"; // New import
@@ -128,6 +129,7 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
                 <Route path="/explore2" element={<Explore2 />} />
                 <Route path="/admin-panel" element={<AdminPanel />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/my-rankings" element={<MyRankings />} />
               </Route>
             </Routes>
           </main> 

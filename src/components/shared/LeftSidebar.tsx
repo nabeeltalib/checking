@@ -6,7 +6,7 @@ import { useUserContext, INITIAL_USER } from '@/context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, ChevronRight, LogOut, Bell, Users, User, Settings, 
-  Bookmark, Contact, Crown, Home, Telescope, ChevronDown, ChevronUp 
+  Bookmark, Contact, Crown, Home, Telescope, ChevronDown, ChevronUp, List 
 } from 'lucide-react';
 
 const LeftSidebar: React.FC = () => {
@@ -39,7 +39,7 @@ const LeftSidebar: React.FC = () => {
     const icons = {
       Home: Home, Explore: Telescope, LeaderBoard: Crown, Bookmarks: Bookmark,
       Notifications: Bell, Friends: Contact, Collaboration: Users,
-      'My Profile': User, 'Admin Panel': Settings
+      'My Profile': User, 'My Lists': List, 'Admin Panel': Settings
     };
     const IconComponent = icons[label as keyof typeof icons];
     return IconComponent ? <IconComponent size={20} /> : null;
@@ -55,9 +55,10 @@ const LeftSidebar: React.FC = () => {
       { label: 'Friends', route: '/listfromfriends' },
       { label: 'Collaboration', route: '/userlists' },
     ],
-    personal: [
-      { label: 'Bookmarks', route: '/saved' },
+    personal: [      
       { label: 'My Profile', route: '/profile/profile' },
+      { label: 'My Lists', route: '/my-rankings' },
+      { label: 'Bookmarks', route: '/saved' },
     ],
     ...(user.isAdmin ? {
       admin: [{ label: 'Admin Panel', route: '/admin-panel' }]

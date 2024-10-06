@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ThumbsUp, MessageCircle, Tag, Eye, Share2 } from "lucide-react";
+import { ThumbsUp, MessageCircle, Tag, Eye, Share2, Crown, ChevronDown } from "lucide-react";
 
 interface Creator {
   $id: string;
@@ -31,8 +31,8 @@ const GridListList: React.FC<GridListListProps> = ({
   showStats = true,
 }) => {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
-  // Filter out lists that no longer exist (assuming the list is undefined when removed from the database)
   const filteredLists = lists.filter((item) => item && item.$id);
 
   if (!filteredLists || filteredLists.length === 0) {
@@ -41,12 +41,12 @@ const GridListList: React.FC<GridListListProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="text-center p-8 bg-dark-4 rounded-lg shadow-md"
+        className="text-center p-8 bg-gradient-to-br from-dark-4 to-dark-3 rounded-lg shadow-lg"
       >
-        <p className="text-light-2 mb-4">Your ranking journey starts here! What's your first top 5?</p>
+        <p className="text-light-2 mb-4 text-lg">Your ranking journey starts here! What's your first top 5?</p>
         <Link
           to="/create-list"
-          className="inline-block bg-primary-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-primary-600 transition-colors duration-300"
+          className="inline-block bg-gradient-to-r from-primary-500 to-secondary-500 text-white px-8 py-3 rounded-full font-semibold hover:from-primary-600 hover:to-secondary-600 transition-all duration-300 transform hover:scale-105"
         >
           Create Your First List
         </Link>
@@ -55,74 +55,83 @@ const GridListList: React.FC<GridListListProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
       {filteredLists.map((item) => (
         <motion.div
-          key={item.$id} // Ensure each item has a unique key based on its ID
+          key={item.$id}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-dark-4 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300"
+          className="bg-gradient-to-br from-dark-4 to-dark-3 rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
           onMouseEnter={() => setHoveredItem(item.$id)}
           onMouseLeave={() => setHoveredItem(null)}
         >
-          {showUser && item.creator && (
+          {/*{showUser && item.creator && (
             <Link
               to={`/profile/${item.creator.$id}`}
-              className="px-4 py-3 bg-dark-4 flex items-center hover:bg-dark-2 transition-colors duration-300"
+              className="px-4 py-3 bg-dark-4 bg-opacity-50 flex items-center hover:bg-opacity-75 transition-colors duration-300"
             >
               <img
-                src={
-                  item.creator.ImageUrl ||
-                  "/assets/icons/profile-placeholder.svg"
-                }
+                src={item.creator.ImageUrl || "/assets/icons/profile-placeholder.svg"}
                 alt={`${item.creator.Name}'s profile`}
-                className="w-6 h-6 rounded-full mr-3 object-cover border-2 border-primary-500"
+                className="w-8 h-8 rounded-full mr-3 object-cover border-2 border-primary-500"
                 loading="lazy"
               />
-              <p className="text-sm text-light-1 font-semibold">
-                {item.creator.Name}
-              </p>
+              <p className="text-sm text-light-1 font-semibold">{item.creator.Name}</p>
             </Link>
-          )}
+          )}*/}
           <Link
             to={`/lists/${item.$id}`}
             className="block p-4 hover:bg-dark-3 transition-colors duration-300 relative"
           >
-            <h3 className="text-sm font-bold text-yellow-200 mb-2 line-clamp-1">
-              {item.Title}
-            </h3>
-            <ul className="mb-3 text-light-2 text-[10px] space-y-1">
-              {(item.items || []).slice(0, 3).map((listItem, index) => (
-                <li key={listItem.id || index} className="flex items-center">
-                  <span className="mr-2 text-yellow-500 font-semibold">
-                    {index + 1}
-                  </span>
+            <h3 className="text-md font-bold text-yellow-200 mb-3 line-clamp-1">{item.Title}</h3>
+            <ul className="mb-3 text-light-2 text-sm space-y-2">
+              {(item.items || []).slice(0, expandedItem === item.$id ? undefined : 3).map((listItem, index) => (
+                <motion.li 
+                  key={listItem.id || index} 
+                  className="flex items-center"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
+                  {index === 0 ? (
+                    <Crown size={16} className="mr-2 text-yellow-500" />
+                  ) : (
+                    <span className="mr-2 text-yellow-500 font-semibold w-4 text-center">{index + 1}</span>
+                  )}
                   <span className="line-clamp-1">
-                    {typeof listItem === "string"
-                      ? listItem
-                      : listItem.content}
+                    {typeof listItem === "string" ? listItem : listItem.content}
                   </span>
-                </li>
+                </motion.li>
               ))}
             </ul>
-            {item.items && item.items.length > 3 && (
-              <p className="text-primary-500 text-[10px] font-semibold">
+            {item.items && item.items.length > 3 && expandedItem !== item.$id && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setExpandedItem(expandedItem === item.$id ? null : item.$id);
+                }}
+                className="text-primary-500 text-sm font-semibold flex items-center"
+              >
                 +{item.items.length - 3} more items
-              </p>
+                <ChevronDown size={16} className="ml-1" />
+              </motion.button>
             )}
-            <div className="flex flex-wrap gap-2 mt-3">
+            <div className="flex flex-wrap gap-2 mt-4">
               {(item.Tags || []).slice(0, 3).map((tag, index) => (
-                <span
+                <motion.span
                   key={`${tag}-${index}`}
-                  className="flex items-center text-light-3 rounded-full px-3 py-1 text-xs"
+                  className="flex items-center bg-dark-2 text-light-3 rounded-full px-3 py-1 text-xs"
+                  whileHover={{ scale: 1.05, backgroundColor: "#4A5568" }}
                 >
                   <Tag size={12} className="mr-1" />
                   {tag}
-                </span>
+                </motion.span>
               ))}
               {item.Tags && item.Tags.length > 3 && (
-                <span className="text-light-1 rounded-full px-3 py-1 text-[10px]">
+                <span className="text-light-1 rounded-full px-3 py-1 text-xs">
                   +{item.Tags.length - 3}
                 </span>
               )}
@@ -130,13 +139,13 @@ const GridListList: React.FC<GridListListProps> = ({
             <AnimatePresence>
               {hoveredItem === item.$id && (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
                   className="absolute top-2 right-2 flex space-x-2"
                 >
                   <motion.button
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.1, backgroundColor: "#4A5568" }}
                     whileTap={{ scale: 0.9 }}
                     className="p-2 bg-dark-2 rounded-full"
                     onClick={(e) => {
@@ -147,7 +156,7 @@ const GridListList: React.FC<GridListListProps> = ({
                     <Eye size={16} className="text-light-2" />
                   </motion.button>
                   <motion.button
-                    whileHover={{ scale: 1.1 }}
+                    whileHover={{ scale: 1.1, backgroundColor: "#4A5568" }}
                     whileTap={{ scale: 0.9 }}
                     className="p-2 bg-dark-2 rounded-full"
                     onClick={(e) => {
@@ -163,9 +172,9 @@ const GridListList: React.FC<GridListListProps> = ({
           </Link>
 
           {showStats && (
-            <div className="px-4 py-3 bg-dark-4 flex justify-between items-center border-t border-dark-2">
+            <div className="px-4 py-3 bg-dark-4 bg-opacity-50 flex justify-between items-center border-t border-dark-2">
               <motion.button
-                className="flex items-center text-light-2 text-sm cursor-pointer hover:text-red-500"
+                className="flex items-center text-light-2 text-sm cursor-pointer hover:text-red-500 transition-colors duration-300"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={(e) => {
@@ -177,7 +186,7 @@ const GridListList: React.FC<GridListListProps> = ({
                 {item.Likes?.length || 0}
               </motion.button>
               <motion.button
-                className="flex items-center text-light-2 text-sm cursor-pointer hover:text-blue-500"
+                className="flex items-center text-light-2 text-sm cursor-pointer hover:text-blue-500 transition-colors duration-300"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={(e) => {
