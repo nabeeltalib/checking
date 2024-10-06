@@ -31,7 +31,7 @@ const SegmentedLeaderboardPage = () => {
     return (
       <div key={index} className={`flex items-center p-4 ${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-blue-50 transition-colors`}>
         <div className={`w-8 h-8 flex items-center justify-center rounded-full mr-4 ${
-          index < 3 ? 'bg-yellow-400 text-white' : 'bg-gray-200'
+          index < 3 ? 'bg-orange-400 text-white' : 'bg-gray-200'
         }`}>
           {index + 1}
         </div>
@@ -134,7 +134,7 @@ const SegmentedLeaderboardPage = () => {
       </div>
 
       {/* User's Personal Ranking (within the selected category/location) */}
-      <div className="mt-8 p-4 bg-yellow-100 rounded-lg flex items-center justify-between">
+      <div className="mt-8 p-4 bg-orange-100 rounded-lg flex items-center justify-between">
         <div>
           <h3 className="font-semibold">Your Ranking</h3>
           <p>You're currently ranked #42 in {category} {location !== 'global' && `(${location})`}</p>

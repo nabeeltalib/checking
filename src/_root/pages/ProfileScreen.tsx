@@ -115,7 +115,7 @@ const ProfileScreen = ({ user }: any) => {
           <h2 className="text-xl font-semibold mb-4">Achievements</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="border p-4 rounded-lg text-center">
-              <Star size={32} className="mx-auto mb-2 text-yellow-500" />
+              <Star size={32} className="mx-auto mb-2 text-orange-500" />
               <h3 className="font-semibold">List Creator</h3>
               <p className="text-sm text-gray-600">Created first list</p>
             </div>

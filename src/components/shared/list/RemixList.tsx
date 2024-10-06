@@ -89,7 +89,7 @@ const RemixList: React.FC = () => {
             What You Are Remixing        
           </h3>      
         </div>
-        <p className="text-yellow-200 text-lg mb-2">"{originalList.Title}"</p>
+        <p className="text-orange-200 text-lg mb-2">"{originalList.Title}"</p>
         <p className="text-gray-400 text-sm">
           Originally created by <span className="font-semibold">{originalList.creator.Name}</span>
         </p>

@@ -5,7 +5,7 @@ import { Button } from "../ui/button";
 import { useUserContext } from "@/context/AuthContext";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { NotificationBell } from "./notifications/NotificationBell";
-import { Menu, X, User, HelpCircle, Mail, LogOut, ChevronRight, Home, Telescope, Award, Bookmark, Users, PlusCircle, ChevronDown } from 'lucide-react';
+import { Menu, X, User, HelpCircle, Mail, LogOut, ChevronRight, Home, Telescope, Award, Bookmark, Users, PlusCircle, ChevronDown, List } from 'lucide-react';
 
 const DropdownMenuItem = ({ item, toggleOffCanvas }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,11 +14,13 @@ const DropdownMenuItem = ({ item, toggleOffCanvas }) => {
     <div>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-left flex items-center justify-between text-white p-2 hover:bg-gray-700 rounded-lg transition-colors duration-200"
+        className={`w-full text-left flex items-center justify-between text-white p-2 hover:bg-gray-700 rounded-lg transition-colors duration-200 ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        disabled={item.disabled}
       >
         <span className="flex items-center">
           <item.icon className="w-5 h-5 mr-2" />
           {item.label}
+          {item.disabled && " (Coming Soon)"}
         </span>
         <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`} />
       </button>
@@ -27,13 +29,18 @@ const DropdownMenuItem = ({ item, toggleOffCanvas }) => {
           {item.subItems.map((subItem, index) => (
             <Link
               key={index}
-              to={subItem.route}
-              className="block text-white p-2 hover:bg-gray-700 rounded-lg transition-colors duration-200"
-              onClick={() => {
-                toggleOffCanvas();
+              to={subItem.disabled ? '#' : subItem.route}
+              className={`block text-white p-2 hover:bg-gray-700 rounded-lg transition-colors duration-200 ${subItem.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={(e) => {
+                if (subItem.disabled) {
+                  e.preventDefault();
+                } else {
+                  toggleOffCanvas();
+                }
               }}
             >
               {subItem.label}
+              {subItem.disabled && " (Coming Soon)"}
             </Link>
           ))}
         </div>
@@ -96,15 +103,16 @@ const Topbar: React.FC = () => {
       label: "Social",
       subItems: [
         { label: "Friends", route: "/listfromfriends" },
-        { label: "Collaboration", route: "/userlists" },
+        { label: "Collaboration", route: "/userlists", disabled: true },
       ]
     },
     {
       icon: User,
       label: "Personal",
       subItems: [
-        { label: "Bookmarks", route: "/saved" },
         { label: "My Profile", route: "/profile/profile" },
+        { label: "My Rankings", route: "/my-rankings" },
+        { label: "Bookmarks", route: "/saved" },
         { label: "Notifications", route: "/notifications" },
       ]
     },
@@ -183,6 +191,7 @@ const Topbar: React.FC = () => {
                   >
                     {[
                       { to: "/profile/profile", icon: User, text: "Profile" },
+                      { to: "/my-rankings", icon: List, text: "My Rankings" },
                       { to: "/notifications", icon: NotificationBell, text: "Notifications" },
                       { to: "/helpfaqpage", icon: HelpCircle, text: "Help/FAQ" },
                       { to: "/contactpage", icon: Mail, text: "Contact Us" },

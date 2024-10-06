@@ -84,7 +84,7 @@ const GridListList: React.FC<GridListListProps> = ({
             to={`/lists/${item.$id}`}
             className="block p-4 hover:bg-dark-3 transition-colors duration-300 relative"
           >
-            <h3 className="text-md font-bold text-yellow-200 mb-3 line-clamp-1">{item.Title}</h3>
+            <h3 className="text-md font-bold text-orange-200 mb-3 line-clamp-1">{item.Title}</h3>
             <ul className="mb-3 text-light-2 text-sm space-y-2">
               {(item.items || []).slice(0, expandedItem === item.$id ? undefined : 3).map((listItem, index) => (
                 <motion.li 
@@ -95,9 +95,9 @@ const GridListList: React.FC<GridListListProps> = ({
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                 >
                   {index === 0 ? (
-                    <Crown size={16} className="mr-2 text-yellow-500" />
+                    <Crown size={16} className="mr-2 text-orange-500" />
                   ) : (
-                    <span className="mr-2 text-yellow-500 font-semibold w-4 text-center">{index + 1}</span>
+                    <span className="mr-2 text-orange-500 font-semibold w-4 text-center">{index + 1}</span>
                   )}
                   <span className="line-clamp-1">
                     {typeof listItem === "string" ? listItem : listItem.content}

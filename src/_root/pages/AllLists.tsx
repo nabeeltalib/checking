@@ -58,7 +58,7 @@ const AllLists: React.FC = () => {
         >
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-light-1 flex items-center">
-              <Lightbulb className="mr-2 text-yellow-400" />
+              <Lightbulb className="mr-2 text-orange-400" />
               List Ideas for You
             </h2>
             <div className="flex items-center">

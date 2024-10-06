@@ -234,7 +234,7 @@ const ListStats: React.FC<ListStatsProps> = ({
             <ThumbsUp
               size={20}
               className={
-                hasLiked ? "fill-yellow-500 text-yellow-500" : "text-gray-400"
+                hasLiked ? "fill-orange-500 text-orange-500" : "text-gray-400"
               }
             />
             <span className={textSize}>{likes.length}</span>
@@ -249,7 +249,7 @@ const ListStats: React.FC<ListStatsProps> = ({
             <ThumbsDown
               size={20}
               className={
-                hasDisliked ? "fill-yellow-500 text-yellow-500" : "text-gray-400"
+                hasDisliked ? "fill-orange-500 text-orange-500" : "text-gray-400"
               }
             />
             {/*<span className={textSize}>{dislikes.length}</span>*/}
@@ -266,7 +266,7 @@ const ListStats: React.FC<ListStatsProps> = ({
             size={20}
             className={
               isSaved
-                ? "text-yellow-500 fill-yellow-500"
+                ? "text-orange-500 fill-orange-500"
                 : "text-gray-400 fill-none"
             }
           />

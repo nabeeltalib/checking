@@ -353,8 +353,8 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
           transition={{ duration: 0.3, delay: index * 0.1 }}
           className="flex items-center mb-1 bg-gray-900 rounded-md p-0 hover:bg-gray-700 transition-colors duration-300"
         >
-          <span className="text-lg font-bold text-yellow-200 mr-4">
-            {index === 0 ? <Crown size={20} className="text-yellow-200" /> : index + 1}
+          <span className="text-lg font-bold text-orange-200 mr-4">
+            {index === 0 ? <Crown size={20} className="text-orange-200" /> : index + 1}
           </span>
           <span className="text-sm text-white truncate">
             {typeof item === "string" ? item : item.content || ""}
@@ -548,7 +548,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
             Ranking For
           </div>
 
-          <h2 className="text-yellow-200 text-xl font-bold mb-2">
+          <h2 className="text-orange-200 text-xl font-bold mb-2">
             {list.Title}
           </h2>
           {list.Description && (
@@ -639,13 +639,13 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         <div className="flex items-center space-x-4">
           <Tooltip content={hasLiked ? "Unlike" : "Like"}>
             <Button variant="ghost" onClick={handleLikeList} className="p-1">
-              <ThumbsUp size={18} className={hasLiked ? "fill-yellow-500 text-yellow-500" : "text-white"} />
+              <ThumbsUp size={18} className={hasLiked ? "fill-orange-500 text-orange-500" : "text-white"} />
               <span className="ml-1">{likes.length}</span>
             </Button>
           </Tooltip>
           <Tooltip content={hasDisliked ? "Remove dislike" : "Dislike"}>
             <Button variant="ghost" onClick={handleDislikeList} className="p-1">
-              <ThumbsDown size={18} className={hasDisliked ? "fill-yellow-500 text-yellow-500" : "text-white"} />
+              <ThumbsDown size={18} className={hasDisliked ? "fill-orange-500 text-orange-500" : "text-white"} />
               <span className="ml-1">{dislikes.length}</span>
             </Button>
           </Tooltip>
@@ -657,7 +657,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         <div className="flex items-center space-x-4">
           <Tooltip content={isSaved ? "Unsave" : "Save"}>
             <Button  onClick={handleSaveList} className="p-1">
-              <Bookmark size={18} className={isSaved ? "fill-yellow-500 text-yellow-500" : ""} />
+              <Bookmark size={18} className={isSaved ? "fill-orange-500 text-orange-500" : ""} />
             </Button>
           </Tooltip>
           

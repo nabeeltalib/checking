@@ -141,8 +141,8 @@ const EmbedSelector = () => {
         />
       </div>
 
-      <div className="bg-yellow-100 dark:bg-yellow-900 border-l-4 border-yellow-500 dark:border-yellow-700 p-4 rounded-md">
-        <h3 className="font-bold text-yellow-700 dark:text-yellow-300">
+      <div className="bg-orange-100 dark:bg-orange-900 border-l-4 border-orange-500 dark:border-orange-700 p-4 rounded-md">
+        <h3 className="font-bold text-orange-700 dark:text-orange-300">
           Understanding the Difference
         </h3>
         <p className="mt-2">

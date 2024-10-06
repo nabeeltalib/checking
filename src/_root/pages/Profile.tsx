@@ -217,12 +217,12 @@ const Profile: React.FC = () => {
                   <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-light-1 flex items-center">
                     {currentUser.Name}
                     {!currentUser.Public && (
-                      <Lock size={20} className="ml-2 text-yellow-500" title="Private Profile" />
+                      <Lock size={20} className="ml-2 text-orange-500" title="Private Profile" />
                     )}
                   </h1>
                   <p className="text-light-3 text-sm">@{currentUser.Username}</p>
                   {!currentUser.Public && (
-                    <p className="text-yellow-500 text-sm mt-1">Private Profile</p>
+                    <p className="text-orange-500 text-sm mt-1">Private Profile</p>
                   )}
                   <p className="text-light-2 mt-2 max-w-md">
                     {currentUser.Bio || "Add a bio to tell the world about yourself"}

@@ -53,7 +53,7 @@ const LeftSidebar: React.FC = () => {
     ],
     social: [
       { label: 'Friends', route: '/listfromfriends' },
-      { label: 'Collaboration', route: '/userlists' },
+      { label: 'Collaboration', route: '/userlists', disabled: true }, // Mark as disabled
     ],
     personal: [      
       { label: 'My Profile', route: '/profile/profile' },
@@ -109,8 +109,8 @@ const LeftSidebar: React.FC = () => {
         </div>
 
         <nav className="flex-grow flex flex-col gap-2 px-4 py-2 overflow-y-auto">
-          {Object.entries(groupedLinks).map(([group, links]) => (
-            <div key={group} className="mb-4">
+        {Object.entries(groupedLinks).map(([group, links]) => (
+          <div key={group} className="mb-4">
               {group !== 'main' && !isCollapsed && (
                 <button
                   onClick={() => toggleDropdown(group)}
@@ -122,46 +122,50 @@ const LeftSidebar: React.FC = () => {
                   {openDropdown === group ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
               )}
-              <AnimatePresence>
-                {(group === 'main' || openDropdown === group || isCollapsed) && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {links.map((link) => (
-                      <NavLink
-                        key={link.label}
-                        to={link.route}
-                        className={({ isActive }) =>
-                          `flex items-center gap-4 p-2 rounded-lg transition-all duration-300 ${
-                            isActive
-                              ? 'bg-gradient-to-r from-primary-500/70 to-primary-600/70 text-white shadow-md'
-                              : 'text-light-2 hover:bg-dark-4/50 hover:text-primary-500 hover:shadow-md'
-                          } ${link.label === 'Admin Panel' ? 'text-yellow-400 font-semibold' : ''}`
-                        }
-                      >
-                        <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
-                          {getIcon(link.label)}
-                        </motion.div>
-                        <AnimatePresence>
-                          {!isCollapsed && (
-                            <motion.span
-                              initial={{ opacity: 0, width: 0 }}
-                              animate={{ opacity: 1, width: 'auto' }}
-                              exit={{ opacity: 0, width: 0 }}
-                              transition={{ duration: 0.2 }}
-                            >
-                              {link.label}
-                            </motion.span>
-                          )}
-                        </AnimatePresence>
-                      </NavLink>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+               <AnimatePresence>
+              {(group === 'main' || openDropdown === group || isCollapsed) && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {links.map((link) => (
+                    <NavLink
+                      key={link.label}
+                      to={link.disabled ? '#' : link.route}
+                      className={({ isActive }) =>
+                        `flex items-center gap-4 p-2 rounded-lg transition-all duration-300 ${
+                          link.disabled
+                            ? 'opacity-50 cursor-not-allowed'
+                            : isActive
+                            ? 'bg-gradient-to-r from-primary-500/70 to-primary-600/70 text-white shadow-md'
+                            : 'text-light-2 hover:bg-dark-4/50 hover:text-primary-500 hover:shadow-md'
+                        } ${link.label === 'Admin Panel' ? 'text-orange-400 font-semibold' : ''}`
+                      }
+                      onClick={(e) => link.disabled && e.preventDefault()}
+                    >
+                      <motion.div whileHover={{ scale: link.disabled ? 1 : 1.1 }} transition={{ duration: 0.2 }}>
+                        {getIcon(link.label)}
+                      </motion.div>
+                      <AnimatePresence>
+                        {!isCollapsed && (
+                          <motion.span
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: 'auto' }}
+                            exit={{ opacity: 0, width: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            {link.label}
+                            {link.disabled && " (Coming Soon)"}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </NavLink>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
             </div>
           ))}
         </nav>

@@ -399,7 +399,7 @@ const ListDetails: React.FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            <h1 className="text-3xl font-bold mb-2 text-yellow-200">{list.Title}</h1>
+            <h1 className="text-3xl font-bold mb-2 text-orange-200">{list.Title}</h1>
             {list.Description && (
               <p className="text-light-2 mb-4">{list.Description}</p>
             )}
@@ -422,7 +422,7 @@ const ListDetails: React.FC = () => {
                   transition={{ duration: 0.3, delay: index * 0.1 }}
                   className="flex items-center mb-2 bg-gray-900 rounded-md p-2 hover:bg-gray-700 transition-colors duration-300"
                 >
-                  <span className="text-lg font-bold text-yellow-500 mr-4">{index + 1}</span>
+                  <span className="text-lg font-bold text-orange-500 mr-4">{index + 1}</span>
                   <span className="text-light-1">{item?.content || item}</span>
                 </motion.li>
               ))}

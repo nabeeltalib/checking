@@ -142,7 +142,7 @@ const SharedListView: React.FC = () => {
 
   const getRankColor = (index: number) => {
     const colors = [
-      "text-yellow-300",
+      "text-orange-300",
       "text-gray-400",
       "text-orange-500",
       "text-blue-500",
@@ -219,7 +219,7 @@ const SharedListView: React.FC = () => {
 
       <div className="flex justify-between items-center mb-6">
         <h1 
-          className="text-xl md:text-2xl font-bold text-yellow-200 cursor-pointer hover:text-yellow-300 transition-colors"
+          className="text-xl md:text-2xl font-bold text-orange-200 cursor-pointer hover:text-orange-300 transition-colors"
           onClick={handleItemClick}
         >
           {list?.Title}

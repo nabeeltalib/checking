@@ -104,7 +104,7 @@ export const TopfivedEmbed: React.FC<TopfivedEmbedProps> = ({ type, items, handl
   };
   const getRankColor = (index: number) => {
     const colors = [
-      "text-yellow-500",
+      "text-orange-500",
       "text-gray-400",
       "text-orange-500",
       "text-blue-500",

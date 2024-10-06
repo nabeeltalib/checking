@@ -102,7 +102,7 @@ const CommentReply: React.FC<CommentReplyProps> = ({ reply }) => {
           >
             <ThumbsUp
               size={14}
-              className={`${isLiked ? 'fill-yellow-500 text-yellow-500' : 'text-light-3'} transition-colors`}
+              className={`${isLiked ? 'fill-orange-500 text-orange-500' : 'text-light-3'} transition-colors`}
             />
             <span className={`${isLiked ? 'text-red-500' : 'text-light-3'}`}>{likes.length}</span>
           </motion.button>

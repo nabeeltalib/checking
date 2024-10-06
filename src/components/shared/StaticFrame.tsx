@@ -111,7 +111,7 @@ const StaticFrame: React.FC = () => {
                 className="bg-white p-3 rounded-lg shadow-sm flex justify-between items-center"
               >
                 <div className="flex items-center space-x-3">
-                  <span className={`font-bold text-xl ${index === 0 ? "text-yellow-500" : "text-indigo-600"}`}>
+                  <span className={`font-bold text-xl ${index === 0 ? "text-orange-500" : "text-indigo-600"}`}>
                     {index + 1}
                     {index === 0 && <Crown size={16} className="inline ml-1" />}
                   </span>

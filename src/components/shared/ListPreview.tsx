@@ -24,15 +24,15 @@ const ListPreview: React.FC<ListPreviewProps> = ({ title, description, items, ca
           >
             Ranking For
           </div>
-      <h4 className="text-yellow-200 text-md font-bold mt-4 mb-3">{title || "Title"}</h4>
+      <h4 className="text-orange-200 text-md font-bold mt-4 mb-3">{title || "Title"}</h4>
       {description && (
         <p className="text-light-2 text-xs mb-4">{description.length > 100 ? description.substring(0, 100) + '...' : description}</p>
       )}
       <ul className="text-xs grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
         {visibleItems.filter(item => item.isVisible).map((item, index) => (
           <li key={index} className="text-sm text-white flex items-center mb-2 bg-gray-800 rounded-md p-3 hover:bg-gray-700 transition-colors duration-300">
-            <span className="text-sm font-bold text-yellow-200 mr-4">
-              {index === 0 ? <Crown size={20} className="text-yellow-200" /> : index + 1}
+            <span className="text-sm font-bold text-orange-200 mr-4">
+              {index === 0 ? <Crown size={20} className="text-orange-200" /> : index + 1}
             </span>
             <span>{item.content || "ranking"}</span>
           </li>

@@ -102,7 +102,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
 
   const getRankColor = (index: number) => {
     const colors = [
-      "text-yellow-300",
+      "text-orange-300",
       "text-gray-400",
       "text-orange-500",
       "text-blue-500",
@@ -228,7 +228,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           >
             Ranking For
           </div>
-          <h2 className="text-yellow-200 text-xl font-bold mb-2">
+          <h2 className="text-orange-200 text-xl font-bold mb-2">
             {list.Title}
           </h2>
         </div>

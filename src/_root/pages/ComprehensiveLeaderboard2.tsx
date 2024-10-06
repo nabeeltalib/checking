@@ -92,7 +92,7 @@ const ComprehensiveLeaderboard2 = () => {
       className="mb-8 bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg"
     >
       <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-light-1">
-        <Trophy className="mr-2 text-yellow-500" />
+        <Trophy className="mr-2 text-orange-500" />
         {title}
       </h2>
       <div className="overflow-x-auto">
@@ -115,9 +115,9 @@ const ComprehensiveLeaderboard2 = () => {
                 className="border-b border-dark-4 hover:bg-dark-3 transition-colors"
               >
                 <td className="px-2 sm:px-4 py-2 sm:py-3 text-center font-bold text-light-1">
-                  {item.rank === 1 && <Trophy className="inline text-yellow-500 mr-1" />}
+                  {item.rank === 1 && <Trophy className="inline text-orange-500 mr-1" />}
                   {item.rank === 2 && <Trophy className="inline text-gray-400 mr-1" />}
-                  {item.rank === 3 && <Trophy className="inline text-yellow-600 mr-1" />}
+                  {item.rank === 3 && <Trophy className="inline text-orange-600 mr-1" />}
                   {item.rank}
                 </td>
                 {columns.map((col: any, colIndex: number) => (
