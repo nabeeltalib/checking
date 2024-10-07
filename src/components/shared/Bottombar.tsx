@@ -23,7 +23,7 @@ const Bottombar: React.FC = () => {
             to={link.route}
             className={`flex flex-col items-center justify-center w-16 h-16 rounded-full transition-all duration-300 ${
               isActive
-                ? "rounded-xl bg-dark-4 text-white shadow-lg scale-110"
+                ? "rounded-xl text-white shadow-lg scale-110"
                 : "rounded-xl text-light-2 hover:bg-dark-3"
             }`}
           >

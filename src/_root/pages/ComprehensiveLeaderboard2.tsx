@@ -117,7 +117,7 @@ const ComprehensiveLeaderboard2 = () => {
       transition={{ duration: 0.5 }}
       className="mb-8 bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg"
     >
-      <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-light-1">
+      <h2 className="text-xs sm:text-2xl font-bold mb-4 sm:mb-6 text-light-1">
         <Trophy className="mr-2 text-orange-500" />
         {title}
       </h2>
@@ -140,14 +140,14 @@ const ComprehensiveLeaderboard2 = () => {
                 transition={{ duration: 0.3, delay: index * 0.1 }}
                 className="border-b border-dark-4 hover:bg-dark-3 transition-colors"
               >
-                <td className="px-2 sm:px-4 py-2 sm:py-3 text-center font-bold text-light-1">
+                <td className="text-xs md:text-lg px-2 sm:px-4 py-2 sm:py-3 text-center font-bold text-light-1">
                   {item.rank === 1 && <Trophy className="inline text-orange-500 mr-1" />}
                   {item.rank === 2 && <Trophy className="inline text-gray-400 mr-1" />}
                   {item.rank === 3 && <Trophy className="inline text-white mr-1" />}
                   {item.rank}
                 </td>
                 {columns.map((col: any, colIndex: number) => (
-                  <td key={`${item.key}-${colIndex}`} className="px-2 sm:px-4 py-2 sm:py-3 text-light-2">
+                  <td key={`${item.key}-${colIndex}`} className="text-xs md:text-base px-2 sm:px-4 py-2 sm:py-3 text-light-2">
                     {col.render ? col.render(item) : item[col.key]}
                   </td>
                 ))}
@@ -268,7 +268,7 @@ const ComprehensiveLeaderboard2 = () => {
               header: "List Title",
               key: "title",
               render: (item: any) => (
-                <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-sm sm:text-base" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
+                <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-xs sm:text-base" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
                   {item.title}
                 </Link>
               ),
@@ -277,7 +277,7 @@ const ComprehensiveLeaderboard2 = () => {
               header: "Creator",
               key: "creator",
               render: (item: any) => (
-                <span className="text-sm sm:text-base">{item.creator}</span>
+                <span className="text-xs sm:text-base">{item.creator}</span>
               ),
             },
             {
@@ -302,7 +302,7 @@ const ComprehensiveLeaderboard2 = () => {
                 <div className="flex items-center">
                   <img src={item.avatar} alt={item.name} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-2 sm:mr-3 border-2 border-primary-500" />
                   <div>
-                    <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-sm sm:text-base" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
+                    <Link to={item.path} className="text-primary-200 hover:underline font-semibold text-sm sm:text-base" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
                       {item.name}
                     </Link>
                     <p className="text-light-3 text-xs">@{item.username}</p>
