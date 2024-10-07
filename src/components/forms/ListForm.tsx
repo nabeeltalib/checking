@@ -44,6 +44,7 @@ import ListPreview from "@/components/shared/ListPreview";
 import Tooltip from "@/components/ui/Tooltip";
 import { X, Info, ChevronDown, ChevronUp, GripVertical } from "lucide-react";
 import { motion } from 'framer-motion';
+
 interface TagInputProps {
   tags: string[];
   onTagsChange: (newTags: string[]) => void;
@@ -755,10 +756,8 @@ const ListForm = ({ list, action, initialData }: any) => {
                 tags={form.watch("Tags")}
                 timespans={form.watch("timespans")}
                 locations={form.watch("locations")}
-                username={form.watch("Username") || "defaultUsername"}
-                name={form.watch("Name") || "defaultName"}
-                followers={form.watch("Followers") || 0}
-                following={form.watch("Following") || 0}
+                userImageUrl={user.imageUrl} // Add this line
+                username={user.username} // Update this line
               />
             </div>
           </div>
