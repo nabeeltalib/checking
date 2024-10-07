@@ -7,8 +7,69 @@ import { useSignOutAccount } from "@/lib/react-query/queries";
 import { Input } from "@/components/ui/input";
 import { useSearchLists } from "@/lib/react-query/queries";
 import { NotificationBell } from "./notifications/NotificationBell";
-import { Search, Menu, X, User, HelpCircle, Mail, LogOut } from 'lucide-react';
+import { Search, Menu, X, User, HelpCircle, Mail, LogOut, PlusCircle, ChevronDown } from 'lucide-react';
 import SignInDialog from '@/components/shared/SignInDialog';
+
+const CreateListButton: React.FC = () => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useUserContext();
+
+  const handleCreateList = () => {
+    if (user?.isAuthenticated) {
+      navigate("/create-list");
+      setIsDropdownOpen(false);
+    }
+  };
+
+  const handleCreateGroupList = () => {
+    // Restricted for now
+  };
+
+  const handleCreateChallenge = () => {
+    // Restricted for now
+  };
+
+  return (
+    <div className="relative inline-block text-left">
+      <Button
+        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg flex items-center"
+      >
+        <PlusCircle className="w-5 h-5 mr-2" />
+        Create
+        <ChevronDown className="ml-2 w-4 h-4" />
+      </Button>
+
+      {isDropdownOpen && (
+        <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-blue-700 ring-1 ring-black ring-opacity-5">
+          <div className="py-1">
+            <button
+              onClick={handleCreateList}
+              className="w-full text-left px-4 py-2 text-sm text-gray-100 hover:bg-blue-500"
+            >
+              Create List
+            </button>
+            <button
+              onClick={handleCreateGroupList}
+              className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
+              disabled
+            >
+              Create Group List (Coming Soon)
+            </button>
+            <button
+              onClick={handleCreateChallenge}
+              className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
+              disabled
+            >
+              Create Challenge (Coming Soon)
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Topbar2: React.FC = () => {
   const navigate = useNavigate();
@@ -28,14 +89,6 @@ const Topbar2: React.FC = () => {
 
   const handleDialogOpen = () => setIsSignInDialogOpen(true);
   const handleDialogClose = () => setIsSignInDialogOpen(false);
-
-  const handleCreateList = () => {
-    if (user?.isAuthenticated) {
-      navigate("/create-list");
-    } else {
-      handleDialogOpen();
-    }
-  };
 
   const handleProfileClick = () => {
     if (user?.isAuthenticated) {
@@ -57,12 +110,6 @@ const Topbar2: React.FC = () => {
     }
     if (searchQuery.trim()) {
       searchLists();
-    }
-  };
-
-  const handleSearchFocus = () => {
-    if (!user?.isAuthenticated) {
-      handleDialogOpen();
     }
   };
 
@@ -108,12 +155,7 @@ const Topbar2: React.FC = () => {
         </div>
 
         <div id="side-icons" className="hidden md:flex items-center gap-4">
-          <Button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-300"
-            onClick={handleCreateList}
-          >
-            Create List
-          </Button>
+          <CreateListButton />
 
           <div className="relative" ref={dropdownRef}>
             <Button
@@ -176,12 +218,7 @@ const Topbar2: React.FC = () => {
               </Button>
 
               <div className="space-y-4">
-                <Button
-                  className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-all duration-300"
-                  onClick={handleCreateList}
-                >
-                  {user?.isAuthenticated ? "Create List" : "Sign-In/Up"}
-                </Button>
+                <CreateListButton />
 
                 <Link
                   to="/helpfaqpage"

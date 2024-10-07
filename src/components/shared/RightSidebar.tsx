@@ -162,6 +162,11 @@ const TrendingListItem: React.FC<{ list: any; navigate: Function }> = ({ list, n
     >
       <h3 className="text-orange-200 text-xs font-semibold truncate">{list.Title}</h3>
       <p className="text-[11px] text-gray-400 truncate">by {list.creator.Name}</p>
+      <img
+                src={list.creator.ImageUrl || "/assets/icons/profile-placeholder.svg"}
+                className="w-6 h-6 rounded-full mr-3 object-cover border-2 border-primary-500"
+                loading="lazy"
+              />
       <div className="flex items-center mt-2 space-x-4">
         <div className="flex items-center text-xs text-gray-400">
           <ThumbsUp size={14} className="mr-1 text-red-500" />
