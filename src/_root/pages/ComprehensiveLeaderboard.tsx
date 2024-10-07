@@ -1,9 +1,16 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Trophy, List, ThumbsUp, MessageCircle } from "lucide-react";
-import { getUsers } from "@/lib/appwrite/config";
-import { getMostLikedLists } from "@/lib/appwrite/api";
+import { getUsers, getMostLikedLists } from "@/lib/appwrite/api";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+
+// Error display component
+const ErrorDisplay: React.FC<{ message: string }> = ({ message }) => (
+  <div className="text-center text-red-500 p-4">
+    <h2 className="text-xl font-bold mb-2">Error</h2>
+    <p>{message}</p>
+  </div>
+);
 
 const ComprehensiveLeaderboard = () => {
   const [timeFrame, setTimeFrame] = useState("week");
@@ -11,25 +18,26 @@ const ComprehensiveLeaderboard = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [lists, setLists] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const u = await getUsers();
-        setUsers(u?.slice(0, 5) || []);
+        const fetchedUsers = await getUsers(5);  // Fetch top 5 users
+        setUsers(fetchedUsers || []);
         const l = await getMostLikedLists();
         setLists(l.slice(0, 5) || []);
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);
+        setError("Failed to load leaderboard data. Please try again later.");
         setIsLoading(false);
       }
     };
     fetchData();
   }, []);
 
-   // Scroll to top when component mounts or when user navigates to the page
-   useEffect(() => {
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
   
@@ -39,8 +47,9 @@ const ComprehensiveLeaderboard = () => {
         rank: index + 1,
         path: `/profile/${user?.$id || ""}`,
         name: user?.Name || "Unknown",
+        username: user?.Username || "unknown",
         avatar: user?.ImageUrl || "/assets/icons/profile-placeholder.svg",
-        listsCreated: user?.lists?.length || 0,
+        listsCreated: user?.listsCreated || 0,
         totalLikes: user?.totalLikes || 0,
         key: user?.$id || `user-${index}`,
       })),
@@ -145,30 +154,8 @@ const ComprehensiveLeaderboard = () => {
     </div>
   );
 
-  if (isLoading) {
-    return (
-      <div className="max-w-full sm:max-w-5xl mx-auto p-4 sm:p-8 bg-dark-1 rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl">
-        <motion.div
-          className="h-10 bg-dark-3 rounded w-2/3 mx-auto mb-8"
-          animate={{ opacity: [0.5, 1, 0.5] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        ></motion.div>
-        <div className="flex justify-between mb-8">
-          <motion.div
-            className="h-8 bg-dark-3 rounded w-1/4"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ repeat: Infinity, duration: 1.5, delay: 0.1 }}
-          ></motion.div>
-          <motion.div
-            className="h-8 bg-dark-3 rounded w-1/4"
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ repeat: Infinity, duration: 1.5, delay: 0.2 }}
-          ></motion.div>
-        </div>
-        <LoadingSkeleton />
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingSkeleton />;
+  if (error) return <ErrorDisplay message={error} />;
 
   return (
     <div className="max-w-full sm:max-w-5xl mx-auto p-4 sm:p-8 bg-dark-1 rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl">
@@ -212,59 +199,66 @@ const ComprehensiveLeaderboard = () => {
       </motion.div>
 
       <AnimatePresence>
-        <LeaderboardSection
-          title="Top Users"
-          data={topUser}
-          columns={[
-            {
-              header: "User",
-              key: "name",
-              render: (item: any) => (
-                <div className="flex items-center">
-                  <img src={item.avatar} alt={item.name} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-2 sm:mr-3 border-2 border-primary-500" />
-                  <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-sm sm:text-base">{item.name}</Link>
-                </div>
-              ),
-            },
-            {
-              header: <div className="flex items-center"><List size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Lists</span></div>,
-              key: "listsCreated"
-            },
-            {
-              header: <div className="flex items-center"><ThumbsUp size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Likes</span></div>,
-              key: "totalLikes"
-            },
-          ]}
-        />
+        <motion.div key="top-users">
+          <LeaderboardSection
+            title="Top Users"
+            data={topUser}
+            columns={[
+              {
+                header: "User",
+                key: "name",
+                render: (item: any) => (
+                  <div className="flex items-center">
+                    <img src={item.avatar} alt={item.name} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-2 sm:mr-3 border-2 border-primary-500" />
+                    <div>
+                      <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-sm sm:text-base">{item.name}</Link>
+                      <p className="text-light-3 text-xs">@{item.username}</p>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                header: <div className="flex items-center"><List size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Lists</span></div>,
+                key: "listsCreated"
+              },
+              {
+                header: <div className="flex items-center"><ThumbsUp size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Likes</span></div>,
+                key: "totalLikes"
+              },
+            ]}
+          />
+        </motion.div>
 
-        <LeaderboardSection
-          title="Top Lists"
-          data={topList}
-          columns={[
-            {
-              header: "List Title",
-              key: "title",
-              render: (item: any) => (
-                <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-sm sm:text-base">{item.title}</Link>
-              ),
-            },
-            { 
-              header: "Creator",
-              key: "creator",
-              render: (item: any) => (
-                <span className="text-sm sm:text-base">{item.creator}</span>
-              ),
-            },
-            {
-              header: <div className="flex items-center"><ThumbsUp size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Likes</span></div>,
-              key: "likes"
-            },
-            {
-              header: <div className="flex items-center"><MessageCircle size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Comments</span></div>,
-              key: "comments"
-            },
-          ]}
-        />
+        <motion.div key="top-lists">
+          <LeaderboardSection
+            title="Top Lists"
+            data={topList}
+            columns={[
+              {
+                header: "List Title",
+                key: "title",
+                render: (item: any) => (
+                  <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-sm sm:text-base">{item.title}</Link>
+                ),
+              },
+              { 
+                header: "Creator",
+                key: "creator",
+                render: (item: any) => (
+                  <span className="text-sm sm:text-base">{item.creator}</span>
+                ),
+              },
+              {
+                header: <div className="flex items-center"><ThumbsUp size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Likes</span></div>,
+                key: "likes"
+              },
+              {
+                header: <div className="flex items-center"><MessageCircle size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Comments</span></div>,
+                key: "comments"
+              },
+            ]}
+          />
+        </motion.div>
       </AnimatePresence>
     </div>
   );

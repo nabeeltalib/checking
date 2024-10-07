@@ -79,6 +79,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const [dislikes, setDislikes] = useState<string[]>([]);
   const [isSaved, setIsSaved] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showComments, setShowComments] = useState(false);
 
   const [newComment, setNewComment] = useState("");
   const [isReply, setIsReply] = useState(false);

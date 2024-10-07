@@ -860,22 +860,41 @@ export async function getCuratedList(userId: string): Promise<IListItem[]> {
 // ============================================================
 
 export async function getUsers(limit?: number) {
-  const queries: any[] = [Query.orderDesc("$createdAt")];
-
-  if (limit) {
-    queries.push(Query.limit(limit));
-  }
-
   try {
     const users = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
-      queries
+      [Query.orderDesc("$createdAt"), Query.limit(100)] // Fetch more users initially
     );
 
     if (!users) throw new Error("No users found");
 
-    return users;
+    const usersWithDetails = await Promise.all(users.documents.map(async (user) => {
+      const userLists = await getUserLists(user.$id);
+      const totalLikes = userLists?.reduce((acc, list) => acc + (list.Likes?.length || 0), 0) || 0;
+      const listsCreated = userLists?.length || 0;
+
+      return {
+        ...user,
+        totalLikes,
+        listsCreated
+      };
+    }));
+
+    // Sort users by total likes in descending order, then by lists created
+    usersWithDetails.sort((a, b) => {
+      if (b.totalLikes !== a.totalLikes) {
+        return b.totalLikes - a.totalLikes;
+      }
+      return b.listsCreated - a.listsCreated;
+    });
+
+    // Remove duplicate users based on $id
+    const uniqueUsers = usersWithDetails.filter((user, index, self) =>
+      index === self.findIndex((t) => t.$id === user.$id)
+    );
+
+    return limit ? uniqueUsers.slice(0, limit) : uniqueUsers;
   } catch (error) {
     console.error("Error getting users:", error);
     return null;

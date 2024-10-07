@@ -324,7 +324,7 @@ const ListStats: React.FC<ListStatsProps> = ({
             className="mt-6"
           >
             <h3 className="text-xl font-semibold mb-4">Comments</h3>
-          {comments?.length > 0 ? (
+            {(comments?.length ?? 0) > 0 ? (
             <div className="space-y-4">
               {visibleComments.map((comment: any) => (
                 <Comment
@@ -335,7 +335,7 @@ const ListStats: React.FC<ListStatsProps> = ({
                   setCommentId={setCommentId}
                 />
               ))}
-                {comments.length > 3 && (
+                {(comments?.length ?? 0) > 3 && (
                   <div className="flex justify-between items-center mt-2">
                     <Button
                       variant="link"

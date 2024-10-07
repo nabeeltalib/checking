@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Trophy, List, ThumbsUp, MessageCircle, Calendar, Filter } from "lucide-react";
-import { getUsers } from "@/lib/appwrite/config";
-import { getMostLikedLists } from "@/lib/appwrite/api";
+import { getUsers, getMostLikedLists } from "@/lib/appwrite/api";
 import { Link } from "react-router-dom";
 import { useUserContext } from "@/context/AuthContext";
 import { Button } from "@/components/ui";
@@ -22,10 +21,10 @@ const ComprehensiveLeaderboard2 = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const u = await getUsers();
-        setUsers(u?.slice(0, 5));
+        const fetchedUsers = await getUsers(5);  // Fetch top 5 users
+        setUsers(fetchedUsers || []);
         const l = await getMostLikedLists();
-        setLists(l.slice(0, 5));
+        setLists(l.slice(0, 5) || []);
         setIsLoading(false);
       } catch (error) {
         console.error("Failed to fetch data:", error);
@@ -40,8 +39,7 @@ const ComprehensiveLeaderboard2 = () => {
     fetchData();
   }, [toast]);
 
-   // Scroll to top when component mounts or when user navigates to the page
-   useEffect(() => {
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
   
@@ -60,11 +58,13 @@ const ComprehensiveLeaderboard2 = () => {
     () =>
       users.map((user: any, index: number) => ({
         rank: index + 1,
-        path: `/profile/${user.$id}`,
-        name: user.Name,
-        avatar: user?.ImageUrl || "/assets/default-avatar.png",
-        listsCreated: user?.lists ? user.lists.length : 0,
-        totalLikes: user.totalLikes || 0,
+        path: `/profile/${user?.$id || ""}`,
+        name: user?.Name || "Unknown",
+        username: user?.Username || "unknown",
+        avatar: user?.ImageUrl || "/assets/icons/profile-placeholder.svg",
+        listsCreated: user?.listsCreated || 0,
+        totalLikes: user?.totalLikes || 0,
+        key: user?.$id || `user-${index}`,
       })),
     [users]
   );
@@ -73,11 +73,12 @@ const ComprehensiveLeaderboard2 = () => {
     () =>
       lists.map((list: any, index: number) => ({
         rank: index + 1,
-        path: `/lists/${list.$id}`,
-        title: list.Title,
-        creator: list.creator ? list.creator.Name : 'Unknown',
-        likes: list.Likes ? list.Likes.length : 0,
-        comments: list.comments ? list.comments.length : 0,
+        path: `/lists/${list?.$id || ""}`,
+        title: list?.Title || "Untitled",
+        creator: list?.creator?.Name || "Unknown",
+        likes: list?.Likes?.length || 0,
+        comments: list?.comments?.length || 0,
+        key: list?.$id || `list-${index}`,
       })),
     [lists]
   );
@@ -108,7 +109,7 @@ const ComprehensiveLeaderboard2 = () => {
           <tbody>
             {data.map((item: any, index: number) => (
               <motion.tr
-                key={index}
+                key={item.key}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -121,7 +122,7 @@ const ComprehensiveLeaderboard2 = () => {
                   {item.rank}
                 </td>
                 {columns.map((col: any, colIndex: number) => (
-                  <td key={colIndex} className="px-2 sm:px-4 py-2 sm:py-3 text-light-2">
+                  <td key={`${item.key}-${colIndex}`} className="px-2 sm:px-4 py-2 sm:py-3 text-light-2">
                     {col.render ? col.render(item) : item[col.key]}
                   </td>
                 ))}
@@ -206,7 +207,7 @@ const ComprehensiveLeaderboard2 = () => {
         className="text-2xl sm:text-4xl font-bold mb-4 sm:mb-8 text-center text-light-1"
       >
        LeaderBoard
-       </motion.h1>
+      </motion.h1>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -240,47 +241,72 @@ const ComprehensiveLeaderboard2 = () => {
         </div>
       </motion.div>
 
-      <LeaderboardSection
-        title="Top Users"
-        data={topUser}
-        columns={[
-          {
-            header: "User",
-            key: "name",
-            render: (item: any) => (
-              <div className="flex items-center">
-                <img src={item.avatar} alt={item.name} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-2 sm:mr-3 border-2 border-primary-500" />
-                <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-sm sm:text-base" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
-                  {item.name}
-                </Link>
-              </div>
-            ),
-          },
-          { header: <List size={16} className="mr-1 sm:mr-2 text-light-2" />, key: "listsCreated" },
-          { header: <ThumbsUp size={16} className="mr-1 sm:mr-2 text-light-2" />, key: "totalLikes" },
-        ]}
-      />
+      <AnimatePresence>
+        <motion.div key="top-users">
+          <LeaderboardSection
+            title="Top Users"
+            data={topUser}
+            columns={[
+              {
+                header: "User",
+                key: "name",
+                render: (item: any) => (
+                  <div className="flex items-center">
+                    <img src={item.avatar} alt={item.name} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full mr-2 sm:mr-3 border-2 border-primary-500" />
+                    <div>
+                      <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-sm sm:text-base" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
+                        {item.name}
+                      </Link>
+                      <p className="text-light-3 text-xs">@{item.username}</p>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                header: <div className="flex items-center"><List size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Lists</span></div>,
+                key: "listsCreated"
+              },
+              {
+                header: <div className="flex items-center"><ThumbsUp size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Likes</span></div>,
+                key: "totalLikes"
+              },
+            ]}
+          />
+        </motion.div>
 
-      <LeaderboardSection
-        title="Top Lists"
-        data={topList}
-        columns={[
-          {
-            header: "List Title",
-            key: "title",
-            render: (item: any) => (
-              <div className="flex items-center">
-                <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-xs sm:text-base" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
-                  {item.title}
-                </Link>
-              </div>
-            ),
-          },
-          { header: "Creator", key: "creator" },
-          { header: <ThumbsUp size={20} className="inline mr-1 text-light-2" />, key: "likes" },
-          { header: <MessageCircle size={20} className="inline mr-1 text-light-2" />, key: "comments" },
-        ]}
-      />
+        <motion.div key="top-lists">
+          <LeaderboardSection
+            title="Top Lists"
+            data={topList}
+            columns={[
+              {
+                header: "List Title",
+                key: "title",
+                render: (item: any) => (
+                  <Link to={item.path} className="text-primary-500 hover:underline font-semibold text-sm sm:text-base" onClick={(e) => handleProtectedLinkClick(e, item.path)}>
+                    {item.title}
+                  </Link>
+                ),
+              },
+              { 
+                header: "Creator",
+                key: "creator",
+                render: (item: any) => (
+                  <span className="text-sm sm:text-base">{item.creator}</span>
+                ),
+              },
+              {
+                header: <div className="flex items-center"><ThumbsUp size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Likes</span></div>,
+                key: "likes"
+              },
+              {
+                header: <div className="flex items-center"><MessageCircle size={16} className="mr-1 sm:mr-2 text-light-2" /> <span className="hidden sm:inline">Comments</span></div>,
+                key: "comments"
+              },
+            ]}
+          />
+        </motion.div>
+      </AnimatePresence>
 
       <SignInDialog isOpen={isSignInDialogOpen} onClose={closeSignInDialog} />
     </div>

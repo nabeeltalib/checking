@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ListCard2 from "@/components/shared/ListCard2";
 import { Lightbulb, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Models } from 'appwrite';
 
 const AllLists: React.FC = () => {
   const { toast } = useToast();
