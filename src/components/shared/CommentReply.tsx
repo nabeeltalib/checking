@@ -86,12 +86,12 @@ const CommentReply: React.FC<CommentReplyProps> = ({ reply }) => {
       className="flex items-start gap-3 bg-dark-4 p-3 rounded-lg"
     >
       <img
-        src={reply.userId.ImageUrl || "/assets/icons/profile-placeholder.svg"}
-        alt={`${reply.userId.Username}'s avatar`}
+        src={reply.userId?.ImageUrl || "/assets/icons/profile-placeholder.svg"}
+        alt={`${reply.userId?.Username}'s avatar`}
         className="w-8 h-8 rounded-full object-cover"
       />
       <div className="flex-grow">
-        <p className="text-blue-400 text-xs font-semibold">@{reply.userId.Username}</p>
+        <p className="text-blue-400 text-xs font-semibold">@{reply.userId?.Username}</p>
         <p className="text-sm text-light-2 mt-1">{reply.Content}</p>
         <div className="flex items-center justify-between mt-2">
           <motion.button
