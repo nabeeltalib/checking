@@ -22,3 +22,4 @@ export { default as CookiePolicy } from "./CookiePolicy";
 export { default as Explore2 } from "./Explore2";
 export { default as ComprehensiveLeaderboard } from "./ComprehensiveLeaderboard";
 export { default as MyRankings } from "./MyRankings";
+export { default as NotFound } from "./NotFound";
