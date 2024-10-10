@@ -19,6 +19,8 @@ import {
   followUser,
   getConnection,
   shareList,
+  createReply,
+  updateReplyWithReply,
   UnFollow,
   updateCommentWithReply, 
   likeList as likeListAPI,
@@ -36,7 +38,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
 import Loader from "./Loader";
 import Tooltip from "@/components/ui/Tooltip";
-import { useShareDialog } from '@/components/shared/ShareDialogContext';
+import { useShareDialog } from "@/components/shared/ShareDialogContext";
 
 interface User {
   $id: string;
@@ -92,6 +94,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   };
   const { user } = useUserContext();
   const { id } = user;
+  const [parentReplyId, setParentReplyId] = useState("");
 
   useEffect(() => {
     if (list) {
@@ -364,41 +367,75 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       ));
   }, [list?.items, isExpanded]);
 
-  const handleCommentSubmit = useCallback(async (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newComment.trim() === "") return;
-
+    if (newComment.trim() === '') return;
+  
     try {
-      const newCommentData = await createComment({
-        listId: list.$id,
-        userId: user.id,
-        Content: newComment,
-      });
-
-      if (newCommentData) {
-        // Optionally, you can optimistically update comments if desired
-        setNewComment("");
-        toast({
-          title: "Comment Posted",
-          description: "Your comment has been added successfully.",
-          variant: "default",
+      if (isReply) {
+        const replyData: any = {
+          userId: user.id,
+          Content: newComment,
+          commentId: list.$id,
+        };
+  
+        if (commentId) {
+          replyData.commentId = commentId;
+        }
+        if (parentReplyId) {
+          replyData.parentReplyId = parentReplyId;
+        }
+  
+        const newReply = await createReply(replyData);
+  
+        if (newReply) {
+          if (parentReplyId) {
+            // Replying to a reply
+            await updateReplyWithReply(parentReplyId, newReply.$id);
+          } else {
+            // Replying to a comment
+            await updateCommentWithReply(commentId, newReply.$id);
+          }
+  
+          setNewComment('');
+          setIsReply(false);
+          setCommentId('');
+          setParentReplyId('');
+          toast({
+            title: 'Reply Posted',
+            description: 'Your reply has been added successfully.',
+          });
+        }
+      } else {
+        const newCommentData = await createComment({
+          listId: list.$id,
+          userId: user.id,
+          Content: newComment,
         });
+  
+        if (newCommentData) {
+          setNewComment('');
+          toast({
+            title: 'Comment Posted',
+            description: 'Your comment has been added successfully.',
+          });
+        }
       }
     } catch (error) {
-      console.error("Failed to post comment:", error);
+      console.error('Failed to post comment:', error);
       toast({
-        title: "Comment Failed",
-        description: "Unable to post comment. Please try again.",
-        variant: "destructive",
+        title: 'Comment Failed',
+        description: 'Unable to post comment. Please try again.',
+        variant: 'destructive',
       });
     }
-  }, [createComment, list.$id, user.id, newComment, toast]);
+  };  
 
   const renderComments = useCallback(() => {
     if (!comments || comments.length === 0) {
       return (
         <p className="text-light-3 text-xs">
-          No comments yet. Be the first to comment!
+           
         </p>
       );
     }
@@ -408,14 +445,19 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     return (
       <>
         <ul className="space-y-4 text-xs">
+        <ul className="space-y-4 text-xs">
           <Comment
             comment={visibleComment}
             key={visibleComment.$id}
             setReply={setIsReply}
-            show="show"
+            show={true}
             setCommentId={setCommentId}
-            listId={list.$id}
+            setParentReplyId={setParentReplyId}
+            // Other props if needed
           />
+        </ul>
+
+
         </ul>
         {comments.length > 1 && (
           <motion.div

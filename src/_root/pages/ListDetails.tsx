@@ -20,15 +20,13 @@ import {
   getConnection,
   getListById,
   shareList,
-  UnFollow,
-  createReply,
-  updateCommentWithReply,
+  UnFollow  
 } from "@/lib/appwrite/api";
 import { Share2, ChevronLeft, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Code, Copy, MapPin, Clock } from 'lucide-react';
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 import LoaderOverlay from "@/components/shared/LoaderOverlay"; // Import the LoaderOverlay component
-import { useShareDialog } from '@/components/shared/ShareDialogContext';
+import { useShareDialog } from "@/components/shared/ShareDialogContext";
 
 const ListDetails: React.FC = () => {
   const navigate = useNavigate();

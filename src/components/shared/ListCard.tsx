@@ -24,8 +24,8 @@ import Comment from "./Comment";
 import { Button } from "../ui";
 import Tooltip from "@/components/ui/Tooltip";
 import { useToast } from "@/components/ui/use-toast";
-import SignInDialog from '@/components/shared/SignInDialog';
-import { useShareDialog } from '@/components/shared/ShareDialogContext';
+import SignInDialog from "@/components/shared/SignInDialog";
+import { useShareDialog } from "@/components/shared/ShareDialogContext";
 
 type ListCardProps = {
   list: IList;
@@ -46,7 +46,10 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
   };
   // Assume the user is not authenticated for this example
   const isAuthenticated = false;
-
+  const [isReply, setIsReply] = useState(false);
+  const [commentId, setCommentId] = useState('');
+  const [parentReplyId, setParentReplyId] = useState('');
+  
   // Since the user is not authenticated, isFollowed is false
   const isFollowed = false;
   const isFollowLoading = false;
@@ -366,7 +369,13 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
             <h3 className="text-sm font-semibold text-light-1 mb-2">
               Latest Comment:
             </h3>
-            <Comment comment={comments[0]} />
+            <Comment
+            comment={comments[0]}
+            setReply={setIsReply}
+            show={true}
+            setCommentId={setCommentId}
+            setParentReplyId={setParentReplyId}
+            />
             {comments.length > 1 && (
               <p className="text-xs text-primary-500 mt-2 cursor-pointer hover:underline">
                 View all {comments.length} comments

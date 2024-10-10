@@ -54,8 +54,8 @@ import AdminPanel from "./_root/pages/AdminPanel";
 import StaticFrame from "./components/shared/StaticFrame";
 import LiveFrame from "./components/shared/LiveFrame";
 import OnboardingScreens from "./_root/pages/OnboardingScreens";
-import AuthCallback from './_root/pages/AuthCallback';
-import NotFound from './_root/pages/NotFound';
+import AuthCallback from "./_root/pages/AuthCallback";
+import NotFound from "./_root/pages/NotFound";
 
 interface AppProps {
   isInitialLoading: boolean;

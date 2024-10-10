@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   createReply,
-  updateCommentWithReply,
+  updateCommentWithReply, 
+  updateReplyWithReply,
   likeList as likeListAPI,
 } from "@/lib/appwrite/api";
 import {
@@ -62,6 +63,7 @@ const ListStats: React.FC<ListStatsProps> = ({
   const { mutate: createComment } = useCreateComment();
   const [isReply, setIsReply] = useState(false);
   const [commentId, setCommentId] = useState("");
+  const [parentReplyId, setParentReplyId] = useState("");
 
   // Determine if the user has liked or disliked the list
   const hasLiked = useMemo(() => likes.includes(userId), [likes, userId]);
@@ -176,15 +178,31 @@ const ListStats: React.FC<ListStatsProps> = ({
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newComment.trim() === "") return;
-
+  
     try {
       if (isReply) {
-        const newReply = await createReply({
+        const replyData: any = {
           userId: id,
           Content: newComment,
-        });
+        };
+  
+        if (commentId) {
+          replyData.commentId = commentId;
+        }
+        if (parentReplyId) {
+          replyData.parentReplyId = parentReplyId;
+        }
+  
+        const newReply = await createReply(replyData);
+  
         if (newReply) {
-          await updateCommentWithReply(commentId, newReply.$id);
+          if (parentReplyId) {
+            // Replying to a reply
+            await updateReplyWithReply(parentReplyId, newReply.$id);
+          } else {
+            // Replying to a comment
+            await updateCommentWithReply(commentId, newReply.$id);
+          }
         }
       } else {
         await createComment({
@@ -193,9 +211,11 @@ const ListStats: React.FC<ListStatsProps> = ({
           Content: newComment,
         });
       }
-
+  
       setNewComment("");
       setIsReply(false);
+      setCommentId("");
+      setParentReplyId("");
       refetchComments();
       toast({
         title: "Success",
@@ -211,7 +231,7 @@ const ListStats: React.FC<ListStatsProps> = ({
         variant: "destructive",
       });
     }
-  };
+  };  
 
   const toggleCommentVisibility = () => {
     setAreAllCommentsVisible(!areAllCommentsVisible);
@@ -333,8 +353,10 @@ const ListStats: React.FC<ListStatsProps> = ({
                   setReply={setIsReply}
                   show={true}
                   setCommentId={setCommentId}
+                  setParentReplyId={setParentReplyId} // Add this line
                 />
               ))}
+
                 {(comments?.length ?? 0) > 3 && (
                   <div className="flex justify-between items-center mt-2">
                     <Button

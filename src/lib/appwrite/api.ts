@@ -984,7 +984,7 @@ export async function updateUser(user: any) {
 export async function createComment(comment: {
   listId: string;
   userId: string;
-  Content: string;
+  Content: string;  // Note the capital 'C' in Content
 }) {
   try {
     const newComment = await databases.createDocument(
@@ -992,10 +992,12 @@ export async function createComment(comment: {
       appwriteConfig.commentCollectionId,
       ID.unique(),
       {
-        list: comment.listId,
-        user: comment.userId,
         Content: comment.Content,
+        user: comment.userId,
+        list: comment.listId,
         CreatedAt: new Date().toISOString(),
+        Likes: [],  // Initialize with an empty array
+        Reply: []   // Initialize with an empty array
       }
     );
 
@@ -1013,25 +1015,40 @@ export async function createComment(comment: {
 export async function createReply(reply: {
   userId: string;
   Content: string;
+  commentId?: string;
+  parentReplyId?: string;
 }) {
   try {
+    const documentData: any = {
+      userId: reply.userId,
+      Content: reply.Content,
+      Likes: [],
+      Reply: [],
+      CreatedAt: new Date().toISOString(),
+    };
+
+    if (reply.commentId) {
+      documentData.commentId = reply.commentId;
+    }
+
+    if (reply.parentReplyId) {
+      documentData.parentReplyId = reply.parentReplyId;
+    }
+
     const newReply = await databases.createDocument(
       appwriteConfig.databaseId,
-      "66b22bc7003828cf45ab",
+      '66b22bc7003828cf45ab',
       ID.unique(),
-      {
-        userId: reply.userId,
-        Content: reply.Content,
-      }
+      documentData
     );
 
     if (!newReply) {
-      throw new Error("Failed to create reply");
+      throw new Error('Failed to create reply');
     }
 
     return newReply;
   } catch (error) {
-    console.error("Error creating reply:", error);
+    console.error('Error creating reply:', error);
     throw error;
   }
 }
@@ -1051,13 +1068,39 @@ export async function updateCommentWithReply(commentId: string, replyId: string)
       appwriteConfig.commentCollectionId,
       commentId,
       {
-        Reply: updatedReplies
+        Reply: updatedReplies,
       }
     );
 
     return updatedComment;
   } catch (error) {
     console.error("Error updating comment with reply:", error);
+    throw error;
+  }
+}
+
+export async function updateReplyWithReply(replyId: string, newReplyId: string) {
+  try {
+    const reply = await databases.getDocument(
+      appwriteConfig.databaseId,
+      '66b22bc7003828cf45ab',
+      replyId
+    );
+
+    const updatedReplies = reply.Reply ? [...reply.Reply, newReplyId] : [newReplyId];
+
+    const updatedReply = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      '66b22bc7003828cf45ab',
+      replyId,
+      {
+        Reply: updatedReplies,
+      }
+    );
+
+    return updatedReply;
+  } catch (error) {
+    console.error('Error updating reply with nested reply:', error);
     throw error;
   }
 }
@@ -1393,6 +1436,7 @@ export async function searchLists(
 ): Promise<any[]> {
   const queries = [
     Query.search("Title", query),
+    Query.equal('parentReplyId', parentReplyId),
     Query.orderDesc("$createdAt"),
     Query.limit(10),
   ];
@@ -1885,17 +1929,36 @@ export const getReplies = async (commentId: string) => {
   try {
     const response = await databases.listDocuments(
       appwriteConfig.databaseId,
-      '66b22bc7003828cf45ab',
+      '66b22bc7003828cf45ab', // CommentReply collection ID
       [
-        Query.equal('commentId', commentId),
+        Query.equal('commentId', ),
+        Query.orderDesc('$createdAt')
       ]
     );
-    return response.documents; // Each document now includes the Likes field
+    return response.documents;
   } catch (error) {
     console.error('Error fetching replies:', error);
     throw error;
   }
 };
+
+export const getNestedReplies = async (parentReplyId: string) => {
+  try {
+    const response = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      '66b22bc7003828cf45ab',
+      [
+        Query.equal('parentReplyId', parentReplyId), // Pass as string
+        Query.orderDesc('$createdAt'),
+      ]
+    );
+    return response.documents;
+  } catch (error) {
+    console.error('Error fetching nested replies:', error);
+    return [];
+  }
+};
+
 export async function getAllLists() {
   try {
     const result = await databases.listDocuments(

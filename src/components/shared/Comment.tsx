@@ -3,7 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUserContext } from '@/context/AuthContext';
 import { useToast } from '../ui/use-toast';
 import Loader from './Loader';
-import { likeComment, reportComment, createReply, updateCommentWithReply } from '@/lib/appwrite/api';
+import {
+  likeComment,
+  reportComment,
+  createReply,
+  updateCommentWithReply,
+  updateReplyWithReply // Import this
+} from '@/lib/appwrite/api';
 import { checkIsLiked } from '@/lib/utils';
 import CommentReply from './CommentReply';
 import { ThumbsUp, Flag, MessageCircle, MoreVertical } from 'lucide-react';
@@ -13,9 +19,16 @@ interface CommentProps {
   setReply: (value: boolean) => void;
   show: boolean;
   setCommentId: (id: string) => void;
+  setParentReplyId: (id: string) => void;
 }
 
-const Comment: React.FC<CommentProps> = ({ comment, setReply, show, setCommentId }) => {
+const Comment: React.FC<CommentProps> = ({
+  comment,
+  setReply,
+  show,
+  setCommentId,
+  setParentReplyId, // Add this line
+}) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useUserContext();
@@ -25,6 +38,7 @@ const Comment: React.FC<CommentProps> = ({ comment, setReply, show, setCommentId
   const [replyContent, setReplyContent] = useState('');
   const [localComment, setLocalComment] = useState(comment);
   const [showReplyField, setShowReplyField] = useState(false);
+  const [parentReplyId, setLocalParentReplyId] = useState(''); // Add this line
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -64,6 +78,8 @@ const Comment: React.FC<CommentProps> = ({ comment, setReply, show, setCommentId
   const handleReply = () => {
     setShowReplyField(!showReplyField);
     setCommentId(comment.$id);
+    setParentReplyId(''); // No parentReplyId when replying to a comment
+    setLocalParentReplyId(''); // Reset local parentReplyId
   };
 
   const handleLikeComment = async () => {
@@ -87,25 +103,47 @@ const Comment: React.FC<CommentProps> = ({ comment, setReply, show, setCommentId
 
     setIsLoading(true);
     try {
-      const newReply = await createReply({
+      const replyData: any = {
         userId: user.id,
         Content: replyContent.trim(),
-      });
+        commentId: comment.$id,
+      };
+
+      if (parentReplyId) {
+        replyData.parentReplyId = parentReplyId;
+      }
+
+      const newReply = await createReply(replyData);
 
       if (newReply) {
-        await updateCommentWithReply(comment.$id, newReply.$id);
-        
-        setLocalComment(prev => ({
+        if (parentReplyId) {
+          // Replying to a reply
+          await updateReplyWithReply(parentReplyId, newReply.$id);
+        } else {
+          // Replying to a comment
+          await updateCommentWithReply(comment.$id, newReply.$id);
+        }
+
+        setLocalComment((prev) => ({
           ...prev,
-          Reply: [...(prev.Reply || []), newReply]
+          Reply: [...(prev.Reply || []), newReply],
         }));
         setReplyContent('');
         setShowReplyField(false);
-        toast({ title: "Reply Posted", description: "Your reply has been added successfully." });
+        setParentReplyId('');
+        setLocalParentReplyId('');
+        toast({
+          title: 'Reply Posted',
+          description: 'Your reply has been added successfully.',
+        });
       }
     } catch (error) {
-      console.error("Error creating reply:", error);
-      toast({ title: "Reply Failed", description: "Unable to post reply. Please try again.", variant: "destructive" });
+      console.error('Error creating reply:', error);
+      toast({
+        title: 'Reply Failed',
+        description: 'Unable to post reply. Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -230,7 +268,14 @@ const Comment: React.FC<CommentProps> = ({ comment, setReply, show, setCommentId
             className="ml-12 mt-4 space-y-3"
           >
             {localComment.Reply.map((reply: any) => (
-              <CommentReply reply={reply} key={reply.$id} />
+              <CommentReply
+                key={reply.$id}
+                reply={reply}
+                parentCommentId={comment.$id}
+                setReply={setReply}
+                setCommentId={setCommentId}
+                setParentReplyId={setParentReplyId}
+              />
             ))}
           </motion.div>
         )}
