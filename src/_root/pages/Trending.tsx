@@ -32,7 +32,7 @@ const Trending: React.FC = () => {
 }, []);
 
   const LoadingSkeleton: React.FC = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 max-w-4xl mx-auto mt-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 max-w-4xl mx-auto mt-5 animate-pulse">
       {[...Array(6)].map((_, index) => (
         <div key={index} className="bg-dark-2 p-4 rounded-xl shadow-lg">
           <motion.div

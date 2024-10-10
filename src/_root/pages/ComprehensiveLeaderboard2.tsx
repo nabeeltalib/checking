@@ -162,7 +162,7 @@ const ComprehensiveLeaderboard2 = () => {
   const LoadingSkeleton = () => (
     <div className="space-y-8">
       {[...Array(2)].map((_, sectionIndex) => (
-        <div key={sectionIndex} className="bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg">
+        <div key={sectionIndex} className="bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg animate-pulse">
           <motion.div
             className="h-8 bg-dark-3 rounded w-1/3 mb-4"
             animate={{ opacity: [0.5, 1, 0.5] }}

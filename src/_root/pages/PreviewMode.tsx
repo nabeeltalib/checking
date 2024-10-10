@@ -31,7 +31,7 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 const LoadingSkeleton: React.FC = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full animate-pulse">
     {[...Array(6)].map((_, index) => (
       <motion.div
         key={index}

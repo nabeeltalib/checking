@@ -102,7 +102,7 @@ const Home: React.FC = () => {
   const LoadingSkeleton: React.FC = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       {[...Array(6)].map((_, index) => (
-        <div key={index} className="bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg">
+        <div key={index} className="bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg animate-pulse">
           <motion.div
             className="h-6 bg-dark-3 rounded w-3/4 mb-4"
             animate={{ opacity: [0.5, 1, 0.5] }}

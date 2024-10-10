@@ -63,7 +63,7 @@ const Categories = () => {
   };
 
   const LoadingSkeleton: React.FC = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-pulse">
       {[...Array(6)].map((_, index) => (
         <div key={index} className="bg-dark-2 p-4 sm:p-6 rounded-xl shadow-lg">
           <motion.div
