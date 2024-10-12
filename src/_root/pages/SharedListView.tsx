@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { databases, appwriteConfig } from '@/lib/appwrite/config';
 import { Loader } from '@/components/shared';
@@ -14,6 +14,17 @@ import { useGetComments } from "@/lib/react-query/queries";
 import Comment from '@/components/shared/Comment';
 import { useShareDialog } from '@/components/shared/ShareDialogContext';
 
+const getRankColor = (index: number) => {
+  const colors = [
+    "text-orange-300",
+    "text-gray-400",
+    "text-orange-500",
+    "text-blue-500",
+    "text-green-500",
+  ];
+  return index < colors.length ? colors[index] : "text-purple-500";
+};
+
 const SharedListView: React.FC = () => {
   const { sharedId } = useParams<{ sharedId: string }>();
   const [list, setList] = useState<IList | null>(null);
@@ -25,11 +36,11 @@ const SharedListView: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
   const { openShareDialog } = useShareDialog();
-  const isMobile = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  };
-  // Fetch comments for the list
   const { data: comments, isLoading: commentsLoading } = useGetComments(list?.$id);
+
+  const isMobile = useCallback(() => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }, []);
 
   useEffect(() => {
     const fetchSharedList = async () => {
@@ -73,15 +84,15 @@ const SharedListView: React.FC = () => {
     fetchSharedList();
   }, [sharedId]);
 
-  const handleAuthRequiredAction = () => {
+  const handleAuthRequiredAction = useCallback(() => {
     if (user?.id) {
       navigate(`/lists/${list?.$id}`);
     } else {
       setIsSignInDialogOpen(true);
     }
-  };
+  }, [user?.id, navigate, list?.$id]);
 
-  const handleShare = async () => {
+  const handleShare = useCallback(async () => {
     const shareableLink = window.location.href;
     const shareTitle = list?.Title || 'Shared List';
   
@@ -99,17 +110,17 @@ const SharedListView: React.FC = () => {
     } else {
       openShareDialog(shareableLink, shareTitle);
     }
-  };
+  }, [list?.Title, isMobile, openShareDialog]);
 
-  const handleItemClick = () => {
+  const handleItemClick = useCallback(() => {
     if (user?.id) {
       navigate(`/lists/${list?.$id}`);
     } else {
       setIsSignInDialogOpen(true);
     }
-  };
+  }, [user?.id, navigate, list?.$id]);
 
-  const renderListItems = () => {
+  const renderListItems = useMemo(() => {
     if (!list || !list.items) return null;
 
     const items: any[] = Array.isArray(list.items)
@@ -138,20 +149,9 @@ const SharedListView: React.FC = () => {
         </span>
       </motion.li>
     ));
-  };
+  }, [list, isExpanded, handleItemClick]);
 
-  const getRankColor = (index: number) => {
-    const colors = [
-      "text-orange-300",
-      "text-gray-400",
-      "text-orange-500",
-      "text-blue-500",
-      "text-green-500",
-    ];
-    return index < colors.length ? colors[index] : "text-purple-500";
-  };
-
-  const renderComments = () => {
+  const renderComments = useCallback(() => {
     if (commentsLoading) return <Loader />;
     if (!comments || comments.length === 0) return <p className="text-light-3">No comments yet.</p>;
 
@@ -186,7 +186,7 @@ const SharedListView: React.FC = () => {
         )}
       </div>
     );
-  };
+  }, [comments, commentsLoading, handleAuthRequiredAction]);
 
   if (loading) return <Loader />;
   if (error) return <div className="text-red-500 p-4 text-center">{error}</div>;
@@ -238,7 +238,7 @@ const SharedListView: React.FC = () => {
       )}
 
       <div className="mb-4">
-        <ol className="list-none space-y-2">{renderListItems()}</ol>
+        <ol className="list-none space-y-2">{renderListItems}</ol>
         {list?.items?.length > 5 && (
           <motion.button
             className="w-full text-primary-500 font-semibold text-sm mt-2 flex items-center justify-center"
@@ -308,15 +308,15 @@ const SharedListView: React.FC = () => {
         </Button>
       </div>
 
-       {/* Comments Section */}
-    <div className="mt-8">
-      <h3 className="text-xl font-semibold text-light-1 mb-4">Comments</h3>
-      {renderComments()}
-    </div>
+      {/* Comments Section */}
+      <div className="mt-8">
+        <h3 className="text-xl font-semibold text-light-1 mb-4">Comments</h3>
+        {renderComments()}
+      </div>
 
-    <SignInDialog isOpen={isSignInDialogOpen} onClose={() => setIsSignInDialogOpen(false)} />
-  </motion.div>
-);
+      <SignInDialog isOpen={isSignInDialogOpen} onClose={() => setIsSignInDialogOpen(false)} />
+    </motion.div>
+  );
 };
 
 export default SharedListView;

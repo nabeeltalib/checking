@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Share2,
   ThumbsUp,
@@ -8,66 +8,34 @@ import {
   MessageCircle,
   Bookmark,
   MapPin,
-  Crown,
   Clock,
   ChevronDown,
   ChevronUp,
-  ChevronRight,
   Redo2,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   followUser,
   getConnection,
   shareList,
-  createReply,
-  updateReplyWithReply,
   UnFollow,
-  updateCommentWithReply, 
   likeList as likeListAPI,
-} from "@/lib/appwrite/api";
+} from '@/lib/appwrite/api';
 import {
   useDeleteSavedList,
   useGetComments,
   useGetCurrentUser,
   useSaveList,
   useCreateComment,
-} from "@/lib/react-query/queries";
-import Comment from "./Comment";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { useUserContext } from "@/context/AuthContext";
-import Loader from "./Loader";
-import Tooltip from "@/components/ui/Tooltip";
-import { useShareDialog } from "@/components/shared/ShareDialogContext";
+} from '@/lib/react-query/queries';
+import Comment from './Comment';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import { useUserContext } from '@/context/AuthContext';
+import Loader from './Loader';
+import Tooltip from '@/components/ui/Tooltip';
+import { useShareDialog } from '@/components/shared/ShareDialogContext';
 
-interface User {
-  $id: string;
-  Name: string;
-  Username: string;
-  ImageUrl?: string;
-  Public?: boolean;
-}
-
-interface List {
-  $id: string;
-  Title: string;
-  Description?: string;
-  creator: User;
-  items: Array<any> | string;
-  Tags: string[];
-  tags: string[];
-  Categories: string[];
-  locations: string[];
-  timespans: string[];
-  Likes: string[];
-  Dislikes: string[];
-}
-
-interface ListCard2Props {
-  list: List | null;
-}
-
-const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
+const ListCard2 = ({ list }) => {
   const navigate = useNavigate();
   const { data: currentUser } = useGetCurrentUser();
   const { mutate: deleteSaveList } = useDeleteSavedList();
@@ -75,26 +43,24 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const { toast } = useToast();
 
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const [connection, setConnection] = useState<any>(undefined);
-  const [followdBy, setFollowdBy] = useState<any>([]);
-  const [likes, setLikes] = useState<string[]>([]);
-  const [dislikes, setDislikes] = useState<string[]>([]);
+  const [connection, setConnection] = useState(undefined);
+  const [followedBy, setFollowedBy] = useState([]);
+  const [likes, setLikes] = useState(list?.Likes || []);
+  const [dislikes, setDislikes] = useState(list?.Dislikes || []);
   const [isSaved, setIsSaved] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showComments, setShowComments] = useState(false);
 
-  const [newComment, setNewComment] = useState("");
-  const [isReply, setIsReply] = useState(false);
-  const [commentId, setCommentId] = useState("");
-  const { data: comments } = useGetComments(list?.$id);
-  const { mutate: createComment, isLoading: isSubmittingComment } = useCreateComment();
+  const [newComment, setNewComment] = useState('');
+  const { data: comments, isLoading: isLoadingComments } = useGetComments(list?.$id);
+  const [firstComment, setFirstComment] = useState(null);
+  const [firstReply, setFirstReply] = useState(null);
+  const { mutateAsync: createComment, isLoading: isSubmittingComment } = useCreateComment();
   const { openShareDialog } = useShareDialog();
-  const isMobile = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  };
   const { user } = useUserContext();
   const { id } = user;
-  const [parentReplyId, setParentReplyId] = useState("");
+
+  const hasLiked = useMemo(() => likes.includes(id), [likes, id]);
+  const hasDisliked = useMemo(() => dislikes.includes(id), [dislikes, id]);
 
   useEffect(() => {
     if (list) {
@@ -103,15 +69,19 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     }
   }, [list]);
 
-  const hasLiked = useMemo(() => likes.includes(id), [likes, id]);
-  const hasDisliked = useMemo(() => dislikes.includes(id), [dislikes, id]);
+  useEffect(() => {
+    if (comments && comments.length > 0) {
+      setFirstComment(comments[0]);
+      if (comments[0].Reply && comments[0].Reply.length > 0) {
+        setFirstReply(comments[0].Reply[0]);
+      }
+    }
+  }, [comments]);
 
   useEffect(() => {
     if (currentUser && list) {
       setIsSaved(
-        currentUser.save?.some(
-          (saved: any) => saved.list?.$id === list.$id
-        ) || false
+        currentUser.save?.some((saved) => saved.list?.$id === list.$id) || false
       );
     }
   }, [currentUser, list]);
@@ -126,35 +96,28 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
           ]);
           setConnection(ProfileConnection[0] || undefined);
 
-          let commonConnection: any[] = [],
-              remainingConnection: any[] = [],
-              displayConnection: any[] = [];
+          let commonConnection = [],
+            remainingConnection = [],
+            displayConnection = [];
 
           if (ProfileConnection?.length > 0 && ProfileViewerConnection?.length > 0) {
-            commonConnection = ProfileConnection[0]?.follower.filter(
-              (user: any) =>
-                ProfileViewerConnection[0]?.following.includes(user.$id)
+            commonConnection = ProfileConnection[0]?.follower.filter((user) =>
+              ProfileViewerConnection[0]?.following.includes(user.$id)
             );
             remainingConnection = ProfileConnection[0]?.follower.filter(
-              (user: any) =>
-                !ProfileViewerConnection[0]?.following.includes(user.$id)
+              (user) => !ProfileViewerConnection[0]?.following.includes(user.$id)
             );
           }
 
           if (commonConnection.length > 0) {
-            displayConnection = [
-              ...commonConnection,
-              ...remainingConnection,
-            ];
+            displayConnection = [...commonConnection, ...remainingConnection];
           } else {
-            displayConnection = ProfileConnection.length > 0
-              ? ProfileConnection[0].follower
-              : [];
+            displayConnection = ProfileConnection.length > 0 ? ProfileConnection[0].follower : [];
           }
 
-          setFollowdBy(displayConnection);
+          setFollowedBy(displayConnection);
         } catch (error) {
-          console.error("Error fetching connections:", error);
+          console.error('Error fetching connections:', error);
         }
       }
     };
@@ -163,9 +126,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   }, [list?.creator?.$id, user.id]);
 
   const isOwnProfile = user.id === list?.creator?.$id;
-  const isFollowed = connection?.follower?.some(
-    (follow: any) => follow.$id === user.id
-  );
+  const isFollowed = connection?.follower?.some((follow) => follow.$id === user.id);
 
   const handleLikeList = useCallback(async () => {
     if (!list) return;
@@ -191,13 +152,13 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         Dislikes: updatedDislikes,
       });
     } catch (error) {
-      console.error("Error liking list:", error);
+      console.error('Error liking list:', error);
       setLikes(likes);
       setDislikes(dislikes);
       toast({
-        title: "Error",
-        description: "Failed to update like status. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update like status. Please try again.',
+        variant: 'destructive',
       });
     }
   }, [likes, dislikes, id, list, hasLiked, hasDisliked, toast]);
@@ -226,13 +187,13 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         Dislikes: updatedDislikes,
       });
     } catch (error) {
-      console.error("Error disliking list:", error);
+      console.error('Error disliking list:', error);
       setLikes(likes);
       setDislikes(dislikes);
       toast({
-        title: "Error",
-        description: "Failed to update dislike status. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update dislike status. Please try again.',
+        variant: 'destructive',
       });
     }
   }, [likes, dislikes, id, list, hasLiked, hasDisliked, toast]);
@@ -242,7 +203,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
     try {
       if (isSaved) {
         const savedListRecord = currentUser.save?.find(
-          (record: any) => record.list?.$id === list.$id
+          (record) => record.list?.$id === list.$id
         );
         if (savedListRecord) {
           await deleteSaveList(savedListRecord.$id);
@@ -252,11 +213,11 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       }
       setIsSaved(!isSaved);
     } catch (error) {
-      console.error("Error saving list:", error);
+      console.error('Error saving list:', error);
       toast({
-        title: "Error",
-        description: "Failed to save list. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to save list. Please try again.',
+        variant: 'destructive',
       });
     }
   }, [isSaved, currentUser, list, deleteSaveList, saveList, id, toast]);
@@ -269,16 +230,16 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       let resp = await getConnection(list.creator.$id);
       setConnection(resp.length > 0 ? resp[0] : resp);
       toast({
-        title: "Followed",
+        title: 'Followed',
         description: `You are now following ${list.creator.Name}.`,
-        variant: "default",
+        variant: 'default',
       });
     } catch (error) {
-      console.error("Error following user:", error);
+      console.error('Error following user:', error);
       toast({
-        title: "Error",
-        description: "Failed to follow user. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to follow user. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsFollowLoading(false);
@@ -293,23 +254,23 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
       let resp = await getConnection(list.creator.$id);
       setConnection(resp.length > 0 ? resp[0] : resp);
       toast({
-        title: "Unfollowed",
+        title: 'Unfollowed',
         description: `You have unfollowed ${list.creator.Name}.`,
-        variant: "default",
+        variant: 'default',
       });
     } catch (error) {
-      console.error("Error unfollowing user:", error);
+      console.error('Error unfollowing user:', error);
       toast({
-        title: "Error",
-        description: "Failed to unfollow user. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to unfollow user. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsFollowLoading(false);
     }
   }, [list?.creator, user.id, toast]);
 
-  const handleShare = async (e: React.MouseEvent) => {
+  const handleShare = async (e) => {
     if (!list) return;
     e.preventDefault();
     e.stopPropagation();
@@ -325,11 +286,11 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         openShareDialog(shareableLink, list.Title);
       }
     } catch (error) {
-      console.error("Error sharing list:", error);
+      console.error('Error sharing list:', error);
       toast({
-        title: "Error",
-        description: "Failed to generate shareable link. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to generate shareable link. Please try again.',
+        variant: 'destructive',
       });
     }
   };
@@ -337,13 +298,13 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
   const renderListItems = useMemo(() => {
     if (!list || !list.items) return null;
 
-    let items: Array<any> = [];
+    let items = [];
 
     if (Array.isArray(list.items)) {
       items = list.items;
-    } else if (typeof list.items === "string") {
-      items = list.items.split("\n");
-    } else if (typeof list.items === "object" && list.items !== null) {
+    } else if (typeof list.items === 'string') {
+      items = list.items.split('\n');
+    } else if (typeof list.items === 'object' && list.items !== null) {
       items = Object.values(list.items);
     }
 
@@ -358,68 +319,36 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
           className="flex items-center mb-1 bg-gray-900 rounded-md p-0 hover:bg-gray-700 transition-colors duration-300"
         >
           <span className="text-lg font-bold text-orange-200 mr-4">
-            {index === 0 ? <Crown size={20} className="text-orange-200" /> : index + 1}
+            {index === 0 ? <span className="text-orange-200">#1</span> : index + 1}
           </span>
           <span className="text-sm text-white truncate">
-            {typeof item === "string" ? item : item.content || ""}
+            {typeof item === 'string' ? item : item.content || ''}
           </span>
         </motion.li>
       ));
   }, [list?.items, isExpanded]);
 
-  const handleCommentSubmit = async (e: React.FormEvent) => {
+  const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (newComment.trim() === '') return;
-  
+
     try {
-      if (isReply) {
-        const replyData: any = {
-          userId: user.id,
-          Content: newComment,
-          commentId: list.$id,
-        };
-  
-        if (commentId) {
-          replyData.commentId = commentId;
+      const newCommentData = await createComment({
+        listId: list.$id,
+        userId: user.id,
+        Content: newComment,
+      });
+
+      if (newCommentData) {
+        setNewComment('');
+        // Update first comment if there were no comments before
+        if (!firstComment) {
+          setFirstComment(newCommentData);
         }
-        if (parentReplyId) {
-          replyData.parentReplyId = parentReplyId;
-        }
-  
-        const newReply = await createReply(replyData);
-  
-        if (newReply) {
-          if (parentReplyId) {
-            // Replying to a reply
-            await updateReplyWithReply(parentReplyId, newReply.$id);
-          } else {
-            // Replying to a comment
-            await updateCommentWithReply(commentId, newReply.$id);
-          }
-  
-          setNewComment('');
-          setIsReply(false);
-          setCommentId('');
-          setParentReplyId('');
-          toast({
-            title: 'Reply Posted',
-            description: 'Your reply has been added successfully.',
-          });
-        }
-      } else {
-        const newCommentData = await createComment({
-          listId: list.$id,
-          userId: user.id,
-          Content: newComment,
+        toast({
+          title: 'Comment Posted',
+          description: 'Your comment has been added successfully.',
         });
-  
-        if (newCommentData) {
-          setNewComment('');
-          toast({
-            title: 'Comment Posted',
-            description: 'Your comment has been added successfully.',
-          });
-        }
       }
     } catch (error) {
       console.error('Failed to post comment:', error);
@@ -429,54 +358,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         variant: 'destructive',
       });
     }
-  };  
-
-  const renderComments = useCallback(() => {
-    if (!comments || comments.length === 0) {
-      return (
-        <p className="text-light-3 text-xs">
-           
-        </p>
-      );
-    }
-
-    const visibleComment = comments[0];
-
-    return (
-      <>
-        <ul className="space-y-4 text-xs">
-        <ul className="space-y-4 text-xs">
-          <Comment
-            comment={visibleComment}
-            key={visibleComment.$id}
-            setReply={setIsReply}
-            show={true}
-            setCommentId={setCommentId}
-            setParentReplyId={setParentReplyId}
-            // Other props if needed
-          />
-        </ul>
-
-
-        </ul>
-        {comments.length > 1 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Button
-              onClick={() => navigate(`/lists/${list.$id}`)}
-              className="mt-4 text-primary-500 hover:text-primary-600 transition-colors duration-300 flex items-center"
-            >
-              View all {comments.length} comments
-              <ChevronRight size={16} className="ml-2" />
-            </Button>
-          </motion.div>
-        )}
-      </>
-    );
-  }, [comments, navigate, list.$id]);
+  };
 
   if (!list) return null;
 
@@ -492,25 +374,19 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         {/* Creator Info */}
         {list.creator && (
           <div className="flex justify-between items-center mb-4">
-            <Link
-              to={`/profile/${list.creator.$id}`}
-              className="flex items-center group"
-            >
+            <Link to={`/profile/${list.creator.$id}`} className="flex items-center group">
               <img
                 src={
-                  list.creator.ImageUrl ||
-                  "/assets/icons/profile-placeholder.svg"
+                  list.creator?.ImageUrl || '/assets/icons/profile-placeholder.svg'
                 }
-                alt={`${list.creator.Name}'s profile`}
+                alt={`${list.creator?.Name}'s profile`}
                 className="w-10 h-10 rounded-full mr-3 border-2 border-transparent group-hover:border-primary-500 transition-all duration-300"
               />
               <div>
                 <p className="text-white font-semibold group-hover:text-primary-500 transition-colors duration-300">
                   {list.creator.Name}
                 </p>
-                <p className="text-gray-400 text-sm">
-                  @{list.creator.Username}
-                </p>
+                <p className="text-gray-400 text-sm">@{list.creator.Username}</p>
               </div>
             </Link>
 
@@ -519,8 +395,8 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
                 <Button
                   className={`text-sm px-4 py-2 rounded-full transition-colors duration-300 ${
                     isFollowed
-                      ? "text-gray-400 hover:text-white"
-                      : "bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-1 rounded-full mr-2"
+                      ? 'text-gray-400 hover:text-white'
+                      : 'bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-1 rounded-full mr-2'
                   }`}
                   onClick={isFollowed ? handleUnFollow : handleFollow}
                   disabled={isFollowLoading}
@@ -528,9 +404,9 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
                   {isFollowLoading ? (
                     <Loader />
                   ) : isFollowed ? (
-                    "Unfollow"
+                    'Unfollow'
                   ) : (
-                    "Follow"
+                    'Follow'
                   )}
                 </Button>
               )}
@@ -546,12 +422,12 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
           </div>
         )}
         {/* Followed By */}
-        {followdBy.length > 0 && (
+        {followedBy.length > 0 && (
           <div className="mb-4 text-xs text-light-3">
-            {followdBy.length > 2 ? (
+            {followedBy.length > 2 ? (
               <span>
-                Followed by{" "}
-                {followdBy.slice(0, 2).map((user: any, index: number) => (
+                Followed by{' '}
+                {followedBy.slice(0, 2).map((user, index) => (
                   <React.Fragment key={user.$id}>
                     <Link
                       to={`/profile/${user.$id}`}
@@ -559,15 +435,15 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
                     >
                       {user.Name}
                     </Link>
-                    {index === 0 && ", "}
+                    {index === 0 && ', '}
                   </React.Fragment>
-                ))}{" "}
+                ))}{' '}
                 and {connection?.follower?.length - 2} others
               </span>
             ) : (
               <span>
-                Followed by{" "}
-                {followdBy.map((user: any, index: number) => (
+                Followed by{' '}
+                {followedBy.map((user, index) => (
                   <React.Fragment key={user.$id}>
                     <Link
                       to={`/profile/${user.$id}`}
@@ -575,7 +451,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
                     >
                       {user.Name}
                     </Link>
-                    {index === 0 && followdBy.length > 1 && " and "}
+                    {index === 0 && followedBy.length > 1 && ' and '}
                   </React.Fragment>
                 ))}
               </span>
@@ -591,9 +467,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
             Ranking For
           </div>
 
-          <h2 className="text-orange-200 text-xl font-bold mb-2">
-            {list.Title}
-          </h2>
+          <h2 className="text-orange-200 text-xl font-bold mb-2">{list.Title}</h2>
           {list.Description && (
             <p className="text-light-2 text-sm">{list.Description}</p>
           )}
@@ -602,9 +476,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         {/* List Items */}
         <Link to={`/lists/${list.$id}`} className="block mb-6">
           <AnimatePresence>
-            <motion.ol className="list-none space-y-2">
-              {renderListItems}
-            </motion.ol>
+            <motion.ol className="list-none space-y-2">{renderListItems}</motion.ol>
           </AnimatePresence>
 
           {Array.isArray(list.items) && list.items.length > 5 && (
@@ -631,7 +503,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         <div className="flex flex-wrap gap-2 mb-4">
           {list.tags && list.tags.length > 0 && (
             <>
-              {list.tags.slice(0, 3).map((tag: string, index: number) => (
+              {list.tags.slice(0, 3).map((tag, index) => (
                 <span
                   key={index}
                   className="bg-dark-4 text-light-2 px-3 py-1 rounded-full text-xs"
@@ -650,7 +522,7 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
 
         <div className="flex flex-wrap gap-2 mb-4">
           {list.Tags &&
-            list.Tags.map((tag: string, index: number) => (
+            list.Tags.map((tag, index) => (
               <span
                 key={`${tag}${index}`}
                 onClick={() => navigate(`/categories/${tag}`)}
@@ -665,45 +537,45 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
         {list.locations && list.locations.length > 0 && (
           <div className="flex items-center text-light-3 text-sm mb-2">
             <MapPin size={16} className="mr-2" />
-            {list.locations.join(", ")}
+            {list.locations.join(', ')}
           </div>
         )}
 
         {list.timespans && list.timespans.length > 0 && (
           <div className="flex items-center text-light-3 text-sm">
             <Clock size={16} className="mr-2" />
-            {list.timespans.join(", ")}
+            {list.timespans.join(', ')}
           </div>
         )}
       </div>
 
-      {/* Actions */}      
+      {/* Actions */}
       <div className="flex justify-between items-center mt-4 text-sm ml-5 mr-5">
         <div className="flex items-center space-x-4">
-          <Tooltip content={hasLiked ? "Unlike" : "Like"}>
+          <Tooltip content={hasLiked ? 'Unlike' : 'Like'}>
             <Button variant="ghost" onClick={handleLikeList} className="p-1">
-              <ThumbsUp size={18} className={hasLiked ? "fill-orange-500 text-orange-500" : "text-white"} />
+              <ThumbsUp size={18} className={hasLiked ? 'fill-orange-500 text-orange-500' : 'text-white'} />
               <span className="ml-1">{likes.length}</span>
             </Button>
           </Tooltip>
-          <Tooltip content={hasDisliked ? "Remove dislike" : "Dislike"}>
+          <Tooltip content={hasDisliked ? 'Remove dislike' : 'Dislike'}>
             <Button variant="ghost" onClick={handleDislikeList} className="p-1">
-              <ThumbsDown size={18} className={hasDisliked ? "fill-orange-500 text-orange-500" : "text-white"} />
+              <ThumbsDown size={18} className={hasDisliked ? 'fill-orange-500 text-orange-500' : 'text-white'} />
               <span className="ml-1">{dislikes.length}</span>
             </Button>
           </Tooltip>
-          <Button variant="ghost" onClick={() => setShowComments(!showComments)} className="p-1">
+          <Button variant="ghost" onClick={() => {}} className="p-1">
             <MessageCircle size={18} className="text-gray-500" />
             <span className="ml-1">{comments?.length || 0}</span>
           </Button>
         </div>
         <div className="flex items-center space-x-4">
-          <Tooltip content={isSaved ? "Unsave" : "Save"}>
-            <Button  onClick={handleSaveList} className="p-1">
-              <Bookmark size={18} className={isSaved ? "fill-orange-500 text-orange-500" : ""} />
+          <Tooltip content={isSaved ? 'Unsave' : 'Save'}>
+            <Button onClick={handleSaveList} className="p-1">
+              <Bookmark size={18} className={isSaved ? 'fill-orange-500 text-orange-500' : ''} />
             </Button>
           </Tooltip>
-          
+
           <Tooltip content="Remix">
             <Button variant="ghost" onClick={() => navigate(`/remix/${list.$id}`)} className="p-1">
               <Redo2 size={18} className="text-gray-200" />
@@ -711,37 +583,72 @@ const ListCard2: React.FC<ListCard2Props> = ({ list }) => {
           </Tooltip>
         </div>
       </div>
-      {/* Comments Section */}
-      <div className="bg-gray-900 p-6 border-t border-dark-4">
-        <h3 className="text-xs font-semibold mb-4">Comments</h3>
-        {renderComments()}
 
-        {/* Comment Input Field */}
-        <form onSubmit={handleCommentSubmit} className="text-xs mt-4">
-          <textarea
-            value={newComment}
-            spellCheck={true} // Enable spellcheck here
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder={isReply ? "Write a reply..." : "Agree? Disagree? Share your take!"}
-            className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
-            rows={1}
-            disabled={isSubmittingComment} // Disable textarea while submitting
-          />
-          <div className="mt-2 flex items-center">
-            <Button type="submit" className="flex items-center" disabled={isSubmittingComment}>
-              {isSubmittingComment ? <Loader size="small" /> : "Post Comment"}
-            </Button>
-            {isReply && (
-              <Button
-                onClick={() => setIsReply(false)}
-                variant="ghost"
-                className="ml-2"
-              >
-                Cancel Reply
-              </Button>
+      {/* Comments Section */}
+      <div className="p-4">
+        {isLoadingComments ? (
+          <p className="text-light-3 text-xs">Loading comments...</p>
+        ) : firstComment ? (
+          <div className="space-y-4 text-xs">
+            <Comment
+              comment={firstComment}
+              setReply={() => {}}
+              show={true}
+              setCommentId={() => {}}
+              setParentReplyId={() => {}}
+              listId={list.$id}
+            />
+            {firstReply && (
+              <div className="ml-4">
+                <Comment
+                  comment={firstReply}
+                  setReply={() => {}}
+                  show={true}
+                  setCommentId={() => {}}
+                  setParentReplyId={() => {}}
+                  listId={list.$id}
+                />
+              </div>
             )}
           </div>
-        </form>
+        ) : (
+          <p className="text-light-3 text-xs">No comments yet. Be the first to comment!</p>
+        )}
+
+        {comments && comments.length > 0 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+            <Button
+              onClick={() => navigate(`/lists/${list.$id}`)}
+              className="mt-4 text-primary-500 hover:text-primary-600 transition-colors duration-300 flex items-center"
+            >
+              View all {comments.length} comments
+              <ChevronDown size={16} className="ml-2" />
+            </Button>
+          </motion.div>
+        )}
+
+        {/* Add Comment Input */}
+        <div className="flex items-center mt-4">
+          <img
+            src={currentUser?.ImageUrl || '/assets/icons/profile-placeholder.svg'}
+            alt={`${currentUser?.Username}'s avatar`}
+            className="w-4 h-4 rounded-full object-cover mr-2"
+          />
+          <input
+            type="text"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Add a comment..."
+            className="flex-1 bg-transparent border-none focus:outline-none text-sm"
+          />
+          <button
+            onClick={handleCommentSubmit}
+            disabled={isSubmittingComment || !newComment.trim()}
+            className="ml-2 text-blue-500 text-sm font-semibold focus:outline-none"
+          >
+            Post
+          </button>
+        </div>
       </div>
     </motion.div>
   );

@@ -1,80 +1,82 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useUserContext } from '@/context/AuthContext';
+import React, { useState, useEffect, useRef } from "react";
+import { useUserContext } from "@/context/AuthContext";
 import {
   ReplyLike,
   reportReply,
   createReply,
   getNestedReplies,
   updateReplyWithReply,
-} from '@/lib/appwrite/api';
-import { checkIsLiked } from '@/lib/utils';
-import { ThumbsUp, MoreVertical, Flag, MessageCircle } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import Loader from './Loader';
+} from "@/lib/appwrite/api";
+import { checkIsLiked } from "@/lib/utils";
+import { MoreVertical, ThumbsUp } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from 'react-router-dom';
 
-interface CommentReplyProps {
-  reply: any;
-  parentCommentId: string;
-  setReply: (value: boolean) => void;
-  setCommentId: (id: string) => void;
-  setParentReplyId: (id: string) => void;
-}
-
-const CommentReply: React.FC<CommentReplyProps> = ({
+const CommentReply = ({
   reply,
   parentCommentId,
   setReply,
   setCommentId,
   setParentReplyId,
+  listId,
 }) => {
   const { user } = useUserContext();
   const { toast } = useToast();
-  const [likes, setLikes] = useState<string[]>(reply?.Likes || []);
+  const navigate = useNavigate();
+  const [likes, setLikes] = useState(reply?.Likes || []);
   const [isLiked, setIsLiked] = useState(false);
-  const [isReporting, setIsReporting] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const [nestedReplies, setNestedReplies] = useState([]);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
+  const [nestedReplies, setNestedReplies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isReporting, setIsReporting] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     setIsLiked(checkIsLiked(likes, user.id));
-  }, [likes, user.id]);
+    fetchNestedReplies();
+  }, [likes, user.id, reply.$id]);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
     };
-
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
-  useEffect(() => {
-    fetchNestedReplies();
-  }, []);
-
   const fetchNestedReplies = async () => {
-    if (!reply.$id) return; // Ensure we have a valid reply ID
+    if (!reply.$id) return;
     try {
       const fetchedReplies = await getNestedReplies(reply.$id);
       setNestedReplies(fetchedReplies);
     } catch (error) {
       console.error('Error fetching nested replies:', error);
-      toast({
-        title: 'Error',
-        description: 'Unable to fetch nested replies. Please try again.',
-        variant: 'destructive',
-      });
     }
   };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch (error) {
+      console.error('Invalid date:', dateString);
+      return '';
+    }
+  };
+
+  const generateUniqueKey = (nestedReply, index) => {
+    if (nestedReply.$id) return nestedReply.$id;
+    const contentSnippet = nestedReply.Content ? nestedReply.Content.slice(0, 10) : '';
+    return `nested-reply-${index}-${contentSnippet}`;
+  };
+
 
   const handleLikeComment = async () => {
     const newLikes = isLiked
@@ -94,6 +96,49 @@ const CommentReply: React.FC<CommentReplyProps> = ({
       });
       setLikes(likes);
       setIsLiked(!isLiked);
+    }
+  };
+
+  const handleReplyClick = () => {
+    setReply(true);
+    setCommentId(parentCommentId);
+    setParentReplyId(reply.$id);
+    setShowReplyForm(!showReplyForm);
+  };
+
+  const handleReply = async () => {
+    if (!replyContent.trim() || !reply.$id) return;
+
+    setIsLoading(true);
+    try {
+      const replyData = {
+        userId: user.id,
+        Content: replyContent.trim(),
+        commentId: parentCommentId,
+        parentReplyId: reply.$id,
+      };
+
+      const newReply = await createReply(replyData);
+
+      if (newReply) {
+        await updateReplyWithReply(reply.$id, newReply.$id);
+        setNestedReplies((prev) => [newReply, ...prev]);
+        setReplyContent('');
+        setShowReplyForm(false);
+        toast({
+          title: 'Reply Posted',
+          description: 'Your reply has been added successfully.',
+        });
+      }
+    } catch (error) {
+      console.error('Error creating reply:', error);
+      toast({
+        title: 'Reply Failed',
+        description: 'Unable to post reply. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -128,183 +173,115 @@ const CommentReply: React.FC<CommentReplyProps> = ({
     }
   };
 
-  const handleReplyClick = () => {
-    setReply(true);
-    setCommentId(parentCommentId);
-    setParentReplyId(reply.$id);
-    setShowReplyForm(!showReplyForm);
+  const handleViewMoreReplies = () => {
+    navigate(`/lists/${listId}`);
   };
 
-  const handleReply = async () => {
-    if (!replyContent.trim() || !reply.$id) return;
-
-    setIsLoading(true);
-    try {
-      const replyData: any = {
-        userId: user.id,
-        Content: replyContent.trim(),
-        commentId: parentCommentId,
-        parentReplyId: reply.$id,
-      };
-
-      const newReply = await createReply(replyData);
-
-      if (newReply) {
-        // Update the backend reply document to include the new nested reply
-        await updateReplyWithReply(reply.$id, newReply.$id);
-
-        setNestedReplies((prev) => [newReply, ...prev]);
-        setReplyContent('');
-        setShowReplyForm(false);
-        toast({
-          title: 'Reply Posted',
-          description: 'Your reply has been added successfully.',
-        });
-      }
-    } catch (error) {
-      console.error('Error creating nested reply:', error);
-      toast({
-        title: 'Reply Failed',
-        description: 'Unable to post reply. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      className="flex items-start gap-3 bg-dark-2 p-3 rounded-lg"
-    >
+   return (
+    <div className="flex items-start mb-2 ml-4">
       <img
         src={reply.userId?.ImageUrl || '/assets/icons/profile-placeholder.svg'}
-        alt={`${reply.userId?.Username}'s avatar`}
-        className="w-8 h-8 rounded-full object-cover"
+        alt={`${reply.userId?.Username || 'Anonymous'}'s avatar`}
+        className="w-6 h-6 rounded-full object-cover mr-2"
       />
-      <div className="flex-grow">
-        <p className="text-blue-400 text-xs font-semibold">
-          @{reply.userId?.Username}
-        </p>
-        <p className="text-sm text-light-2 mt-1">{reply.Content}</p>
-        <div className="flex items-center justify-between mt-2">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+      <div className="flex-1">
+        <div className="bg-transparent p-1 rounded-lg">
+          <span className="text-sm font-semibold mr-1">
+            @{reply.userId?.Username || 'Anonymous'}
+          </span>
+          <span className="text-xs font-light">{reply.Content || ''}</span>
+        </div>
+        <div className="flex items-center mt-1 space-x-4 text-xs text-gray-500">
+          <button
             onClick={handleLikeComment}
-            className="flex items-center gap-1 text-xs text-light-3 hover:text-red-500 transition-colors"
+            className="focus:outline-none flex items-center"
           >
             <ThumbsUp
-              size={14}
-              className={`${
-                isLiked ? 'fill-orange-500 text-orange-500' : 'text-light-3'
-              } transition-colors`}
+              size={16}
+              className={isLiked ? 'text-orange-500' : 'text-gray-500'}
+              fill={isLiked ? 'currentColor' : 'none'}
             />
-            <span className={`${isLiked ? 'text-red-500' : 'text-light-3'}`}>
-              {likes.length}
-            </span>
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={handleReplyClick}
-            className="flex items-center gap-1 text-xs text-light-3 hover:text-blue-500 transition-colors"
-          >
-            <MessageCircle size={14} />
-            <span>Reply</span>
-          </motion.button>
-          <div className="relative" ref={menuRef}>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-light-3 hover:text-light-1 transition-colors"
-            >
-              <MoreVertical size={16} />
-            </motion.button>
-            <AnimatePresence>
-              {isMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.1 }}
-                  className="absolute right-0 mt-2 w-48 bg-dark-1 rounded-md shadow-lg z-10"
-                >
-                  <button
-                    onClick={handleReportReply}
-                    disabled={isReporting}
-                    className="flex items-center w-full px-4 py-2 text-xs text-left text-light-2 hover:bg-dark-3 transition-colors"
-                  >
-                    {isReporting ? (
-                      <Loader className="mr-2" />
-                    ) : (
-                      <Flag size={14} className="mr-2" />
-                    )}
-                    {isReporting ? 'Reporting...' : 'Report Reply'}
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+            {likes.length > 0 && <span className="ml-1">{likes.length}</span>}
+          </button>
+          <button onClick={handleReplyClick} className="focus:outline-none">
+            Reply
+          </button>
+          <span>
+            {formatDate(reply.CreatedAt)}
+          </span>
         </div>
-        <AnimatePresence>
-          {showReplyForm && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="mt-2"
-            >
-              <textarea
-                value={replyContent}
-                onChange={(e) => setReplyContent(e.target.value)}
-                placeholder="Write a reply..."
-                className="w-full p-2 bg-dark-3 text-light-1 rounded-md resize-none"
-                rows={2}
-              />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleReply}
-                disabled={isLoading || !replyContent.trim()}
-                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
-              >
-                {isLoading ? <Loader /> : 'Post Reply'}
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
-        {/* Render Nested Replies */}
-        <AnimatePresence>
-          {nestedReplies.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="mt-4 space-y-3 ml-4"
+         {/* Nested Replies */}
+      {nestedReplies.length > 0 && (
+        <div className="ml-4 mt-2">
+          {nestedReplies.slice(0, 1).map((nestedReply, index) => (
+            <CommentReply
+              key={generateUniqueKey(nestedReply, index)}
+              reply={nestedReply}
+              parentCommentId={parentCommentId}
+              setReply={setReply}
+              setCommentId={setCommentId}
+              setParentReplyId={setParentReplyId}
+              listId={listId}
+            />
+          ))}
+          {nestedReplies.length > 1 && (
+            <button
+              onClick={handleViewMoreReplies}
+              className="text-xs text-blue-500 mt-2 focus:outline-none"
             >
-              {nestedReplies.map((nestedReply) => (
-                <CommentReply
-                  key={nestedReply.$id}
-                  reply={nestedReply}
-                  parentCommentId={parentCommentId}
-                  setReply={setReply}
-                  setCommentId={setCommentId}
-                  setParentReplyId={setParentReplyId}
-                />
-              ))}
-            </motion.div>
+              View {nestedReplies.length - 1} more {nestedReplies.length - 1 === 1 ? 'reply' : 'replies'}
+            </button>
           )}
-        </AnimatePresence>
+        </div>
+        )}
+
+        {/* Reply Input */}
+        {showReplyForm && (
+          <div className="flex items-center mt-2">
+            <img
+              src={user.ImageUrl || '/assets/icons/profile-placeholder.svg'}
+              alt={`${user.Username}'s avatar`}
+              className="w-6 h-6 rounded-full mr-2"
+            />
+            <input
+              type="text"
+              value={replyContent}
+              onChange={(e) => setReplyContent(e.target.value)}
+              placeholder="Add a reply..."
+              className="flex-1 bg-transparent border-b border-gray-300 focus:outline-none text-sm"
+            />
+            <button
+              onClick={handleReply}
+              disabled={isLoading || !replyContent.trim()}
+              className="ml-2 text-blue-500 text-sm font-semibold focus:outline-none"
+            >
+              Post
+            </button>
+          </div>
+        )}
       </div>
-    </motion.div>
+      {/* More Options */}
+      <div className="relative" ref={menuRef}>
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="focus:outline-none absolute right-0"
+        >
+          <MoreVertical size={16} />
+        </button>
+        {isMenuOpen && (
+          <div className="absolute right-0 mt-2 w-32 bg-black rounded-md shadow-lg z-10">
+            <button
+              onClick={handleReportReply}
+              disabled={isReporting}
+              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-700 focus:outline-none"
+            >
+              {isReporting ? 'Reporting...' : 'Report Abuse'}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

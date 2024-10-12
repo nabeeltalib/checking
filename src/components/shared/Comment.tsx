@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useUserContext } from '@/context/AuthContext';
 import { useToast } from '../ui/use-toast';
 import Loader from './Loader';
@@ -8,55 +7,66 @@ import {
   reportComment,
   createReply,
   updateCommentWithReply,
-  updateReplyWithReply // Import this
+  updateReplyWithReply,
 } from '@/lib/appwrite/api';
 import { checkIsLiked } from '@/lib/utils';
 import CommentReply from './CommentReply';
-import { ThumbsUp, Flag, MessageCircle, MoreVertical } from 'lucide-react';
+import { MoreVertical, ThumbsUp } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
-interface CommentProps {
-  comment: any;
-  setReply: (value: boolean) => void;
-  show: boolean;
-  setCommentId: (id: string) => void;
-  setParentReplyId: (id: string) => void;
-}
-
-const Comment: React.FC<CommentProps> = ({
+const Comment = ({
   comment,
   setReply,
   show,
   setCommentId,
-  setParentReplyId, // Add this line
+  setParentReplyId,
+  listId,
 }) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useUserContext();
   const [likes, setLikes] = useState<string[]>(comment?.Likes || []);
   const [isLiked, setIsLiked] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const [localComment, setLocalComment] = useState(comment);
   const [showReplyField, setShowReplyField] = useState(false);
-  const [parentReplyId, setLocalParentReplyId] = useState(''); // Add this line
   const menuRef = useRef<HTMLDivElement>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsLiked(checkIsLiked(likes, user.id));
   }, [likes, user.id]);
 
+  // Close menu if clicked outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    try {
+      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
+    } catch (error) {
+      console.error('Invalid date:', dateString);
+      return '';
+    }
+  };
+
+  const generateUniqueKey = (reply, index) => {
+    if (reply.$id) return reply.$id;
+    const contentSnippet = reply.Content ? reply.Content.slice(0, 10) : '';
+    return `reply-${index}-${contentSnippet}`;
+  };
 
   const handleReport = async () => {
     setIsLoading(true);
@@ -68,9 +78,16 @@ const Comment: React.FC<CommentProps> = ({
         id: comment.$id,
         Reporter: user.name,
       });
-      toast({ title: "Comment Reported", description: "Thank you for helping keep our community safe." });
+      toast({
+        title: 'Comment Reported',
+        description: 'Thank you for helping keep our community safe.',
+      });
     } catch (error) {
-      toast({ title: "Report Failed", description: `Unable to report comment: ${error}`, variant: "destructive" });
+      toast({
+        title: 'Report Failed',
+        description: `Unable to report comment: ${error}`,
+        variant: 'destructive',
+      });
     }
     setIsLoading(false);
   };
@@ -78,21 +95,24 @@ const Comment: React.FC<CommentProps> = ({
   const handleReply = () => {
     setShowReplyField(!showReplyField);
     setCommentId(comment.$id);
-    setParentReplyId(''); // No parentReplyId when replying to a comment
-    setLocalParentReplyId(''); // Reset local parentReplyId
+    setParentReplyId('');
   };
 
   const handleLikeComment = async () => {
     const newLikes = isLiked
       ? likes.filter((Id) => Id !== user.id)
       : [...likes, user.id];
-    
+
     setLikes(newLikes);
     setIsLiked(!isLiked);
     try {
       await likeComment(comment.$id, newLikes);
     } catch (error) {
-      toast({ title: "Like Failed", description: "Unable to like comment. Please try again.", variant: "destructive" });
+      toast({
+        title: 'Like Failed',
+        description: 'Unable to like comment. Please try again.',
+        variant: 'destructive',
+      });
       setLikes(likes);
       setIsLiked(!isLiked);
     }
@@ -109,20 +129,10 @@ const Comment: React.FC<CommentProps> = ({
         commentId: comment.$id,
       };
 
-      if (parentReplyId) {
-        replyData.parentReplyId = parentReplyId;
-      }
-
       const newReply = await createReply(replyData);
 
       if (newReply) {
-        if (parentReplyId) {
-          // Replying to a reply
-          await updateReplyWithReply(parentReplyId, newReply.$id);
-        } else {
-          // Replying to a comment
-          await updateCommentWithReply(comment.$id, newReply.$id);
-        }
+        await updateCommentWithReply(comment.$id, newReply.$id);
 
         setLocalComment((prev) => ({
           ...prev,
@@ -131,7 +141,6 @@ const Comment: React.FC<CommentProps> = ({
         setReplyContent('');
         setShowReplyField(false);
         setParentReplyId('');
-        setLocalParentReplyId('');
         toast({
           title: 'Reply Posted',
           description: 'Your reply has been added successfully.',
@@ -149,138 +158,121 @@ const Comment: React.FC<CommentProps> = ({
     }
   };
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className="mb-4 bg-dark-3 rounded-lg p-4 shadow-md"
-    >
-      <div className="flex items-start gap-3">
-        <img
-          src={comment.user.ImageUrl || "/assets/icons/profile-placeholder.svg"}
-          alt={`${comment.user.Username}'s avatar`}
-          className="w-10 h-10 rounded-full object-cover"
-        />
-        <div className="flex-grow">
-          <div className="flex justify-between items-start">
-            <p className="text-sm font-semibold text-light-1">{comment.user.Username}</p>
-            {show && (
-              <div className="relative" ref={menuRef}>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="text-light-3 hover:text-light-1 transition-colors"
-                >
-                  <MoreVertical size={16} />
-                </motion.button>
-                <AnimatePresence>
-                  {isMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.1 }}
-                      className="absolute right-0 mt-2 w-48 bg-dark-4 rounded-md shadow-lg z-10"
-                    >
-                      <button
-                        onClick={handleReport}
-                        disabled={isLoading}
-                        className="flex items-center w-full px-4 py-2 text-xs text-left text-light-2 hover:bg-dark-4 transition-colors"
-                      >
-                        {isLoading ? (
-                          <Loader className="mr-2" />
-                        ) : (
-                          <Flag size={14} className="mr-2" />
-                        )}
-                        {isLoading ? "Reporting..." : "Report Comment"}
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
-          </div>
-          <p className="text-xs text-light-2 mt-1">{comment.Content}</p>
-          <div className="flex items-center gap-4 mt-2">
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleLikeComment}
-              className="flex items-center gap-1 text-xs text-light-3 hover:text-red-500 transition-colors"
-            >
-              <ThumbsUp
-                size={16}
-                className={`${isLiked ? 'fill-orange-500 text-orange-500' : 'text-light-3'} transition-colors`}
-              />
-              <span className={`${isLiked ? 'text-red-500' : 'text-light-3'}`}>{likes.length}</span>
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={handleReply}
-              className="flex items-center gap-1 text-xs text-light-3 hover:text-blue-500 transition-colors"
-            >
-              <MessageCircle size={16} />
-              <span>Reply</span>
-            </motion.button>
-          </div>
-        </div>
-      </div>
+  const handleViewMoreReplies = () => {
+    navigate(`/lists/${listId}`);
+  };
 
-      <AnimatePresence>
-        {showReplyField && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mt-4 ml-12"
+  // Fallback values for undefined properties
+  const userImageUrl = comment?.user?.ImageUrl || '/assets/icons/profile-placeholder.svg';
+  const username = comment?.user?.Username || 'Anonymous';
+
+  return (
+    <div className="flex items-start mb-2">
+      <img
+        src={userImageUrl}
+        alt={`${username}'s avatar`}
+        className="w-6 h-6 rounded-full object-cover mr-2"
+      />
+      <div className="flex-1">
+        <div className="bg-transparent p-1 rounded-lg">
+          <span className="text-sm font-semibold mr-1">
+            {username}
+          </span>
+          <span className="text-xs font-light">{comment?.Content || 'No content'}</span>
+        </div>
+        <div className="flex items-center mt-1 space-x-4 text-xs text-gray-500">
+          <button
+            onClick={handleLikeComment}
+            className="focus:outline-none flex items-center"
           >
-            <textarea
+            <ThumbsUp
+              size={16}
+              className={isLiked ? 'text-orange-500' : 'text-gray-500'}
+              fill={isLiked ? 'currentColor' : 'none'}
+            />
+            {likes.length > 0 && <span className="ml-1">{likes.length}</span>}
+          </button>
+          <button onClick={handleReply} className="focus:outline-none">
+            Reply
+          </button>
+          <span>
+            {comment?.CreatedAt && formatDistanceToNow(new Date(comment.CreatedAt), { addSuffix: true })}
+          </span>
+        </div>
+
+         {/* Replies */}
+      {localComment.Reply && localComment.Reply.length > 0 && (
+        <div className="ml-4 mt-2">
+          {localComment.Reply.slice(0, 2).map((reply, index) => (
+            <CommentReply
+              key={generateUniqueKey(reply, index)}
+              reply={reply}
+              parentCommentId={comment.$id}
+              setReply={setReply}
+              setCommentId={setCommentId}
+              setParentReplyId={setParentReplyId}
+              listId={listId}
+            />
+          ))}
+          {localComment.Reply.length > 2 && (
+            <button
+              onClick={handleViewMoreReplies}
+              className="text-xs text-blue-500 mt-2 focus:outline-none"
+            >
+              View more replies
+            </button>
+          )}
+        </div>
+        )}
+
+        {/* Reply Input */}
+        {showReplyField && (
+          <div className="flex items-center mt-2">
+            <img
+              src={user.ImageUrl || '/assets/icons/profile-placeholder.svg'}
+              alt={`${user.Username}'s avatar`}
+              className="w-6 h-6 rounded-full object-cover mr-2"
+            />
+            <input
+              type="text"
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
-              placeholder="Write a reply..."
-              className="w-full p-2 bg-dark-4 text-light-1 rounded-md resize-none"
-              rows={2}
+              placeholder="Add a reply..."
+              className="flex-1 bg-transparent border-b border-gray-300 focus:outline-none text-sm"
             />
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={handleCreateReply}
               disabled={isLoading || !replyContent.trim()}
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50"
+              className="ml-2 text-blue-500 text-sm font-semibold focus:outline-none"
             >
-              {isLoading ? <Loader /> : "Post Reply"}
-            </motion.button>
-          </motion.div>
+              Post
+            </button>
+          </div>
         )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {localComment.Reply && localComment.Reply.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="ml-12 mt-4 space-y-3"
+      </div>
+      {/* More Options */}
+      {show && (
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="focus:outline-none ml-2"
           >
-            {localComment.Reply.map((reply: any) => (
-              <CommentReply
-                key={reply.$id}
-                reply={reply}
-                parentCommentId={comment.$id}
-                setReply={setReply}
-                setCommentId={setCommentId}
-                setParentReplyId={setParentReplyId}
-              />
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
+            <MoreVertical size={16} />
+          </button>
+          {isMenuOpen && (
+            <div className="absolute right-0 mt-2 w-32 bg-black rounded-md shadow-lg z-10">
+              <button
+                onClick={handleReport}
+                disabled={isLoading}
+                className="w-full text-left px-4 py-2 text-xs hover:bg-gray-700 focus:outline-none"
+              >
+                {isLoading ? 'Reporting...' : 'Report Abuse'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
