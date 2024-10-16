@@ -55,7 +55,11 @@ const UpdateProfile: React.FC = () => {
 
   const { data: currentUser, isLoading: isLoadingUser } = useGetUserById(id || "");
   const { mutateAsync: updateUser, isLoading: isLoadingUpdate } = useUpdateUser();
-
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   useEffect(() => {
     if (currentUser) {
       form.reset({

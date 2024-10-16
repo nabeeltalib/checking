@@ -10,67 +10,6 @@ import { NotificationBell } from "./notifications/NotificationBell";
 import { Search, Menu, X, User, HelpCircle, Mail, LogOut, PlusCircle, ChevronDown } from 'lucide-react';
 import SignInDialog from '@/components/shared/SignInDialog';
 
-const CreateListButton: React.FC = () => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const navigate = useNavigate();
-  const { user } = useUserContext();
-
-  const handleCreateList = () => {
-    if (user?.isAuthenticated) {
-      navigate("/create-list");
-      setIsDropdownOpen(false);
-    }
-  };
-
-  const handleCreateGroupList = () => {
-    // Restricted for now
-  };
-
-  const handleCreateChallenge = () => {
-    // Restricted for now
-  };
-
-  return (
-    <div className="relative inline-block text-left">
-      <Button
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg flex items-center"
-      >
-        <PlusCircle className="w-5 h-5 mr-2" />
-        Create
-        <ChevronDown className="ml-2 w-4 h-4" />
-      </Button>
-
-      {isDropdownOpen && (
-        <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-blue-700 ring-1 ring-black ring-opacity-5">
-          <div className="py-1">
-            <button
-              onClick={handleCreateList}
-              className="w-full text-left px-4 py-2 text-sm text-gray-100 hover:bg-blue-500"
-            >
-              Create List
-            </button>
-            <button
-              onClick={handleCreateGroupList}
-              className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
-              disabled
-            >
-              Create Group List (Coming Soon)
-            </button>
-            <button
-              onClick={handleCreateChallenge}
-              className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
-              disabled
-            >
-              Create Challenge (Coming Soon)
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 const Topbar2: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useUserContext();
@@ -80,8 +19,10 @@ const Topbar2: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isOffCanvasOpen, setIsOffCanvasOpen] = useState(false);
   const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
+  const [isCreateDropdownOpen, setIsCreateDropdownOpen] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const createDropdownRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLFormElement>(null);
 
   const toggleDropdown = () => setIsOpen(!isOpen);
@@ -96,6 +37,27 @@ const Topbar2: React.FC = () => {
     } else {
       handleDialogOpen();
     }
+  };
+
+  const handleAuthenticatedAction = (action: () => void) => {
+    if (user?.isAuthenticated) {
+      action();
+    } else {
+      setIsSignInDialogOpen(true);
+    }
+  };
+
+  const handleCreateList = () => {
+    handleAuthenticatedAction(() => navigate("/create-list"));
+    setIsCreateDropdownOpen(false);
+  };
+
+  const handleCreateGroupList = () => {
+    // Restricted for now
+  };
+
+  const handleCreateChallenge = () => {
+    // Restricted for now
   };
 
   useEffect(() => {
@@ -117,6 +79,9 @@ const Topbar2: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+      }
+      if (createDropdownRef.current && !createDropdownRef.current.contains(event.target as Node)) {
+        setIsCreateDropdownOpen(false);
       }
     };
 
@@ -155,7 +120,43 @@ const Topbar2: React.FC = () => {
         </div>
 
         <div id="side-icons" className="hidden md:flex items-center gap-4">
-          <CreateListButton />
+          <div className="relative inline-block text-left" ref={createDropdownRef}>
+            <Button
+              onClick={() => setIsCreateDropdownOpen(!isCreateDropdownOpen)}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg flex items-center"
+            >
+              <PlusCircle className="w-5 h-5 mr-2" />
+              Create
+              <ChevronDown className="ml-2 w-4 h-4" />
+            </Button>
+
+            {isCreateDropdownOpen && (
+              <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-dark-4 ring-1 ring-black ring-opacity-5">
+                <div className="py-1">
+                  <button
+                    onClick={handleCreateList}
+                    className="w-full text-left px-4 py-2 text-sm text-white hover:bg-dark-4 transition-colors duration-200"
+                  >
+                    Create List
+                  </button>
+                  <button
+                    onClick={handleCreateGroupList}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
+                    disabled
+                  >
+                    Create Group List (Coming Soon)
+                  </button>
+                  <button
+                    onClick={handleCreateChallenge}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
+                    disabled
+                  >
+                    Create Challenge (Coming Soon)
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="relative" ref={dropdownRef}>
             <Button
@@ -218,7 +219,43 @@ const Topbar2: React.FC = () => {
               </Button>
 
               <div className="space-y-4">
-                <CreateListButton />
+                <div className="relative inline-block text-left w-full">
+                  <Button
+                    onClick={() => setIsCreateDropdownOpen(!isCreateDropdownOpen)}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg flex items-center w-full"
+                  >
+                    <PlusCircle className="w-5 h-5 mr-2" />
+                    Create
+                    <ChevronDown className="ml-2 w-4 h-4" />
+                  </Button>
+
+                  {isCreateDropdownOpen && (
+                    <div className="absolute left-0 mt-2 w-full rounded-md shadow-lg bg-dark-4 ring-1 ring-black ring-opacity-5">
+                      <div className="py-1">
+                        <button
+                          onClick={handleCreateList}
+                          className="w-full text-left px-4 py-2 text-sm text-white hover:bg-dark-4 transition-colors duration-200"
+                        >
+                          Create List
+                        </button>
+                        <button
+                          onClick={handleCreateGroupList}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
+                          disabled
+                        >
+                          Create Group List (Coming Soon)
+                        </button>
+                        <button
+                          onClick={handleCreateChallenge}
+                          className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
+                          disabled
+                        >
+                          Create Challenge (Coming Soon)
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 <Link
                   to="/helpfaqpage"

@@ -73,7 +73,7 @@ const CreateListButton: React.FC = () => {
       </Button>
 
       {isDropdownOpen && (
-        <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-dark-2 ring-1 ring-black ring-opacity-5">
+        <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-dark-4 ring-1 ring-black ring-opacity-5">
           <div className="py-1">
             <button
               onClick={handleCreateList}

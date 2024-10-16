@@ -51,7 +51,11 @@ const Profile: React.FC = () => {
   const [followdBy, setFollowdBy] = useState<any>([]);
   const [showFollowers, setShowFollowers] = useState(false);
   const [userLikedLists, setUserLikedLists] = useState<any>([]);
-
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   useEffect(() => {
     console.log('Current User:', currentUser);
   }, [currentUser]);

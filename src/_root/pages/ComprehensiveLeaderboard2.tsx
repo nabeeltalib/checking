@@ -16,7 +16,11 @@ const ComprehensiveLeaderboard2 = () => {
   const [category, setCategory] = useState("all");
   const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
   const [categories, setCategories] = useState<string[]>(["all"]);
-
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   const {
     data: users,
     isLoading: isLoadingUsers,
