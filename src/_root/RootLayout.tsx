@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Outlet } from "react-router-dom";
 import Topbar from "@/components/shared/Topbar";
 import Bottombar from "@/components/shared/Bottombar";
@@ -6,40 +7,48 @@ import RightSidebar from "@/components/shared/RightSidebar";
 import FAB from "@/components/shared/FAB";
 
 const RootLayout: React.FC = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <div className="flex flex-col md:flex-row w-full">
-      {/* Top Navigation Bar */}
+    <div className="flex flex-col min-h-screen bg-dark-1">
       <Topbar />
 
-      {/* Main Content and Sidebars */}
       <div className="flex flex-1 pt-16">
-        <aside
-          aria-label="Left Sidebar"
-          className="hidden md:flex lg:w-[20%] md:w-[15%]"
-        >
-          <LeftSidebar />
-        </aside>
+        {!isMobile && (
+          <aside className="hidden md:block w-1/5 min-w-[200px] max-w-[300px]">
+            <LeftSidebar />
+          </aside>
+        )}
 
-        {/* Main Content Area */}
-        <main className="flex-1 w-full p-1 pb-16 md:pb-4">
+        <main className="flex-1 w-full p-4 pb-20 md:pb-4">
           <Outlet />
         </main>
 
-        <aside
-          aria-label="Right Sidebar"
-          className="hidden md:flex lg:w-[20%] md:w-[15%]"
-        >
-          <RightSidebar />
-        </aside>
+        {!isMobile && (
+          <aside className="hidden md:block w-1/5 min-w-[200px] max-w-[300px]">
+            <RightSidebar />
+          </aside>
+        )}
       </div>
 
-      {/* Bottom Navigation for Mobile */}
-      <div aria-label="Bottom Navigation" className="fixed bottom-0 left-0 right-0 md:hidden">
-        <Bottombar />
-      </div>
+      {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 z-30 bg-dark-2">
+          <Bottombar />
+        </div>
+      )}
 
-      {/* Floating Action Button (FAB) */}
-      <FAB />
+      <FAB className="fixed right-4 bottom-20 md:bottom-4 z-50" />
     </div>
   );
 };

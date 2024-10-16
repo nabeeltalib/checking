@@ -5,7 +5,10 @@ import { Button } from "../ui/button";
 import { useUserContext } from "@/context/AuthContext";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { NotificationBell } from "./notifications/NotificationBell";
-import { Menu, X, User, HelpCircle, Mail, LogOut, ChevronRight, Home, Telescope, Award, Bookmark, Users, PlusCircle, ChevronDown, List } from 'lucide-react';
+import { 
+  Menu, X, User, HelpCircle, Mail, LogOut, ChevronRight, Home, 
+  Telescope, Award, Bookmark, Users, PlusCircle, ChevronDown, List 
+} from 'lucide-react';
 
 const DropdownMenuItem = ({ item, toggleOffCanvas }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,7 +17,7 @@ const DropdownMenuItem = ({ item, toggleOffCanvas }) => {
     <div>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`w-full text-left flex items-center justify-between text-white p-2 hover:bg-gray-700 rounded-lg transition-colors duration-200 ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        className={`w-full text-left flex items-center justify-between text-white p-2 hover:bg-dark-4 rounded-lg transition-colors duration-200 ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         disabled={item.disabled}
       >
         <span className="flex items-center">
@@ -30,7 +33,7 @@ const DropdownMenuItem = ({ item, toggleOffCanvas }) => {
             <Link
               key={index}
               to={subItem.disabled ? '#' : subItem.route}
-              className={`block text-white p-2 hover:bg-gray-700 rounded-lg transition-colors duration-200 ${subItem.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`block text-white p-2 hover:bg-dark-4 rounded-lg transition-colors duration-200 ${subItem.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               onClick={(e) => {
                 if (subItem.disabled) {
                   e.preventDefault();
@@ -58,15 +61,6 @@ const CreateListButton: React.FC = () => {
     setIsDropdownOpen(false);
   };
 
-  const handleCreateGroupList = () => {
-    // For now, we prevent this action because it is restricted.
-    // You can add a feature to show a tooltip or modal explaining this restriction.
-  };
-
-  const handleCreateChallenge = () => {
-    // Similar to the group list, this feature is restricted.
-  };
-
   return (
     <div className="relative inline-block text-left">
       <Button
@@ -79,23 +73,21 @@ const CreateListButton: React.FC = () => {
       </Button>
 
       {isDropdownOpen && (
-        <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-blue-700 ring-1 ring-black ring-opacity-5">
+        <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-dark-2 ring-1 ring-black ring-opacity-5">
           <div className="py-1">
             <button
               onClick={handleCreateList}
-              className="w-full text-left px-4 py-2 text-sm text-gray-100 hover:bg-blue-500"
+              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-dark-4 transition-colors duration-200"
             >
               Create List
             </button>
             <button
-              onClick={handleCreateGroupList}
               className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
               disabled
             >
               Create Group List (Coming Soon)
             </button>
             <button
-              onClick={handleCreateChallenge}
               className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
               disabled
             >
@@ -143,41 +135,13 @@ const Topbar: React.FC = () => {
 
   const mobileMenuItems = [
     { icon: Home, label: "Home", route: "/" },
-    {
-      icon: Telescope,
-      label: "Discover",
-      subItems: [
-        { label: "Explore", route: "/explore" },
-        { label: "Trending", route: "/trending" },
-        { label: "Leaderboard", route: "/comprehensive-leaderboard" },
-      ]
-    },
-    {
-      icon: Users,
-      label: "Social",
-      subItems: [
-        { label: "Friends", route: "/listfromfriends" },
-        { label: "Collaboration", route: "/userlists", disabled: true },
-      ]
-    },
-    {
-      icon: User,
-      label: "Personal",
-      subItems: [
-        { label: "My Profile", route: "/profile/profile" },
-        { label: "My Rankings", route: "/my-rankings" },
-        { label: "Bookmarks", route: "/saved" },
-        { label: "Notifications", route: "/notifications" },
-      ]
-    },
-    {
-      icon: HelpCircle,
-      label: "Support",
-      subItems: [
-        { label: "Help/FAQ", route: "/helpfaqpage" },
-        { label: "Contact Us", route: "/contactpage" },
-      ]
-    },
+    { icon: Telescope, label: "Explore", route: "/explore" },
+    { icon: Award, label: "Leaderboard", route: "/comprehensive-leaderboard" },
+    { icon: Users, label: "Friends", route: "/listfromfriends" },
+    { icon: User, label: "Profile", route: "/profile/profile" },
+    { icon: List, label: "My Rankings", route: "/my-rankings" },
+    { icon: Bookmark, label: "Bookmarks", route: "/saved" },
+    { icon: HelpCircle, label: "Help/FAQ", route: "/helpfaqpage" },
   ];
 
   return (
@@ -186,7 +150,7 @@ const Topbar: React.FC = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed top-0 left-0 right-0 z-50 bg-dark-3 shadow-lg"
+        className="fixed top-0 left-0 right-0 z-50 bg-dark-2 shadow-lg"
       >
         <div className="container mx-auto flex p-4 items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
@@ -195,29 +159,21 @@ const Topbar: React.FC = () => {
               alt="Topfived logo"
               width={130}
               height={32}
-              className="object-contain hidden md:block"
-            />
-            <img
-              src="/assets/images/logo3.svg"
-              alt="Topfived logo"
-              width={130}
-              className="object-contain md:hidden"
+              className="object-contain"
             />
           </Link>
 
-          <div className="flex items-center md:hidden">
-            <Button onClick={toggleOffCanvas} className="text-white" aria-label="Open menu">
-              <Menu className="w-6 h-6" />
-            </Button>
-          </div>
-
-          {/* Desktop menu items */}
-          <div id="side-icons" className="hidden md:flex items-center gap-4">
-            <CreateListButton />
+          <div className="flex items-center gap-4">
+            <div className="hidden md:block">
+              <CreateListButton />
+            </div>
             <Link to="/notifications" className="text-white hover:text-gray-200 transition-colors duration-300">
               <NotificationBell />
             </Link>
-            <div className="relative" ref={dropdownRef}>
+            <Button onClick={toggleOffCanvas} className="md:hidden text-white" aria-label="Open menu">
+              <Menu className="w-6 h-6" />
+            </Button>
+            <div className="relative hidden md:block" ref={dropdownRef}>
               <Button
                 className="flex items-center p-0 bg-transparent hover:bg-transparent"
                 onClick={toggleDropdown}
@@ -235,7 +191,7 @@ const Topbar: React.FC = () => {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-xl overflow-hidden z-10"
+                    className="absolute right-0 mt-2 w-52 bg-dark-2 rounded-lg shadow-xl overflow-hidden z-10"
                   >
                     {[
                       { to: "/profile/profile", icon: User, text: "Profile" },
@@ -247,14 +203,14 @@ const Topbar: React.FC = () => {
                       <Link
                         key={index}
                         to={item.to}
-                        className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-all duration-200"
+                        className="flex items-center gap-2 px-4 py-3 text-sm text-white hover:bg-dark-4 transition-all duration-200"
                       >
                         <item.icon className="w-5 h-5" />
                         {item.text}
                       </Link>
                     ))}
                     <button
-                      className="flex items-center gap-2 px-4 py-3 text-sm text-gray-700 hover:bg-red-50 transition-all duration-200 w-full text-left"
+                      className="flex items-center gap-2 px-4 py-3 text-sm text-white hover:bg-red-600 transition-all duration-200 w-full text-left"
                       onClick={handleSignOut}
                     >
                       <LogOut className="w-5 h-5" />
@@ -267,6 +223,7 @@ const Topbar: React.FC = () => {
           </div>
         </div>
       </motion.header>
+
       {/* Mobile Off-Canvas Menu */}
       <AnimatePresence>
         {isOffCanvasOpen && (
@@ -284,31 +241,25 @@ const Topbar: React.FC = () => {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed inset-y-0 right-0 z-50 w-64 bg-gray-800 p-5 shadow-lg md:hidden overflow-y-auto"
+              className="fixed inset-y-0 right-0 z-50 w-64 bg-dark-2 p-5 shadow-lg overflow-y-auto"
             >
               <Button onClick={toggleOffCanvas} className="absolute top-4 right-4 text-white" aria-label="Close menu">
                 <X className="w-6 h-6" />
               </Button>
 
-              <div className="mt-12 space-y-4">
+              <div className="mt-16 space-y-4">
                 <CreateListButton />
 
                 {mobileMenuItems.map((item, index) => (
-                  item.subItems ? (
-                    <DropdownMenuItem key={index} item={item} toggleOffCanvas={toggleOffCanvas} />
-                  ) : (
-                    <Link
-                      key={index}
-                      to={item.route}
-                      className="block text-white p-2 hover:bg-gray-700 rounded-lg transition-colors duration-200"
-                      onClick={toggleOffCanvas}
-                    >
-                      <span className="flex items-center">
-                        <item.icon className="w-5 h-5 mr-2" />
-                        {item.label}
-                      </span>
-                    </Link>
-                  )
+                  <Link
+                    key={index}
+                    to={item.route}
+                    className="flex items-center text-white p-2 hover:bg-dark-4 rounded-lg transition-colors duration-200"
+                    onClick={toggleOffCanvas}
+                  >
+                    <item.icon className="w-5 h-5 mr-2" />
+                    {item.label}
+                  </Link>
                 ))}
 
                 <Button
