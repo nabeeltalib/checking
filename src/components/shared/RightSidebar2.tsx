@@ -79,6 +79,7 @@ const RightSidebar2: React.FC = () => {
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const fetchTrendingLists = useCallback(async () => {
     try {
@@ -124,6 +125,19 @@ const RightSidebar2: React.FC = () => {
     }
   }, [allTrendingLists]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      setIsCollapsed(mobile);
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleAuthenticatedAction = (action: () => void) => {
     if (user?.isAuthenticated) {
       action();
@@ -148,29 +162,29 @@ const RightSidebar2: React.FC = () => {
     handleAuthenticatedAction(() => navigate('/categories'));
   };
 
-  const toggleCollapse = () => {
-    setIsCollapsed(prev => !prev);
-  };
-
   return (
     <>
       <motion.aside
         initial={false}
         animate={{ width: isCollapsed ? 80 : 280 }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
-        className="flex flex-col h-full bg-dark-2 border-l border-dark-4 overflow-hidden shadow-2xl"
+        className={`rightsidebar flex flex-col bg-dark-2 border-l border-dark-4 shadow-xl fixed top-20 right-0 h-[calc(100vh-5rem)] ${
+          isMobile ? 'z-50' : ''
+        }`}
       >
-        <Button
-          onClick={toggleCollapse}
-          variant="ghost"
-          size="icon"
-          className="self-start m-4 text-light-1 hover:bg-dark-4/50 focus:outline-none transition-all duration-300"
-          aria-label="Toggle Sidebar"
-        >
-          {isCollapsed ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
-        </Button>
+        {isMobile && (
+          <Button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            variant="ghost"
+            size="icon"
+            className="self-start m-4 text-light-1 hover:bg-dark-4/50 focus:outline-none transition-all duration-300"
+            aria-label="Toggle Sidebar"
+          >
+            {isCollapsed ? <ChevronLeft size={24} /> : <ChevronRight size={24} />}
+          </Button>
+        )}
 
-        <div className="flex-grow overflow-y-auto px-4">
+        <div className="flex-grow overflow-y-auto">
           <AnimatePresence>
             {!isCollapsed && (
               <motion.div
@@ -178,9 +192,10 @@ const RightSidebar2: React.FC = () => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
+                className="p-6 space-y-8"
               >
                 {/* Trending Lists Section */}
-                <div className="mb-8">
+                <div>
                   <h2 className="text-lg font-bold text-light-1 mb-4">
                     Trending Near You
                   </h2>
@@ -237,16 +252,18 @@ const RightSidebar2: React.FC = () => {
           </AnimatePresence>
         </div>
 
-        <div className="p-4 text-xs text-gray-400 text-center">
-          <NavLink to="/privacypolicy" className="underline hover:text-white transition-colors duration-200">
-            Privacy Policy
-          </NavLink>
-          <span className="mx-2">|</span>
-          <NavLink to="/termsandconditions" className="underline hover:text-white transition-colors duration-200">
-            Terms & Conditions
-          </NavLink>
-          <p className="mt-2">&copy; 2024 Topfived. All rights reserved.</p>
-        </div>
+        {!isCollapsed && (
+          <div className="p-4 text-xs text-gray-400 text-center">
+            <NavLink to="/privacypolicy" className="underline hover:text-white transition-colors duration-200">
+              Privacy Policy
+            </NavLink>
+            <span className="mx-2">|</span>
+            <NavLink to="/termsandconditions" className="underline hover:text-white transition-colors duration-200">
+              Terms & Conditions
+            </NavLink>
+            <p className="mt-2">&copy; 2024 Topfived. All rights reserved.</p>
+          </div>
+        )}
       </motion.aside>
 
       <SignInDialog 
