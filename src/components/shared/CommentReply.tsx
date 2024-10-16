@@ -8,10 +8,12 @@ import {
   updateReplyWithReply,
 } from "@/lib/appwrite/api";
 import { checkIsLiked } from "@/lib/utils";
-import { MoreVertical, ThumbsUp } from 'lucide-react';
+import { MoreVertical, ThumbsUp, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
+
+const MAX_VISIBLE_DEPTH = 2; // Collapse replies after this depth
 
 const CommentReply = ({
   reply,
@@ -20,6 +22,7 @@ const CommentReply = ({
   setCommentId,
   setParentReplyId,
   listId,
+  depth = 0,
 }) => {
   const { user } = useUserContext();
   const { toast } = useToast();
@@ -33,6 +36,8 @@ const CommentReply = ({
   const [isReporting, setIsReporting] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const [showNestedReplies, setShowNestedReplies] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     setIsLiked(checkIsLiked(likes, user.id));
@@ -76,7 +81,6 @@ const CommentReply = ({
     const contentSnippet = nestedReply.Content ? nestedReply.Content.slice(0, 10) : '';
     return `nested-reply-${index}-${contentSnippet}`;
   };
-
 
   const handleLikeComment = async () => {
     const newLikes = isLiked
@@ -177,8 +181,49 @@ const CommentReply = ({
     navigate(`/lists/${listId}`);
   };
 
-   return (
-    <div className="flex items-start mb-2 ml-4">
+  const renderNestedReplies = () => {
+    if (nestedReplies.length === 0) return null;
+
+    const visibleReplies = depth < MAX_VISIBLE_DEPTH || isExpanded ? nestedReplies : [];
+
+    return (
+      <div className={`ml-4 mt-2 ${depth >= MAX_VISIBLE_DEPTH ? 'border-l-2 border-gray-700 pl-2' : ''}`}>
+        {visibleReplies.map((nestedReply, index) => (
+          <CommentReply
+            key={generateUniqueKey(nestedReply, index)}
+            reply={nestedReply}
+            parentCommentId={parentCommentId}
+            setReply={setReply}
+            setCommentId={setCommentId}
+            setParentReplyId={setParentReplyId}
+            listId={listId}
+            depth={depth + 1}
+          />
+        ))}
+        {depth >= MAX_VISIBLE_DEPTH && nestedReplies.length > 0 && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-xs text-blue-500 mt-2 focus:outline-none flex items-center"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp size={12} className="mr-1" />
+                Hide replies
+              </>
+            ) : (
+              <>
+                <ChevronDown size={12} className="mr-1" />
+                View other replies
+              </>
+            )}
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className={`flex items-start mb-2 ${depth > 0 ? 'ml-4' : ''}`}>
       <img
         src={reply.userId?.ImageUrl || '/assets/icons/profile-placeholder.svg'}
         alt={`${reply.userId?.Username || 'Anonymous'}'s avatar`}
@@ -210,33 +255,7 @@ const CommentReply = ({
             {formatDate(reply.CreatedAt)}
           </span>
         </div>
-
-         {/* Nested Replies */}
-      {nestedReplies.length > 0 && (
-        <div className="ml-4 mt-2">
-          {nestedReplies.slice(0, 1).map((nestedReply, index) => (
-            <CommentReply
-              key={generateUniqueKey(nestedReply, index)}
-              reply={nestedReply}
-              parentCommentId={parentCommentId}
-              setReply={setReply}
-              setCommentId={setCommentId}
-              setParentReplyId={setParentReplyId}
-              listId={listId}
-            />
-          ))}
-          {nestedReplies.length > 1 && (
-            <button
-              onClick={handleViewMoreReplies}
-              className="text-xs text-blue-500 mt-2 focus:outline-none"
-            >
-              View {nestedReplies.length - 1} more {nestedReplies.length - 1 === 1 ? 'reply' : 'replies'}
-            </button>
-          )}
-        </div>
-        )}
-
-        {/* Reply Input */}
+        {renderNestedReplies()}
         {showReplyForm && (
           <div className="flex items-center mt-2">
             <img
@@ -261,7 +280,6 @@ const CommentReply = ({
           </div>
         )}
       </div>
-      {/* More Options */}
       <div className="relative" ref={menuRef}>
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}

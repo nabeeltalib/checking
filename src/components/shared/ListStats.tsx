@@ -52,32 +52,25 @@ const ListStats: React.FC<ListStatsProps> = ({
   const [dislikes, setDislikes] = useState<string[]>(list?.Dislikes || []);
   const [isSaved, setIsSaved] = useState(false);
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(true);
-  const [areAllCommentsVisible, setAreAllCommentsVisible] = useState(false);
   const { user } = useUserContext();
   const { id } = user;
   const { mutate: deleteSaveList } = useDeleteSavedList();
   const { data: currentUser } = useGetUserById(id);
   const { data: comments, refetch: refetchComments } = useGetComments(list.$id);
-  const [visibleComments, setVisibleComments] = useState<any>([]);
   const [newComment, setNewComment] = useState("");
   const { mutate: createComment } = useCreateComment();
   const [isReply, setIsReply] = useState(false);
   const [commentId, setCommentId] = useState("");
   const [parentReplyId, setParentReplyId] = useState("");
-
+  const [showAllComments, setShowAllComments] = useState(false);
+  
   // Determine if the user has liked or disliked the list
   const hasLiked = useMemo(() => likes.includes(userId), [likes, userId]);
   const hasDisliked = useMemo(
     () => dislikes.includes(userId),
     [dislikes, userId]
   );
-
-  useEffect(() => {
-    setVisibleComments(
-      areAllCommentsVisible ? comments : comments?.slice(0, 3) || []
-    );
-  }, [comments, areAllCommentsVisible]);
-
+ 
   useEffect(() => {
     if (currentUser) {
       const savedListRecord = currentUser.save?.find(
@@ -174,7 +167,20 @@ const ListStats: React.FC<ListStatsProps> = ({
     }
     setIsSaved(!isSaved);
   };
+  
+  const visibleComments = useMemo(() => {
+    if (!comments) return [];
+    return showAllComments ? comments : comments.slice(0, 3);
+  }, [comments, showAllComments]);
 
+  const handleViewAllComments = () => {
+    setShowAllComments(true);
+  };
+  
+  const handleShowLess = () => {
+    setShowAllComments(false);
+  };
+  
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newComment.trim() === "") return;
@@ -184,23 +190,16 @@ const ListStats: React.FC<ListStatsProps> = ({
         const replyData: any = {
           userId: id,
           Content: newComment,
+          commentId: commentId,
+          parentReplyId: parentReplyId,
         };
-  
-        if (commentId) {
-          replyData.commentId = commentId;
-        }
-        if (parentReplyId) {
-          replyData.parentReplyId = parentReplyId;
-        }
   
         const newReply = await createReply(replyData);
   
         if (newReply) {
           if (parentReplyId) {
-            // Replying to a reply
             await updateReplyWithReply(parentReplyId, newReply.$id);
           } else {
-            // Replying to a comment
             await updateCommentWithReply(commentId, newReply.$id);
           }
         }
@@ -231,10 +230,6 @@ const ListStats: React.FC<ListStatsProps> = ({
         variant: "destructive",
       });
     }
-  };  
-
-  const toggleCommentVisibility = () => {
-    setAreAllCommentsVisible(!areAllCommentsVisible);
   };
 
   return (
@@ -345,57 +340,52 @@ const ListStats: React.FC<ListStatsProps> = ({
           >
             <h3 className="text-xl font-semibold mb-4">Comments</h3>
             {(comments?.length ?? 0) > 0 ? (
-            <div className="space-y-4">
-              {visibleComments.map((comment: any) => (
-                <Comment
-                  key={comment.$id}
-                  comment={comment}
-                  setReply={setIsReply}
-                  show={true}
-                  setCommentId={setCommentId}
-                  setParentReplyId={setParentReplyId} // Add this line
-                />
-              ))}
+        <div className="space-y-4">
+          {visibleComments.map((comment: any) => (
+            <Comment
+              key={comment.$id}
+              comment={comment}
+              setReply={setIsReply}
+              show={true}
+              setCommentId={setCommentId}
+              setParentReplyId={setParentReplyId}
+              depth={0}
+              listId={list.$id}
+            />
+          ))}
 
-                {(comments?.length ?? 0) > 3 && (
-                  <div className="flex justify-between items-center mt-2">
-                    <Button
-                      variant="link"
-                      onClick={toggleCommentVisibility}
-                      className="text-blue-300 flex items-center"
-                    >
-                      {areAllCommentsVisible ? (
-                        <>
-                          <ChevronUp className="mr-2" size={16} />
-                          Show less
-                        </>
-                      ) : (
-                        <p className={`${textSize} text-gray-500`}>
-                          No comments yet. Be the first to comment!
-                        </p>
-                      )}
-                    </Button>
-                    <Button
-                      variant="link"
-                      onClick={() => navigate(`/lists/${list.$id}`)}
-                      className="text-blue-300 flex items-center"
-                    >
-                      View all comments{" "}
-                      <ExternalLink className="ml-2" size={16} />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className={`${textSize} text-gray-500`}>
-                No comments yet. Be the first to comment!
-              </p>
-            )}
+          {!showAllComments && comments.length > 3 && (
+            <Button
+              variant="link"
+              onClick={handleViewAllComments}
+              className="text-blue-300 flex items-center"
+            >
+              <ChevronDown className="mr-2" size={16} />
+              View all {comments.length} comments
+            </Button>
+          )}
+
+          {showAllComments && (
+            <Button
+              variant="link"
+              onClick={handleShowLess}
+              className="text-blue-300 flex items-center"
+            >
+              <ChevronUp className="mr-2" size={16} />
+              Show less
+            </Button>
+          )}
+        </div>
+      ) : (
+        <p className={`${textSize} text-gray-500`}>
+          No comments yet. Be the first to comment!
+        </p>
+      )}
             {/* Comment Input */}
             <form onSubmit={handleCommentSubmit} className="mt-6">
               <textarea
                 value={newComment}
-                spellCheck={true} // Enable spellcheck here
+                spellCheck={true}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder={
                   isReply ? "Write a reply..." : "Write a comment..."

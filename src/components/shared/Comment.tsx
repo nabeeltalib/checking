@@ -34,12 +34,12 @@ const Comment = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const [showAllReplies, setShowAllReplies] = useState(false);
 
   useEffect(() => {
     setIsLiked(checkIsLiked(likes, user.id));
   }, [likes, user.id]);
 
-  // Close menu if clicked outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -162,9 +162,39 @@ const Comment = ({
     navigate(`/lists/${listId}`);
   };
 
-  // Fallback values for undefined properties
   const userImageUrl = comment?.user?.ImageUrl || '/assets/icons/profile-placeholder.svg';
   const username = comment?.user?.Username || 'Anonymous';
+
+  const renderReplies = () => {
+    if (!localComment.Reply || localComment.Reply.length === 0) return null;
+
+    const visibleReplies = showAllReplies ? localComment.Reply : localComment.Reply.slice(0, 2);
+
+    return (
+      <div className="ml-4 mt-2">
+        {visibleReplies.map((reply, index) => (
+          <CommentReply
+            key={generateUniqueKey(reply, index)}
+            reply={reply}
+            parentCommentId={comment.$id}
+            setReply={setReply}
+            setCommentId={setCommentId}
+            setParentReplyId={setParentReplyId}
+            listId={listId}
+            depth={1}
+          />
+        ))}
+        {localComment.Reply.length > 2 && !showAllReplies && (
+          <button
+            onClick={() => setShowAllReplies(true)}
+            className="text-xs text-blue-500 mt-2 focus:outline-none"
+          >
+            View {localComment.Reply.length - 2} more replies
+          </button>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="flex items-start mb-2">
@@ -199,33 +229,7 @@ const Comment = ({
             {comment?.CreatedAt && formatDistanceToNow(new Date(comment.CreatedAt), { addSuffix: true })}
           </span>
         </div>
-
-         {/* Replies */}
-      {localComment.Reply && localComment.Reply.length > 0 && (
-        <div className="ml-4 mt-2">
-          {localComment.Reply.slice(0, 2).map((reply, index) => (
-            <CommentReply
-              key={generateUniqueKey(reply, index)}
-              reply={reply}
-              parentCommentId={comment.$id}
-              setReply={setReply}
-              setCommentId={setCommentId}
-              setParentReplyId={setParentReplyId}
-              listId={listId}
-            />
-          ))}
-          {localComment.Reply.length > 2 && (
-            <button
-              onClick={handleViewMoreReplies}
-              className="text-xs text-blue-500 mt-2 focus:outline-none"
-            >
-              View more replies
-            </button>
-          )}
-        </div>
-        )}
-
-        {/* Reply Input */}
+        {renderReplies()}
         {showReplyField && (
           <div className="flex items-center mt-2">
             <img
@@ -250,7 +254,6 @@ const Comment = ({
           </div>
         )}
       </div>
-      {/* More Options */}
       {show && (
         <div className="relative" ref={menuRef}>
           <button
