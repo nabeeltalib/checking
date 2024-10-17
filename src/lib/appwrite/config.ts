@@ -23,6 +23,7 @@ const requiredEnvVars = [
   'VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID',
   'VITE_EMBED_LIST_COLLECTION_ID',
   'VITE_APPWRITE_GENERATE_LIST_ITEMS_FUNCTION_ID',
+  'VITE_APPWRITE_CONTACTMESSAGES_COLLECTION',
 ];
 
 const missingEnvVars = requiredEnvVars.filter(varName => !import.meta.env[varName]);
@@ -52,6 +53,7 @@ export const appwriteConfig = {
   friendsCollectionId: import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
   notificationsCollectionId: import.meta.env.VITE_APPWRITE_NOTIFICATIONS_COLLECTION_ID,
   embedListCollectionId: import.meta.env.VITE_EMBED_LIST_COLLECTION_ID,
+  contactMessagesCollectionId: import.meta.env.VITE_APPWRITE_CONTACTMESSAGES_COLLECTION,
 };
 
 const client = new Client();

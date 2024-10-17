@@ -10,59 +10,31 @@ import {
   Telescope, Award, Bookmark, Users, PlusCircle, ChevronDown, List 
 } from 'lucide-react';
 
-const DropdownMenuItem = ({ item, toggleOffCanvas }) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full text-left flex items-center justify-between text-white p-2 hover:bg-dark-4 rounded-lg transition-colors duration-200 ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-        disabled={item.disabled}
-      >
-        <span className="flex items-center">
-          <item.icon className="w-5 h-5 mr-2" />
-          {item.label}
-          {item.disabled && " (Coming Soon)"}
-        </span>
-        <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`} />
-      </button>
-      {isOpen && (
-        <div className="ml-4 mt-2 space-y-2">
-          {item.subItems.map((subItem, index) => (
-            <Link
-              key={index}
-              to={subItem.disabled ? '#' : subItem.route}
-              className={`block text-white p-2 hover:bg-dark-4 rounded-lg transition-colors duration-200 ${subItem.disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-              onClick={(e) => {
-                if (subItem.disabled) {
-                  e.preventDefault();
-                } else {
-                  toggleOffCanvas();
-                }
-              }}
-            >
-              {subItem.label}
-              {subItem.disabled && " (Coming Soon)"}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
 const CreateListButton: React.FC = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleCreateList = () => {
     navigate("/create-list");
     setIsDropdownOpen(false);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div className="relative inline-block text-left">
+    <div className="relative inline-block text-left" ref={dropdownRef}>
       <Button
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg flex items-center"
@@ -204,6 +176,7 @@ const Topbar: React.FC = () => {
                         key={index}
                         to={item.to}
                         className="flex items-center gap-2 px-4 py-3 text-sm text-white hover:bg-dark-4 transition-all duration-200"
+                        onClick={() => setIsDropdownOpen(false)}
                       >
                         <item.icon className="w-5 h-5" />
                         {item.text}
