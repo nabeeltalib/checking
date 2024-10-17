@@ -66,8 +66,8 @@ const Home: React.FC = () => {
   useEffect(() => {
     if (lists?.pages) {
       const allListIds = lists.pages.flatMap(page => 
-        page.documents.map((list: IList) => list.$id)
-      );
+        page?.documents?.map((list: Models.Document) => (list as IList).$id)
+      ).filter((id): id is string => id !== undefined);
       setShuffledListIds(shuffleArray(allListIds));
     }
   }, [lists]);
@@ -83,13 +83,13 @@ const Home: React.FC = () => {
   const filteredAndSortedLists = useMemo(() => {
     if (!lists?.pages) return [];
     
-    const allLists = lists.pages.flatMap(page => page.documents);
+    const allLists = lists.pages.flatMap(page => page?.documents ?? []);
     return shuffledListIds
-      .map(id => allLists.find((list: IList) => list.$id === id))
-      .filter((list: IList | undefined): list is IList => 
-        !!list && (
+      .map(id => allLists.find((list: Models.Document) => list.$id === id))
+      .filter((list): list is IList => 
+        !!list && 'Title' in list && 'Tags' in list && (
           list.Title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          list.Tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+          list.Tags?.some((tag: string) => tag.toLowerCase().includes(searchTerm.toLowerCase()))
         )
       );
   }, [lists, shuffledListIds, searchTerm]);

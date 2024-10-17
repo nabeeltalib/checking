@@ -10,6 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import ListCard2 from '@/components/shared/ListCard2';
 import { Button } from '@/components/ui';
 import SignInDialog from '@/components/shared/SignInDialog';
+import { Models } from 'appwrite';
 
 const Explore2: React.FC = () => {
   const { user } = useUserContext();
@@ -18,21 +19,14 @@ const Explore2: React.FC = () => {
 
   // State variables
   const [trendingTags, setTrendingTags] = useState<string[]>([]);
-  const [popularCategories, setPopularCategories] = useState([]);
-  const [recentListsData, setRecentListsData] = useState<any[]>([]);
+  const [popularCategories, setPopularCategories] = useState<Models.Document[]>([]);
   const [isTagsLoading, setIsTagsLoading] = useState(true);
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
   const [isRecentListsLoading, setIsRecentListsLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
+  const [recentListsData, setRecentListsData] = useState<Models.Document[]>([]);
 
-  // Fetch AI suggestions
-  const {
-    data: aiSuggestions,
-    isLoading: isLoadingAISuggestions,
-    error: aiSuggestionsError,
-  } = useGetAISuggestions(user?.id || '');
-  
   // Scroll to top when component mounts or when user navigates to the page
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -43,7 +37,7 @@ const Explore2: React.FC = () => {
     const fetchData = async () => {
       try {
         const data = await getRecentLists();
-        setRecentListsData(data);
+        setRecentListsData(Array.isArray(data) ? data : data.documents);
       } catch (error) {
         console.error('Error fetching recent lists:', error);
         setFetchError('Failed to fetch recent lists. Please try again later.');
@@ -74,17 +68,6 @@ const Explore2: React.FC = () => {
     };
     fetchData();
   }, []);
-
-  // Handle AI suggestions error
-  useEffect(() => {
-    if (aiSuggestionsError) {
-      toast({
-        title: 'Error fetching AI suggestions',
-        description: 'Please try again later',
-        variant: 'destructive',
-      });
-    }
-  }, [aiSuggestionsError, toast]);
 
   // Handle protected clicks
   const handleProtectedClick = (e: React.MouseEvent) => {

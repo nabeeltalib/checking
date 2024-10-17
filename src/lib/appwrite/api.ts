@@ -32,6 +32,10 @@ const requiredEnvVars = [
   "VITE_APPWRITE_ANALYZE_SENTIMENT_FUNCTION_ID",
   "VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID",
   "VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID",
+  "VITE_ITEM_COLLECTION_ID",
+  "VITE_APPWRITE_COMMENT_REPLY_COLLECTION_ID",
+  "VITE_APPWRITE_REPORTED_COMMENTS_COLLECTION_ID",
+  "VITE_APPWRITE_CONNECTIONS_COLLECTION_ID",
 ];
 
 const missingEnvVars = requiredEnvVars.filter(
@@ -73,6 +77,10 @@ export const appwriteConfig = {
   typesenseOperationsFunctionId: import.meta.env
     .VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID,
   friendsCollectionId: import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+  itemCollectionId: import.meta.env.VITE_ITEM_COLLECTION_ID,
+  commentReplyCollectionId: import.meta.env.VITE_APPWRITE_COMMENT_REPLY_COLLECTION_ID,
+  reportedCommentsCollectionId: import.meta.env.VITE_APPWRITE_REPORTED_COMMENTS_COLLECTION_ID,
+  connectionsCollectionId: import.meta.env.VITE_APPWRITE_CONNECTIONS_COLLECTION_ID,
 };
 
 const client = new Client();
@@ -428,7 +436,7 @@ export async function createItem(content: string, userId: string) {
   try {
     const newItem = await databases.createDocument(
       appwriteConfig.databaseId,
-      "66ab99e100295497dab9",
+      appwriteConfig.itemCollectionId,
       ID.unique(),
       {
         content: content,
@@ -550,7 +558,7 @@ export async function getItemById(itemId: any) {
   try {
     const item = await databases.getDocument(
       appwriteConfig.databaseId,
-      "66ab99e100295497dab9",
+      appwriteConfig.itemCollectionId,
       itemId
     );
     return item;
@@ -564,7 +572,7 @@ export async function updateItem(item: any) {
   try {
     const resp = await databases.updateDocument(
       appwriteConfig.databaseId,
-      "66ab99e100295497dab9",
+      appwriteConfig.itemCollectionId,
       item.id,
       {
         content: item.content,
@@ -757,7 +765,7 @@ export async function ReplyLike(commentId: string, likesArray: string[]) {
   try {
     const updatedComment = await databases.updateDocument(
       appwriteConfig.databaseId,
-      "66b22bc7003828cf45ab",
+      appwriteConfig.commentReplyCollectionId,
       commentId,
       {
         Likes: likesArray
@@ -1037,7 +1045,7 @@ export async function createReply(reply: {
 
     const newReply = await databases.createDocument(
       appwriteConfig.databaseId,
-      '66b22bc7003828cf45ab',
+      appwriteConfig.commentReplyCollectionId,
       ID.unique(),
       documentData
     );
@@ -1083,7 +1091,7 @@ export async function updateReplyWithReply(replyId: string, newReplyId: string) 
   try {
     const reply = await databases.getDocument(
       appwriteConfig.databaseId,
-      '66b22bc7003828cf45ab',
+      appwriteConfig.commentReplyCollectionId,
       replyId
     );
 
@@ -1091,7 +1099,7 @@ export async function updateReplyWithReply(replyId: string, newReplyId: string) 
 
     const updatedReply = await databases.updateDocument(
       appwriteConfig.databaseId,
-      '66b22bc7003828cf45ab',
+      appwriteConfig.commentReplyCollectionId,
       replyId,
       {
         Reply: updatedReplies,
@@ -1126,7 +1134,7 @@ export async function reportComment(comment:any) {
   try {
     const newComment = await databases.createDocument(
       appwriteConfig.databaseId,
-      "66dc4454001a27643f2d",
+      appwriteConfig.reportedCommentsCollectionId,
       ID.unique(),
       {
         commentContent: comment.Content,
@@ -1160,7 +1168,7 @@ export async function reportReply(reply: any) {
 
     const newReport = await databases.createDocument(
       appwriteConfig.databaseId,
-      "66dc4454001a27643f2d", // Ensure this is the correct collection ID
+      appwriteConfig.reportedCommentsCollectionId,
       ID.unique(),
       data
     );
@@ -1180,7 +1188,7 @@ export async function getReportedComments() {
   try {
     const comments = await databases.listDocuments(
       appwriteConfig.databaseId,
-      "66dc4454001a27643f2d",
+      appwriteConfig.reportedCommentsCollectionId,
       [Query.orderDesc('$createdAt')]
     );
 
@@ -1230,7 +1238,7 @@ export async function deleteReportedComment(commentId: string) {
   try {
     const statusCode = await databases.deleteDocument(
       appwriteConfig.databaseId,
-      "66dc4454001a27643f2d",
+      appwriteConfig.reportedCommentsCollectionId,
       commentId
     );
     
@@ -1661,7 +1669,7 @@ export async function VoteOnItem(userId: any, itemId: any) {
 
     const result = await databases.updateDocument(
       appwriteConfig.databaseId,
-      "66ab99e100295497dab9",
+      appwriteConfig.itemCollectionId,
       itemId,
       {
         vote: updatedVotes,
@@ -1722,7 +1730,7 @@ export async function getConnection(userId: string) {
   try {
     const result = await databases.listDocuments(
       appwriteConfig.databaseId,
-      "66b66f4e00254daf8870",
+      appwriteConfig.connectionsCollectionId,
       [Query.equal("userId", userId)]
     );
     return result.documents;
@@ -1736,7 +1744,7 @@ export async function createConnection(userId: string) {
   try {
     const result = await databases.createDocument(
       appwriteConfig.databaseId,
-      "66b66f4e00254daf8870",
+      appwriteConfig.connectionsCollectionId,
       ID.unique(),
       {
         userId: userId,
@@ -1757,7 +1765,7 @@ export async function updateConnection(
   try {
     const result = await databases.updateDocument(
       appwriteConfig.databaseId,
-      "66b66f4e00254daf8870",
+      appwriteConfig.connectionsCollectionId,
       connectionId,
       {
         follower: follower,
@@ -1916,7 +1924,7 @@ export const likeReply = async (replyId: string, likesArray: string[]) => {
   try {
     await databases.updateDocument(
       appwriteConfig.databaseId,
-      '66b22bc7003828cf45ab',
+      appwriteConfig.commentReplyCollectionId,
       replyId,
       { Likes: likesArray }
     );
@@ -1929,7 +1937,7 @@ export const getReplies = async (commentId: string) => {
   try {
     const response = await databases.listDocuments(
       appwriteConfig.databaseId,
-      '66b22bc7003828cf45ab', // CommentReply collection ID
+      appwriteConfig.commentReplyCollectionId, // CommentReply collection ID
       [
         Query.equal('commentId', ),
         Query.orderDesc('$createdAt')
@@ -1946,7 +1954,7 @@ export const getNestedReplies = async (parentReplyId: string) => {
   try {
     const response = await databases.listDocuments(
       appwriteConfig.databaseId,
-      '66b22bc7003828cf45ab',
+      appwriteConfig.commentReplyCollectionId,
       [
         Query.equal('parentReplyId', parentReplyId), // Pass as string
         Query.orderDesc('$createdAt'),

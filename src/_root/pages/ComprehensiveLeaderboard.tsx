@@ -42,11 +42,11 @@ const ComprehensiveLeaderboard = () => {
     if (allLists) {
       const categoryCount = new Map<string, number>();
       allLists.forEach(list => {
-        list.Categories?.forEach(cat => {
+        list.Categories?.forEach((cat: string) => {
           const lowercaseCat = cat.toLowerCase();
           categoryCount.set(lowercaseCat, (categoryCount.get(lowercaseCat) || 0) + 1);
         });
-        list.Tags?.forEach(tag => {
+        list.Tags?.forEach((tag: string) => {
           const lowercaseTag = tag.toLowerCase();
           categoryCount.set(lowercaseTag, (categoryCount.get(lowercaseTag) || 0) + 1);
         });
@@ -95,8 +95,8 @@ const ComprehensiveLeaderboard = () => {
 
     const filteredLists = allLists.filter(list => {
       if (category === "all") return true;
-      return (list.Categories?.map(c => c.toLowerCase()).includes(category.toLowerCase()) ||
-              list.Tags?.map(t => t.toLowerCase()).includes(category.toLowerCase()));
+      return (list.Categories?.map((c: string) => c.toLowerCase()).includes(category.toLowerCase()) ||
+        list.Tags?.map((t: string) => t.toLowerCase()).includes(category.toLowerCase()));
     });
 
     const sortedLists = filteredLists.sort((a, b) => (b.Likes?.length || 0) - (a.Likes?.length || 0));

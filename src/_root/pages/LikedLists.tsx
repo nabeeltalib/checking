@@ -2,8 +2,12 @@ import { Loader } from "@/components/shared";
 import { useGetCurrentUser } from "@/lib/react-query/queries";
 import GridListList from "@/components/shared/GridListList";
 
+type CurrentUser = {
+  liked: any[];
+};
+
 const LikedLists = () => {
-  const { data: currentUser, isLoading } = useGetCurrentUser();
+  const { data: currentUser, isLoading } = useGetCurrentUser() as { data: CurrentUser | null, isLoading: boolean };
 
   if (isLoading) {
     return (

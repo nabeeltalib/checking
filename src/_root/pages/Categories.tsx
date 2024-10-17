@@ -20,8 +20,8 @@ const Categories = () => {
     const fetchData = async () => {
       try {
         const lists = await getAllLists();
-        setAllLists(lists);
-        setFilteredLists(lists);
+        setAllLists(lists as IList[]);
+        setFilteredLists(lists as IList[]);
       } catch (error) {
         console.error("Error fetching lists:", error);
       } finally {
@@ -45,10 +45,10 @@ const Categories = () => {
     if (lowercasedQuery) {
       const filtered = allLists.filter(
         (list) =>
-          list.Categories?.some((category) =>
+          list.Categories?.some((category: string) =>
             category.toLowerCase().includes(lowercasedQuery)
           ) ||
-          list.Tags?.some((tag) =>
+          list.Tags?.some((tag: string) =>
             tag.toLowerCase().includes(lowercasedQuery)
           )
       );

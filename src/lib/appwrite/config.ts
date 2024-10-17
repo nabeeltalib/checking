@@ -24,6 +24,10 @@ const requiredEnvVars = [
   'VITE_EMBED_LIST_COLLECTION_ID',
   'VITE_APPWRITE_GENERATE_LIST_ITEMS_FUNCTION_ID',
   'VITE_APPWRITE_CONTACTMESSAGES_COLLECTION',
+  'VITE_ITEM_COLLECTION_ID', 
+  'VITE_APPWRITE_COMMENT_REPLY_COLLECTION_ID',
+  'VITE_APPWRITE_REPORTED_COMMENTS_COLLECTION_ID',
+  'VITE_APPWRITE_CONNECTIONS_COLLECTION_ID',
 ];
 
 const missingEnvVars = requiredEnvVars.filter(varName => !import.meta.env[varName]);
@@ -54,11 +58,16 @@ export const appwriteConfig = {
   notificationsCollectionId: import.meta.env.VITE_APPWRITE_NOTIFICATIONS_COLLECTION_ID,
   embedListCollectionId: import.meta.env.VITE_EMBED_LIST_COLLECTION_ID,
   contactMessagesCollectionId: import.meta.env.VITE_APPWRITE_CONTACTMESSAGES_COLLECTION,
+  itemCollectionId: import.meta.env.VITE_ITEM_COLLECTION_ID,
+  commentReplyCollectionId: import.meta.env.VITE_APPWRITE_COMMENT_REPLY_COLLECTION_ID,
+  reportedCommentsCollectionId: import.meta.env.VITE_APPWRITE_REPORTED_COMMENTS_COLLECTION_ID,
+  connectionsCollectionId: import.meta.env.VITE_APPWRITE_CONNECTIONS_COLLECTION_ID,
 };
 
-const client = new Client();
-
-client.setEndpoint(appwriteConfig.url).setProject(appwriteConfig.projectId);
+// Initialize Appwrite Client
+const client = new Client()
+  .setEndpoint(appwriteConfig.url)
+  .setProject(appwriteConfig.projectId);
 
 export const account = new Account(client);
 export const databases = new Databases(client);
