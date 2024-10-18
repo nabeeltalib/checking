@@ -467,7 +467,7 @@ const ListCard2 = ({ list }) => {
               )}
               <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="p-1">
+                <Button variant="default" className="p-1">
                   <MoreVertical size={18} className="text-gray-500" />
                 </Button>
               </DropdownMenuTrigger>
@@ -613,18 +613,18 @@ const ListCard2 = ({ list }) => {
       <div className="flex justify-between items-center mt-4 text-sm ml-5 mr-5">
         <div className="flex items-center space-x-4">
           <Tooltip content={hasLiked ? 'Unlike' : 'Like'}>
-            <Button variant="ghost" onClick={handleLikeList} className="p-1">
+            <Button variant="default" onClick={handleLikeList} className="p-1">
               <ThumbsUp size={18} className={hasLiked ? 'fill-orange-500 text-orange-500' : 'text-white'} />
               <span className="ml-1">{likes.length}</span>
             </Button>
           </Tooltip>
           <Tooltip content={hasDisliked ? 'Remove dislike' : 'Dislike'}>
-            <Button variant="ghost" onClick={handleDislikeList} className="p-1">
+            <Button variant="default" onClick={handleDislikeList} className="p-1">
               <ThumbsDown size={18} className={hasDisliked ? 'fill-orange-500 text-orange-500' : 'text-white'} />
               <span className="ml-1">{dislikes.length}</span>
             </Button>
           </Tooltip>
-          <Button variant="ghost" onClick={() => {}} className="p-1">
+          <Button variant="default" onClick={() => {}} className="p-1">
             <MessageCircle size={18} className="text-gray-500" />
             <span className="ml-1">{comments?.length || 0}</span>
           </Button>
@@ -637,7 +637,7 @@ const ListCard2 = ({ list }) => {
           </Tooltip>
 
           <Tooltip content="Remix">
-            <Button variant="ghost" onClick={() => navigate(`/remix/${list.$id}`)} className="p-1">
+            <Button variant="default" onClick={() => navigate(`/remix/${list.$id}`)} className="p-1">
               <Wand size={18} className="text-gray-200" />
             </Button>
           </Tooltip>

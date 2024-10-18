@@ -335,7 +335,7 @@ const ListDetails: React.FC = () => {
           {isCreator && (
             <div className="relative" ref={creatorOptionsRef}>
               <Button
-                variant="ghost"
+                variant="default"
                 className="p-2"
                 onClick={() => setShowCreatorOptions(!showCreatorOptions)}
               >

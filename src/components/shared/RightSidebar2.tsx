@@ -175,7 +175,7 @@ const RightSidebar2: React.FC = () => {
         {isMobile && (
           <Button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            variant="ghost"
+            variant="default"
             size="icon"
             className="self-start m-4 text-light-1 hover:bg-dark-4/50 focus:outline-none transition-all duration-300"
             aria-label="Toggle Sidebar"

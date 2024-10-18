@@ -198,7 +198,7 @@ const ListStats: React.FC<ListStatsProps> = ({
         <div className="flex items-center space-x-1">
           {/* Like Button */}
           <Button
-            variant="ghost"
+            variant="default"
             className="flex-1 flex items-center justify-center space-x-2"
             onClick={handleLikeList}
           >
@@ -213,7 +213,7 @@ const ListStats: React.FC<ListStatsProps> = ({
 
           {/* Dislike Button */}
           <Button
-            variant="ghost"
+            variant="default"
             className="flex-1 flex items-center justify-center space-x-2"
             onClick={handleDislikeList}
           >
@@ -229,7 +229,7 @@ const ListStats: React.FC<ListStatsProps> = ({
 
         {/* Save Button */}
         <Button
-          variant="ghost"
+          variant="default"
           className="flex-1 flex items-center justify-center space-x-2"
           onClick={handleSaveList}
         >
@@ -246,7 +246,7 @@ const ListStats: React.FC<ListStatsProps> = ({
 
         {/* Comments Button */}
         <Button
-          variant="ghost"
+          variant="default"
           className="flex-1 flex items-center justify-center space-x-2"
           onClick={() => setIsCommentsExpanded(!isCommentsExpanded)}
         >
@@ -256,7 +256,7 @@ const ListStats: React.FC<ListStatsProps> = ({
 
         {/* Remix Button */}
         <Button
-          variant="ghost"
+          variant="default"
           className="flex-1 flex items-center justify-center space-x-2"
           onClick={() => navigate(`/remix/${list.$id}`)}
         >
@@ -267,7 +267,7 @@ const ListStats: React.FC<ListStatsProps> = ({
         {/* Embed Button */}
         {isCreator ? (
           <Button
-            variant="ghost"
+            variant="default"
             className="flex-1 flex items-center justify-center space-x-2"
             onClick={() => setIsEmbed((prev) => !prev)}
           >

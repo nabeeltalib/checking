@@ -897,7 +897,7 @@ return (
         </h2>
       </Tooltip>
       {isExpandable && (
-        <Button variant="ghost" size="sm">
+        <Button variant="default" size="sm">
           {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </Button>
       )}
