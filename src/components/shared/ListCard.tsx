@@ -7,7 +7,7 @@ import {
   Share2,
   MessageCircle,
   Bookmark,
-  Redo2,
+  Wand,
   MapPin, 
   Clock,
   Crown,
@@ -354,7 +354,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               onClick={handleDialogOpen}
               className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
             >
-              <Redo2 size={18} />
+              <Wand size={18} />
             </Button>
           </Tooltip>
           </div>

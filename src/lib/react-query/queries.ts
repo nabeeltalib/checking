@@ -53,6 +53,10 @@ import {
   signInWithGoogle,
   updateCollaboration,
   getRelatedLists,
+  getTotalUsers, 
+  getTotalLists, 
+  getReportedCommentsCount, 
+  getActiveUsersCount,
 } from '@/lib/appwrite/api';
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
 import { useNavigate } from 'react-router-dom';
@@ -656,4 +660,19 @@ export const useGetFriends = (userId: string) => {
     queryFn: () => getFriends(userId),
     enabled: !!userId,
   });
+};
+export const useGetTotalUsers = () => {
+  return useQuery(['totalUsers'], getTotalUsers);
+};
+
+export const useGetTotalLists = () => {
+  return useQuery(['totalLists'], getTotalLists);
+};
+
+export const useGetReportedCommentsCount = () => {
+  return useQuery(['reportedCommentsCount'], getReportedCommentsCount);
+};
+
+export const useGetActiveUsersCount = () => {
+  return useQuery(['activeUsersCount'], getActiveUsersCount);
 };

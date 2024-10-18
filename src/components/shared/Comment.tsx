@@ -26,15 +26,15 @@ const Comment = ({
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useUserContext();
-  const [likes, setLikes] = useState<string[]>(comment?.Likes || []);
+  const [likes, setLikes] = useState(comment?.Likes || []);
   const [isLiked, setIsLiked] = useState(false);
   const [replyContent, setReplyContent] = useState('');
   const [localComment, setLocalComment] = useState(comment);
   const [showReplyField, setShowReplyField] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const [showAllReplies, setShowAllReplies] = useState(false);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     setIsLiked(checkIsLiked(likes, user.id));
@@ -123,7 +123,7 @@ const Comment = ({
 
     setIsLoading(true);
     try {
-      const replyData: any = {
+      const replyData = {
         userId: user.id,
         Content: replyContent.trim(),
         commentId: comment.$id,
@@ -197,7 +197,7 @@ const Comment = ({
   };
 
   return (
-    <div className="flex items-start mb-2">
+    <div className="flex items-start mb-2 relative">
       <img
         src={userImageUrl}
         alt={`${username}'s avatar`}
@@ -255,10 +255,10 @@ const Comment = ({
         )}
       </div>
       {show && (
-        <div className="relative" ref={menuRef}>
+        <div className="absolute top-0 right-0" ref={menuRef}>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="focus:outline-none ml-2"
+            className="text-gray-500 focus:outline-none"
           >
             <MoreVertical size={16} />
           </button>

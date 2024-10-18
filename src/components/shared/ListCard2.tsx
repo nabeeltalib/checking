@@ -10,8 +10,10 @@ import {
   MapPin,
   Clock,
   ChevronDown,
+  MoreVertical,
+  Flag,
   ChevronUp,
-  Redo2,
+  Wand,
 } from 'lucide-react';
 import {
   followUser,
@@ -19,6 +21,7 @@ import {
   shareList,
   UnFollow,
   likeList as likeListAPI,
+  reportList,
 } from '@/lib/appwrite/api';
 import {
   useDeleteSavedList,
@@ -34,6 +37,21 @@ import { useUserContext } from '@/context/AuthContext';
 import Loader from './Loader';
 import Tooltip from '@/components/ui/Tooltip';
 import { useShareDialog } from '@/components/shared/ShareDialogContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 
 const ListCard2 = ({ list }) => {
   const navigate = useNavigate();
@@ -49,7 +67,8 @@ const ListCard2 = ({ list }) => {
   const [dislikes, setDislikes] = useState(list?.Dislikes || []);
   const [isSaved, setIsSaved] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('');
   const [newComment, setNewComment] = useState('');
   const { data: comments, isLoading: isLoadingComments } = useGetComments(list?.$id);
   const [firstComment, setFirstComment] = useState(null);
@@ -58,6 +77,7 @@ const ListCard2 = ({ list }) => {
   const { openShareDialog } = useShareDialog();
   const { user } = useUserContext();
   const { id } = user;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const hasLiked = useMemo(() => likes.includes(id), [likes, id]);
   const hasDisliked = useMemo(() => dislikes.includes(id), [dislikes, id]);
@@ -271,22 +291,12 @@ const ListCard2 = ({ list }) => {
   }, [list?.creator, user.id, toast]);
 
   const handleShare = async (e) => {
-    if (!list) return;
     e.preventDefault();
     e.stopPropagation();
     try {
       const shareableLink = await shareList(list.$id);
-      if (isMobile() && navigator.share) {
-        await navigator.share({
-          title: list.Title,
-          text: `Check out this list: ${list.Title}`,
-          url: shareableLink,
-        });
-      } else {
-        openShareDialog(shareableLink, list.Title);
-      }
+      openShareDialog(shareableLink, list.Title);
     } catch (error) {
-      console.error('Error sharing list:', error);
       toast({
         title: 'Error',
         description: 'Failed to generate shareable link. Please try again.',
@@ -294,6 +304,47 @@ const ListCard2 = ({ list }) => {
       });
     }
   };
+
+  const handleReport = useCallback(() => {
+    if (!user || !user.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to report a list.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsReportDialogOpen(true);
+  }, [user, toast]);
+
+  const submitReport = useCallback(async () => {
+    if (!reportReason.trim()) {
+      toast({
+        title: "Error",
+        description: "Please provide a reason for reporting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await reportList(list.$id, user.id, list.Title, reportReason);
+      toast({
+        title: "List Reported",
+        description: "Thank you for your report. We'll review it as soon as possible.",
+      });
+      setIsReportDialogOpen(false);
+      setReportReason('');
+    } catch (error) {
+      console.error('Error reporting list:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit report. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [list, user.id, reportReason, toast]);
 
   const renderListItems = useMemo(() => {
     if (!list || !list.items) return null;
@@ -341,7 +392,6 @@ const ListCard2 = ({ list }) => {
 
       if (newCommentData) {
         setNewComment('');
-        // Update first comment if there were no comments before
         if (!firstComment) {
           setFirstComment(newCommentData);
         }
@@ -359,6 +409,11 @@ const ListCard2 = ({ list }) => {
       });
     }
   };
+
+  const handleOpenReportDialog = useCallback(() => {
+    setIsReportDialogOpen(true);
+    setIsDropdownOpen(false);
+  }, []);
 
   if (!list) return null;
 
@@ -410,14 +465,19 @@ const ListCard2 = ({ list }) => {
                   )}
                 </Button>
               )}
-
-              <button
-                onClick={handleShare}
-                className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
-                aria-label="Share this list"
-              >
-                <Share2 size={20} />
-              </button>
+              <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="p-1">
+                  <MoreVertical size={18} className="text-gray-500" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onSelect={handleOpenReportDialog}>
+                  <Flag className="mr-2 h-4 w-4" />
+                  <span>Report List</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             </div>
           </div>
         )}
@@ -578,9 +638,18 @@ const ListCard2 = ({ list }) => {
 
           <Tooltip content="Remix">
             <Button variant="ghost" onClick={() => navigate(`/remix/${list.$id}`)} className="p-1">
-              <Redo2 size={18} className="text-gray-200" />
+              <Wand size={18} className="text-gray-200" />
             </Button>
           </Tooltip>
+          <Tooltip content="Share">
+            <Button
+              onClick={handleShare}
+              className="p-1"
+              aria-label="Share this list"
+            >
+              <Share2 size={18} />
+            </Button>
+          </Tooltip>          
         </div>
       </div>
 
@@ -650,6 +719,36 @@ const ListCard2 = ({ list }) => {
           </button>
         </div>
       </div>
+
+      {/* Report Dialog */}
+      <Dialog
+        open={isReportDialogOpen}
+        onOpenChange={(open) => {
+          setIsReportDialogOpen(open);
+          if (!open) {
+            setReportReason('');
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Report List</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for reporting this list. We take all reports seriously and will review them promptly.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={reportReason}
+            onChange={(e) => setReportReason(e.target.value)}
+            placeholder="Enter your reason for reporting..."
+            className="mt-2 bg-dark-4"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReportDialogOpen(false)}>Cancel</Button>
+            <Button onClick={submitReport}>Submit Report</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };

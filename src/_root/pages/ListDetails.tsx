@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from "react";
+import React, { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUserContext } from "@/context/AuthContext";
@@ -20,13 +20,24 @@ import {
   getConnection,
   getListById,
   shareList,
-  UnFollow  
+  UnFollow,
+  reportList,
 } from "@/lib/appwrite/api";
 import { Share2, ChevronLeft, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Code, Copy, MapPin, Clock } from 'lucide-react';
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
-import LoaderOverlay from "@/components/shared/LoaderOverlay"; // Import the LoaderOverlay component
+import LoaderOverlay from "@/components/shared/LoaderOverlay";
 import { useShareDialog } from "@/components/shared/ShareDialogContext";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import Tooltip from "@/components/ui/Tooltip";
 
 const ListDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -53,6 +64,8 @@ const ListDetails: React.FC = () => {
   const [isReply, setIsReply] = useState(false);
   const [commentId, setCommentId] = useState("");
   const { openShareDialog } = useShareDialog();
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [reportReason, setReportReason] = useState('');
   const isMobile = () => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   };
@@ -151,7 +164,47 @@ const ListDetails: React.FC = () => {
       });
     }
   };
+  const handleReport = useCallback(() => {
+    if (!user || !user.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to report a list.",
+        variant: "destructive",
+      });
+      return;
+    }
 
+    setIsReportDialogOpen(true);
+  }, [user, toast]);
+
+  const submitReport = useCallback(async () => {
+    if (!reportReason.trim()) {
+      toast({
+        title: "Error",
+        description: "Please provide a reason for reporting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await reportList(id!, user.id, list!.Title, reportReason);
+      toast({
+        title: "List Reported",
+        description: "Thank you for your report. We'll review it as soon as possible.",
+      });
+      setIsReportDialogOpen(false);
+      setReportReason('');
+    } catch (error) {
+      console.error('Error reporting list:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit report. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [id, user.id, list, reportReason, toast]);
+  
   const LoadingSkeleton: React.FC = () => (
     <div className="animate-pulse">
       <div className="h-48 bg-dark-3 rounded-b-lg mb-4"></div>
@@ -244,7 +297,7 @@ const ListDetails: React.FC = () => {
         {isDeleting && <LoaderOverlay />}
       </AnimatePresence>
 
-      {/* Header with Creator Options */}
+      {/* Header with action items */}
       <motion.div 
         className="sticky top-0 z-10 bg-dark-3 p-4 border-b border-dark-4 flex justify-between items-center"
         initial={{ y: -50 }}
@@ -258,14 +311,27 @@ const ListDetails: React.FC = () => {
           <ChevronLeft size={24} />
           Back
         </Button>
-        <div className="flex items-center">
-          <Button
-            onClick={handleShare}
-            className="text-light-2 hover:text-primary-500 transition-colors mr-2"
-            aria-label="Share this list"
-          >
-            <Share2 size={24} />
-          </Button>
+        <div className="flex items-center space-x-2">
+          <Tooltip content="Share">
+            <Button
+              onClick={handleShare}
+              className="text-light-2 hover:text-primary-500 transition-colors"
+              aria-label="Share this list"
+            >
+              <Share2 size={24} />
+            </Button>
+          </Tooltip>
+          {!isCreator && (
+            <Tooltip content="Report">
+              <Button
+                onClick={handleReport}
+                className="text-light-2 hover:text-primary-500 transition-colors"
+                aria-label="Report this list"
+              >
+                <MoreVertical size={18} />
+              </Button>
+            </Tooltip>
+          )}
           {isCreator && (
             <div className="relative" ref={creatorOptionsRef}>
               <Button
@@ -289,7 +355,7 @@ const ListDetails: React.FC = () => {
                     <button
                       onClick={handleDeleteList}
                       className="flex items-center px-4 py-2 text-sm text-light-2 hover:bg-dark-3 w-full text-left"
-                      disabled={isDeleting} // Disable the button while deleting
+                      disabled={isDeleting}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       {isDeleting ? "Deleting..." : "Delete"}
@@ -299,12 +365,9 @@ const ListDetails: React.FC = () => {
                         setShowEmbedOptions(!showEmbedOptions);
                         setShowCreatorOptions(false);
                       }}
-                      className={`flex items-center px-4 py-2 text-sm w-full text-left ${
-                        isCreator ? "text-light-2 hover:bg-dark-3" : "text-gray-500 cursor-not-allowed"
-                      }`}
-                      disabled={!isCreator}
+                      className="flex items-center px-4 py-2 text-sm text-light-2 hover:bg-dark-3 w-full text-left"
                     >
-                      <Code className={`mr-2 h-4 w-4 ${isCreator ? "" : "text-gray-500"}`} />
+                      <Code className="mr-2 h-4 w-4" />
                       Embed
                     </button>
                   </div>
@@ -571,6 +634,35 @@ const ListDetails: React.FC = () => {
           <p className="text-light-2">No related rankings found</p>
         )}
       </motion.div>
+      {/* Add the Report Dialog */}
+      <Dialog
+        open={isReportDialogOpen}
+        onOpenChange={(open) => {
+          setIsReportDialogOpen(open);
+          if (!open) {
+            setReportReason('');
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Report List</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for reporting this list. We take all reports seriously and will review them promptly.
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={reportReason}
+            onChange={(e) => setReportReason(e.target.value)}
+            placeholder="Enter your reason for reporting..."
+            className="mt-2 bg-dark-4"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReportDialogOpen(false)}>Cancel</Button>
+            <Button onClick={submitReport}>Submit Report</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 };

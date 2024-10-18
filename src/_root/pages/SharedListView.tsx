@@ -5,7 +5,7 @@ import { Loader } from '@/components/shared';
 import { IList } from '@/types';
 import { AppwriteException } from 'appwrite';
 import { motion } from 'framer-motion';
-import { Share2, ThumbsUp, ThumbsDown, MessageCircle, Bookmark, Redo2, MapPin, Clock, Crown, ChevronDown, ChevronUp } from 'lucide-react';
+import { Share2, ThumbsUp, ThumbsDown, MessageCircle, Bookmark, Wand, MapPin, Clock, Crown, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import SignInDialog from '@/components/shared/SignInDialog';
@@ -303,7 +303,7 @@ const SharedListView: React.FC = () => {
           <Bookmark size={20} />
         </Button>
         <Button onClick={handleAuthRequiredAction} className="flex items-center gap-2">
-          <Redo2 size={20} />
+          <Wand size={20} />
           <span>Remix</span>
         </Button>
       </div>

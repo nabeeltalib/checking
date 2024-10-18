@@ -2,12 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import {
-  createReply,
-  updateCommentWithReply, 
-  updateReplyWithReply,
-  likeList as likeListAPI,
-} from "@/lib/appwrite/api";
+import { likeList as likeListAPI } from "@/lib/appwrite/api";
 import {
   useSaveList,
   useDeleteSavedList,
@@ -23,11 +18,10 @@ import {
   ThumbsDown,
   Bookmark,
   MessageSquare,
-  Redo2,
+  Wand,
   Code,
   ChevronDown,
   ChevronUp,
-  ExternalLink,
 } from "lucide-react";
 
 interface ListStatsProps {
@@ -55,21 +49,15 @@ const ListStats: React.FC<ListStatsProps> = ({
   const { user } = useUserContext();
   const { id } = user;
   const { mutate: deleteSaveList } = useDeleteSavedList();
+  const { mutate: saveList } = useSaveList();
   const { data: currentUser } = useGetUserById(id);
   const { data: comments, refetch: refetchComments } = useGetComments(list.$id);
   const [newComment, setNewComment] = useState("");
   const { mutate: createComment } = useCreateComment();
-  const [isReply, setIsReply] = useState(false);
-  const [commentId, setCommentId] = useState("");
-  const [parentReplyId, setParentReplyId] = useState("");
   const [showAllComments, setShowAllComments] = useState(false);
   
-  // Determine if the user has liked or disliked the list
   const hasLiked = useMemo(() => likes.includes(userId), [likes, userId]);
-  const hasDisliked = useMemo(
-    () => dislikes.includes(userId),
-    [dislikes, userId]
-  );
+  const hasDisliked = useMemo(() => dislikes.includes(userId), [dislikes, userId]);
  
   useEffect(() => {
     if (currentUser) {
@@ -85,12 +73,9 @@ const ListStats: React.FC<ListStatsProps> = ({
     let updatedDislikes = [...dislikes];
 
     if (hasLiked) {
-      // Remove like
       updatedLikes = updatedLikes.filter((Id) => Id !== userId);
     } else {
-      // Add like
       updatedLikes.push(userId);
-      // Remove dislike if exists
       if (hasDisliked) {
         updatedDislikes = updatedDislikes.filter((Id) => Id !== userId);
       }
@@ -111,7 +96,6 @@ const ListStats: React.FC<ListStatsProps> = ({
         description: "Failed to update like status. Please try again.",
         variant: "destructive",
       });
-      // Revert state changes on error
       setLikes(likes);
       setDislikes(dislikes);
     }
@@ -122,12 +106,9 @@ const ListStats: React.FC<ListStatsProps> = ({
     let updatedDislikes = [...dislikes];
 
     if (hasDisliked) {
-      // Remove dislike
       updatedDislikes = updatedDislikes.filter((Id) => Id !== userId);
     } else {
-      // Add dislike
       updatedDislikes.push(userId);
-      // Remove like if exists
       if (hasLiked) {
         updatedLikes = updatedLikes.filter((Id) => Id !== userId);
       }
@@ -148,7 +129,6 @@ const ListStats: React.FC<ListStatsProps> = ({
         description: "Failed to update dislike status. Please try again.",
         variant: "destructive",
       });
-      // Revert state changes on error
       setLikes(likes);
       setDislikes(dislikes);
     }
@@ -186,47 +166,23 @@ const ListStats: React.FC<ListStatsProps> = ({
     if (newComment.trim() === "") return;
   
     try {
-      if (isReply) {
-        const replyData: any = {
-          userId: id,
-          Content: newComment,
-          commentId: commentId,
-          parentReplyId: parentReplyId,
-        };
-  
-        const newReply = await createReply(replyData);
-  
-        if (newReply) {
-          if (parentReplyId) {
-            await updateReplyWithReply(parentReplyId, newReply.$id);
-          } else {
-            await updateCommentWithReply(commentId, newReply.$id);
-          }
-        }
-      } else {
-        await createComment({
-          listId: list.$id,
-          userId: id,
-          Content: newComment,
-        });
-      }
+      await createComment({
+        listId: list.$id,
+        userId: id,
+        Content: newComment,
+      });
   
       setNewComment("");
-      setIsReply(false);
-      setCommentId("");
-      setParentReplyId("");
       refetchComments();
       toast({
         title: "Success",
-        description: isReply
-          ? "Reply added successfully"
-          : "Comment posted successfully",
+        description: "Comment posted successfully",
       });
     } catch (error) {
       console.error("Failed to post comment:", error);
       toast({
         title: "Error",
-        description: "Failed to post comment or reply.",
+        description: "Failed to post comment.",
         variant: "destructive",
       });
     }
@@ -304,7 +260,7 @@ const ListStats: React.FC<ListStatsProps> = ({
           className="flex-1 flex items-center justify-center space-x-2"
           onClick={() => navigate(`/remix/${list.$id}`)}
         >
-          <Redo2 size={20} className="text-gray-400" />
+          <Wand size={20} className="text-gray-400" />
           <span className={textSize}>Remix</span>
         </Button>
 
@@ -329,7 +285,7 @@ const ListStats: React.FC<ListStatsProps> = ({
         )}
       </div>
 
-      {/* Comments Section */}
+       {/* Comments Section */}
       <AnimatePresence>
         {isCommentsExpanded && (
           <motion.div
@@ -340,68 +296,61 @@ const ListStats: React.FC<ListStatsProps> = ({
           >
             <h3 className="text-xl font-semibold mb-4">Comments</h3>
             {(comments?.length ?? 0) > 0 ? (
-        <div className="space-y-4">
-          {visibleComments.map((comment: any) => (
-            <Comment
-              key={comment.$id}
-              comment={comment}
-              setReply={setIsReply}
-              show={true}
-              setCommentId={setCommentId}
-              setParentReplyId={setParentReplyId}
-              depth={0}
-              listId={list.$id}
-            />
-          ))}
+              <div className="space-y-4">
+                {visibleComments.map((comment: any) => (
+                  <Comment
+                    key={comment.$id}
+                    comment={comment}
+                    setReply={() => {}}
+                    show={true}
+                    setCommentId={() => {}}
+                    setParentReplyId={() => {}}
+                    listId={list.$id}
+                  />
+                ))}
 
-          {!showAllComments && comments.length > 3 && (
-            <Button
-              variant="link"
-              onClick={handleViewAllComments}
-              className="text-blue-300 flex items-center"
-            >
-              <ChevronDown className="mr-2" size={16} />
-              View all {comments.length} comments
-            </Button>
-          )}
+                {!showAllComments && comments.length > 3 && (
+                  <Button
+                    variant="link"
+                    onClick={handleViewAllComments}
+                    className="text-blue-300 flex items-center"
+                  >
+                    <ChevronDown className="mr-2" size={16} />
+                    View all {comments.length} comments
+                  </Button>
+                )}
 
-          {showAllComments && (
-            <Button
-              variant="link"
-              onClick={handleShowLess}
-              className="text-blue-300 flex items-center"
-            >
-              <ChevronUp className="mr-2" size={16} />
-              Show less
-            </Button>
-          )}
-        </div>
-      ) : (
-        <p className={`${textSize} text-gray-500`}>
-          No comments yet. Be the first to comment!
-        </p>
-      )}
+                {showAllComments && (
+                  <Button
+                    variant="link"
+                    onClick={handleShowLess}
+                    className="text-blue-300 flex items-center"
+                  >
+                    <ChevronUp className="mr-2" size={16} />
+                    Show less
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <p className={`${textSize} text-gray-500`}>
+                No comments yet. Be the first to comment!
+              </p>
+            )}
+
             {/* Comment Input */}
             <form onSubmit={handleCommentSubmit} className="mt-6">
               <textarea
                 value={newComment}
                 spellCheck={true}
                 onChange={(e) => setNewComment(e.target.value)}
-                placeholder={
-                  isReply ? "Write a reply..." : "Write a comment..."
-                }
+                placeholder="Write a comment..."
                 className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
                 rows={1}
               />
               <div className="flex gap-2 mt-2">
                 <Button type="submit" variant="default">
-                  {isReply ? "Post Reply" : "Post Comment"}
+                  Post Comment
                 </Button>
-                {isReply && (
-                  <Button onClick={() => setIsReply(false)} variant="outline">
-                    Cancel Reply
-                  </Button>
-                )}
               </div>
             </form>
           </motion.div>

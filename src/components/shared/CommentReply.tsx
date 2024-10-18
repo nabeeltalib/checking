@@ -35,9 +35,9 @@ const CommentReply = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef(null);
   const [showNestedReplies, setShowNestedReplies] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     setIsLiked(checkIsLiked(likes, user.id));
@@ -223,7 +223,7 @@ const CommentReply = ({
   };
 
   return (
-    <div className={`flex items-start mb-2 ${depth > 0 ? 'ml-4' : ''}`}>
+    <div className={`flex items-start mb-2 ${depth > 0 ? 'ml-4' : ''} relative`}>
       <img
         src={reply.userId?.ImageUrl || '/assets/icons/profile-placeholder.svg'}
         alt={`${reply.userId?.Username || 'Anonymous'}'s avatar`}
@@ -280,10 +280,10 @@ const CommentReply = ({
           </div>
         )}
       </div>
-      <div className="relative" ref={menuRef}>
+      <div className="absolute top-0 right-0" ref={menuRef}>
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="focus:outline-none absolute right-0"
+          className="text-gray-500 focus:outline-none"
         >
           <MoreVertical size={16} />
         </button>

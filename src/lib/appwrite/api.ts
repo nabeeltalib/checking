@@ -36,6 +36,7 @@ const requiredEnvVars = [
   "VITE_APPWRITE_COMMENT_REPLY_COLLECTION_ID",
   "VITE_APPWRITE_REPORTED_COMMENTS_COLLECTION_ID",
   "VITE_APPWRITE_CONNECTIONS_COLLECTION_ID",
+  "VITE_APPWRITE_REPORTED_LISTS_COLLECTION_ID",
 ];
 
 const missingEnvVars = requiredEnvVars.filter(
@@ -81,6 +82,7 @@ export const appwriteConfig = {
   commentReplyCollectionId: import.meta.env.VITE_APPWRITE_COMMENT_REPLY_COLLECTION_ID,
   reportedCommentsCollectionId: import.meta.env.VITE_APPWRITE_REPORTED_COMMENTS_COLLECTION_ID,
   connectionsCollectionId: import.meta.env.VITE_APPWRITE_CONNECTIONS_COLLECTION_ID,
+  reportedListsCollectionId: import.meta.env.VITE_APPWRITE_REPORTED_LISTS_COLLECTION_ID,
 };
 
 const client = new Client();
@@ -908,6 +910,63 @@ export async function getUsers(limit?: number) {
     return null;
   }
 }
+export async function getTotalUsers() {
+  try {
+    const users = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [Query.limit(1)]
+    );
+    return users.total;
+  } catch (error) {
+    console.error('Error fetching total users:', error);
+    throw error;
+  }
+}
+
+export async function getTotalLists() {
+  try {
+    const lists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId, // Make sure this is "1141" or the correct ID
+      [Query.limit(1)]
+    );
+    return lists.total;
+  } catch (error) {
+    console.error('Error fetching total lists:', error);
+    throw error;
+  }
+}
+
+export async function getReportedCommentsCount() {
+  try {
+    const comments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.reportedCommentsCollectionId, // Make sure this is "66dc4454001a27643f2d" or the correct ID
+      [Query.limit(1)]
+    );
+    return comments.total;
+  } catch (error) {
+    console.error('Error fetching reported comments count:', error);
+    throw error;
+  }
+}
+
+export async function getActiveUsersCount() {
+  try {
+    // Instead of querying for 'lastActivity', we'll just get the total number of users
+    // You may want to adjust this based on your specific definition of an "active" user
+    const users = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [Query.limit(1)]
+    );
+    return users.total;
+  } catch (error) {
+    console.error('Error fetching active users count:', error);
+    throw error;
+  }
+}
 
 export async function getUserById(userId: any) {
   try {
@@ -1130,6 +1189,87 @@ export async function getComments(listId: string) {
   }
 }
 
+export async function reportList(listId: string, reportedBy: string, listTitle: string, reason: string) {
+  try {
+    const reportedList = await databases.createDocument(
+      appwriteConfig.databaseId,
+      "6710ff2b000b2ae127fc", // Use the actual collection ID for ReportedLists
+      ID.unique(),
+      {
+        listId: listId,
+        listTitle: listTitle,
+        reportedBy: reportedBy,
+        reason: reason,
+        status: "pending",
+        createdAt: new Date().toISOString(),
+      }
+    );
+
+    if (!reportedList) {
+      throw new Error('Failed to report list');
+    }
+
+    return reportedList;
+  } catch (error) {
+    console.error('Error reporting list:', error);
+    if (error instanceof AppwriteException) {
+      if (error.code === 401) {
+        throw new Error('You are not authorized to report lists. Please check your account permissions.');
+      } else {
+        throw new Error(`An error occurred while reporting the list: ${error.message}`);
+      }
+    }
+    throw error;
+  }
+}
+
+export async function updateListStatus(reportId: string, status: string) {
+  // Validate the status
+  if (!["pending", "reviewed", "deleted"].includes(status)) {
+    throw new Error("Invalid status. Must be 'pending', 'reviewed', or 'deleted'.");
+  }
+
+  try {
+    const updatedReport = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.reportedListsCollectionId, 
+      reportId,
+      { status: status }
+    );
+
+    if (!updatedReport) throw new Error('Failed to update list status');
+
+    return updatedReport;
+  } catch (error) {
+    console.error('Error updating list status:', error);
+    return null;
+  }
+}
+export async function getReportedLists() {
+  try {
+    const reportedLists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.reportedListsCollectionId,
+      [Query.orderDesc("$createdAt")]
+    );
+
+    if (!reportedLists) {
+      throw new Error('No reported lists found');
+    }
+
+    return reportedLists.documents;
+  } catch (error) {
+    console.error('Error fetching reported lists:', error);
+    if (error instanceof AppwriteException) {
+      if (error.code === 401) {
+        throw new Error('You are not authorized to view reported lists. Please check your account permissions.');
+      } else {
+        throw new Error(`An error occurred while fetching reported lists: ${error.message}`);
+      }
+    }
+    throw error;
+  }
+}
 export async function reportComment(comment:any) {
   try {
     const newComment = await databases.createDocument(
