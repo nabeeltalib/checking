@@ -29,9 +29,10 @@ import { useShareDialog } from "@/components/shared/ShareDialogContext";
 
 type ListCardProps = {
   list: IList;
+  isAuthenticated: boolean;
 };
 
-const ListCard: React.FC<ListCardProps> = ({ list }) => {
+const ListCard: React.FC<ListCardProps> = ({ list, isAuthenticated }) => {
   const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { data: comments } = useGetComments(list.$id);
@@ -41,24 +42,26 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     mutateAsync: signInWithGoogle,
     isLoading: isGoogleLoading,
   } = useSignInWithGoogle();
-  const isMobile = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  };
-  // Assume the user is not authenticated for this example
-  const isAuthenticated = false;
   const [isReply, setIsReply] = useState(false);
   const [commentId, setCommentId] = useState('');
   const [parentReplyId, setParentReplyId] = useState('');
   
-  // Since the user is not authenticated, isFollowed is false
   const isFollowed = false;
   const isFollowLoading = false;
 
   const { openShareDialog } = useShareDialog();
 
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
   const handleShare = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isAuthenticated) {
+      handleDialogOpen();
+      return;
+    }
     try {
       const shareableLink = await shareList(list.$id);
       if (isMobile() && navigator.share) {
@@ -92,15 +95,47 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     signInWithGoogle();
   };
 
-  // Since the user is not authenticated, clicking follow opens the dialog
-  const handleFollow = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    handleDialogOpen();
+  const handleAction = (action: () => void) => {
+    if (!isAuthenticated) {
+      handleDialogOpen();
+    } else {
+      action();
+    }
   };
 
-  const handleUnFollow = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    handleDialogOpen();
+  const handleFollow = () => {
+    // Implement follow logic here
+    console.log("Follow action");
+  };
+
+  const handleUnFollow = () => {
+    // Implement unfollow logic here
+    console.log("Unfollow action");
+  };
+
+  const handleLike = () => {
+    // Implement like logic here
+    console.log("Like action");
+  };
+
+  const handleDislike = () => {
+    // Implement dislike logic here
+    console.log("Dislike action");
+  };
+
+  const handleComment = () => {
+    // Implement comment logic here
+    console.log("Comment action");
+  };
+
+  const handleSave = () => {
+    // Implement save logic here
+    console.log("Save action");
+  };
+
+  const handleRemix = () => {
+    // Implement remix logic here
+    console.log("Remix action");
   };
 
   const getRankColor = (index: number) => {
@@ -129,13 +164,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
       <motion.li
         key={index}
         className="flex items-center mb-2 bg-gray-900 rounded-md p-0 hover:bg-gray-700 transition-colors duration-300"
-        onClick={() => {
-          if (!isAuthenticated) {
-            handleDialogOpen();
-          } else {
-            navigate(`/lists/${list.$id}`);
-          }
-        }}
+        onClick={() => handleAction(() => navigate(`/lists/${list.$id}`))}
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: index * 0.1 }}
@@ -155,18 +184,6 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
     ));
   };
 
-  const ActionButton = ({ icon, label, count, onClick }) => (
-    <Tooltip content={label}>
-      <Button
-        onClick={onClick}
-        className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 px-3 py-2 rounded-lg"
-      >
-        {icon}
-        {count !== undefined && <span className="text-xs">{count}</span>}
-      </Button>
-    </Tooltip>
-  );
-
   return (
     <motion.div
       className="bg-gray-900 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 mb-4"
@@ -178,10 +195,9 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
       <div className="p-4">
         {/* Creator Info */}
         <div className="flex justify-between items-center mb-6">
-          {/* Left side: Creator info */}
           <div
             className="flex items-center cursor-pointer group"
-            onClick={handleDialogOpen}
+            onClick={() => handleAction(() => navigate(`/profile/${list.creator?.$id}`))}
           >
             <img
               src={
@@ -198,7 +214,6 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
               <p className="text-gray-400 text-sm">@{list.creator?.Username}</p>
             </div>
           </div>
-          {/* Right side: Follow and Share buttons */}
           <div className="flex items-center">
             <Button
               className={`text-sm px-4 py-2 rounded-full transition-colors duration-300 ${
@@ -206,7 +221,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
                   ? "text-gray-400 hover:text-white"
                   : "bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-1 rounded-full mr-2"
               }`}
-              onClick={isFollowed ? handleUnFollow : handleFollow}
+              onClick={() => handleAction(isFollowed ? handleUnFollow : handleFollow)}
               disabled={isFollowLoading}
             >
               {isFollowed ? "Following" : "Follow"}
@@ -235,12 +250,14 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
             {list.Title}
           </h2>
         </div>
+
         {/* Description */}
         {list.Description && (
           <p className="text-light-2 text-sm mb-4">{list.Description}</p>
         )}
+
         {/* List Items */}
-        <div onClick={handleDialogOpen} className="mb-4">
+        <div className="mb-4">
           <ol className="list-none space-y-2">{renderListItems()}</ol>
           {list.items && list.items.length > 3 && (
             <motion.button
@@ -271,7 +288,7 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
             <motion.span
               key={`${tag}${index}`}
               className="bg-gray-800 text-blue-200 px-3 py-1 rounded-full text-xs cursor-pointer shadow-md hover:bg-blue-700 transition-colors"
-              onClick={handleDialogOpen}
+              onClick={() => handleAction(() => navigate(`/tags/${tag}`))}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -281,17 +298,17 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
           {list.Tags && list.Tags.length > 3 && (
             <motion.span
               className="text-primary-500 text-xs cursor-pointer"
-              onClick={handleDialogOpen}
+              onClick={() => handleAction(() => navigate(`/lists/${list.$id}`))}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               +{list.Tags.length - 3} more tags
             </motion.span>
           )}
-          
         </div>
+
+        {/* Locations and Timespans */}
         <div>
-          {/* Locations and Timespans */}
           {list.locations && list.locations.length > 0 && (
             <div className="flex items-center text-light-3 text-sm mb-2">
               <MapPin size={16} className="mr-2" />
@@ -306,57 +323,58 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
             </div>
           )}
         </div>
+
         {/* Action Buttons */}
         <div className="flex justify-between items-center mt-4 text-sm px-5">
           <div className="flex items-center space-x-4">
-          <Tooltip content="Love it">
-            <Button
-              onClick={handleDialogOpen}
-              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-            >
-              <ThumbsUp size={18} />
-              <span>{list.Likes?.length || 0}</span>
-            </Button>
-          </Tooltip>
+            <Tooltip content="Love it">
+              <Button
+                onClick={() => handleAction(handleLike)}
+                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+              >
+                <ThumbsUp size={18} />
+                <span>{list.Likes?.length || 0}</span>
+              </Button>
+            </Tooltip>
 
-          <Tooltip content="Dislike">
-            <Button
-              onClick={handleDialogOpen}
-              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-            >
-              <ThumbsDown size={18} />
-              <span>{list.Dislikes?.length || 0}</span>
-            </Button>
-          </Tooltip>
+            <Tooltip content="Dislike">
+              <Button
+                onClick={() => handleAction(handleDislike)}
+                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+              >
+                <ThumbsDown size={18} />
+                <span>{list.Dislikes?.length || 0}</span>
+              </Button>
+            </Tooltip>
 
-          <Tooltip content="Comment on this list">
-            <Button
-              onClick={handleDialogOpen}
-              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-            >
-              <MessageCircle size={18} />
-              <span>{comments?.length || 0}</span>
-            </Button>
-          </Tooltip>
+            <Tooltip content="Comment on this list">
+              <Button
+                onClick={() => handleAction(handleComment)}
+                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+              >
+                <MessageCircle size={18} />
+                <span>{comments?.length || 0}</span>
+              </Button>
+            </Tooltip>
           </div>
           <div className="flex items-center space-x-4">
-          <Tooltip content="Save this list">
-            <Button
-              onClick={handleDialogOpen}
-              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-            >
-              <Bookmark size={18} />
-            </Button>
-          </Tooltip>
+            <Tooltip content="Save this list">
+              <Button
+                onClick={() => handleAction(handleSave)}
+                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+              >
+                <Bookmark size={16} />
+              </Button>
+            </Tooltip>
 
-          <Tooltip content="Remix this list">
-            <Button
-              onClick={handleDialogOpen}
-              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-            >
-              <Wand size={18} />
-            </Button>
-          </Tooltip>
+            <Tooltip content="Remix this list">
+              <Button
+                onClick={() => handleAction(handleRemix)}
+                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+              >
+                <Wand size={18} />
+              </Button>
+            </Tooltip>
           </div>
         </div>
 
@@ -364,17 +382,17 @@ const ListCard: React.FC<ListCardProps> = ({ list }) => {
         {comments && comments.length > 0 && (
           <div
             className="mb-4 p-4 rounded-lg cursor-pointer"
-            onClick={handleDialogOpen}
+            onClick={() => handleAction(() => navigate(`/lists/${list.$id}`))}
           >
             <h3 className="text-sm font-semibold text-light-1 mb-2">
               Latest Comment:
             </h3>
             <Comment
-            comment={comments[0]}
-            setReply={setIsReply}
-            show={true}
-            setCommentId={setCommentId}
-            setParentReplyId={setParentReplyId}
+              comment={comments[0]}
+              setReply={setIsReply}
+              show={true}
+              setCommentId={setCommentId}
+              setParentReplyId={setParentReplyId}
             />
             {comments.length > 1 && (
               <p className="text-xs text-primary-500 mt-2 cursor-pointer hover:underline">

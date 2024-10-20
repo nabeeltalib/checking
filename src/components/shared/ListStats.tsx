@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { likeList as likeListAPI } from "@/lib/appwrite/api";
+import { likeList as likeListAPI, addEmojiReaction, removeEmojiReaction } from "@/lib/appwrite/api";
 import {
   useSaveList,
   useDeleteSavedList,
@@ -22,7 +22,11 @@ import {
   Code,
   ChevronDown,
   ChevronUp,
+  Smile,
 } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+
+const quickEmojis = ['😂', '😢', '😮', '😍', '👏', '🔥', '👀', '😅'];
 
 interface ListStatsProps {
   setIsEmbed: (value: boolean) => void;
@@ -58,7 +62,8 @@ const ListStats: React.FC<ListStatsProps> = ({
   
   const hasLiked = useMemo(() => likes.includes(userId), [likes, userId]);
   const hasDisliked = useMemo(() => dislikes.includes(userId), [dislikes, userId]);
- 
+  const [reactions, setReactions] = useState(list?.Reactions || []);
+
   useEffect(() => {
     if (currentUser) {
       const savedListRecord = currentUser.save?.find(
@@ -188,6 +193,39 @@ const ListStats: React.FC<ListStatsProps> = ({
     }
   };
 
+  const handleEmojiReaction = async (emoji: string) => {
+    try {
+      const reactionString = `${emoji}:${userId}`;
+      let updatedReactions = [...reactions];
+      
+      if (reactions.includes(reactionString)) {
+        updatedReactions = updatedReactions.filter(r => r !== reactionString);
+        await removeEmojiReaction(list.$id, emoji, userId);
+      } else {
+        updatedReactions.push(reactionString);
+        await addEmojiReaction(list.$id, emoji, userId);
+      }
+      
+      setReactions(updatedReactions);
+    } catch (error) {
+      console.error("Error handling emoji reaction:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update reaction. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const parseReactions = (reactions: string[]) => {
+    const emojiCounts: { [key: string]: number } = {};
+    reactions.forEach(reaction => {
+      const [emoji] = reaction.split(':');
+      emojiCounts[emoji] = (emojiCounts[emoji] || 0) + 1;
+    });
+    return emojiCounts;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -283,10 +321,44 @@ const ListStats: React.FC<ListStatsProps> = ({
             <span className={textSize}>Embed</span>
           </div>
         )}
+      <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="default" className="flex-1 flex items-center justify-center space-x-2">
+              <Smile size={20} className="text-gray-400" />
+              <span className={textSize}>React</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-1">
+            <div className="flex space-x-1">
+              {quickEmojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleEmojiReaction(emoji)}
+                  className="text-xl hover:bg-gray-200 rounded p-1"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
 
+      <div className="flex flex-wrap gap-2 mb-4">
+        {Object.entries(parseReactions(reactions)).map(([emoji, count]) => (
+          <button
+            key={emoji}
+            onClick={() => handleEmojiReaction(emoji)}
+            className={`text-sm rounded-full px-2 py-1 ${
+              reactions.includes(`${emoji}:${userId}`) ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+            }`}
+          >
+            {emoji} {count}
+          </button>
+        ))}
+      </div>
        {/* Comments Section */}
-      <AnimatePresence>
+       <AnimatePresence>
         {isCommentsExpanded && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}

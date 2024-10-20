@@ -10,6 +10,7 @@ import {
   useGetTotalUsers, 
   useGetTotalLists, 
   useGetReportedCommentsCount, 
+  useGetReportedListsCount,
   useGetActiveUsersCount 
 } from "@/lib/react-query/queries";
 import { createList, getReportedComments, getReportedLists } from "@/lib/appwrite/api";
@@ -36,8 +37,8 @@ const AdminPanel = () => {
     const { data: totalUsers, isLoading: isLoadingUsers } = useGetTotalUsers();
     const { data: totalLists, isLoading: isLoadingLists } = useGetTotalLists();
     const { data: reportedCommentsCount, isLoading: isLoadingReportedComments } = useGetReportedCommentsCount();
+    const { data: reportedListsCount, isLoading: isLoadingReportedLists } = useGetReportedListsCount();
     const { data: activeUsers, isLoading: isLoadingActiveUsers, error: activeUsersError } = useGetActiveUsersCount();
-
     useEffect(() => {
         if (!user.isAdmin) {
             navigate("/");
@@ -150,7 +151,7 @@ const AdminPanel = () => {
                     className="mb-8"
                 >
                     <h1 className="text-3xl font-bold text-light-1">Welcome back, {user.name}</h1>
-                    <p className="text-light-3">Here's what's happening with your app today.</p>
+                    <p className="text-light-3">Here's what's happening with Topfived today.</p>
                 </motion.header>
 
                 {error && (
@@ -160,19 +161,20 @@ const AdminPanel = () => {
                     </div>
                 )}
 
-                {activeTab === 'dashboard' && (
-                    <>
-                        <motion.div 
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-                        >
-                            <DashboardCard title="Total Users" value={totalUsers || 0} icon={<Users size={24} />} color="bg-blue-500" />
-                            <DashboardCard title="Total Lists" value={totalLists || 0} icon={<ListIcon size={24} />} color="bg-green-500" />
-                            <DashboardCard title="Reported Comments" value={reportedCommentsCount || 0} icon={<AlertTriangle size={24} />} color="bg-yellow-500" />
-                            <DashboardCard title="Active Users" value={activeUsers || 0} icon={<BarChart2 size={24} />} color="bg-purple-500" />
-                        </motion.div>
+            {activeTab === 'dashboard' && (
+                <>
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8"
+                    >
+                        <DashboardCard title="Total Users" value={totalUsers || 0} icon={<Users size={24} />} color="bg-blue-700" />
+                        <DashboardCard title="Total Lists" value={totalLists || 0} icon={<ListIcon size={24} />} color="bg-green-800" />
+                        <DashboardCard title="Reported Comments" value={reportedCommentsCount || 0} icon={<AlertTriangle size={24} />} color="bg-yellow-700" />
+                        <DashboardCard title="Reported Lists" value={reportedListsCount || 0} icon={<AlertTriangle size={24} />} color="bg-yellow-700" />
+                        <DashboardCard title="Active Users" value={activeUsers || 0} icon={<BarChart2 size={24} />} color="bg-purple-600" />
+                    </motion.div>
                         {activeUsersError && (
                             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
                                 <p className="font-bold">Warning</p>
@@ -195,7 +197,7 @@ const AdminPanel = () => {
                                 <h2 className="text-2xl font-semibold text-light-1">Reported Comments</h2>
                                 <Button
                                     onClick={() => setRefresh(!refresh)}
-                                    variant="outline"
+                                    variant="default"
                                     size="sm"
                                     className="text-primary-500"
                                 >
@@ -228,7 +230,7 @@ const AdminPanel = () => {
                                 <h2 className="text-2xl font-semibold text-light-1">Reported Lists</h2>
                                 <Button
                                     onClick={() => setRefresh(!refresh)}
-                                    variant="outline"
+                                    variant="default"
                                     size="sm"
                                     className="text-primary-500"
                                 >

@@ -951,7 +951,19 @@ export async function getReportedCommentsCount() {
     throw error;
   }
 }
-
+export async function getReportedListsCount() {
+  try {
+    const lists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.reportedListsCollectionId,
+      [Query.limit(1)]
+    );
+    return lists.total;
+  } catch (error) {
+    console.error('Error fetching reported lists count:', error);
+    throw error;
+  }
+}
 export async function getActiveUsersCount() {
   try {
     // Instead of querying for 'lastActivity', we'll just get the total number of users
@@ -1413,6 +1425,79 @@ export async function UpdateCommentReply(comment: any) {
   } catch (error) {
     console.error("Error getting comments:", error);
     return null;
+  }
+}
+
+export async function addEmojiReaction(
+  documentId: string,
+  emoji: string,
+  userId: string
+) {
+  try {
+    console.log(`Attempting to add reaction to document: ${documentId}`);
+    
+    const document = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      documentId
+    );
+    
+    console.log("Document found:", document);
+
+    let reactions = document.Reactions || [];
+    const reactionString = `${emoji}:${userId}`;
+    if (!reactions.includes(reactionString)) {
+      reactions.push(reactionString);
+    }
+
+    const updatedDocument = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      documentId,
+      { Reactions: reactions }
+    );
+
+    console.log("Document updated successfully:", updatedDocument);
+    return updatedDocument;
+  } catch (error) {
+    console.error("Error adding emoji reaction:", error);
+    if (error.code === 404) {
+      throw new Error("Comment not found. It may have been deleted.");
+    }
+    throw error;
+  }
+}
+
+export async function removeEmojiReaction(
+  documentId: string,
+  emoji: string,
+  userId: string
+) {
+  try {
+    const document = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      documentId
+    );
+
+    let reactions = document.Reactions || [];
+    const reactionString = `${emoji}:${userId}`;
+    reactions = reactions.filter(reaction => reaction !== reactionString);
+
+    const updatedDocument = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      documentId,
+      { Reactions: reactions }
+    );
+
+    return updatedDocument;
+  } catch (error) {
+    console.error("Error removing emoji reaction:", error);
+    if (error.code === 404) {
+      throw new Error("Comment not found. It may have been deleted.");
+    }
+    throw error;
   }
 }
 

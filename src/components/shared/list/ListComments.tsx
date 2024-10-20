@@ -4,6 +4,7 @@ import { IComment } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader } from '@/components/shared';
+import Comment from '@/components/shared/Comment';
 
 const ListComments: React.FC<{ listId: string }> = ({ listId }) => {
   const [comments, setComments] = useState<IComment[]>([]);
@@ -33,11 +34,11 @@ const ListComments: React.FC<{ listId: string }> = ({ listId }) => {
     const optimisticComment: IComment = {
       id: Date.now().toString(),
       content: newComment,
-      user: { id: 'temp', name: 'You' }, // Optimistic placeholder for the current user
+      user: { id: 'temp', name: 'You' },
     };
 
     setComments((prevComments) => [...prevComments, optimisticComment]);
-    setNewComment(''); // Clear the input field
+    setNewComment('');
 
     setIsSubmitting(true);
     try {
@@ -49,11 +50,15 @@ const ListComments: React.FC<{ listId: string }> = ({ listId }) => {
       console.error('Error adding comment:', err);
       setError('Failed to add comment. Please try again.');
       setComments((prevComments) =>
-        prevComments.filter((c) => c.id !== optimisticComment.id) // Remove optimistic comment if error occurs
+        prevComments.filter((c) => c.id !== optimisticComment.id)
       );
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleCommentDeleted = (commentId: string) => {
+    setComments((prevComments) => prevComments.filter((c) => c.id !== commentId));
   };
 
   return (
@@ -67,15 +72,16 @@ const ListComments: React.FC<{ listId: string }> = ({ listId }) => {
           {comments.length > 0 ? (
             <div aria-live="polite">
               {comments.map((comment) => (
-                <div
+                <Comment
                   key={comment.id}
-                  className="comment-item p-3 mb-3 bg-gray-100 dark:bg-zinc-800 rounded-lg shadow-sm"
-                >
-                  <p className="text-gray-900 dark:text-white">{comment.content}</p>
-                  <small className="text-gray-500 dark:text-gray-400">
-                    {comment.user.name}
-                  </small>
-                </div>
+                  comment={comment}
+                  setReply={() => {}}
+                  show={true}
+                  setCommentId={() => {}}
+                  setParentReplyId={() => {}}
+                  listId={listId}
+                  onCommentDeleted={handleCommentDeleted}
+                />
               ))}
             </div>
           ) : (
@@ -91,7 +97,7 @@ const ListComments: React.FC<{ listId: string }> = ({ listId }) => {
           onChange={(e) => setNewComment(e.target.value)}
           className="flex-grow"
           disabled={isSubmitting}
-          maxLength={500} // Optional: Set a max length for comments
+          maxLength={500}
         />
         <Button
           onClick={handleAddComment}

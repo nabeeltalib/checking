@@ -688,7 +688,7 @@ const ListCard2 = ({ list }) => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
             <Button
               onClick={() => navigate(`/lists/${list.$id}`)}
-              className="mt-4 text-primary-500 hover:text-primary-600 transition-colors duration-300 flex items-center"
+              className="mt-4 text-primary-500 hover:text-primary-600 transition-colors duration-300 flex items-center text-xs"
             >
               View all {comments.length} comments
               <ChevronDown size={16} className="ml-2" />
@@ -744,7 +744,7 @@ const ListCard2 = ({ list }) => {
             className="mt-2 bg-dark-4"
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReportDialogOpen(false)}>Cancel</Button>
+            <Button variant="default" onClick={() => setIsReportDialogOpen(false)}>Cancel</Button>
             <Button onClick={submitReport}>Submit Report</Button>
           </DialogFooter>
         </DialogContent>

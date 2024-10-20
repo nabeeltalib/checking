@@ -6,14 +6,19 @@ import {
   createReply,
   getNestedReplies,
   updateReplyWithReply,
+  addEmojiReaction,
+  removeEmojiReaction,
 } from "@/lib/appwrite/api";
 import { checkIsLiked } from "@/lib/utils";
-import { MoreVertical, ThumbsUp, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, MessageCircle, MoreHorizontal, Smile, ThumbsUp } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 
-const MAX_VISIBLE_DEPTH = 2; // Collapse replies after this depth
+const MAX_VISIBLE_DEPTH = 2;
+const quickEmojis = ['😂', '😢', '😮', '😍', '👏', '🔥', '👀', '😅'];
 
 const CommentReply = ({
   reply,
@@ -23,10 +28,10 @@ const CommentReply = ({
   setParentReplyId,
   listId,
   depth = 0,
+  onReplyDeleted,
 }) => {
   const { user } = useUserContext();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [likes, setLikes] = useState(reply?.Likes || []);
   const [isLiked, setIsLiked] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -34,27 +39,14 @@ const CommentReply = ({
   const [nestedReplies, setNestedReplies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isReporting, setIsReporting] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNestedReplies, setShowNestedReplies] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const menuRef = useRef(null);
+  const [reactions, setReactions] = useState(reply?.Reactions || []);
 
   useEffect(() => {
     setIsLiked(checkIsLiked(likes, user.id));
     fetchNestedReplies();
   }, [likes, user.id, reply.$id]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const fetchNestedReplies = async () => {
     if (!reply.$id) return;
@@ -68,21 +60,10 @@ const CommentReply = ({
 
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true });
-    } catch (error) {
-      console.error('Invalid date:', dateString);
-      return '';
-    }
+    return formatDistanceToNow(new Date(dateString), { addSuffix: true });
   };
 
-  const generateUniqueKey = (nestedReply, index) => {
-    if (nestedReply.$id) return nestedReply.$id;
-    const contentSnippet = nestedReply.Content ? nestedReply.Content.slice(0, 10) : '';
-    return `nested-reply-${index}-${contentSnippet}`;
-  };
-
-  const handleLikeComment = async () => {
+  const handleLikeReply = async () => {
     const newLikes = isLiked
       ? likes.filter((Id) => Id !== user.id)
       : [...likes, user.id];
@@ -103,6 +84,39 @@ const CommentReply = ({
     }
   };
 
+  const handleEmojiReaction = async (emoji) => {
+    try {
+      const reactionString = `${emoji}:${user.id}`;
+      let updatedReactions = [...reactions];
+      
+      if (reactions.includes(reactionString)) {
+        updatedReactions = updatedReactions.filter(r => r !== reactionString);
+        await removeEmojiReaction(reply.$id, emoji, user.id);
+      } else {
+        updatedReactions.push(reactionString);
+        await addEmojiReaction(reply.$id, emoji, user.id);
+      }
+      
+      setReactions(updatedReactions);
+    } catch (error) {
+      if (error.message === "Comment not found. It may have been deleted.") {
+        toast({
+          title: "Reply Deleted",
+          description: "This reply no longer exists and will be removed from the view.",
+          variant: "warning",
+        });
+        onReplyDeleted(reply.$id);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update reaction. Please try again.",
+          variant: "destructive",
+        });
+      }
+      console.error("Error handling emoji reaction:", error);
+    }
+  };
+
   const handleReplyClick = () => {
     setReply(true);
     setCommentId(parentCommentId);
@@ -110,7 +124,7 @@ const CommentReply = ({
     setShowReplyForm(!showReplyForm);
   };
 
-  const handleReply = async () => {
+  const handleCreateReply = async () => {
     if (!replyContent.trim() || !reply.$id) return;
 
     setIsLoading(true);
@@ -148,7 +162,6 @@ const CommentReply = ({
 
   const handleReportReply = async () => {
     setIsReporting(true);
-    setIsMenuOpen(false);
     try {
       const reportData = {
         Content: reply.Content,
@@ -177,8 +190,17 @@ const CommentReply = ({
     }
   };
 
-  const handleViewMoreReplies = () => {
-    navigate(`/lists/${listId}`);
+  const handleNestedReplyDeleted = (replyId) => {
+    setNestedReplies((prevReplies) => prevReplies.filter((reply) => reply.$id !== replyId));
+  };
+
+  const parseReactions = (reactions) => {
+    const emojiCounts = {};
+    reactions.forEach(reaction => {
+      const [emoji] = reaction.split(':');
+      emojiCounts[emoji] = (emojiCounts[emoji] || 0) + 1;
+    });
+    return emojiCounts;
   };
 
   const renderNestedReplies = () => {
@@ -190,7 +212,7 @@ const CommentReply = ({
       <div className={`ml-4 mt-2 ${depth >= MAX_VISIBLE_DEPTH ? 'border-l-2 border-gray-700 pl-2' : ''}`}>
         {visibleReplies.map((nestedReply, index) => (
           <CommentReply
-            key={generateUniqueKey(nestedReply, index)}
+            key={nestedReply.$id}
             reply={nestedReply}
             parentCommentId={parentCommentId}
             setReply={setReply}
@@ -198,107 +220,127 @@ const CommentReply = ({
             setParentReplyId={setParentReplyId}
             listId={listId}
             depth={depth + 1}
+            onReplyDeleted={handleNestedReplyDeleted}
           />
         ))}
         {depth >= MAX_VISIBLE_DEPTH && nestedReplies.length > 0 && (
-          <button
+          <Button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-xs text-blue-500 mt-2 focus:outline-none flex items-center"
+            variant="ghost"
+            className="text-xs text-blue-500 mt-2 p-0"
           >
-            {isExpanded ? (
-              <>
-                <ChevronUp size={12} className="mr-1" />
-                Hide replies
-              </>
-            ) : (
-              <>
-                <ChevronDown size={12} className="mr-1" />
-                View other replies
-              </>
-            )}
-          </button>
+            {isExpanded ? 'Hide replies' : `View ${nestedReplies.length} more ${nestedReplies.length === 1 ? 'reply' : 'replies'}`}
+          </Button>
         )}
       </div>
     );
   };
 
   return (
-    <div className={`flex items-start mb-2 ${depth > 0 ? 'ml-4' : ''} relative`}>
-      <img
-        src={reply.userId?.ImageUrl || '/assets/icons/profile-placeholder.svg'}
-        alt={`${reply.userId?.Username || 'Anonymous'}'s avatar`}
-        className="w-6 h-6 rounded-full object-cover mr-2"
-      />
-      <div className="flex-1">
-        <div className="bg-transparent p-1 rounded-lg">
-          <span className="text-sm font-semibold mr-1">
-            @{reply.userId?.Username || 'Anonymous'}
-          </span>
-          <span className="text-xs font-light">{reply.Content || ''}</span>
+    <div className={`flex flex-col mb-4 ${depth > 0 ? 'ml-4' : ''}`}>
+      <div className="flex items-start">
+        <img
+          src={reply.userId?.ImageUrl || '/assets/icons/profile-placeholder.svg'}
+          alt={`${reply.userId?.Username || 'Anonymous'}'s avatar`}
+          className="w-6 h-6 rounded-full object-cover mr-3"
+        />
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <div>
+              <Link to={`/profile/${reply.userId?.$id}`} className="font-thin mr-2 text-white">
+                {reply.userId?.Username || 'Anonymous'}
+              </Link>
+              <span className="text-gray-400 text-xs">
+                {formatDate(reply.CreatedAt)}
+              </span>
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="default" className="h-8 w-8 p-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56">
+                <Button
+                  variant="default"
+                  onClick={handleReportReply}
+                  disabled={isReporting}
+                  className="w-full justify-start"
+                >
+                  {isReporting ? 'Reporting...' : 'Report Reply'}
+                </Button>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <p className="text-white mt-1">{reply.Content}</p>
+          <div className="flex items-center mt-2 space-x-4">
+            <button 
+              onClick={handleLikeReply} 
+              className={`flex items-center ${isLiked ? 'text-orange-500' : 'text-gray-400 hover:text-orange-500'}`}
+            >
+              <ThumbsUp size={16} fill={isLiked ? 'currentColor' : 'none'} />
+              {likes.length > 0 && (
+                <span className="ml-1 text-sm">{likes.length}</span>
+              )}
+            </button>
+            <button onClick={handleReplyClick} className="text-gray-400">
+              <MessageCircle size={16} />
+            </button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" className="p-0">
+                  <Smile size={16} className="text-gray-400" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-1">
+                <div className="flex space-x-1">
+                  {quickEmojis.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => handleEmojiReaction(emoji)}
+                      className="text-xl hover:bg-gray-200 rounded p-1"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="flex flex-wrap mt-1 space-x-2">
+            {Object.entries(parseReactions(reactions)).map(([emoji, count]) => (
+              <button
+                key={emoji}
+                onClick={() => handleEmojiReaction(emoji)}
+                className={`text-sm rounded-full px-2 py-1 ${
+                  reactions.includes(`${emoji}:${user.id}`) ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                }`}
+              >
+                {emoji} {count}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center mt-1 space-x-4 text-xs text-gray-500">
-          <button
-            onClick={handleLikeComment}
-            className="focus:outline-none flex items-center"
+      </div>
+      {showReplyForm && (
+        <div className="ml-11 mt-2 flex items-center">
+          <input
+            type="text"
+            value={replyContent}
+            onChange={(e) => setReplyContent(e.target.value)}
+            placeholder="Add a reply..."
+            className="flex-1 bg-transparent border-b border-gray-600 focus:outline-none focus:border-blue-500 text-white"
+          />
+          <Button
+            onClick={handleCreateReply}
+            disabled={isLoading || !replyContent.trim()}
+            className="ml-2"
           >
-            <ThumbsUp
-              size={16}
-              className={isLiked ? 'text-orange-500' : 'text-gray-500'}
-              fill={isLiked ? 'currentColor' : 'none'}
-            />
-            {likes.length > 0 && <span className="ml-1">{likes.length}</span>}
-          </button>
-          <button onClick={handleReplyClick} className="focus:outline-none">
-            Reply
-          </button>
-          <span>
-            {formatDate(reply.CreatedAt)}
-          </span>
+            Post
+          </Button>
         </div>
-        {renderNestedReplies()}
-        {showReplyForm && (
-          <div className="flex items-center mt-2">
-            <img
-              src={user.ImageUrl || '/assets/icons/profile-placeholder.svg'}
-              alt={`${user.Username}'s avatar`}
-              className="w-6 h-6 rounded-full mr-2"
-            />
-            <input
-              type="text"
-              value={replyContent}
-              onChange={(e) => setReplyContent(e.target.value)}
-              placeholder="Add a reply..."
-              className="flex-1 bg-transparent border-b border-gray-300 focus:outline-none text-sm"
-            />
-            <button
-              onClick={handleReply}
-              disabled={isLoading || !replyContent.trim()}
-              className="ml-2 text-blue-500 text-sm font-semibold focus:outline-none"
-            >
-              Post
-            </button>
-          </div>
-        )}
-      </div>
-      <div className="absolute top-0 right-0" ref={menuRef}>
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="text-gray-500 focus:outline-none"
-        >
-          <MoreVertical size={16} />
-        </button>
-        {isMenuOpen && (
-          <div className="absolute right-0 mt-2 w-32 bg-black rounded-md shadow-lg z-10">
-            <button
-              onClick={handleReportReply}
-              disabled={isReporting}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-gray-700 focus:outline-none"
-            >
-              {isReporting ? 'Reporting...' : 'Report Abuse'}
-            </button>
-          </div>
-        )}
-      </div>
+      )}
+      {renderNestedReplies()}
     </div>
   );
 };

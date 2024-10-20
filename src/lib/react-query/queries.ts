@@ -56,7 +56,10 @@ import {
   getTotalUsers, 
   getTotalLists, 
   getReportedCommentsCount, 
+  addEmojiReaction, 
+  removeEmojiReaction,
   getActiveUsersCount,
+  getReportedListsCount,
 } from '@/lib/appwrite/api';
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
 import { useNavigate } from 'react-router-dom';
@@ -332,6 +335,32 @@ export const useUpdateUser = () => {
 // ============================================================
 // COMMENT QUERIES
 // ============================================================
+
+export const useAddEmojiReaction = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ documentId, emoji, userId }: { documentId: string; emoji: string; userId: string }) =>
+      addEmojiReaction(documentId, emoji, userId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_COMMENTS, data?.listId],
+      });
+    },
+  });
+};
+
+export const useRemoveEmojiReaction = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ documentId, emoji, userId }: { documentId: string; emoji: string; userId: string }) =>
+      removeEmojiReaction(documentId, emoji, userId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_COMMENTS, data?.listId],
+      });
+    },
+  });
+};
 
 export const useCreateComment = () => {
   const queryClient = useQueryClient();
@@ -675,4 +704,7 @@ export const useGetReportedCommentsCount = () => {
 
 export const useGetActiveUsersCount = () => {
   return useQuery(['activeUsersCount'], getActiveUsersCount);
+};
+export const useGetReportedListsCount = () => {
+  return useQuery(['reportedListsCount'], getReportedListsCount);
 };

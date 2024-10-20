@@ -118,6 +118,7 @@ export type IComment = {
   userId: string;
   content: string;
   createdAt: Date;
+  Reactions?: string[];
 };
 
 export type ISuggestion = {

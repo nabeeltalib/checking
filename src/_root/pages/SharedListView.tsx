@@ -4,8 +4,8 @@ import { databases, appwriteConfig } from '@/lib/appwrite/config';
 import { Loader } from '@/components/shared';
 import { IList } from '@/types';
 import { AppwriteException } from 'appwrite';
-import { motion } from 'framer-motion';
-import { Share2, ThumbsUp, ThumbsDown, MessageCircle, Bookmark, Wand, MapPin, Clock, Crown, ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Share2, ThumbsUp, ThumbsDown, MessageCircle, Bookmark, Wand, MapPin, Clock, Crown, ChevronDown, ChevronUp, Smile } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import SignInDialog from '@/components/shared/SignInDialog';
@@ -13,6 +13,7 @@ import { useUserContext } from "@/context/AuthContext";
 import { useGetComments } from "@/lib/react-query/queries";
 import Comment from '@/components/shared/Comment';
 import { useShareDialog } from '@/components/shared/ShareDialogContext';
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/Popover";
 
 const getRankColor = (index: number) => {
   const colors = [
@@ -25,6 +26,8 @@ const getRankColor = (index: number) => {
   return index < colors.length ? colors[index] : "text-purple-500";
 };
 
+const quickEmojis = ['😂', '😢', '😮', '😍', '👏', '🔥', '👀', '😅'];
+
 const SharedListView: React.FC = () => {
   const { sharedId } = useParams<{ sharedId: string }>();
   const [list, setList] = useState<IList | null>(null);
@@ -32,6 +35,7 @@ const SharedListView: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSignInDialogOpen, setIsSignInDialogOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [reactions, setReactions] = useState<string[]>([]);
   const { toast } = useToast();
   const navigate = useNavigate();
   const { user } = useUserContext();
@@ -67,6 +71,7 @@ const SharedListView: React.FC = () => {
           sharedLink.listId
         );
         setList(listData as IList);
+        setReactions(listData.Reactions || []);
       } catch (err) {
         console.error('Error fetching shared list:', err);
         if (err instanceof AppwriteException) {
@@ -120,6 +125,24 @@ const SharedListView: React.FC = () => {
     }
   }, [user?.id, navigate, list?.$id]);
 
+  const handleEmojiReaction = useCallback((emoji: string) => {
+    toast({
+      title: "Sign in required",
+      description: "Please sign in to react to this list.",
+      variant: "default",
+    });
+    setIsSignInDialogOpen(true);
+  }, [toast]);
+
+  const parseReactions = useCallback((reactions: string[]) => {
+    const emojiCounts: { [key: string]: number } = {};
+    reactions.forEach(reaction => {
+      const [emoji] = reaction.split(':');
+      emojiCounts[emoji] = (emojiCounts[emoji] || 0) + 1;
+    });
+    return emojiCounts;
+  }, []);
+
   const renderListItems = useMemo(() => {
     if (!list || !list.items) return null;
 
@@ -157,36 +180,51 @@ const SharedListView: React.FC = () => {
 
     return (
       <div className="space-y-4">
-        <div 
-          className="cursor-pointer" 
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleAuthRequiredAction();
-          }}
-        >
-          <Comment
-            comment={comments[0]}
-            setReply={() => {}}
-            show={false}
-            setCommentId={() => {}}
-          />
-        </div>
-        {comments.length > 1 && (
+        <AnimatePresence>
+          {comments.slice(0, 3).map((comment, index) => (
+            <motion.div
+              key={comment.$id}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <div 
+                className="cursor-pointer" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleAuthRequiredAction();
+                }}
+              >
+                <Comment
+                  comment={comment}
+                  setReply={() => {}}
+                  show={false}
+                  setCommentId={() => {}}
+                  setParentReplyId={() => {}}
+                  listId={list?.$id || ""}
+                />
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        {comments.length > 3 && (
           <Button 
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               handleAuthRequiredAction();
             }} 
-            className="mt-2 text-primary-500 hover:underline"
+            className="mt-2 text-primary-500 hover:underline flex items-center"
           >
+            <ChevronDown className="mr-2" size={16} />
             View all {comments.length} comments
           </Button>
         )}
       </div>
     );
-  }, [comments, commentsLoading, handleAuthRequiredAction]);
+  }, [comments, commentsLoading, handleAuthRequiredAction, list?.$id]);
 
   if (loading) return <Loader />;
   if (error) return <div className="text-red-500 p-4 text-center">{error}</div>;
@@ -287,18 +325,45 @@ const SharedListView: React.FC = () => {
         )}
       </div>
 
+      {/* Quick Emoji Reactions */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="default" className="p-2">
+              <Smile size={20} className="text-gray-400" />
+              <span className="ml-2">React</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-1">
+            <div className="flex space-x-1">
+              {quickEmojis.map((emoji) => (
+                <button
+                  key={emoji}
+                  onClick={() => handleEmojiReaction(emoji)}
+                  className="text-xl hover:bg-gray-200 rounded p-1"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+        {Object.entries(parseReactions(reactions)).map(([emoji, count]) => (
+          <button
+            key={emoji}
+            onClick={() => handleEmojiReaction(emoji)}
+            className="text-sm rounded-full px-2 py-1 bg-gray-100 text-gray-800"
+          >
+            {emoji} {count}
+          </button>
+        ))}
+      </div>
+
       <div className="flex justify-between items-center mb-6">
         <Button onClick={handleAuthRequiredAction} className="flex items-center gap-2">
           <ThumbsUp size={20} />
           <span>{list?.Likes?.length || 0}</span>
-        </Button>
-        <Button onClick={handleAuthRequiredAction} className="flex items-center gap-2">
-          <ThumbsDown size={20} />
-        </Button>
-        <Button onClick={handleAuthRequiredAction} className="flex items-center gap-2">
-          <MessageCircle size={20} />
-          <span>{comments?.length || 0}</span>
-        </Button>
+          </Button>
         <Button onClick={handleAuthRequiredAction} className="flex items-center gap-2">
           <Bookmark size={20} />
         </Button>
@@ -312,6 +377,24 @@ const SharedListView: React.FC = () => {
       <div className="mt-8">
         <h3 className="text-xl font-semibold text-light-1 mb-4">Comments</h3>
         {renderComments()}
+      </div>
+
+      {/* Add Comment Input (Disabled in shared view) */}
+      <div className="mt-6">
+        <textarea
+          placeholder="Sign in to add a comment..."
+          className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
+          rows={3}
+          disabled
+          onClick={handleAuthRequiredAction}
+        />
+        <Button 
+          onClick={handleAuthRequiredAction}
+          className="mt-2"
+          disabled
+        >
+          Post Comment
+        </Button>
       </div>
 
       <SignInDialog isOpen={isSignInDialogOpen} onClose={() => setIsSignInDialogOpen(false)} />

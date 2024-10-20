@@ -658,7 +658,7 @@ const ListDetails: React.FC = () => {
             className="mt-2 bg-dark-4"
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReportDialogOpen(false)}>Cancel</Button>
+            <Button variant="default" onClick={() => setIsReportDialogOpen(false)}>Cancel</Button>
             <Button onClick={submitReport}>Submit Report</Button>
           </DialogFooter>
         </DialogContent>
