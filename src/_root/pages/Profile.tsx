@@ -25,6 +25,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { UserPlus, Settings, Activity, List, ThumbsUp, Users, ChevronDown, Lock, Edit } from "lucide-react";
 import { Link as LinkIcon } from 'lucide-react';
 import { FaSquareXTwitter, FaInstagram, FaFacebook, FaLinkedin, FaReddit, FaTwitch } from "react-icons/fa6";
+import DeleteAccount from '@/components/shared/DeleteAccount';
 
 const Profile: React.FC = () => {
   const { user } = useUserContext();

@@ -60,6 +60,10 @@ import {
   removeEmojiReaction,
   getActiveUsersCount,
   getReportedListsCount,
+  deleteUserData,
+  getNestedReplies,
+  createReply,
+  getCommentsWithReplies, 
 } from '@/lib/appwrite/api';
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
 import { useNavigate } from 'react-router-dom';
@@ -335,16 +339,39 @@ export const useUpdateUser = () => {
 // ============================================================
 // COMMENT QUERIES
 // ============================================================
+export const useGetNestedReplies = (commentId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_NESTED_REPLIES, commentId],
+    queryFn: () => getNestedReplies(commentId),
+    enabled: !!commentId,
+  });
+};
 
+// Update the return type of these queries
 export const useAddEmojiReaction = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ documentId, emoji, userId }: { documentId: string; emoji: string; userId: string }) =>
-      addEmojiReaction(documentId, emoji, userId),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_COMMENTS, data?.listId],
-      });
+    mutationFn: ({ 
+      documentId, 
+      emoji, 
+      userId, 
+      isReply = false 
+    }: { 
+      documentId: string; 
+      emoji: string; 
+      userId: string; 
+      isReply?: boolean;
+    }) => addEmojiReaction(documentId, emoji, userId, isReply),
+    onSuccess: (data, variables) => {
+      if (variables.isReply) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_NESTED_REPLIES, data?.commentId],
+        });
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_COMMENTS, data?.listId],
+        });
+      }
     },
   });
 };
@@ -352,12 +379,27 @@ export const useAddEmojiReaction = () => {
 export const useRemoveEmojiReaction = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ documentId, emoji, userId }: { documentId: string; emoji: string; userId: string }) =>
-      removeEmojiReaction(documentId, emoji, userId),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_COMMENTS, data?.listId],
-      });
+    mutationFn: ({ 
+      documentId, 
+      emoji, 
+      userId, 
+      isReply = false 
+    }: { 
+      documentId: string; 
+      emoji: string; 
+      userId: string; 
+      isReply?: boolean;
+    }) => removeEmojiReaction(documentId, emoji, userId, isReply),
+    onSuccess: (data, variables) => {
+      if (variables.isReply) {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_NESTED_REPLIES, data?.commentId],
+        });
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.GET_COMMENTS, data?.listId],
+        });
+      }
     },
   });
 };
@@ -707,4 +749,44 @@ export const useGetActiveUsersCount = () => {
 };
 export const useGetReportedListsCount = () => {
   return useQuery(['reportedListsCount'], getReportedListsCount);
+};
+
+export const useDeleteUserData = () => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: (userId: string) => deleteUserData(userId),
+    onSuccess: () => {
+      queryClient.clear();
+      navigate('/');
+    },
+    onError: (error) => {
+      console.error('Error deleting user data:', error);
+      // Handle error (e.g., show a toast notification)
+    },
+  });
+};
+export const useCreateReply = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (replyData: {
+      listId: string;
+      userId: string;
+      Content: string;
+      commentId: string | null;
+      parentReplyId: string | null;
+    }) => createReply(replyData),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries([QUERY_KEYS.GET_COMMENTS_WITH_REPLIES, variables.listId]);
+    },
+  });
+};
+
+export const useGetCommentsWithReplies = (listId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_COMMENTS_WITH_REPLIES, listId],
+    queryFn: () => getCommentsWithReplies(listId),
+    enabled: !!listId,
+  });
 };

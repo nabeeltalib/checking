@@ -1132,6 +1132,46 @@ export async function createReply(reply: {
   }
 }
 
+export async function getCommentsWithReplies(listId: string) {
+  try {
+    // Fetch comments
+    const comments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      [Query.equal("list", listId), Query.orderDesc("$createdAt")]
+    );
+
+    // Fetch all replies
+    const replies = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentReplyCollectionId,
+      [Query.orderDesc("$createdAt")]
+    );
+
+    // Organize replies by parent comment
+    const repliesByCommentId = replies.documents.reduce((acc, reply) => {
+      if (reply.commentId && !acc[reply.commentId]) {
+        acc[reply.commentId] = [];
+      }
+      if (reply.commentId) {
+        acc[reply.commentId].push(reply);
+      }
+      return acc;
+    }, {});
+
+    // Attach replies to their parent comments
+    const commentsWithReplies = comments.documents.map(comment => ({
+      ...comment,
+      replies: repliesByCommentId[comment.$id] || []
+    }));
+
+    return commentsWithReplies;
+  } catch (error) {
+    console.error("Error fetching comments with replies:", error);
+    throw error;
+  }
+}
+
 export async function updateCommentWithReply(commentId: string, replyId: string) {
   try {
     const comment = await databases.getDocument(
@@ -1431,28 +1471,67 @@ export async function UpdateCommentReply(comment: any) {
 export async function addEmojiReaction(
   documentId: string,
   emoji: string,
-  userId: string
+  userId: string,
+  isReply: boolean = false
 ) {
-  try {
-    console.log(`Attempting to add reaction to document: ${documentId}`);
-    
-    const document = await databases.getDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.commentCollectionId,
-      documentId
-    );
-    
-    console.log("Document found:", document);
+  if (!documentId) {
+    console.error("Missing documentId in addEmojiReaction");
+    throw new Error("Missing required parameter: documentId");
+  }
 
-    let reactions = document.Reactions || [];
+  try {
+    console.log(`Attempting to add reaction to document: ${documentId}, isReply: ${isReply}`);
+    
+    const collectionId = isReply 
+      ? appwriteConfig.commentReplyCollectionId 
+      : appwriteConfig.commentCollectionId;
+
+    // Fetch the current document
+    let currentDocument;
+    try {
+      currentDocument = await databases.getDocument(
+        appwriteConfig.databaseId,
+        collectionId,
+        documentId
+      );
+      console.log("Document found:", currentDocument);
+    } catch (error) {
+      console.error("Error fetching document:", error);
+      if (error instanceof AppwriteException && error.code === 404) {
+        console.error(`Document not found: ${documentId}`);
+        throw new Error("Comment or reply not found. It may have been deleted.");
+      }
+      throw error;
+    }
+
+    // Check if the user still exists
+    try {
+      await databases.getDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.userCollectionId,
+        userId
+      );
+    } catch (error) {
+      if (error instanceof AppwriteException && error.code === 404) {
+        console.error(`User not found: ${userId}`);
+        throw new Error("User not found. The account may have been deleted.");
+      }
+      throw error;
+    }
+
+    // Get the current reactions or initialize an empty array
+    let reactions = currentDocument.Reactions || [];
+
+    // Add the new reaction if it doesn't exist
     const reactionString = `${emoji}:${userId}`;
     if (!reactions.includes(reactionString)) {
       reactions.push(reactionString);
     }
 
+    // Update the document with the new reactions
     const updatedDocument = await databases.updateDocument(
       appwriteConfig.databaseId,
-      appwriteConfig.commentCollectionId,
+      collectionId,
       documentId,
       { Reactions: reactions }
     );
@@ -1461,9 +1540,6 @@ export async function addEmojiReaction(
     return updatedDocument;
   } catch (error) {
     console.error("Error adding emoji reaction:", error);
-    if (error.code === 404) {
-      throw new Error("Comment not found. It may have been deleted.");
-    }
     throw error;
   }
 }
@@ -1471,19 +1547,35 @@ export async function addEmojiReaction(
 export async function removeEmojiReaction(
   documentId: string,
   emoji: string,
-  userId: string
+  userId: string,
+  isReply: boolean = false
 ) {
   try {
-    const document = await databases.getDocument(
+    console.log(`Attempting to remove reaction from document: ${documentId}`);
+    
+    const collectionId = isReply 
+      ? appwriteConfig.commentReplyCollectionId 
+      : appwriteConfig.commentCollectionId;
+
+    // Fetch the current document
+    const currentDocument = await databases.getDocument(
       appwriteConfig.databaseId,
-      appwriteConfig.commentCollectionId,
+      collectionId,
       documentId
     );
 
-    let reactions = document.Reactions || [];
+    if (!currentDocument) {
+      throw new Error("Document not found. It may have been deleted.");
+    }
+
+    // Get the current reactions or initialize an empty array
+    let reactions = currentDocument.Reactions || [];
+
+    // Remove the reaction if it exists
     const reactionString = `${emoji}:${userId}`;
     reactions = reactions.filter(reaction => reaction !== reactionString);
 
+    // Update the document with the new reactions
     const updatedDocument = await databases.updateDocument(
       appwriteConfig.databaseId,
       appwriteConfig.commentCollectionId,
@@ -1491,6 +1583,7 @@ export async function removeEmojiReaction(
       { Reactions: reactions }
     );
 
+    console.log("Document updated successfully:", updatedDocument);
     return updatedDocument;
   } catch (error) {
     console.error("Error removing emoji reaction:", error);
@@ -2301,5 +2394,74 @@ export async function getRelatedLists(listId: string, limit: number = 5) {
   } catch (error) {
     console.error("Error fetching related lists:", error);
     return [];
+  }
+}
+
+export async function deleteUserData(userId: string) {
+  try {
+    // 1. Delete user's lists
+    const userLists = await getUserLists(userId);
+    for (const list of userLists) {
+      await deleteList(list.$id);
+    }
+
+    // 2. Delete user's comments
+    const comments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      [Query.equal("userId", userId)]
+    );
+    for (const comment of comments.documents) {
+      await databases.deleteDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.commentCollectionId,
+        comment.$id
+      );
+    }
+
+    // 3. Delete user's saved lists
+    const savedLists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.savesCollectionId,
+      [Query.equal("user", userId)]
+    );
+    for (const savedList of savedLists.documents) {
+      await deleteSavedList(savedList.$id);
+    }
+
+    // 4. Delete user's friend requests and connections
+    const friendRequests = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
+      [Query.equal("userId", userId)]
+    );
+    for (const request of friendRequests.documents) {
+      await databases.deleteDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.friendsCollectionId,
+        request.$id
+      );
+    }
+
+    // 5. Delete user's notifications
+    const notifications = await getNotifications(userId);
+    for (const notification of notifications) {
+      await deleteNotification(notification.$id);
+    }
+
+    // 6. Delete user's account
+    await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId
+    );
+
+    // 7. Delete user's Appwrite account
+    await account.delete();
+
+    return { success: true, message: "User data deleted successfully" };
+  } catch (error) {
+    console.error("Error deleting user data:", error);
+    throw error;
   }
 }

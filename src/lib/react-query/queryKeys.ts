@@ -22,6 +22,7 @@ export enum QUERY_KEYS {
 
   // COMMENT KEYS
   GET_COMMENTS = "getComments",
+  GET_COMMENTS_WITH_REPLIES = "getCommentsWithReplies",
 
   // SUGGESTION KEYS
   GET_SUGGESTIONS = "getSuggestions",
@@ -42,4 +43,6 @@ export enum QUERY_KEYS {
   GET_NOTIFICATIONS = "getNotifications",
   GET_FRIEND_REQUESTS = "getFriendRequests",
   GET_FRIENDS = "getFriends",
+
+  DELETE_USER_DATA = "deleteUserData",
 }

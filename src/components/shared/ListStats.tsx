@@ -1,17 +1,22 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { likeList as likeListAPI, addEmojiReaction, removeEmojiReaction } from "@/lib/appwrite/api";
+import {
+  likeList as likeListAPI,
+  addEmojiReaction,
+  removeEmojiReaction,
+} from "@/lib/appwrite/api";
 import {
   useSaveList,
   useDeleteSavedList,
-  useGetComments,
+  useGetCommentsWithReplies,
   useGetUserById,
   useCreateComment,
-} from "@/lib/react-query/queries";
+  useCreateReply,
+} from '@/lib/react-query/queries';
 import { useUserContext } from "@/context/AuthContext";
-import { toast } from "../ui";
+import { useToast } from "@/components/ui/use-toast";
 import Comment from "./Comment";
 import {
   ThumbsUp,
@@ -23,15 +28,21 @@ import {
   ChevronDown,
   ChevronUp,
   Smile,
+  Loader2,
 } from "lucide-react";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/Popover";
+import { useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@/lib/react-query/queryKeys';
 
-const quickEmojis = ['😂', '😢', '😮', '😍', '👏', '🔥', '👀', '😅'];
+const quickEmojis = ["😂", "😢", "😮", "😍", "👏", "🔥", "👀", "😅"];
 
 interface ListStatsProps {
   setIsEmbed: (value: boolean) => void;
   list: any;
-  userId: string;
   textSize?: string;
   backgroundColor?: string;
   isCreator: boolean;
@@ -40,7 +51,6 @@ interface ListStatsProps {
 const ListStats: React.FC<ListStatsProps> = ({
   setIsEmbed,
   list,
-  userId,
   textSize = "text-base",
   backgroundColor = "bg-dark-3",
   isCreator,
@@ -51,15 +61,26 @@ const ListStats: React.FC<ListStatsProps> = ({
   const [isSaved, setIsSaved] = useState(false);
   const [isCommentsExpanded, setIsCommentsExpanded] = useState(true);
   const { user } = useUserContext();
-  const { id } = user;
-  const { mutate: deleteSaveList } = useDeleteSavedList();
-  const { mutate: saveList } = useSaveList();
-  const { data: currentUser } = useGetUserById(id);
-  const { data: comments, refetch: refetchComments } = useGetComments(list.$id);
+  const userId = user?.$id || user?.id;
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: currentUser } = useGetUserById(userId);
+  const { data: commentsWithReplies, isLoading: isLoadingComments, refetch: refetchComments } = useGetCommentsWithReplies(list.$id);
   const [newComment, setNewComment] = useState("");
-  const { mutate: createComment } = useCreateComment();
+  const { mutate: createComment, isLoading: isCreatingComment } = useCreateComment();
+  const { mutate: createReply, isLoading: isCreatingReply } = useCreateReply();
+  const { mutate: deleteSaveList, isLoading: isDeletingSave } = useDeleteSavedList();
+  const { mutate: saveList, isLoading: isSaving } = useSaveList();
   const [showAllComments, setShowAllComments] = useState(false);
-  
+  const [isEmojiPopoverOpen, setIsEmojiPopoverOpen] = useState(false);
+
+  // State for handling replies
+  const [isReplying, setIsReplying] = useState(false);
+  const [replyingToCommentId, setReplyingToCommentId] = useState<string | null>(null);
+  const [replyingToParentReplyId, setReplyingToParentReplyId] = useState<string | null>(null);
+  const [newReply, setNewReply] = useState("");
+
   const hasLiked = useMemo(() => likes.includes(userId), [likes, userId]);
   const hasDisliked = useMemo(() => dislikes.includes(userId), [dislikes, userId]);
   const [reactions, setReactions] = useState(list?.Reactions || []);
@@ -152,31 +173,48 @@ const ListStats: React.FC<ListStatsProps> = ({
     }
     setIsSaved(!isSaved);
   };
-  
+
   const visibleComments = useMemo(() => {
-    if (!comments) return [];
-    return showAllComments ? comments : comments.slice(0, 3);
-  }, [comments, showAllComments]);
+    if (!commentsWithReplies) return [];
+    return showAllComments ? commentsWithReplies : commentsWithReplies.slice(0, 3);
+  }, [commentsWithReplies, showAllComments]);
 
   const handleViewAllComments = () => {
     setShowAllComments(true);
   };
-  
+
   const handleShowLess = () => {
     setShowAllComments(false);
   };
-  
+
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newComment.trim() === "") return;
-  
+
+    const commentData = {
+      listId: list.$id,
+      userId: userId,
+      Content: newComment,
+    };
+
+    // Optimistically update UI
+    const newCommentObj = {
+      $id: 'temp-id-' + Date.now(),
+      Content: newComment,
+      user: currentUser,
+      CreatedAt: new Date().toISOString(),
+      Likes: [],
+      Reactions: [],
+      replies: [],
+    };
+
+    queryClient.setQueryData(
+      [QUERY_KEYS.GET_COMMENTS_WITH_REPLIES, list.$id],
+      (old: any) => [newCommentObj, ...(old || [])]
+    );
+
     try {
-      await createComment({
-        listId: list.$id,
-        userId: id,
-        Content: newComment,
-      });
-  
+      await createComment(commentData);
       setNewComment("");
       refetchComments();
       toast({
@@ -187,13 +225,76 @@ const ListStats: React.FC<ListStatsProps> = ({
       console.error("Failed to post comment:", error);
       toast({
         title: "Error",
-        description: "Failed to post comment.",
+        description: "Failed to post comment. Please try again.",
         variant: "destructive",
       });
+      // Revert optimistic update
+      refetchComments();
     }
   };
 
+  const handleReplySubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newReply.trim() === "" || !replyingToCommentId) return;
+
+    const replyData = {
+      listId: list.$id,
+      userId: userId,
+      Content: newReply,
+      commentId: replyingToCommentId,
+      parentReplyId: replyingToParentReplyId,
+    };
+
+    // Optimistically update the UI
+    queryClient.setQueryData(
+      [QUERY_KEYS.GET_COMMENTS_WITH_REPLIES, list.$id],
+      (oldData: any) => {
+        return oldData.map((comment: any) => {
+          if (comment.$id === replyingToCommentId) {
+            return {
+              ...comment,
+              replies: [
+                ...(comment.replies || []),
+                {
+                  $id: 'temp-id-' + Date.now(),
+                  Content: newReply,
+                  userId: userId,
+                  createdAt: new Date().toISOString(),
+                  Likes: [],
+                  Reactions: [],
+                },
+              ],
+            };
+          }
+          return comment;
+        });
+      }
+    );
+
+    try {
+      await createReply(replyData);
+      setNewReply("");
+      setIsReplying(false);
+      setReplyingToCommentId(null);
+      setReplyingToParentReplyId(null);
+      refetchComments();
+      toast({
+        title: "Success",
+        description: "Reply posted successfully",
+      });
+    } catch (error) {
+      console.error("Failed to post reply:", error);
+      toast({
+        title: "Error",
+        description: "Failed to post reply. Please try again.",
+        variant: "destructive",
+      });
+      refetchComments(); // Revert optimistic update
+    }
+  }, [newReply, replyingToCommentId, replyingToParentReplyId, list.$id, userId, createReply, refetchComments, queryClient]);
+
   const handleEmojiReaction = async (emoji: string) => {
+    setIsEmojiPopoverOpen(false);
     try {
       const reactionString = `${emoji}:${userId}`;
       let updatedReactions = [...reactions];
@@ -234,7 +335,6 @@ const ListStats: React.FC<ListStatsProps> = ({
     >
       <div className="flex flex-wrap justify-between gap-4 mb-6">
         <div className="flex items-center space-x-1">
-          {/* Like Button */}
           <Button
             variant="default"
             className="flex-1 flex items-center justify-center space-x-2"
@@ -249,7 +349,6 @@ const ListStats: React.FC<ListStatsProps> = ({
             <span className={textSize}>{likes.length}</span>
           </Button>
 
-          {/* Dislike Button */}
           <Button
             variant="default"
             className="flex-1 flex items-center justify-center space-x-2"
@@ -261,38 +360,39 @@ const ListStats: React.FC<ListStatsProps> = ({
                 hasDisliked ? "fill-orange-500 text-orange-500" : "text-gray-400"
               }
             />
-            {/*<span className={textSize}>{dislikes.length}</span>*/}
           </Button>
         </div>
 
-        {/* Save Button */}
         <Button
           variant="default"
           className="flex-1 flex items-center justify-center space-x-2"
           onClick={handleSaveList}
+          disabled={isSaving || isDeletingSave}
         >
-          <Bookmark
-            size={20}
-            className={
-              isSaved
-                ? "text-orange-500 fill-orange-500"
-                : "text-gray-400 fill-none"
-            }
-          />
+          {isSaving || isDeletingSave ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Bookmark
+              size={20}
+              className={
+                isSaved
+                  ? "text-orange-500 fill-orange-500"
+                  : "text-gray-400 fill-none"
+              }
+            />
+          )}
           <span className={textSize}>{isSaved ? "Saved" : "Save"}</span>
         </Button>
 
-        {/* Comments Button */}
         <Button
           variant="default"
           className="flex-1 flex items-center justify-center space-x-2"
           onClick={() => setIsCommentsExpanded(!isCommentsExpanded)}
         >
           <MessageSquare size={20} className="text-gray-400" />
-          <span className={textSize}>{comments?.length || 0}</span>
+          <span className={textSize}>{commentsWithReplies?.length || 0}</span>
         </Button>
 
-        {/* Remix Button */}
         <Button
           variant="default"
           className="flex-1 flex items-center justify-center space-x-2"
@@ -302,7 +402,6 @@ const ListStats: React.FC<ListStatsProps> = ({
           <span className={textSize}>Remix</span>
         </Button>
 
-        {/* Embed Button */}
         {isCreator ? (
           <Button
             variant="default"
@@ -321,9 +420,13 @@ const ListStats: React.FC<ListStatsProps> = ({
             <span className={textSize}>Embed</span>
           </div>
         )}
-      <Popover>
+
+        <Popover open={isEmojiPopoverOpen} onOpenChange={setIsEmojiPopoverOpen}>
           <PopoverTrigger asChild>
-            <Button variant="default" className="flex-1 flex items-center justify-center space-x-2">
+            <Button
+              variant="default"
+              className="flex-1 flex items-center justify-center space-x-2"
+            >
               <Smile size={20} className="text-gray-400" />
               <span className={textSize}>React</span>
             </Button>
@@ -357,8 +460,9 @@ const ListStats: React.FC<ListStatsProps> = ({
           </button>
         ))}
       </div>
-       {/* Comments Section */}
-       <AnimatePresence>
+
+      {/* Comments Section */}
+      <AnimatePresence>
         {isCommentsExpanded && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -367,28 +471,28 @@ const ListStats: React.FC<ListStatsProps> = ({
             className="mt-6"
           >
             <h3 className="text-xl font-semibold mb-4">Comments</h3>
-            {(comments?.length ?? 0) > 0 ? (
+            {visibleComments.length > 0 ? (
               <div className="space-y-4">
                 {visibleComments.map((comment: any) => (
                   <Comment
                     key={comment.$id}
                     comment={comment}
-                    setReply={() => {}}
+                    setReply={setIsReplying}
                     show={true}
-                    setCommentId={() => {}}
-                    setParentReplyId={() => {}}
+                    setCommentId={setReplyingToCommentId}
+                    setParentReplyId={setReplyingToParentReplyId}
                     listId={list.$id}
                   />
                 ))}
 
-                {!showAllComments && comments.length > 3 && (
+                {!showAllComments && commentsWithReplies && commentsWithReplies.length > 3 && (
                   <Button
                     variant="link"
                     onClick={handleViewAllComments}
                     className="text-blue-300 flex items-center"
                   >
                     <ChevronDown className="mr-2" size={16} />
-                    View all {comments.length} comments
+                    View all {commentsWithReplies.length} comments
                   </Button>
                 )}
 
@@ -413,18 +517,68 @@ const ListStats: React.FC<ListStatsProps> = ({
             <form onSubmit={handleCommentSubmit} className="mt-6">
               <textarea
                 value={newComment}
-                spellCheck={true}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Write a comment..."
                 className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
                 rows={1}
               />
               <div className="flex gap-2 mt-2">
-                <Button type="submit" variant="default">
-                  Post Comment
+                <Button 
+                  type="submit" 
+                  variant="default"
+                  disabled={isCreatingComment || newComment.trim() === ""}
+                >
+                  {isCreatingComment ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Posting...
+                    </>
+                  ) : (
+                    "Post Comment"
+                  )}
                 </Button>
               </div>
             </form>
+
+            {/* Reply Input */}
+            {isReplying && (
+              <form onSubmit={handleReplySubmit} className="mt-6">
+                <textarea
+                  value={newReply}
+                  onChange={(e) => setNewReply(e.target.value)}
+                  placeholder="Write a reply..."
+                  className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
+                  rows={1}
+                />
+                <div className="flex gap-2 mt-2">
+                  <Button 
+                    type="submit" 
+                    variant="default"
+                    disabled={isCreatingReply || newReply.trim() === ""}
+                  >
+                    {isCreatingReply ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Posting...
+                      </>
+                    ) : (
+                      "Post Reply"
+                    )}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setIsReplying(false);
+                      setReplyingToCommentId(null);
+                      setReplyingToParentReplyId(null);
+                    }}
+                    disabled={isCreatingReply}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

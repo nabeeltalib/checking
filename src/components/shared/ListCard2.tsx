@@ -697,7 +697,7 @@ const ListCard2 = ({ list }) => {
         )}
 
         {/* Add Comment Input */}
-        <div className="flex items-center mt-4">
+        <div className="flex items-center mt-4 bg-gray-800 pt-2 pb-2 pl-2 pr-2 rounded-lg">
           <img
             src={currentUser?.ImageUrl || '/assets/icons/profile-placeholder.svg'}
             alt={`${currentUser?.Username}'s avatar`}
