@@ -81,6 +81,11 @@ const ListStats: React.FC<ListStatsProps> = ({
   const [replyingToParentReplyId, setReplyingToParentReplyId] = useState<string | null>(null);
   const [newReply, setNewReply] = useState("");
 
+  // New loading states
+  const [isLiking, setIsLiking] = useState(false);
+  const [isDisliking, setIsDisliking] = useState(false);
+  const [isReacting, setIsReacting] = useState(false);
+
   const hasLiked = useMemo(() => likes.includes(userId), [likes, userId]);
   const hasDisliked = useMemo(() => dislikes.includes(userId), [dislikes, userId]);
   const [reactions, setReactions] = useState(list?.Reactions || []);
@@ -95,6 +100,8 @@ const ListStats: React.FC<ListStatsProps> = ({
   }, [currentUser, list.$id]);
 
   const handleLikeList = async () => {
+    if (isLiking) return;
+    setIsLiking(true);
     let updatedLikes = [...likes];
     let updatedDislikes = [...dislikes];
 
@@ -124,10 +131,14 @@ const ListStats: React.FC<ListStatsProps> = ({
       });
       setLikes(likes);
       setDislikes(dislikes);
+    } finally {
+      setIsLiking(false);
     }
   };
 
   const handleDislikeList = async () => {
+    if (isDisliking) return;
+    setIsDisliking(true);
     let updatedLikes = [...likes];
     let updatedDislikes = [...dislikes];
 
@@ -157,6 +168,8 @@ const ListStats: React.FC<ListStatsProps> = ({
       });
       setLikes(likes);
       setDislikes(dislikes);
+    } finally {
+      setIsDisliking(false);
     }
   };
 
@@ -294,6 +307,8 @@ const ListStats: React.FC<ListStatsProps> = ({
   }, [newReply, replyingToCommentId, replyingToParentReplyId, list.$id, userId, createReply, refetchComments, queryClient]);
 
   const handleEmojiReaction = async (emoji: string) => {
+    if (isReacting) return;
+    setIsReacting(true);
     setIsEmojiPopoverOpen(false);
     try {
       const reactionString = `${emoji}:${userId}`;
@@ -315,6 +330,8 @@ const ListStats: React.FC<ListStatsProps> = ({
         description: "Failed to update reaction. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsReacting(false);
     }
   };
 
@@ -339,13 +356,18 @@ const ListStats: React.FC<ListStatsProps> = ({
             variant="default"
             className="flex-1 flex items-center justify-center space-x-2"
             onClick={handleLikeList}
+            disabled={isLiking}
           >
-            <ThumbsUp
-              size={20}
-              className={
-                hasLiked ? "fill-orange-500 text-orange-500" : "text-gray-400"
-              }
-            />
+            {isLiking ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <ThumbsUp
+                size={20}
+                className={
+                  hasLiked ? "fill-orange-500 text-orange-500" : "text-gray-400"
+                }
+              />
+            )}
             <span className={textSize}>{likes.length}</span>
           </Button>
 
@@ -353,13 +375,18 @@ const ListStats: React.FC<ListStatsProps> = ({
             variant="default"
             className="flex-1 flex items-center justify-center space-x-2"
             onClick={handleDislikeList}
+            disabled={isDisliking}
           >
-            <ThumbsDown
-              size={20}
-              className={
-                hasDisliked ? "fill-orange-500 text-orange-500" : "text-gray-400"
-              }
-            />
+            {isDisliking ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <ThumbsDown
+                size={20}
+                className={
+                  hasDisliked ? "fill-orange-500 text-orange-500" : "text-gray-400"
+                }
+              />
+            )}
           </Button>
         </div>
 
@@ -426,9 +453,16 @@ const ListStats: React.FC<ListStatsProps> = ({
             <Button
               variant="default"
               className="flex-1 flex items-center justify-center space-x-2"
+              disabled={isReacting}
             >
-              <Smile size={20} className="text-gray-400" />
-              <span className={textSize}>React</span>
+              {isReacting ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <>
+                  <Smile size={20} className="text-gray-400" />
+                  <span className={textSize}>React</span>
+                </>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-1">
@@ -438,6 +472,7 @@ const ListStats: React.FC<ListStatsProps> = ({
                   key={emoji}
                   onClick={() => handleEmojiReaction(emoji)}
                   className="text-xl hover:bg-gray-200 rounded p-1"
+                  disabled={isReacting}
                 >
                   {emoji}
                 </button>
@@ -455,6 +490,7 @@ const ListStats: React.FC<ListStatsProps> = ({
             className={`text-sm rounded-full px-2 py-1 ${
               reactions.includes(`${emoji}:${userId}`) ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
             }`}
+            disabled={isReacting}
           >
             {emoji} {count}
           </button>
@@ -471,7 +507,12 @@ const ListStats: React.FC<ListStatsProps> = ({
             className="mt-6"
           >
             <h3 className="text-xl font-semibold mb-4">Comments</h3>
-            {visibleComments.length > 0 ? (
+            {isLoadingComments ? (
+              <div className="flex justify-center items-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                <span className="ml-2 text-gray-400">Loading comments...</span>
+              </div>
+            ) : visibleComments.length > 0 ? (
               <div className="space-y-4">
                 {visibleComments.map((comment: any) => (
                   <Comment
@@ -521,6 +562,7 @@ const ListStats: React.FC<ListStatsProps> = ({
                 placeholder="Write a comment..."
                 className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
                 rows={1}
+                disabled={isCreatingComment}
               />
               <div className="flex gap-2 mt-2">
                 <Button 
@@ -549,6 +591,7 @@ const ListStats: React.FC<ListStatsProps> = ({
                   placeholder="Write a reply..."
                   className="w-full p-3 rounded-lg bg-dark-4 text-light-1 focus:ring-2 focus:ring-primary-500 transition-all duration-300"
                   rows={1}
+                  disabled={isCreatingReply}
                 />
                 <div className="flex gap-2 mt-2">
                   <Button 

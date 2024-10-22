@@ -1,30 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { Trash2 } from 'lucide-react';
 import { useDeleteUserData } from '@/lib/react-query/queries';
-import { useUserContext } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 
-const DeleteAccount = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+interface DeleteAccountProps {
+  userId: string;
+  onSuccess: () => void;
+}
+
+const DeleteAccount: React.FC<DeleteAccountProps> = ({ userId, onSuccess }) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(true);
   const [confirmText, setConfirmText] = useState('');
-  const { user } = useUserContext();
-  const navigate = useNavigate();
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
   const deleteUserDataMutation = useDeleteUserData();
 
-  const handleDeleteAccount = async () => {
+  const handleDeleteAccount = useCallback(async () => {
     if (confirmText.toLowerCase() !== 'delete my account') {
       toast({
         title: 'Error',
@@ -34,67 +36,90 @@ const DeleteAccount = () => {
       return;
     }
 
-    if (user) {
-      try {
-        await deleteUserDataMutation.mutateAsync(user.id);
+    try {
+      setIsDeleting(true);
+      await deleteUserDataMutation.mutateAsync(userId);
+
+      // Close the dialog
+      setIsDialogOpen(false);
+
+      // Delay navigation and toast to allow the dialog to close gracefully
+      setTimeout(() => {
+        onSuccess(); // Notify the parent component
+        navigate('/', { replace: true });
         toast({
           title: 'Account Deleted',
           description: 'Your account has been successfully deleted.',
         });
-        navigate('/');
-      } catch (error) {
-        console.error('Error deleting account:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to delete account. Please try again.',
-          variant: 'destructive',
-        });
-      }
+      }, 200);
+    } catch (error: any) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: 'Error',
+        description: error?.message || 'Failed to delete account. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
     }
-  };
+  }, [confirmText, deleteUserDataMutation, navigate, onSuccess, toast, userId]);
 
   return (
-    <>
-      <Button
-        onClick={() => setIsDialogOpen(true)}
-        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full transition-colors duration-300 flex items-center"
-      >
-        <Trash2 size={18} className="mr-2" />
-        Delete Account
-      </Button>
-      
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] bg-gray-900 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-red-500">Delete Account</DialogTitle>
-            <DialogDescription className="text-light-2">
-              This action cannot be undone. All of your data will be permanently deleted.
-            </DialogDescription>
-          </DialogHeader>
-          <Textarea
-            value={confirmText}
-            onChange={(e) => setConfirmText(e.target.value)}
-            placeholder='Type "delete my account" to confirm'
-            className="mt-4 bg-dark-4 border-gray-700 text-white"
-          />
-          <DialogFooter className="mt-4">
-            <Button
-              onClick={() => setIsDialogOpen(false)}
-              className="bg-gray-700 text-white hover:bg-gray-600 transition-colors duration-300"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleDeleteAccount}
-              className="bg-red-500 text-white hover:bg-red-600 transition-colors duration-300"
-              disabled={deleteUserDataMutation.isLoading}
-            >
-              {deleteUserDataMutation.isLoading ? 'Deleting...' : 'Delete Account'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <DialogContent className="bg-dark-2 text-white border-dark-4">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-red-500 flex items-center gap-2">
+            <Trash2 size={24} />
+            Delete Account
+          </DialogTitle>
+          <DialogDescription className="text-light-2">
+            Are you sure you want to delete your account? This action cannot be undone and will permanently delete all your data.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-4">
+          <p className="text-light-2 mb-4">
+            The following data will be permanently deleted:
+          </p>
+          <ul className="text-light-2 list-disc pl-6 space-y-2">
+            <li>Delete all your rankings</li>
+            <li>Remove all your comments</li>
+            <li>Delete your saved lists</li>
+            <li>Remove all friend connections</li>
+            <li>Delete your profile permanently</li>
+          </ul>
+
+          <div className="mt-6">
+            <p className="text-light-2 mb-2">To confirm, type "delete my account":</p>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              className="w-full bg-dark-3 border border-dark-4 rounded-lg p-2 text-white"
+              placeholder="Type here to confirm"
+              disabled={isDeleting}
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button
+            onClick={() => setIsDialogOpen(false)}
+            className="bg-dark-4 text-white hover:bg-dark-3"
+            disabled={isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDeleteAccount}
+            className="bg-red-500 text-white hover:bg-red-600"
+            disabled={isDeleting || confirmText.toLowerCase() !== 'delete my account'}
+          >
+            {isDeleting ? 'Deleting...' : 'Delete Account'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

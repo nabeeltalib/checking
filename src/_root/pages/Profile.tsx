@@ -20,12 +20,20 @@ import {
   getUserLikedLists,
   sendFriendRequest,
   UnFollow,
+  deleteUserData, 
 } from "@/lib/appwrite/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { UserPlus, Settings, Activity, List, ThumbsUp, Users, ChevronDown, Lock, Edit } from "lucide-react";
+import { UserPlus, Settings, Activity, List, ThumbsUp, Users, ChevronDown, Lock, Edit, MoreVertical, Trash2 } from "lucide-react";
 import { Link as LinkIcon } from 'lucide-react';
 import { FaSquareXTwitter, FaInstagram, FaFacebook, FaLinkedin, FaReddit, FaTwitch } from "react-icons/fa6";
 import DeleteAccount from '@/components/shared/DeleteAccount';
+import { useToast } from "@/components/ui/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Profile: React.FC = () => {
   const { user } = useUserContext();
@@ -52,7 +60,8 @@ const Profile: React.FC = () => {
   const [followdBy, setFollowdBy] = useState<any>([]);
   const [showFollowers, setShowFollowers] = useState(false);
   const [userLikedLists, setUserLikedLists] = useState<any>([]);
-  
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -183,6 +192,12 @@ const Profile: React.FC = () => {
       setIsSendRequestLoading(false);
     }
   };
+  
+  // Define a handler for after the account is deleted
+  const handleAccountDeleted = () => {
+    setIsDeleteDialogOpen(false);
+    // Any additional cleanup if necessary
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-dark-1">
@@ -235,13 +250,29 @@ const Profile: React.FC = () => {
                 </div>
                 <div className="flex gap-2 mt-4 sm:mt-0">
                   {isOwnProfile ? (
-                    <Button
-                      className="bg-gray-700 text-white px-4 py-2 rounded-full hover:bg-primary-600 transition-colors duration-300"
-                      onClick={() => navigate(`/update-profile/${id}`)}
-                    >
-                      <Edit size={16} className="mr-2" />
-                      Edit Profile
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        className="bg-gray-700 text-white px-4 py-2 rounded-full hover:bg-primary-600 transition-colors duration-300"
+                        onClick={() => navigate(`/update-profile/${id}`)}
+                      >
+                        <Edit size={16} className="mr-2" />
+                        Edit Profile
+                      </Button>
+                      
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-10 w-10 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-dark-2 text-light-1 border-dark-4">
+                          <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)}>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Account
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   ) : (
                     <>
                       {currentUser.Public ? (
@@ -312,8 +343,7 @@ const Profile: React.FC = () => {
                 </div>
               )}
             </div>
-          </div>
-
+          </div>         
           {/* Social Media Links */}
           {currentUser.socialLinks && currentUser.socialLinks.length > 0 && (
             <div className="mt-4 ml-7 flex space-x-4">
@@ -344,7 +374,7 @@ const Profile: React.FC = () => {
               })}
             </div>
           )}
-
+                   
           {/* Tabs */}
           <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mt-8 mb-6 bg-dark-2 p-2 rounded-full w-full max-w-md sm:max-w-lg mx-auto">
             <Button
@@ -596,6 +626,12 @@ const Profile: React.FC = () => {
             </Button>
           </div>
         </div>
+      )}     
+      {isDeleteDialogOpen && (
+        <DeleteAccount
+          userId={user.id}
+          onSuccess={handleAccountDeleted}
+        />
       )}
     </div>
   );

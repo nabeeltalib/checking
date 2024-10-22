@@ -2401,17 +2401,30 @@ export async function deleteUserData(userId: string) {
   try {
     // 1. Delete user's lists
     const userLists = await getUserLists(userId);
-    for (const list of userLists) {
-      await deleteList(list.$id);
+    if (userLists) {
+      for (const list of userLists) {
+        await deleteList(list.$id);
+      }
     }
 
-    // 2. Delete user's comments
+    // 2. Delete user's comments and replies
     const comments = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.commentCollectionId,
-      [Query.equal("userId", userId)]
+      [Query.equal("user", userId)]
     );
     for (const comment of comments.documents) {
+      // Delete all replies to this comment first
+      if (comment.Reply && comment.Reply.length > 0) {
+        for (const replyId of comment.Reply) {
+          await databases.deleteDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.commentReplyCollectionId,
+            replyId
+          );
+        }
+      }
+      // Then delete the comment
       await databases.deleteDocument(
         appwriteConfig.databaseId,
         appwriteConfig.commentCollectionId,
@@ -2429,13 +2442,20 @@ export async function deleteUserData(userId: string) {
       await deleteSavedList(savedList.$id);
     }
 
-    // 4. Delete user's friend requests and connections
+    // 4. Clean up friend relationships
     const friendRequests = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.friendsCollectionId,
       [Query.equal("userId", userId)]
     );
-    for (const request of friendRequests.documents) {
+    const receivedRequests = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.friendsCollectionId,
+      [Query.equal("friendId", userId)]
+    );
+    
+    // Delete all friend requests sent by or to the user
+    for (const request of [...friendRequests.documents, ...receivedRequests.documents]) {
       await databases.deleteDocument(
         appwriteConfig.databaseId,
         appwriteConfig.friendsCollectionId,
@@ -2443,20 +2463,90 @@ export async function deleteUserData(userId: string) {
       );
     }
 
-    // 5. Delete user's notifications
-    const notifications = await getNotifications(userId);
-    for (const notification of notifications) {
+    // 5. Clean up connections/followers
+    const connections = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.connectionsCollectionId,
+      [Query.equal("userId", userId)]
+    );
+    
+    // Delete user's connection document
+    for (const connection of connections.documents) {
+      await databases.deleteDocument(
+        appwriteConfig.databaseId,
+        appwriteConfig.connectionsCollectionId,
+        connection.$id
+      );
+    }
+
+    // Remove user from other users' followers/following lists
+    const allConnections = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.connectionsCollectionId,
+      []
+    );
+    
+    for (const connection of allConnections.documents) {
+      let updated = false;
+      let updatedFollower = connection.follower ? 
+        connection.follower.filter((id: any) => id.$id !== userId && id !== userId) :
+        [];
+      let updatedFollowing = connection.following ?
+        connection.following.filter((id: string) => id !== userId) :
+        [];
+
+      if (connection.follower?.length !== updatedFollower.length || 
+          connection.following?.length !== updatedFollowing.length) {
+        await databases.updateDocument(
+          appwriteConfig.databaseId,
+          appwriteConfig.connectionsCollectionId,
+          connection.$id,
+          {
+            follower: updatedFollower,
+            following: updatedFollowing
+          }
+        );
+      }
+    }
+
+    // 6. Delete user's notifications
+    const notifications = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      import.meta.env.VITE_APPWRITE_NOTIFICATIONS_COLLECTION_ID,
+      [Query.equal("userId", userId)]
+    );
+    for (const notification of notifications.documents) {
       await deleteNotification(notification.$id);
     }
 
-    // 6. Delete user's account
+    // 7. Clean up user's image if exists
+    const user = await getUserById(userId);
+    if (user?.ImageId) {
+      try {
+        await deleteFile(user.ImageId);
+      } catch (error) {
+        console.error("Error deleting user image:", error);
+      }
+    }
+
+    // 8. Delete user's reports
+    const reportedComments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.reportedCommentsCollectionId,
+      [Query.equal("ReportedBy", userId)]
+    );
+    for (const report of reportedComments.documents) {
+      await deleteReportedComment(report.$id);
+    }
+
+    // 9. Delete the user document
     await databases.deleteDocument(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
       userId
     );
 
-    // 7. Delete user's Appwrite account
+    // 10. Finally, delete the Appwrite account
     await account.delete();
 
     return { success: true, message: "User data deleted successfully" };
