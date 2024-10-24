@@ -12,7 +12,7 @@ import { ThumbsUp, MessageCircle, MoreHorizontal, Smile, Loader2 } from 'lucide-
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/Popover';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import CommentReply from './CommentReply';
 import { useAddEmojiReaction, useRemoveEmojiReaction, useGetComments } from '@/lib/react-query/queries';
 

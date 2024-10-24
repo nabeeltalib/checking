@@ -13,7 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { useToast } from "@/components/ui/use-toast";
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/Popover';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { useAddEmojiReaction, useRemoveEmojiReaction } from '@/lib/react-query/queries';
 
 const MAX_VISIBLE_DEPTH = 2;

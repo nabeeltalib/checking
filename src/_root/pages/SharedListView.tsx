@@ -13,7 +13,7 @@ import { useUserContext } from "@/context/AuthContext";
 import { useGetComments } from "@/lib/react-query/queries";
 import Comment from '@/components/shared/Comment';
 import { useShareDialog } from '@/components/shared/ShareDialogContext';
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/Popover";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 const getRankColor = (index: number) => {
   const colors = [
