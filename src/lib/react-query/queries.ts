@@ -64,6 +64,15 @@ import {
   getNestedReplies,
   createReply,
   getCommentsWithReplies, 
+  getTrendingDebates, 
+  trackEngagement, 
+  getDebateStats, 
+  getListEngagement, 
+  getTrendingCategories, 
+  updateListRanking, 
+  getGroupComments,
+  createGroupComment,
+  getUserStats,
 } from '@/lib/appwrite/api';
 import { INewList, INewUser, IUpdateList, IUpdateUser } from '@/types';
 import { useNavigate } from 'react-router-dom';
@@ -291,6 +300,41 @@ export const useGetRelatedLists = (listId: string) => {
   });
 };
 
+export const useBookmarkList = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ listId, userId }: { listId: string; userId: string }) => {
+      // Check if list is already bookmarked
+      const list = queryClient.getQueryData<any>([QUERY_KEYS.GET_LIST_BY_ID, listId]);
+      
+      if (list?.bookmarked) {
+        // If bookmarked, delete the bookmark
+        return deleteSavedList(list.savedRecordId);
+      } else {
+        // If not bookmarked, save the list
+        return saveList(userId, listId);
+      }
+    },
+    onSuccess: () => {
+      // Invalidate relevant queries to trigger refetch
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_LISTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_LISTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+    },
+    onError: (error) => {
+      console.error('Error toggling bookmark:', error);
+      throw error;
+    }
+  });
+};
+
 // ============================================================
 // USER QUERIES
 // ============================================================
@@ -410,8 +454,35 @@ export const useCreateComment = () => {
     mutationFn: (comment: {
       listId: string;
       userId: string;
-      content: string;
-    }) => createComment(comment),
+      Content: string;
+      groupId?: string;
+      quality?: number;
+      impact?: number;
+      verified?: boolean;
+      sourceUrls?: string[];
+    }) => createComment({
+      ...comment,
+      quality: comment.quality || 0,
+      impact: comment.impact || 0,
+      verified: comment.verified || false,
+      sourceUrls: comment.sourceUrls || [],
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_COMMENTS],
+      });
+    },
+  });
+};
+
+export const useCreateGroupComment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (comment: {
+      groupId: string;
+      userId: string;
+      Content: string;
+    }) => createGroupComment(comment),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_COMMENTS],
@@ -425,6 +496,14 @@ export const useGetComments = (listId: string) => {
     queryKey: [QUERY_KEYS.GET_COMMENTS, listId],
     queryFn: () => getComments(listId),
     enabled: !!listId,
+  });
+};
+
+export const useGetGroupComments = (groupId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_COMMENTS, groupId],
+    queryFn: () => getGroupComments(groupId),
+    enabled: !!groupId,
   });
 };
 
@@ -789,4 +868,94 @@ export const useGetCommentsWithReplies = (listId: string) => {
     queryFn: () => getCommentsWithReplies(listId),
     enabled: !!listId,
   });
+};
+// Add to queries.ts
+
+export const useGetTrendingDebates = (limit: number = 5) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_TRENDING_DEBATES, limit],
+    queryFn: () => getTrendingDebates(limit),
+    refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
+    select: (data) => {
+      // Add client-side processing if needed
+      return data.map(debate => ({
+        ...debate,
+        engagementScore: calculateClientEngagementScore(debate)
+      }));
+    }
+  });
+};
+
+export const useTrackEngagement = () => {
+  return useMutation({
+    mutationFn: (data: EngagementData) => {
+      if (!data.userId) {
+        return Promise.reject(new Error('userId is required'));
+      }
+      return trackEngagement(data);
+    },
+    onError: (error) => {
+      console.error('Engagement tracking error:', error);
+      toast({
+        title: "Error tracking engagement",
+        description: "This won't affect your experience",
+        variant: "destructive"
+      });
+    },
+  });
+};
+
+export const useDebateStats = (debateId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_DEBATE_STATS, debateId],
+    queryFn: () => getDebateStats(debateId),
+    enabled: !!debateId,
+  });
+};
+
+export const useListEngagement = (listId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_LIST_ENGAGEMENT, listId],
+    queryFn: () => getListEngagement(listId),
+    enabled: !!listId,
+  });
+};
+
+export const useTrendingCategories = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_TRENDING_CATEGORIES],
+    queryFn: getTrendingCategories,
+    staleTime: 1000 * 60 * 15, // Cache for 15 minutes
+  });
+};
+
+export const useUpdateListRanking = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { 
+      listId: string; 
+      rankingChange: number;
+      category?: string;
+    }) => updateListRanking(data),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries([QUERY_KEYS.GET_LIST_BY_ID, data.listId]);
+      queryClient.invalidateQueries([QUERY_KEYS.GET_TRENDING_DEBATES]);
+    },
+  });
+};
+
+export const useGetUserStats = (userId?: string) => {
+  return useQuery(
+    [QUERY_KEYS.GET_USER_STATS, userId],
+    () => getUserStats(userId),
+    {
+      enabled: !!userId,
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+      retry: 3,
+      onError: (error) => {
+        console.error('Error fetching user stats:', error);
+      }
+    }
+  );
 };

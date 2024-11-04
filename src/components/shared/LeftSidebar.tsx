@@ -79,6 +79,8 @@ const LeftSidebar: React.FC = () => {
       { label: 'Home', route: '/' },
       { label: 'Explore', route: '/explore' },
       { label: 'LeaderBoard', route: '/comprehensive-leaderboard' },
+      { label: 'Your Groups', route: '/your-groups' },
+      { label: 'Groups', route: '/groups' },
     ],
     social: [
       { label: 'Friends', route: '/listfromfriends' },

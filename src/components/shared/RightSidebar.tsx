@@ -19,6 +19,7 @@ const RightSidebar: React.FC = () => {
   const [isCategoriesLoading, setIsCategoriesLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [activeTab, setActiveTab] = useState<'groups' | 'your-groups'>('groups');
 
   const fetchTrendingLists = useCallback(async () => {
     try {
@@ -96,8 +97,94 @@ const RightSidebar: React.FC = () => {
             }`}
           >
             <div className="flex flex-col gap-4">
+              {/* Groups Tabs Section */}
+              <div className="flex border-b border-dark-4">
+                <button
+                  className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                    activeTab === 'groups' 
+                      ? 'text-primary-500 border-b-2 border-primary-500' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  onClick={() => setActiveTab('groups')}
+                >
+                  Groups
+                </button>
+                <button
+                  className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                    activeTab === 'your-groups' 
+                      ? 'text-primary-500 border-b-2 border-primary-500' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  onClick={() => setActiveTab('your-groups')}
+                >
+                  Your Groups
+                </button>
+              </div>
+
+              {/* Groups Content */}
+              <AnimatePresence mode="wait">
+                {activeTab === 'groups' ? (
+                  <motion.div
+                    key="groups"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="space-y-3"
+                  >
+                    {/* Replace with your groups list */}
+                    <div className="bg-dark-3 p-3 rounded-lg hover:bg-dark-4 transition-all cursor-pointer">
+                      <h3 className="text-sm font-medium text-white">Marvel Fans</h3>
+                      <p className="text-xs text-gray-400 mt-1">125 members</p>
+                    </div>
+                    {/* Add more groups */}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="your-groups"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="space-y-3"
+                  >
+                    {isAuthenticated ? (
+                      <>
+                        {/* Replace with user's groups */}
+                        <div className="bg-dark-3 p-3 rounded-lg hover:bg-dark-4 transition-all cursor-pointer">
+                          <h3 className="text-sm font-medium text-white">Movie Buffs</h3>
+                          <p className="text-xs text-gray-400 mt-1">You + 45 others</p>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-center py-4">
+                        <p className="text-sm text-gray-400 mb-2">Sign in to see your groups</p>
+                        <Button
+                          onClick={handleDialogOpen}
+                          className="bg-primary-500 text-white hover:bg-primary-600"
+                        >
+                          Sign In
+                        </Button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Create Group Button */}
+              <Button
+                onClick={() => {
+                  if (isAuthenticated) {
+                    navigate('/create-group');
+                  } else {
+                    handleDialogOpen();
+                  }
+                }}
+                className="text-sm w-full bg-primary-500 text-white hover:bg-primary-600 mt-2"
+              >
+                Create Group
+              </Button>
+
               {/* Trending Lists Section */}
-              <div>
+              <div className="mt-6 mb-6">
                 <h2 className="text-lg font-bold text-light-1 flex items-center mb-4">
                   Trending Near You
                 </h2>
@@ -141,55 +228,7 @@ const RightSidebar: React.FC = () => {
 
               {/* Popular Categories Section */}
               <div className="mt-14">
-                <h2 className="text-lg font-bold text-light-1 flex items-center mb-4">
-                  Popular Categories
-                </h2>
-                {isCategoriesLoading ? (
-                  <CategoriesSkeleton />
-                ) : (
-                  <AnimatePresence>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.5 }}
-                      className="flex flex-wrap gap-2"
-                    >
-                      {popularCategories.slice(0, 5).map((category, index) => (
-                        <motion.div
-                          key={index}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          <Button
-                            className="text-[11px] bg-dark-2 text-light-2 hover:bg-primary-500 hover:text-light-1 transition-all duration-300"
-                            onClick={() => {
-                              if (isAuthenticated) {
-                                navigate(`/categories/${category.name}`);
-                              } else {
-                                handleDialogOpen();
-                              }
-                            }}
-                          >
-                            {category.name}
-                          </Button>
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  </AnimatePresence>
-                )}
-                <button
-                  className="text-sm mt-4 text-blue-500 py-2 rounded-lg shadow-lg hover:bg-dark-4 transition-all w-full text-left"
-                  onClick={() => {
-                    if (isAuthenticated) {
-                      navigate('/categories');
-                    } else {
-                      handleDialogOpen();
-                    }
-                  }}
-                >
-                  Explore All Categories
-                </button>
+                
               </div>
             </div>
 
@@ -210,6 +249,7 @@ const RightSidebar: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Mobile toggle button */}
       {isMobile && (
         <button
           onClick={toggleSidebar}

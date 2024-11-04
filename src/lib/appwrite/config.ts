@@ -28,6 +28,7 @@ const requiredEnvVars = [
   'VITE_APPWRITE_COMMENT_REPLY_COLLECTION_ID',
   'VITE_APPWRITE_REPORTED_COMMENTS_COLLECTION_ID',
   'VITE_APPWRITE_CONNECTIONS_COLLECTION_ID',
+  'VITE_APPWRITE_ENGAGEMENT_COLLECTION_ID',
 ];
 
 const missingEnvVars = requiredEnvVars.filter(varName => !import.meta.env[varName]);
@@ -62,6 +63,7 @@ export const appwriteConfig = {
   commentReplyCollectionId: import.meta.env.VITE_APPWRITE_COMMENT_REPLY_COLLECTION_ID,
   reportedCommentsCollectionId: import.meta.env.VITE_APPWRITE_REPORTED_COMMENTS_COLLECTION_ID,
   connectionsCollectionId: import.meta.env.VITE_APPWRITE_CONNECTIONS_COLLECTION_ID,
+  engagementCollectionId: import.meta.env.VITE_APPWRITE_ENGAGEMENT_COLLECTION_ID,
 };
 
 // Initialize Appwrite Client
@@ -571,6 +573,29 @@ export async function getUserById(userId: any) {
   }
 }
 
+export async function checkUniqueUsername (Username:string, UserId:string){
+  try {
+    const unique = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [
+        Query.equal('Username', Username)
+      ]
+    )
+
+    const isUsernameTaken = unique.documents.some(user => user.$id !== UserId);
+
+    if(isUsernameTaken)
+    {
+      return false
+    }
+
+    return true
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 export async function updateUser(user: any) {
   const hasFileToUpdate = user.file.length > 0;
   try {
@@ -599,6 +624,7 @@ export async function updateUser(user: any) {
       {
         Name: user.Name,
         Bio: user.Bio,
+        Username: user.Username,
         ImageUrl: image.ImageUrl,
         ImageId: image.ImageId,
         Public: user.Public,

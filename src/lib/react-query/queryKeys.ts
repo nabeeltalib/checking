@@ -45,4 +45,14 @@ export enum QUERY_KEYS {
   GET_FRIENDS = "getFriends",
 
   DELETE_USER_DATA = "deleteUserData",
+
+  GET_TRENDING_DEBATES = "getTrendingDebates",
+  GET_DEBATE_STATS = "getDebateStats",
+  GET_LIST_ENGAGEMENT = "getListEngagement",
+  GET_TRENDING_CATEGORIES = "getTrendingCategories",
+  GET_RANKING_HISTORY = "getRankingHistory",
+  GET_USER_ACHIEVEMENTS = "getUserAchievements",
+  GET_DEBATE_ACTIVITY = "getDebateActivity",
+  GET_CATEGORY_RANKINGS = "getCategoryRankings",
+  GET_USER_STATS = "getUserStats",
 }

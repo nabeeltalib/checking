@@ -14,7 +14,7 @@ const FAB: React.FC = () => {
   };
 
   const handleCreateGroupList = () => {
-    // This option is restricted for now
+    navigate("/create-group")
   };
 
   const handleCreateChallenge = () => {
@@ -45,10 +45,9 @@ const FAB: React.FC = () => {
             </button>
             <button
               onClick={handleCreateGroupList}
-              className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
-              disabled
+              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-blue-500"
             >
-              Create Group List (Restricted)
+              Create Group List
             </button>
             <button
               onClick={handleCreateChallenge}

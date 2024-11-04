@@ -8,6 +8,9 @@ import { ListProvider } from "@/context/ListContext";
 import { CommentProvider } from "@/context/CommentContext";
 import { SuggestionProvider } from "@/context/SuggestionContext";
 import { CollaborationProvider } from "@/context/CollaborationContext";
+import { EngagementProvider } from "@/context/EngagementContext";
+import { RankingProvider } from "@/context/RankingContext";
+import { DebateProvider } from "@/context/DebateContext";
 
 import App from "./App";
 import './globals.css';

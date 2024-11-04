@@ -36,7 +36,10 @@ const requiredEnvVars = [
   "VITE_APPWRITE_COMMENT_REPLY_COLLECTION_ID",
   "VITE_APPWRITE_REPORTED_COMMENTS_COLLECTION_ID",
   "VITE_APPWRITE_CONNECTIONS_COLLECTION_ID",
+  "VITE_APPWRITE_ENGAGEMENT_COLLECTION_ID",
   "VITE_APPWRITE_REPORTED_LISTS_COLLECTION_ID",
+  'VITE_APPWRITE_GENERAL_ENGAGEMENT_COLLECTION_ID',
+  'VITE_APPWRITE_LIST_ENGAGEMENT_COLLECTION_ID',
 ];
 
 const missingEnvVars = requiredEnvVars.filter(
@@ -77,12 +80,19 @@ export const appwriteConfig = {
     .VITE_APPWRITE_ENHANCE_DESCRIPTION_FUNCTION_ID,
   typesenseOperationsFunctionId: import.meta.env
     .VITE_APPWRITE_TYPESENSE_OPERATIONS_FUNCTION_ID,
-  friendsCollectionId: import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
+    friendsCollectionId: import.meta.env.VITE_APPWRITE_FRIENDS_COLLECTION_ID,
   itemCollectionId: import.meta.env.VITE_ITEM_COLLECTION_ID,
   commentReplyCollectionId: import.meta.env.VITE_APPWRITE_COMMENT_REPLY_COLLECTION_ID,
   reportedCommentsCollectionId: import.meta.env.VITE_APPWRITE_REPORTED_COMMENTS_COLLECTION_ID,
   connectionsCollectionId: import.meta.env.VITE_APPWRITE_CONNECTIONS_COLLECTION_ID,
   reportedListsCollectionId: import.meta.env.VITE_APPWRITE_REPORTED_LISTS_COLLECTION_ID,
+  engagementCollectionId: import.meta.env.VITE_APPWRITE_ENGAGEMENT_COLLECTION_ID,
+  debateActivityCollectionId: import.meta.env.VITE_APPWRITE_DEBATE_ACTIVITY_COLLECTION_ID,
+  achievementsCollectionId: import.meta.env.VITE_APPWRITE_ACHIEVEMENTS_COLLECTION_ID,
+  userStatsCollectionId: import.meta.env.VITE_APPWRITE_USER_STATS_COLLECTION_ID,
+  rankingHistoryCollectionId: import.meta.env.VITE_APPWRITE_RANKING_HISTORY_COLLECTION_ID,
+  listEngagementCollectionId: import.meta.env.VITE_APPWRITE_GENERAL_ENGAGEMENT_COLLECTION_ID,
+  generalEngagementCollectionId: import.meta.env.VITE_APPWRITE_LIST_ENGAGEMENT_COLLECTION_ID,
 };
 
 const client = new Client();
@@ -187,7 +197,6 @@ export async function signInWithGoogle() {
 export async function getCurrentUser() {
   try {
     const currentAccount = await account.get();
-    console.log({ currentAccount });
     if (!currentAccount) throw new Error("Not authenticated");
 
     const currentUser = await databases.listDocuments(
@@ -224,8 +233,7 @@ export async function signInAccount(user: { email: string; password: string }) {
       user.email,
       user.password
     );
-    console.log("asasgsag ", await account.get());
-    console.log({ session });
+   
     return session;
   } catch (error) {
     console.error("Error signing in account:", error);
@@ -477,8 +485,17 @@ export async function createList(list: any, userId: string): Promise<IList> {
         Categories: list.Categories,
         locations: list.locations,
         timespans: list.timespans,
-        Public: list.Public,
+        Public: list.Public || true,
         aiScore: list.aiScore || 0,
+        engagementScore: 0,
+        trendingScore: 0,
+        qualityScore: 0,
+        rankingPosition: 1,
+        lastActiveTimestamp: new Date().toISOString(),
+        rankingChange: 0,
+        trending: false,
+        debateCount: 0,
+        Views: 0,  // Changed from viewCount to Views
         CreatedAt: list.CreatedAt || new Date().toISOString(),
         UpdatedAt: list.UpdatedAt || new Date().toISOString(),
         creator: userId,
@@ -487,6 +504,211 @@ export async function createList(list: any, userId: string): Promise<IList> {
     );
 
     return newList as IList;
+  } catch (error) {
+    console.error("Error creating list:", error);
+    throw error;
+  }
+}
+
+export async function getGroups(){
+  try {
+    const groups = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      "670e52de002abf2f784a",
+      [Query.orderDesc("$createdAt")]
+    );
+
+    return groups.documents;
+  } catch (error) {
+    console.error("Error fetching list:", error);
+    throw error;
+  }
+}
+
+export async function getYourGroups(userId:string){
+  try {
+    const groups = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      "670e52de002abf2f784a",
+      [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
+    );
+
+    return groups.documents;
+  } catch (error) {
+    console.error("Error fetching list:", error);
+    throw error;
+  }
+}
+
+export async function getGroup(groupId:any){
+  try {
+    const group = await databases.getDocument(
+      appwriteConfig.databaseId,
+      "670e52de002abf2f784a",
+      groupId,
+    );
+
+    return group;
+  } catch (error) {
+    console.error("Error fetching list:", error);
+    throw error;
+  }
+}
+
+export async function createGroup(groupData:any){
+  try {
+      let groupLists = [];
+      for(let list of groupData.lists)
+      {
+         let data = await createGroupList(list.$id, list.creator.$id);
+         groupLists.push(data.$id);
+      }
+
+    const newGroup = await databases.createDocument(
+      appwriteConfig.databaseId,
+      "670e52de002abf2f784a",
+      ID.unique(),
+      {
+        header: groupData.header,
+        challengeTitle: groupData.title,
+        creator: groupData.creator,
+        groupLists: groupLists,
+        highlights: groupData.highlights,
+        viewers: groupData.viewers,
+        public: groupData.public,
+        days: groupData.days,
+        votes:groupData.votes,
+        noOfLists: groupData.noOfLists,
+      }
+    );
+
+    return newGroup;
+  } catch (error) {
+    console.error("Error creating list:", error);
+    throw error;
+  }
+}
+
+
+
+export async function deleteGroupList(grouplistId: string) {
+  try {
+    await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      "670e5400002b4b5ac6c3",
+      grouplistId
+    );
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    return { success: false };
+  }
+}
+
+
+export async function deleteGroup(group: any) {
+  try {
+
+    for(let item of group.groupLists)
+    {
+      await deleteGroupList(item.$id)
+    }
+
+    await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      "670e52de002abf2f784a",
+      group.$id
+    );
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    return { success: false };
+  }
+}
+
+
+
+
+
+export async function UpdateGroup(groupData:any, deleteList:string[], AddLists:any, groupId:any,remainingLists:string[]){
+  try {
+      let groupLists = remainingLists;
+      for(let list of AddLists)
+      {
+         let data = await createGroupList(list.$id, list.creator.$id);
+         groupLists.push(data.$id);
+      }
+      for(let item of deleteList)
+      {
+         await deleteGroupList(item);
+      }
+
+    const newGroup = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      "670e52de002abf2f784a",
+      groupId,
+      {
+        header: groupData.header,
+        challengeTitle: groupData.title,
+        creator: groupData.creator,
+        groupLists: groupLists,
+        highlights: groupData.highlights,
+        viewers: groupData.viewers,
+        public: groupData.public,
+        days: groupData.days,
+        votes:groupData.votes,  
+        noOfLists: groupData.noOfLists,
+      }
+    );
+    return newGroup;
+  } catch (error) {
+    console.error("Error creating list:", error);
+    throw error;
+  }
+}
+
+export async function addListToGroupChallenge(list:any, groupId:any){
+  try {
+
+    let group = await getGroup(groupId);
+    if(group.noOfLists <= group.groupLists.length)
+    {
+      console.log("Group is Full")
+      return;
+    }
+
+    let finalGroupLists = group.groupLists.map((item:any)=> item.$id);    
+    let data = await createGroupList(list.$id, list.creator.$id);
+    finalGroupLists.push(data.$id);
+
+    const newGroup = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      "670e52de002abf2f784a",
+      groupId,
+      {
+        groupLists: finalGroupLists,
+      }
+    );
+    return newGroup;
+  } catch (error) {
+    console.error("Error creating list:", error);
+    throw error;
+  }
+}
+
+export async function createGroupList(listId:string, userId:string){
+  try {
+    const newGroupList = await databases.createDocument(
+      appwriteConfig.databaseId,
+      "670e5400002b4b5ac6c3",
+      ID.unique(),
+      {
+        lists: listId,
+        creator:userId,
+      }
+    );
+
+    return newGroupList;
   } catch (error) {
     console.error("Error creating list:", error);
     throw error;
@@ -504,7 +726,6 @@ export async function createEmbedList(listId: any, type: string) {
         type: type,
       }
     );
-    console.log("embed List: ", newList.document);
     return newList.documents;
   } catch (error) {
     console.error("Error creating list:", error);
@@ -735,6 +956,24 @@ export async function likeList(
       appwriteConfig.databaseId,
       appwriteConfig.listCollectionId,
       listId,
+      data
+    );
+    return updatedList;
+  } catch (error) {
+    console.error("Error updating list reactions:", error);
+    throw error;
+  }
+}
+
+export async function likeGroupList(
+  grouplistId: string,
+  data: { votes: string[]}
+) {
+  try {
+    const updatedList = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      "670e5400002b4b5ac6c3",
+      grouplistId,
       data
     );
     return updatedList;
@@ -987,7 +1226,6 @@ export async function getUserById(userId: any) {
       appwriteConfig.userCollectionId,
       userId
     );
-    console.log('Fetched User:', user); // Check if socialLinks is present
     return user;
   } catch (error) {
     console.error('Error getting user by ID:', error);
@@ -1029,15 +1267,7 @@ export async function updateUser(user: any) {
         socialLinks: user.socialLinks, // Ensure this field is included
       }
     );
-    console.log("Updating user with data:", {
-      Name: user.Name,
-      Bio: user.Bio,
-      ImageUrl: image.imageUrl,
-      ImageId: image.imageId,
-      Public: user.Public,
-      socialLinks: user.socialLinks, // Ensure this field is included
-    });
-
+    
     if (!updatedUser) {
       if (hasFileToUpdate) {
         await deleteFile(image.imageId);
@@ -1063,7 +1293,46 @@ export async function updateUser(user: any) {
 export async function createComment(comment: {
   listId: string;
   userId: string;
-  Content: string;  // Note the capital 'C' in Content
+  Content: string;
+}) {
+  try {
+    const newComment = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      ID.unique(),
+      {
+        Content: comment.Content,        // Required, String
+        CreatedAt: new Date().toISOString(), // Required, DateTime
+        UpdatedAt: new Date().toISOString(), // Optional, DateTime
+        user: comment.userId,            // Relationship with user
+        list: comment.listId,            // Relationship with list
+        Reply: [],                       // Relationship with Reply
+        Likes: [],                       // String []
+        groupId: comment.groupId || '',  // String
+        Reactions: [],                   // String []
+        debateActivity: null,            // Relationship with debateActivity
+        quality: 0,                      // Required, Integer
+        impact: 0,                       // Required, Integer
+        verified: false,                 // Required, Boolean
+        sourceUrls: [],                  // String []
+      }
+    );
+
+    if (!newComment) {
+      throw new Error("Failed to create comment");
+    }
+
+    return newComment;
+  } catch (error) {
+    console.error("Error creating comment:", error);
+    return null;
+  }
+}
+
+export async function createGroupComment(comment: {
+  groupId: string;
+  userId: string;
+  Content: string;  
 }) {
   try {
     const newComment = await databases.createDocument(
@@ -1073,10 +1342,10 @@ export async function createComment(comment: {
       {
         Content: comment.Content,
         user: comment.userId,
-        list: comment.listId,
+        groupId: comment.groupId,
         CreatedAt: new Date().toISOString(),
-        Likes: [],  // Initialize with an empty array
-        Reply: []   // Initialize with an empty array
+        Likes: [], 
+        Reply: []  
       }
     );
 
@@ -1322,6 +1591,23 @@ export async function getReportedLists() {
     throw error;
   }
 }
+
+export async function getGroupComments(groupId: string) {
+  try {
+    const comments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      [Query.equal("groupId", groupId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!comments) throw new Error("No comments found");
+    return comments.documents;
+  } catch (error) {
+    console.error("Error getting comments:", error);
+    return null;
+  }
+}
+
 export async function reportComment(comment:any) {
   try {
     const newComment = await databases.createDocument(
@@ -1355,8 +1641,6 @@ export async function reportReply(reply: any) {
       repliedBy: reply.User,
       ReportedBy: reply.Reporter,
     };
-
-    console.log('Data being sent to createDocument:', data);
 
     const newReport = await databases.createDocument(
       appwriteConfig.databaseId,
@@ -1785,7 +2069,6 @@ export async function searchLists(
     );
 
     const results = JSON.parse(response.responseBody);
-    console.log("Results: ", { results });
     return results?.hits?.map((hit: any) => ({
       id: hit.document.id,
       createdAt: new Date(hit.document.created_at).toISOString(),
@@ -2554,4 +2837,480 @@ export async function deleteUserData(userId: string) {
     console.error("Error deleting user data:", error);
     throw error;
   }
+}
+export async function getTrendingDebates(limit: number = 5) {
+  try {
+    // Use new compound index for efficient querying
+    const debates = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.debateActivityCollectionId,
+      [
+        Query.orderDesc('quality'),
+        Query.orderDesc('impact'),
+        Query.orderDesc('timestamp'),
+        Query.limit(limit),
+        // Only get recent debates for trending
+        Query.greaterThan('timestamp', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+      ]
+    );
+
+    // Enrich debate data using new indexes
+    const enrichedDebates = await Promise.all(
+      debates.documents.map(async (debate) => {
+        // Use compound indexes for efficient participant and comment counts
+        const [participants, comments, metrics] = await Promise.all([
+          getDebateParticipants(debate.$id),
+          getDebateComments(debate.$id),
+          getDebateEngagementMetrics(debate.$id)
+        ]);
+
+        const engagementTrend = calculateEngagementTrend(metrics);
+        const isHot = engagementTrend > 50;
+
+        // Get top arguments using quality index
+        const topArguments = await getTopDebateArguments(debate.$id);
+
+        return {
+          ...debate,
+          participants: participants.length,
+          comments: comments.length,
+          topArguments,
+          isHot,
+          trend: engagementTrend,
+          lastActive: getLastActiveTime(comments)
+        };
+      })
+    );
+
+    return enrichedDebates;
+  } catch (error) {
+    console.error('Error fetching trending debates:', error);
+    throw error;
+  }
+}
+
+// New helper functions
+export async function getDebateEngagementMetrics(debateId: string) {
+  try {
+    return await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.engagementCollectionId,
+      [
+        Query.equal('listId', debateId),
+        Query.orderDesc('timestamp'),
+        Query.limit(100)
+      ]
+    );
+  } catch (error) {
+    console.error('Error fetching debate metrics:', error);
+    return [];
+  }
+}
+
+export async function getTopDebateArguments(debateId: string) {
+  try {
+    const topArgs = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      [
+        Query.equal('list', debateId),
+        Query.orderDesc('quality'),
+        Query.orderDesc('impact'),
+        Query.limit(3)
+      ]
+    );
+    
+    return topArgs.documents.map(arg => ({
+      content: arg.Content,
+      votes: arg.Likes?.length || 0,
+      author: arg.user.name,
+      isVerified: arg.verified || false
+    }));
+  } catch (error) {
+    console.error('Error fetching top arguments:', error);
+    return [];
+  }
+}
+
+export async function trackGeneralEngagement({
+  userId,
+  action,
+  metadataPage,
+  metadataPlatform,
+  metadataDuration,
+  metadataTimestamp
+}: {
+  userId: string;
+  action: string;
+  metadataPage?: string;
+  metadataPlatform?: string;
+  metadataDuration?: number;
+  metadataTimestamp: string;
+}) {
+  try {
+    return await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.generalEngagementCollectionId,
+      ID.unique(),
+      {
+        userId,
+        action,
+        metadataPage: metadataPage || '',
+        metadataPlatform: metadataPlatform || 'web',
+        metadataDuration: metadataDuration || 0,
+        metadataTimestamp
+      }
+    );
+  } catch (error) {
+    console.error('Error tracking general engagement:', error);
+    throw error;
+  }
+}
+interface EngagementData {
+  userId: string;
+  action: string;
+  route: string;
+  source: string;
+  timestamp: string;
+}
+
+export const trackEngagement = async (data: {
+  userId: string;
+  action: string;
+  route?: string;
+  source?: string;
+  timestamp?: string;
+  listId?: string;
+  quality?: number;
+  impact?: number;
+}) => {
+  try {
+    if (!data.userId) {
+      throw new Error('userId is required for tracking engagement');
+    }
+
+    const response = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.engagementCollectionId,
+      ID.unique(),
+      {
+        userId: data.userId,
+        action: data.action,
+        route: data.route || '',
+        source: data.source || 'web',
+        timestamp: data.timestamp || new Date().toISOString(),
+        listId: data.listId || null,
+        quality: data.quality || 0,
+        impact: data.impact || 0
+      }
+    );
+    const updateListEngagementMetrics = async (listId: string, action: string) => {
+      try {
+        const list = await databases.getDocument(
+          appwriteConfig.databaseId,
+          appwriteConfig.listCollectionId,
+          listId
+        );
+    
+        // Calculate new metrics based on action
+        const metrics = calculateUpdatedMetrics(list, action);
+    
+        await databases.updateDocument(
+          appwriteConfig.databaseId,
+          appwriteConfig.listCollectionId,
+          listId,
+          {
+            engagementScore: metrics.engagementScore,
+            trendingScore: metrics.trendingScore,
+            qualityScore: metrics.qualityScore,
+            lastActiveTimestamp: new Date().toISOString()
+          }
+        );
+      } catch (error) {
+        console.error('Error updating list engagement metrics:', error);
+      }
+    };
+    
+    const calculateUpdatedMetrics = (list: any, action: string) => {
+      const baseScores = {
+        create_list: { engagement: 5, trending: 5, quality: 5 },
+        view_list: { engagement: 1, trending: 1, quality: 0 },
+        like_list: { engagement: 2, trending: 2, quality: 1 },
+        comment_list: { engagement: 3, trending: 3, quality: 2 },
+        share_list: { engagement: 4, trending: 4, quality: 3 }
+      };
+    
+      const scores = baseScores[action] || { engagement: 0, trending: 0, quality: 0 };
+    
+      return {
+        engagementScore: (list.engagementScore || 0) + scores.engagement,
+        trendingScore: (list.trendingScore || 0) + scores.trending,
+        qualityScore: (list.qualityScore || 0) + scores.quality
+      };
+    };
+    // If this is a list-related action, update the list's engagement metrics
+    if (data.listId) {
+      await updateListEngagementMetrics(data.listId, data.action);
+    }
+
+    return response;
+  } catch (error) {
+    console.error('Error tracking engagement:', error);
+    return null;
+  }
+};
+
+export async function getDebateStats(debateId: string) {
+  try {
+    const [comments, participants, reactions] = await Promise.all([
+      getDebateComments(debateId),
+      getDebateParticipants(debateId),
+      getDebateReactions(debateId)
+    ]);
+
+    // Calculate various stats
+    const totalVotes = reactions.reduce((sum, r) => sum + (r.count || 0), 0);
+    const topContributors = getTopContributors(comments);
+    const sentimentAnalysis = await analyzeSentiment(comments);
+    const qualityScore = calculateQualityScore(comments);
+
+    return {
+      totalComments: comments.length,
+      totalParticipants: participants.length,
+      totalVotes,
+      topContributors,
+      sentimentAnalysis,
+      qualityScore,
+      activity: calculateActivityMetrics(comments)
+    };
+  } catch (error) {
+    console.error('Error fetching debate stats:', error);
+    throw error;
+  }
+}
+
+export async function getListEngagement(listId: string) {
+  try {
+    const engagement = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.engagementCollectionId,
+      [
+        Query.equal('listId', listId),
+        Query.orderDesc('$createdAt')
+      ]
+    );
+
+    const metrics = calculateEngagementMetrics(engagement.documents);
+    const trend = calculateEngagementTrend(metrics);
+
+    return {
+      metrics,
+      trend,
+      recentActivity: engagement.documents.slice(0, 10),
+      peakTimes: calculatePeakTimes(engagement.documents)
+    };
+  } catch (error) {
+    console.error('Error fetching list engagement:', error);
+    throw error;
+  }
+}
+
+export async function getTrendingCategories() {
+  try {
+    const lists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      [Query.orderDesc('$createdAt'), Query.limit(100)]
+    );
+
+    // Calculate category engagement
+    const categoryStats = {};
+    lists.documents.forEach(list => {
+      list.Categories?.forEach(category => {
+        if (!categoryStats[category]) {
+          categoryStats[category] = {
+            count: 0,
+            engagement: 0,
+            trending: 0
+          };
+        }
+        categoryStats[category].count++;
+        categoryStats[category].engagement += list.engagementScore || 0;
+        categoryStats[category].trending += calculateTrendingScore(list);
+      });
+    });
+
+    // Sort categories by trending score
+    return Object.entries(categoryStats)
+      .map(([category, stats]) => ({
+        id: category,
+        name: category,
+        ...stats
+      }))
+      .sort((a, b) => b.trending - a.trending);
+  } catch (error) {
+    console.error('Error fetching trending categories:', error);
+    throw error;
+  }
+}
+
+export async function updateListRanking(data: {
+  listId: string;
+  rankingChange: number;
+  category?: string;
+}) {
+  try {
+    const list = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      data.listId
+    );
+
+    // Update ranking
+    const updatedList = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      data.listId,
+      {
+        rankingPosition: list.rankingPosition + data.rankingChange,
+        lastRankingUpdate: new Date().toISOString()
+      }
+    );
+
+    // Store ranking history
+    await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.rankingHistoryCollectionId,
+      ID.unique(),
+      {
+        listId: data.listId,
+        oldRank: list.rankingPosition,
+        newRank: list.rankingPosition + data.rankingChange,
+        category: data.category,
+        timestamp: new Date().toISOString()
+      }
+    );
+
+    // Create notification if significant change
+    if (Math.abs(data.rankingChange) >= 5) {
+      await createRankingNotification({
+        userId: list.userId,
+        listId: data.listId,
+        rankingChange: data.rankingChange,
+        category: data.category
+      });
+    }
+
+    return updatedList;
+  } catch (error) {
+    console.error('Error updating list ranking:', error);
+    throw error;
+  }
+}
+
+// Helper functions
+function calculateEngagementTrend(data: any): number {
+  // Implement engagement trend calculation logic
+  return 0;
+}
+
+function calculateEngagementMetrics(engagements: any[]): any {
+  // Implement engagement metrics calculation logic
+  return {};
+}
+
+function calculateTrendingScore(list: any): number {
+  // Implement trending score calculation logic
+  return 0;
+}
+
+function getLastActiveTime(comments: any[]): string {
+  if (!comments.length) return 'No activity';
+  
+  const lastComment = comments.sort((a, b) => 
+    new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime()
+  )[0];
+
+  const diff = Date.now() - new Date(lastComment.$createdAt).getTime();
+  const minutes = Math.floor(diff / 60000);
+
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1440) return `${Math.floor(minutes / 60)}h ago`;
+  return `${Math.floor(minutes / 1440)}d ago`;
+}
+
+export async function getUserStats(userId?: string) {
+  if (!userId) return null;
+  
+  try {
+    // Get user's lists
+    const userLists = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.listCollectionId,
+      [Query.equal("creator", userId)]
+    );
+
+    // Get user's comments
+    const userComments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      [Query.equal("user", userId)]
+    );
+
+    // Calculate stats
+    const stats = {
+      totalLists: userLists.total,
+      totalComments: userComments.total,
+      totalLikes: userLists.documents.reduce((acc, list) => 
+        acc + (list.Likes?.length || 0), 0
+      ),
+      totalViews: userLists.documents.reduce((acc, list) => 
+        acc + (list.views || 0), 0
+      ),
+      topList: userLists.documents.sort((a, b) => 
+        (b.Likes?.length || 0) - (a.Likes?.length || 0)
+      )[0] || null,
+      recentActivity: {
+        lists: userLists.documents.slice(0, 5),
+        comments: userComments.documents.slice(0, 5)
+      },
+      engagementScore: calculateEngagementScore(userLists.documents),
+      rankingPositions: userLists.documents
+        .filter(list => list.rankingPosition)
+        .map(list => ({
+          listId: list.$id,
+          position: list.rankingPosition,
+          category: list.Categories?.[0]
+        }))
+    };
+
+    return stats;
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    throw error;
+  }
+}
+
+// Helper function to calculate engagement score
+function calculateEngagementScore(lists: any[]) {
+  if (!lists.length) return 0;
+
+  const weights = {
+    likes: 0.4,
+    comments: 0.3,
+    views: 0.2,
+    rankings: 0.1
+  };
+
+  const totalScore = lists.reduce((acc, list) => {
+    const likeScore = (list.Likes?.length || 0) * weights.likes;
+    const commentScore = (list.comments?.length || 0) * weights.comments;
+    const viewScore = (list.views || 0) * weights.views;
+    const rankingScore = list.rankingPosition ? weights.rankings : 0;
+
+    return acc + likeScore + commentScore + viewScore + rankingScore;
+  }, 0);
+
+  return Math.round((totalScore / lists.length) * 100);
 }

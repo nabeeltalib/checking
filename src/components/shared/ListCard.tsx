@@ -22,7 +22,7 @@ import {
 } from "@/lib/react-query/queries";
 import Comment from "./Comment";
 import { Button } from "../ui";
-import Tooltip from "@/components/ui/Tooltip";
+import { Tooltip } from "@/components/ui/tooltip"; // Changed to named import
 import { useToast } from "@/components/ui/use-toast";
 import SignInDialog from "@/components/shared/SignInDialog";
 import { useShareDialog } from "@/components/shared/ShareDialogContext";

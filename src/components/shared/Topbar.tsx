@@ -1,29 +1,40 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, NavLink } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { useUserContext } from "@/context/AuthContext";
 import { useSignOutAccount } from "@/lib/react-query/queries";
 import { NotificationBell } from "./notifications/NotificationBell";
 import { 
-  Menu, X, User, HelpCircle, Mail, LogOut, ChevronRight, Home, 
-  Telescope, Award, Bookmark, Users, PlusCircle, ChevronDown, List 
+  Menu, 
+  X, 
+  User, 
+  HelpCircle, 
+  Mail, 
+  LogOut, 
+  Home, 
+  Telescope, 
+  Award, 
+  Bookmark, 
+  Users, 
+  PlusCircle, 
+  ChevronDown, 
+  List,
+  Trophy 
 } from 'lucide-react';
+import { useTrackEngagement } from '@/lib/react-query/queries';
 
 const CreateListButton: React.FC = () => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const handleCreateList = () => {
-    navigate("/create-list");
-    setIsDropdownOpen(false);
-  };
+  const createMenuRef = useRef<HTMLDivElement>(null);
+  const { user } = useUserContext();
+  const { mutate: trackEngage } = useTrackEngagement();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
+      if (createMenuRef.current && !createMenuRef.current.contains(event.target as Node)) {
+        setIsCreateMenuOpen(false);
       }
     };
 
@@ -33,41 +44,95 @@ const CreateListButton: React.FC = () => {
     };
   }, []);
 
+  const handleCreateOption = (route: string) => {
+    if (user?.id) {
+      trackEngage({
+        userId: user.id,
+        action: 'create_menu_click',
+        route: route,
+        source: 'top_bar',
+        timestamp: new Date().toISOString()
+      });
+    }
+    setIsCreateMenuOpen(false);
+    navigate(route);
+  };
+
   return (
-    <div className="relative inline-block text-left" ref={dropdownRef}>
+    <div className="relative inline-block text-left" ref={createMenuRef}>
       <Button
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-lg flex items-center"
+        onClick={() => setIsCreateMenuOpen(!isCreateMenuOpen)}
+        className="bg-primary hover:bg-primary/90 text-white font-bold py-2 px-4 rounded-lg shadow-lg flex items-center gap-2"
       >
-        <PlusCircle className="w-5 h-5 mr-2" />
+        <PlusCircle className="w-5 h-5" />
         Create
-        <ChevronDown className="ml-2 w-4 h-4" />
+        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+          isCreateMenuOpen ? 'rotate-180' : ''
+        }`} />
       </Button>
 
-      {isDropdownOpen && (
-        <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-dark-4 ring-1 ring-black ring-opacity-5">
-          <div className="py-1">
-            <button
-              onClick={handleCreateList}
-              className="w-full text-left px-4 py-2 text-sm text-white hover:bg-dark-4 transition-colors duration-200"
+      <AnimatePresence>
+        {isCreateMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-40"
+              onClick={() => setIsCreateMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="absolute right-0 mt-2 w-64 bg-dark-2 rounded-xl p-4 z-50 shadow-xl"
             >
-              Create List
-            </button>
-            <button
-              className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
-              disabled
-            >
-              Create Group List (Coming Soon)
-            </button>
-            <button
-              className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
-              disabled
-            >
-              Create Challenge (Coming Soon)
-            </button>
-          </div>
-        </div>
-      )}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-white">Create</h3>
+                <button 
+                  onClick={() => setIsCreateMenuOpen(false)}
+                  className="p-1 hover:bg-dark-3 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+              
+              <div className="space-y-2">
+                <button
+                  onClick={() => handleCreateOption('/create-list')}
+                  className="w-full p-3 text-left text-white hover:bg-dark-3 rounded-lg transition-colors flex items-center space-x-3 group"
+                >
+                  <PlusCircle className="w-5 h-5 group-hover:text-primary transition-colors" />
+                  <span className="group-hover:text-primary transition-colors">Create List</span>
+                </button>
+                
+                <button
+                  onClick={() => handleCreateOption('/create-group')}
+                  className="w-full p-3 text-left text-white hover:bg-dark-3 rounded-lg transition-colors flex items-center space-x-3 group"
+                >
+                  <Users className="w-5 h-5 group-hover:text-primary transition-colors" />
+                  <span className="group-hover:text-primary transition-colors">Create Group List</span>
+                </button>
+                
+                <button
+                  disabled
+                  className="w-full p-3 text-left text-gray-400 flex items-center space-x-3 cursor-not-allowed opacity-50"
+                >
+                  <Trophy className="w-5 h-5" />
+                  <span>Create Challenge (Coming Soon)</span>
+                </button>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-dark-4">
+                <p className="text-xs text-gray-400 text-center">
+                  Create and share your lists with the community
+                </p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -81,7 +146,6 @@ const Topbar: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleOffCanvas = () => setIsOffCanvasOpen((prev) => !prev);
-  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   useEffect(() => {
     if (isSuccess) navigate(0);
@@ -148,7 +212,7 @@ const Topbar: React.FC = () => {
             <div className="relative hidden md:block" ref={dropdownRef}>
               <Button
                 className="flex items-center p-0 bg-transparent hover:bg-transparent"
-                onClick={toggleDropdown}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
                 <img
                   className="w-10 h-10 rounded-full object-cover shadow-lg"

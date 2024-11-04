@@ -35,7 +35,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useUserContext } from '@/context/AuthContext';
 import Loader from './Loader';
-import Tooltip from '@/components/ui/Tooltip';
+import { Tooltip } from "@/components/ui/tooltip"; // Changed to named import
 import { useShareDialog } from '@/components/shared/ShareDialogContext';
 import {
   DropdownMenu,
@@ -379,17 +379,22 @@ const ListCard2 = ({ list }) => {
       ));
   }, [list?.items, isExpanded]);
 
-  const handleCommentSubmit = async (e) => {
+  const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newComment.trim() === '') return;
-
+  
     try {
       const newCommentData = await createComment({
         listId: list.$id,
         userId: user.id,
         Content: newComment,
+        quality: 0,
+        impact: 0,
+        verified: false,
+        sourceUrls: [],
+        groupId: list.groupId, // If applicable
       });
-
+  
       if (newCommentData) {
         setNewComment('');
         if (!firstComment) {
@@ -658,7 +663,7 @@ const ListCard2 = ({ list }) => {
         {isLoadingComments ? (
           <p className="text-light-3 text-xs">Loading comments...</p>
         ) : firstComment ? (
-          <div className="space-y-4 text-xs">
+          <div className="bg-dark-2 rounded-xl space-y-4 text-xs">
             <Comment
               comment={firstComment}
               setReply={() => {}}

@@ -1,7 +1,7 @@
 // src/components/CreateList.tsx
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useCreateList, useGenerateListIdea } from '@/lib/react-query/queries';
 import { useToast } from '@/components/ui/use-toast';
 import ListForm from '@/components/forms/ListForm';
@@ -14,7 +14,8 @@ const CreateList: React.FC = () => {
   const { toast } = useToast();
   const { user } = useUserContext();
   const navigate = useNavigate();
-  
+  const {title, groupId} = useParams();
+
   const { mutateAsync: createList, isLoading } = useCreateList(user.id);
   const { mutate: generateListIdea, isLoading: isGeneratingIdea } = useGenerateListIdea(user.id);
   const [listIdea, setListIdea] = useState<string | null>(null);
@@ -100,11 +101,22 @@ const CreateList: React.FC = () => {
             {isGeneratingIdea ? 'Generating Idea...' : 'Generate Title Ideas'}
           </button>
         </div>*/}
-        <ListForm
+         {
+          title ?  <ListForm
           onSubmit={handleCreateList}
           action="Create"
           initialIdea={listIdea}
+          title={title.replace(/-/g, ' ')}
+          groupId={groupId}
         />
+        :
+
+        <ListForm
+        onSubmit={handleCreateList}
+        action="Create"
+        initialIdea={listIdea}
+      />
+       }
       </div>
     </div>
   );

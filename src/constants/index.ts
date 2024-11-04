@@ -39,6 +39,12 @@ export const sidebarLinks = [
     label: "LeaderBoard",
     icon:"/assets/icons/list.svg"
   },  
+  {
+    imgURL: "/assets/icons/list.svg",
+    route: "/comprehensive-leaderboard",
+    label: "Groups",
+    icon:"/assets/icons/list.svg"
+  },  
 ];
 
 export const sidebarLinks2 = [

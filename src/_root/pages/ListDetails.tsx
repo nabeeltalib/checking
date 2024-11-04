@@ -37,7 +37,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import Tooltip from "@/components/ui/Tooltip";
+import { Tooltip } from "@/components/ui/tooltip"; // Changed to named import
 
 const ListDetails: React.FC = () => {
   const navigate = useNavigate();

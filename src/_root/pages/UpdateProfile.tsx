@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,6 +19,7 @@ import { motion } from "framer-motion";
 import { useUserContext } from "@/context/AuthContext";
 import { useGetUserById, useUpdateUser } from "@/lib/react-query/queries";
 import { User, Lock, AtSign, Mail, FileText, Globe } from "lucide-react";
+import { checkUniqueUsername } from "@/lib/appwrite/config";
 
 const formSchema = z.object({
   Name: z.string().min(3, "Name must be at least 3 characters").max(100, "Name must be less than 100 characters"),
@@ -37,6 +38,7 @@ const UpdateProfile: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user, setUser } = useUserContext();
+  const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,8 +56,8 @@ const UpdateProfile: React.FC = () => {
   });
 
   const { data: currentUser, isLoading: isLoadingUser } = useGetUserById(id || "");
-  const { mutateAsync: updateUser, isLoading: isLoadingUpdate } = useUpdateUser();
-  
+  const { mutateAsync: updateUser } = useUpdateUser();
+    
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -78,9 +80,11 @@ const UpdateProfile: React.FC = () => {
 
   const handleUpdate = async (data: z.infer<typeof formSchema>) => {
     try {
+      setIsLoading(true)
       const payload = {
         userId: user.id,
         Name: data.Name,
+        Username: data.Username,
         Bio: data.Bio,
         ImageUrl: data.ImageUrl,
         Public: data.Public,
@@ -88,6 +92,12 @@ const UpdateProfile: React.FC = () => {
         file: data.file ? [data.file] : [],
       };
   
+      let unique = await checkUniqueUsername(payload.Username, payload.userId)
+
+      if (!unique) {
+        throw new Error("Username Already taken, please try another")
+      }
+
       const updatedUser = await updateUser(payload);
   
       if (!updatedUser) {
@@ -112,9 +122,12 @@ const UpdateProfile: React.FC = () => {
     } catch (error) {
       toast({
         title: "Update Profile failed",
-        description: "Please try again.",
+        description: `${error}`,
         variant: "destructive",
       });
+    }
+    finally{
+      setIsLoading(false)
     }
   };  
 
@@ -205,7 +218,7 @@ const UpdateProfile: React.FC = () => {
                       type="text"
                       className="bg-dark-3 border-dark-4 text-light-1"
                       {...field}
-                      disabled
+                      
                       aria-label="Username"
                     />
                   </FormControl>
@@ -346,10 +359,10 @@ const UpdateProfile: React.FC = () => {
               <Button
                 type="submit"
                 className="bg-primary-500 text-white hover:bg-primary-600"
-                disabled={isLoadingUpdate}
+                disabled={isLoading}
                 aria-label="Update Profile"
               >
-                {isLoadingUpdate && <Loader />}
+                {isLoading && <Loader />}
                 Update Profile
               </Button>
             </div>

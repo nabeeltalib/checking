@@ -53,7 +53,7 @@ const Topbar2: React.FC = () => {
   };
 
   const handleCreateGroupList = () => {
-    // Restricted for now
+    navigate("/create-group")
   };
 
   const handleCreateChallenge = () => {
@@ -140,18 +140,17 @@ const Topbar2: React.FC = () => {
                     Create List
                   </button>
                   <button
-                    onClick={handleCreateGroupList}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
-                    disabled
+                    onClick={handleCreateList}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-100 hover:bg-blue-500"
                   >
-                    Create Group List (Coming Soon)
+                    Create Group List
                   </button>
                   <button
-                    onClick={handleCreateChallenge}
+                    onClick={handleCreateList}
                     className="w-full text-left px-4 py-2 text-sm text-gray-400 cursor-not-allowed"
                     disabled
                   >
-                    Create Challenge (Coming Soon)
+                    Create Challenge 
                   </button>
                 </div>
               </div>

@@ -30,6 +30,7 @@ import AuthLayout from "@/_auth/AuthLayout";
 import RootLayout from "@/_root/RootLayout";
 import SigninForm from "@/_auth/forms/SigninForm";
 import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "./globals.css";
 import PreviewMode from "./_root/pages/PreviewMode";
@@ -56,6 +57,11 @@ import LiveFrame from "./components/shared/LiveFrame";
 import OnboardingScreens from "./_root/pages/OnboardingScreens";
 import AuthCallback from "./_root/pages/AuthCallback";
 import NotFound from "./_root/pages/NotFound";
+import CreateGroup from "./_root/pages/CreateGroup";
+import Groups from "./_root/pages/Groups";
+import YourGroups from "./_root/pages/YourGroups";
+import GroupDetails from "./_root/pages/GroupDetails";
+import EmbedGroupChallenge from "./_root/pages/EmbedGroupChallenge";
 
 interface AppProps {
   isInitialLoading: boolean;
@@ -78,6 +84,7 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
   }
 
   return (
+  <TooltipProvider>
     <ShareDialogProvider>
       <>
         <Routes>
@@ -91,6 +98,7 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
 
           <Route path="/staticframe/:id" element={<StaticFrame />} />
           <Route path="/liveframe/:id" element={<LiveFrame />} />
+          <Route path="/embed-group/:groupId" element={<EmbedGroupChallenge />} />
 
           {user.id ? (
             <Route element={<RootLayout />}>
@@ -109,6 +117,7 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
               <Route path="/saved" element={<Saved />} />
               <Route path="/all-lists" element={<AllLists />} />
               <Route path="/create-list" element={<CreateList />} />
+              <Route path="/create-list/:title/:groupId" element={<CreateList />} />
               <Route path="/update-list/:id" element={<EditList />} />
               <Route path="/lists/:id" element={<ListDetails />} />
               <Route path="/profile/:profile" element={<Profile />} />
@@ -130,6 +139,11 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
               <Route path="/admin-panel" element={<AdminPanel />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/my-rankings" element={<MyRankings />} />
+              <Route path="/create-group" element={<CreateGroup />} />
+              <Route path="/create-group/:groupId" element={<CreateGroup />} />
+              <Route path="/your-groups" element={<YourGroups />} />
+              <Route path="/group/:groupId" element={<GroupDetails />} />
+              <Route path="/groups" element={<Groups />} />
             </Route>
           ) : (
             <Route element={<RootLayout2 />}>
@@ -156,6 +170,8 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
         <ShareDialog />
       </>
     </ShareDialogProvider>
+  </TooltipProvider>
+
   );
 };
 

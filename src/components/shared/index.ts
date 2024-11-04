@@ -13,3 +13,4 @@ export { default as FriendsLists } from "./FriendsLists";
 export { default as RightSidebar } from "./RightSidebar";
 export { default as SearchBar } from "./SearchBar";
 export { default as FriendRequests } from "./FriendRequests";
+export { default as TrendingDebatesSection } from "./TrendingDebatesSection";

@@ -32,6 +32,12 @@ module.exports = {
         'light-2': '#EFEFEF',
         'light-3': '#7878A3',
         'light-4': '#5C5C7B',
+        dark: {
+          1: '#000000',
+          2: '#111111',
+          3: '#222222',
+          4: '#333333',
+        }
       },
       screens: {
         xs: '480px',
@@ -56,6 +62,11 @@ module.exports = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+      },
+      "dependencies": {
+        "framer-motion": "latest",
+        "lucide-react": "latest",
+        "@radix-ui/react-tooltip": "latest"
       },
     },
   },
