@@ -136,32 +136,48 @@ const GroupListCard = ({
           )}
 
           {RemoveHighlight && (
-            <Button
-              onClick={handleRemoveFromHighlights}
-              variant="destructive"
-              size="sm"
-              className="bg-dark-4 hover:bg-dark-3"
-            >
-              <Minus size={16} className="mr-2" />
-              Remove Highlight
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleRemoveFromHighlights}
+                    variant="destructive"
+                    size="sm"
+                    className="bg-dark-4 hover:bg-dark-3"
+                  >
+                    <Minus size={16} className="mr-2" />
+                    Remove Highlight
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Remove this list from highlights</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
 
           {btn && (
-            <Button
-              onClick={btn === "remove" ? handleRemoveFromChallenge : handleAddToChallenge}
-              className={btn === "remove" 
-                ? "bg-dark-4 hover:bg-dark-3" 
-                : "bg-blue-500 hover:bg-blue-600"}
-              size="sm"
-            >
-              {btn === "remove" ? (
-                <Minus size={16} className="mr-2" />
-              ) : (
-                <Plus size={16} className="mr-2" />
-              )}
-              {btn === "remove" ? "Remove" : "Add to Challenge"}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={btn === "remove" ? handleRemoveFromChallenge : handleAddToChallenge}
+                    className={btn === "remove" 
+                      ? "bg-dark-4 hover:bg-dark-3" 
+                      : "bg-blue-500 hover:bg-blue-600"}
+                    size="sm"
+                  >
+                    {btn === "remove" ? (
+                      <Minus size={16} className="mr-2" />
+                    ) : (
+                      <Plus size={16} className="mr-2" />
+                    )}
+                    {btn === "remove" ? "Remove" : "Add to Challenge"}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {btn === "remove" ? "Remove this list from the challenge" : "Add this list to the challenge"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
       </div>
@@ -227,26 +243,40 @@ const GroupListCard = ({
       {/* Footer Actions */}
       {!noAction && (
         <div className="px-6 py-4 bg-dark-3 flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(`/lists/${list.$id}`)}
-            className="text-gray-400 hover:text-white"
-          >
-            <ThumbsUp size={16} className="mr-2" />
-            {list.Likes?.length || 0}
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/lists/${list.$id}`)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <ThumbsUp size={16} className="mr-2" />
+                  {list.Likes?.length || 0}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Show appreciation for this list</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate(`/lists/${list.$id}`)}
-            className="text-gray-400 hover:text-white"
-          >
-            <MessageCircle size={16} className="mr-2" />
-            View Details
-            <ExternalLink size={14} className="ml-2" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/lists/${list.$id}`)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <MessageCircle size={16} className="mr-2" />
+                  View Details
+                  <ExternalLink size={14} className="ml-2" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>View details of this list</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       )}
     </motion.div>
