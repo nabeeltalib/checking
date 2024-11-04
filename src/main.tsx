@@ -13,7 +13,7 @@ import { RankingProvider } from "@/context/RankingContext";
 import { DebateProvider } from "@/context/DebateContext";
 
 import App from "./App";
-import './globals.css';
+import './globals.css'
 
 const AppWrapper: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
