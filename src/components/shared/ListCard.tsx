@@ -22,7 +22,6 @@ import {
 } from "@/lib/react-query/queries";
 import Comment from "./Comment";
 import { Button } from "../ui";
-import { Tooltip } from "@/components/ui/tooltip"; // Changed to named import
 import { useToast } from "@/components/ui/use-toast";
 import SignInDialog from "@/components/shared/SignInDialog";
 import { useShareDialog } from "@/components/shared/ShareDialogContext";
@@ -104,37 +103,30 @@ const ListCard: React.FC<ListCardProps> = ({ list, isAuthenticated }) => {
   };
 
   const handleFollow = () => {
-    // Implement follow logic here
     console.log("Follow action");
   };
 
   const handleUnFollow = () => {
-    // Implement unfollow logic here
     console.log("Unfollow action");
   };
 
   const handleLike = () => {
-    // Implement like logic here
     console.log("Like action");
   };
 
   const handleDislike = () => {
-    // Implement dislike logic here
     console.log("Dislike action");
   };
 
   const handleComment = () => {
-    // Implement comment logic here
     console.log("Comment action");
   };
 
   const handleSave = () => {
-    // Implement save logic here
     console.log("Save action");
   };
 
   const handleRemix = () => {
-    // Implement remix logic here
     console.log("Remix action");
   };
 
@@ -226,15 +218,13 @@ const ListCard: React.FC<ListCardProps> = ({ list, isAuthenticated }) => {
             >
               {isFollowed ? "Following" : "Follow"}
             </Button>
-            <Tooltip content="Share this list">
-              <button
-                onClick={handleShare}
-                className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
-                aria-label="Share this list"
-              >
-                <Share2 size={24} />
-              </button>
-            </Tooltip>
+            <button
+              onClick={handleShare}
+              className="text-light-2 hover:text-primary-500 transition-colors p-2 rounded-full hover:bg-dark-3"
+              aria-label="Share this list"
+            >
+              <Share2 size={24} />
+            </button>
           </div>
         </div>
 
@@ -327,54 +317,44 @@ const ListCard: React.FC<ListCardProps> = ({ list, isAuthenticated }) => {
         {/* Action Buttons */}
         <div className="flex justify-between items-center mt-4 text-sm px-5">
           <div className="flex items-center space-x-4">
-            <Tooltip content="Love it">
-              <Button
-                onClick={() => handleAction(handleLike)}
-                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-              >
-                <ThumbsUp size={18} />
-                <span>{list.Likes?.length || 0}</span>
-              </Button>
-            </Tooltip>
+            <Button
+              onClick={() => handleAction(handleLike)}
+              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+            >
+              <ThumbsUp size={18} />
+              <span>{list.Likes?.length || 0}</span>
+            </Button>
 
-            <Tooltip content="Dislike">
-              <Button
-                onClick={() => handleAction(handleDislike)}
-                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-              >
-                <ThumbsDown size={18} />
-                <span>{list.Dislikes?.length || 0}</span>
-              </Button>
-            </Tooltip>
+            <Button
+              onClick={() => handleAction(handleDislike)}
+              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+            >
+              <ThumbsDown size={18} />
+              <span>{list.Dislikes?.length || 0}</span>
+            </Button>
 
-            <Tooltip content="Comment on this list">
-              <Button
-                onClick={() => handleAction(handleComment)}
-                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-              >
-                <MessageCircle size={18} />
-                <span>{comments?.length || 0}</span>
-              </Button>
-            </Tooltip>
+            <Button
+              onClick={() => handleAction(handleComment)}
+              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+            >
+              <MessageCircle size={18} />
+              <span>{comments?.length || 0}</span>
+            </Button>
           </div>
           <div className="flex items-center space-x-4">
-            <Tooltip content="Save this list">
-              <Button
-                onClick={() => handleAction(handleSave)}
-                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-              >
-                <Bookmark size={16} />
-              </Button>
-            </Tooltip>
+            <Button
+              onClick={() => handleAction(handleSave)}
+              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+            >
+              <Bookmark size={16} />
+            </Button>
 
-            <Tooltip content="Remix this list">
-              <Button
-                onClick={() => handleAction(handleRemix)}
-                className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
-              >
-                <Wand size={18} />
-              </Button>
-            </Tooltip>
+            <Button
+              onClick={() => handleAction(handleRemix)}
+              className="flex items-center gap-2 bg-transparent hover:bg-dark-4 transition-colors text-light-2 p-1 rounded-lg"
+            >
+              <Wand size={18} />
+            </Button>
           </div>
         </div>
 

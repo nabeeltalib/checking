@@ -35,7 +35,6 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useUserContext } from '@/context/AuthContext';
 import Loader from './Loader';
-import { Tooltip } from "@/components/ui/tooltip"; // Changed to named import
 import { useShareDialog } from '@/components/shared/ShareDialogContext';
 import {
   DropdownMenu,
@@ -617,44 +616,33 @@ const ListCard2 = ({ list }) => {
       {/* Actions */}
       <div className="flex justify-between items-center mt-4 text-sm ml-5 mr-5">
         <div className="flex items-center space-x-4">
-          <Tooltip content={hasLiked ? 'Unlike' : 'Like'}>
-            <Button variant="default" onClick={handleLikeList} className="p-1">
-              <ThumbsUp size={18} className={hasLiked ? 'fill-orange-500 text-orange-500' : 'text-white'} />
-              <span className="ml-1">{likes.length}</span>
-            </Button>
-          </Tooltip>
-          <Tooltip content={hasDisliked ? 'Remove dislike' : 'Dislike'}>
-            <Button variant="default" onClick={handleDislikeList} className="p-1">
-              <ThumbsDown size={18} className={hasDisliked ? 'fill-orange-500 text-orange-500' : 'text-white'} />
-              <span className="ml-1">{dislikes.length}</span>
-            </Button>
-          </Tooltip>
+          <Button variant="default" onClick={handleLikeList} className="p-1">
+            <ThumbsUp size={18} className={hasLiked ? 'fill-orange-500 text-orange-500' : 'text-white'} />
+            <span className="ml-1">{likes.length}</span>
+          </Button>
+          <Button variant="default" onClick={handleDislikeList} className="p-1">
+            <ThumbsDown size={18} className={hasDisliked ? 'fill-orange-500 text-orange-500' : 'text-white'} />
+            <span className="ml-1">{dislikes.length}</span>
+          </Button>
           <Button variant="default" onClick={() => {}} className="p-1">
             <MessageCircle size={18} className="text-gray-500" />
             <span className="ml-1">{comments?.length || 0}</span>
           </Button>
         </div>
         <div className="flex items-center space-x-4">
-          <Tooltip content={isSaved ? 'Unsave' : 'Save'}>
-            <Button onClick={handleSaveList} className="p-1">
-              <Bookmark size={18} className={isSaved ? 'fill-orange-500 text-orange-500' : ''} />
-            </Button>
-          </Tooltip>
-
-          <Tooltip content="Remix">
-            <Button variant="default" onClick={() => navigate(`/remix/${list.$id}`)} className="p-1">
-              <Wand size={18} className="text-gray-200" />
-            </Button>
-          </Tooltip>
-          <Tooltip content="Share">
-            <Button
-              onClick={handleShare}
-              className="p-1"
-              aria-label="Share this list"
-            >
-              <Share2 size={18} />
-            </Button>
-          </Tooltip>          
+          <Button onClick={handleSaveList} className="p-1">
+            <Bookmark size={18} className={isSaved ? 'fill-orange-500 text-orange-500' : ''} />
+          </Button>
+          <Button variant="default" onClick={() => navigate(`/remix/${list.$id}`)} className="p-1">
+            <Wand size={18} className="text-gray-200" />
+          </Button>
+          <Button
+            onClick={handleShare}
+            className="p-1"
+            aria-label="Share this list"
+          >
+            <Share2 size={18} />
+          </Button>          
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, KeyboardEvent, useRef } from "react";
+import React, { useState, useEffect, KeyboardEvent } from "react";
 import { z } from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -23,13 +23,13 @@ import {
   useUpdateList,
 } from "@/lib/react-query/queries";
 import { Loader } from "@/components/shared";
-import { 
-  addListToGroupChallenge, 
-  CollaborateOnList, 
-  createNotification, 
-  getCategories, 
+import {
+  addListToGroupChallenge,
+  CollaborateOnList,
+  createNotification,
+  getCategories,
   trackEngagement,
-  updateCategoryUsageCount 
+  updateCategoryUsageCount,
 } from "@/lib/appwrite/api";
 import {
   DndContext,
@@ -48,13 +48,7 @@ import { SortableItem } from "./SortableItem";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { getUserFriends, indexList } from "@/lib/appwrite/config";
 import ListPreview from "@/components/shared/ListPreview";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger 
-} from "@/components/ui/tooltip";
-import { X, Info, ChevronDown, ChevronUp, GripVertical, Sparkles } from "lucide-react";
+import { X, ChevronDown, ChevronUp, GripVertical, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FormSection } from "./FormSection";
 
@@ -65,14 +59,14 @@ interface TagInputProps {
 }
 
 const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange }) => {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
 
   const handleInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' || e.key === ',') {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
       addTag();
     }
@@ -82,31 +76,28 @@ const TagInput: React.FC<TagInputProps> = ({ tags, onTagsChange }) => {
     const trimmedInput = input.trim();
     if (trimmedInput && !tags.includes(trimmedInput)) {
       onTagsChange([...tags, trimmedInput]);
-      setInput('');
+      setInput("");
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    onTagsChange(tags.filter(tag => tag !== tagToRemove));
+    onTagsChange(tags.filter((tag) => tag !== tagToRemove));
   };
 
   return (
     <div className="flex flex-wrap items-center gap-2 p-3 bg-dark-4 rounded-lg border border-gray-700 focus-within:border-primary-500 transition-all duration-300">
       <motion.div
-        className="flex flex-wrap items-center gap-2 p-3 bg-dark-4 rounded-lg 
-          border border-gray-700 focus-within:border-primary-500 transition-all duration-300"
+        className="flex flex-wrap items-center gap-2 p-3 bg-dark-4 rounded-lg border border-gray-700 focus-within:border-primary-500 transition-all duration-300"
         whileHover={{ scale: 1.01 }}
         whileTap={{ scale: 0.99 }}
       >
-        {tags.map(tag => (
+        {tags.map((tag) => (
           <motion.div
             key={tag}
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
-            className="flex items-center bg-gradient-to-r from-primary-500 to-primary-600 
-              text-white px-3 py-1.5 rounded-full text-sm shadow-sm hover:shadow-md 
-              transition-all duration-300"
+            className="flex items-center bg-gradient-to-r from-primary-500 to-primary-600 text-white px-3 py-1.5 rounded-full text-sm shadow-sm hover:shadow-md transition-all duration-300"
           >
             {tag}
             <button
@@ -201,14 +192,21 @@ const ListForm = ({ list, action, initialData, title, groupId }: any) => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [newTimespan, setNewTimespan] = useState("");
-
   const [categories, setCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
   const [timespans, setTimespans] = useState<string[]>([
-    "All-time", "Decade", "This year", "For now"
+    "All-time",
+    "Decade",
+    "This year",
+    "For now",
   ]);
   const [locations, setLocations] = useState<string[]>([
-    "United States", "Los Angeles", "South America", "Brooklyn", "Hyde Park", "Hillcrest HS"
+    "United States",
+    "Los Angeles",
+    "South America",
+    "Brooklyn",
+    "Hyde Park",
+    "Hillcrest HS",
   ]);
   const [newLocation, setNewLocation] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -232,16 +230,22 @@ const ListForm = ({ list, action, initialData, title, groupId }: any) => {
   );
 
   const formSchema = z.object({
-    Title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
+    Title: z
+      .string()
+      .min(3, "Title must be at least 3 characters")
+      .max(100, "Title must be less than 100 characters"),
     Description: z.string().max(1000, "Description must be less than 1000 characters").optional(),
-    items: z.array(
-      z.object({
-        content: z.string().min(1, "Item cannot be empty"),
-        isVisible: z.boolean(),
-        creator: z.string().nullable().default(null),
-        id: z.string().nullable().default(null),
-      })
-    ).min(3, "At least 3 items are required").max(10, "Maximum 10 items allowed"),
+    items: z
+      .array(
+        z.object({
+          content: z.string().min(1, "Item cannot be empty"),
+          isVisible: z.boolean(),
+          creator: z.string().nullable().default(null),
+          id: z.string().nullable().default(null),
+        })
+      )
+      .min(3, "At least 3 items are required")
+      .max(10, "Maximum 10 items allowed"),
     Categories: z.array(z.string()),
     Tags: z.array(z.string()),
     timespans: z.array(z.string()),
@@ -264,17 +268,20 @@ const ListForm = ({ list, action, initialData, title, groupId }: any) => {
     defaultValues: {
       Title: title || initialData?.Title || list?.Title || "",
       Description: initialData?.Description || list?.Description || "",
-      items: initialData?.item?.map((item: any) => ({
-        content: item.content,
-        isVisible: true,
-        creator: item?.creator?.$id,
-        id: item?.$id,
-      })) || list?.item?.map((item: any) => ({
-        content: item.content,
-        isVisible: true,
-        creator: item?.creator?.$id,
-        id: item?.$id,
-      })) || Array(numItems).fill({ content: "", isVisible: true }),
+      items:
+        initialData?.item?.map((item: any) => ({
+          content: item.content,
+          isVisible: true,
+          creator: item?.creator?.$id,
+          id: item?.$id,
+        })) ||
+        list?.item?.map((item: any) => ({
+          content: item.content,
+          isVisible: true,
+          creator: item?.creator?.$id,
+          id: item?.$id,
+        })) ||
+        Array(numItems).fill({ content: "", isVisible: true }),
       Categories: initialData?.Categories || list?.Categories || [],
       Tags: initialData?.Tags || list?.Tags || [],
       timespans: initialData?.timespans || list?.timespans || [],

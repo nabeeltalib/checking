@@ -20,7 +20,6 @@ interface IList {
 
 const LISTS_PER_PAGE = 20;
 
-// Fisher-Yates shuffle function
 function shuffleArray<T>(array: T[]): T[] {
   const newArray = [...array];
   for (let i = newArray.length - 1; i > 0; i--) {
@@ -40,7 +39,6 @@ const LoadingSkeleton: React.FC = () => (
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: index * 0.1 }}
       >
-        {/* Skeleton Content */}
         <div className="flex items-center mb-4">
           <motion.div
             className="w-10 h-10 rounded-full bg-dark-3"
@@ -168,7 +166,6 @@ const PreviewMode: React.FC = () => {
     return () => clearInterval(intervalId);
   }, [prompts]);
 
-  // Shuffle list IDs when new data is loaded
   useEffect(() => {
     if (lists?.pages) {
       const allListIds = lists.pages.flatMap(page => 
@@ -187,7 +184,6 @@ const PreviewMode: React.FC = () => {
 
   const handleDialogClose = () => setIsSignInDialogOpen(false);
 
-  // Filter and sort lists based on shuffled IDs and search term
   const filteredAndSortedLists = useMemo(() => {
     if (!lists?.pages) return [];
     
@@ -208,7 +204,6 @@ const PreviewMode: React.FC = () => {
 
   return (
     <div className="mt-4 w-full items-center bg-dark-1 min-h-screen pb-20">
-      {/* Redesigned Sticky Search Bar */}
       <div className="sticky top-[calc(4rem)] z-10 w-full bg-dark-1 shadow-md my-4">
         <div className="max-w-3xl mx-auto px-4 py-3">
           <div className="bg-gray-800 rounded-full overflow-hidden shadow-lg mb-2">
@@ -236,12 +231,10 @@ const PreviewMode: React.FC = () => {
         </div>
       </header>      
 
-      {/* Mobile Trending Slider - Only visible on mobile */}
       <div className="md:hidden">
         <MobileTrendingSlider setIsDialogOpen={setIsSignInDialogOpen} />
       </div>     
 
-      {/* Main Content */}
       <div className="flex flex-col gap-6 p-4 w-full items-center max-w-5xl mx-auto mt-6">
         {isLoading ? (
           <LoadingSkeleton />
@@ -282,7 +275,6 @@ const PreviewMode: React.FC = () => {
         </Button>
       </div>     
 
-      {/* Sign-in Dialog */}
       <SignInDialog isOpen={isSignInDialogOpen} onClose={handleDialogClose} />
     </div>
   );

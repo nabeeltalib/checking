@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from "@/components/ui/button";
-import { Info, ChevronUp, ChevronDown } from "lucide-react"; // Added ChevronUp and ChevronDown imports
+import { Info, ChevronUp, ChevronDown } from "lucide-react";
 import { 
   Tooltip,
   TooltipContent,

@@ -30,7 +30,6 @@ import AuthLayout from "@/_auth/AuthLayout";
 import RootLayout from "@/_root/RootLayout";
 import SigninForm from "@/_auth/forms/SigninForm";
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
 import "./globals.css";
 import PreviewMode from "./_root/pages/PreviewMode";
@@ -84,7 +83,6 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
   }
 
   return (
-  <TooltipProvider>
     <ShareDialogProvider>
       <>
         <Routes>
@@ -170,7 +168,6 @@ const App: React.FC<AppProps> = ({ isInitialLoading }) => {
         <ShareDialog />
       </>
     </ShareDialogProvider>
-  </TooltipProvider>
 
   );
 };
