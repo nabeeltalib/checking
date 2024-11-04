@@ -31,6 +31,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       sourcemap: mode === 'development',
+      chunkSizeWarningLimit: 1600,
     },
     // Add environment directory and prefix
     envDir: '.',
