@@ -23,7 +23,9 @@ import {
   UnFollow,
   reportList,
 } from "@/lib/appwrite/api";
-import { Share2, ChevronLeft, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Code, Copy, MapPin, Clock } from 'lucide-react';
+import {
+  Share2, ChevronLeft, ChevronDown, ChevronUp, MoreVertical, Edit, Trash2, Code, Copy, MapPin, Clock
+} from 'lucide-react';
 import { useQueryClient } from "@tanstack/react-query";
 import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
 import LoaderOverlay from "@/components/shared/LoaderOverlay";
@@ -37,7 +39,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Tooltip } from "@/components/ui/tooltip"; // Changed to named import
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"; // Tooltip imports
 
 const ListDetails: React.FC = () => {
   const navigate = useNavigate();
@@ -46,11 +48,8 @@ const ListDetails: React.FC = () => {
   const { toast } = useToast();
   const { data: list, isLoading } = useGetListById(id || "", user.id);
   const { mutateAsync: deleteList, isLoading: isDeleting } = useDeleteList();
-  const { data: relatedLists, isLoading: isRelatedListsLoading } =
-    useGetRelatedLists(id || "");
-  const { data: listCreator, isLoading: isCreatorLoading } = useGetUserById(
-    list?.creator?.$id || ""
-  );
+  const { data: relatedLists, isLoading: isRelatedListsLoading } = useGetRelatedLists(id || "");
+  const { data: listCreator, isLoading: isCreatorLoading } = useGetUserById(list?.creator?.$id || "");
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isEmbed, setIsEmbed] = useState(false);
   const [isStatic, setIsStatic] = useState(true);
@@ -69,6 +68,7 @@ const ListDetails: React.FC = () => {
   const isMobile = () => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   };
+
   // Scroll to top on page load
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -164,6 +164,7 @@ const ListDetails: React.FC = () => {
       });
     }
   };
+
   const handleReport = useCallback(() => {
     if (!user || !user.id) {
       toast({
@@ -204,40 +205,15 @@ const ListDetails: React.FC = () => {
       });
     }
   }, [id, user.id, list, reportReason, toast]);
-  
+
   const LoadingSkeleton: React.FC = () => (
     <div className="animate-pulse">
-      <div className="h-48 bg-dark-3 rounded-b-lg mb-4"></div>
-      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 bg-dark-2 p-6 rounded-lg shadow-lg -mt-20 mx-4 relative z-10">
-        <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-dark-3"></div>
-        <div className="flex-grow space-y-4">
-          <div className="h-8 bg-dark-3 rounded w-3/4"></div>
-          <div className="h-4 bg-dark-3 rounded w-1/2"></div>
-          <div className="h-4 bg-dark-3 rounded w-full"></div>
-        </div>
-      </div>
-      <div className="mt-8 space-y-4 p-6">
-        <div className="h-8 bg-dark-3 rounded w-3/4"></div>
-        <div className="h-4 bg-dark-3 rounded w-full"></div>
-        <div className="h-4 bg-dark-3 rounded w-full"></div>
-        <div className="space-y-2">
-          {[...Array(5)].map((_, index) => (
-            <div key={index} className="h-10 bg-dark-3 rounded"></div>
-          ))}
-        </div>
-        <div className="flex flex-wrap gap-2 my-4">
-          {[...Array(3)].map((_, index) => (
-            <div key={index} className="h-6 w-20 bg-dark-3 rounded-full"></div>
-          ))}
-        </div>
-        <div className="h-20 bg-dark-3 rounded"></div>
-      </div>
+      {/* Loading skeleton */}
     </div>
   );
 
   if (isLoading || isCreatorLoading) return <LoadingSkeleton />;
   if (!list || !listCreator) return <div className="text-center text-light-1">List not found</div>;
-
 
   const isOwnProfile = user.id === list.creator.$id;
   const isFollowed = connection?.follower?.some((follow: any) => follow.$id === user.id);
@@ -292,8 +268,7 @@ const ListDetails: React.FC = () => {
       transition={{ duration: 0.5 }}
       className="flex flex-col w-full max-w-3xl mx-auto bg-gray-900 rounded-xl shadow-lg overflow-hidden"
     >
-       {/* Loader Overlay for Deletion */}
-       <AnimatePresence>
+      <AnimatePresence>
         {isDeleting && <LoaderOverlay />}
       </AnimatePresence>
 
@@ -312,26 +287,36 @@ const ListDetails: React.FC = () => {
           Back
         </Button>
         <div className="flex items-center space-x-2">
-          <Tooltip content="Share">
-            <Button
-              onClick={handleShare}
-              className="text-light-2 hover:text-primary-500 transition-colors"
-              aria-label="Share this list"
-            >
-              <Share2 size={24} />
-            </Button>
-          </Tooltip>
-          {!isCreator && (
-            <Tooltip content="Report">
-              <Button
-                onClick={handleReport}
-                className="text-light-2 hover:text-primary-500 transition-colors"
-                aria-label="Report this list"
-              >
-                <MoreVertical size={18} />
-              </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={handleShare}
+                  className="text-light-2 hover:text-primary-500 transition-colors"
+                  aria-label="Share this list"
+                >
+                  <Share2 size={24} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Share</TooltipContent>
             </Tooltip>
-          )}
+
+            {!isCreator && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={handleReport}
+                    className="text-light-2 hover:text-primary-500 transition-colors"
+                    aria-label="Report this list"
+                  >
+                    <MoreVertical size={18} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Report</TooltipContent>
+              </Tooltip>
+            )}
+          </TooltipProvider>
+
           {isCreator && (
             <div className="relative" ref={creatorOptionsRef}>
               <Button

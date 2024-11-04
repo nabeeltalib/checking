@@ -18,15 +18,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"; //
 import { useToast } from '@/components/ui/use-toast';
 
-// Types
 type InitialState = {
   creator: string;
   header: string;
@@ -54,7 +47,6 @@ const initialState: InitialState = {
 };
 
 const CreateGroup = () => {
-  // State
   const [groupData, setGroupData] = useState<InitialState>(initialState);
   const [isCreating, setIsCreating] = useState(false);
   const [lists, setLists] = useState<any[]>([]);
@@ -64,13 +56,11 @@ const CreateGroup = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isDirty, setIsDirty] = useState(false);
   
-  // Hooks
   const { user } = useUserContext();
   const { groupId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Effects
   useEffect(() => {
     const fetchGroupData = async () => {
       if (!groupId) return;
@@ -117,7 +107,6 @@ const CreateGroup = () => {
     }
   }, [defaultStructure, isDirty, groupId]);
 
-  // Handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, type, checked, value } = e.target;
     setIsDirty(true);
@@ -127,7 +116,6 @@ const CreateGroup = () => {
       [name]: type === 'checkbox' ? checked : type === 'number' ? Number(value) : value,
     }));
 
-    // Clear error when field is modified
     if (errors[name]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -209,7 +197,6 @@ const CreateGroup = () => {
     }
   };
 
-  // Helper functions
   const getViewers = async () => {
     if (groupData.public) return [];
     
@@ -309,16 +296,6 @@ const CreateGroup = () => {
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-200">
                   Group Header
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="inline ml-2 h-4 w-4 text-gray-400" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>The main title of your group that appears at the top</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
                 </label>
                 <input
                   type="text"
@@ -576,16 +553,6 @@ const CreateGroup = () => {
                 <div className="mt-6">
                   <label className="block text-sm font-medium text-gray-200">
                     Number of Lists
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="inline ml-2 h-4 w-4 text-gray-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>How many lists should be in the challenge?</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
                   </label>
                   <input
                     type="number"
