@@ -30,7 +30,7 @@ export default defineConfig(({ mode }) => {
       'process.env': env
     },
     build: {
-      sourcemap: mode === 'development',
+      sourcemap: false,
       chunkSizeWarningLimit: 1600,
     },
     // Add environment directory and prefix
